@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="EF-FORT.BF - Preparation aux concours directs de la Fonction Publique du Burkina Faso">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1A5C38">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="EF-FORT">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>EF-FORT.BF - Concours Burkina Faso</title>
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #1A5C38;
+      overflow: hidden;
+    }
+    .loading {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: linear-gradient(180deg, #1A5C38 0%, #0E3D24 100%);
+    }
+    .loading img {
+      width: 120px;
+      height: 120px;
+      border-radius: 20px;
+      background: white;
+      padding: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    .loading p {
+      color: #D4A017;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px;
+      margin-top: 20px;
+      letter-spacing: 1px;
+    }
+    .spinner {
+      width: 28px;
+      height: 28px;
+      margin-top: 16px;
+      border: 3px solid rgba(212,160,23,0.3);
+      border-top: 3px solid #D4A017;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="loading" id="loading">
+    <img src="icons/Icon-192.png" alt="EF-FORT.BF">
+    <p>Chargement...</p>
+    <div class="spinner"></div>
+  </div>
+  <script>
+    window.addEventListener('flutter-first-frame', function () {
+      var loading = document.getElementById('loading');
+      if (loading) loading.remove();
+    });
+  </script>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>
