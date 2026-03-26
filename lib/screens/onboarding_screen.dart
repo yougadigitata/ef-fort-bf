@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
-import '../widgets/logo_widget.dart';
 import 'login_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -10,51 +9,82 @@ class OnboardingScreen extends StatefulWidget {
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _OnboardingScreenState extends State<OnboardingScreen>
+    with TickerProviderStateMixin {
   final PageController _pageController = PageController();
   int _currentPage = 0;
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
 
   final List<Map<String, dynamic>> _slides = [
     {
-      'icon': null,
-      'showLogo': true,
-      'title': 'Bienvenue sur EF-FORT.BF',
-      'subtitle': 'La plateforme N.1 de preparation aux concours directs de la Fonction Publique du Burkina Faso',
-      'bgColor': AppColors.primary,
+      'emoji': '🎓',
+      'showLogo': false,
+      'title': 'La Plateforme N°1\nau Burkina Faso',
+      'subtitle':
+          'Préparez-vous aux concours de la Fonction Publique avec la méthode la plus efficace',
+      'bgColor': const Color(0xFF1A5C38),
+      'bgColor2': const Color(0xFF0F3D26),
+      'accent': const Color(0xFFD4A017),
     },
     {
-      'icon': Icons.menu_book_rounded,
+      'emoji': '📚',
       'showLogo': false,
-      'title': '+250 QCM Reelles',
-      'subtitle': 'Questions tirees de vrais concours passes : Culture Generale, Francais, Mathematiques, Droit, Economie...',
-      'bgColor': AppColors.secondary,
+      'title': '250+ Questions\nRéelles de Concours',
+      'subtitle':
+          'QCM tirés des vrais sujets d\'examen 2019–2026 avec corrections détaillées',
+      'bgColor': const Color(0xFFD4A017),
+      'bgColor2': const Color(0xFFB8860B),
+      'accent': AppColors.white,
     },
     {
-      'icon': Icons.timer_outlined,
+      'emoji': '⏱️',
       'showLogo': false,
-      'title': 'Simulation d\'Examen',
-      'subtitle': '50 questions en 1h30 avec bareme officiel : +1 bonne reponse, -1 mauvaise, 0 sans reponse',
-      'bgColor': AppColors.primary,
+      'title': 'Simulation\nd\'Examen Officiel',
+      'subtitle':
+          '50 questions · 1h30 · Barème officiel\nComme le vrai concours, rien de moins',
+      'bgColor': const Color(0xFF1A5C38),
+      'bgColor2': const Color(0xFF0F3D26),
+      'accent': const Color(0xFFD4A017),
     },
     {
-      'icon': Icons.people_alt_rounded,
+      'emoji': '🤝',
       'showLogo': false,
-      'title': 'Communaute d\'Entraide',
-      'subtitle': 'Echangez conseils et experiences avec d\'autres candidats. Ensemble, on est plus forts !',
-      'bgColor': AppColors.secondary,
+      'title': 'Entraide\n& Communauté',
+      'subtitle':
+          'Échangez avec d\'autres candidats\nPartagez vos expériences et progressez ensemble',
+      'bgColor': const Color(0xFFD4A017),
+      'bgColor2': const Color(0xFFB8860B),
+      'accent': AppColors.white,
     },
     {
-      'icon': Icons.description_rounded,
+      'emoji': '📄',
       'showLogo': false,
-      'title': 'Corrections Detaillees',
-      'subtitle': 'Chaque question est corrigee avec une explication claire. Comprenez vos erreurs et progressez !',
-      'bgColor': AppColors.primary,
+      'title': 'Corrections\n& PDF Imprimables',
+      'subtitle':
+          'Recevez votre copie corrigée en PDF\nAnalysez chaque erreur, ne ratez plus rien',
+      'bgColor': const Color(0xFF1A5C38),
+      'bgColor2': const Color(0xFF0F3D26),
+      'accent': const Color(0xFFD4A017),
     },
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+    _pulseAnimation = Tween<double>(begin: 0.95, end: 1.05).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
   void dispose() {
     _pageController.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
@@ -70,6 +100,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Scaffold(
       body: Stack(
         children: [
+          // Slides
           PageView.builder(
             controller: _pageController,
             onPageChanged: (index) => setState(() => _currentPage = index),
@@ -77,6 +108,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             itemBuilder: (context, index) {
               final slide = _slides[index];
               final bgColor = slide['bgColor'] as Color;
+              final bgColor2 = slide['bgColor2'] as Color;
+              final accent = slide['accent'] as Color;
+              final isGold = bgColor == const Color(0xFFD4A017);
+
               return Container(
                 width: double.infinity,
                 height: double.infinity,
@@ -84,10 +119,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [
-                      bgColor,
-                      bgColor == AppColors.primary ? AppColors.primaryDark : const Color(0xFFB8860B),
-                    ],
+                    colors: [bgColor, bgColor2],
                   ),
                 ),
                 child: SafeArea(
@@ -96,42 +128,81 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        if (slide['showLogo'] == true) ...[
-                          const LogoWidget(size: 140, borderRadius: 24),
-                        ] else ...[
-                          Container(
-                            width: 120,
-                            height: 120,
+                        // Icône 3D (emoji grand format dans container stylisé)
+                        ScaleTransition(
+                          scale: _pulseAnimation,
+                          child: Container(
+                            width: 140,
+                            height: 140,
                             decoration: BoxDecoration(
-                              color: AppColors.white.withValues(alpha: 0.15),
                               shape: BoxShape.circle,
+                              color: accent.withValues(alpha: 0.15),
+                              border: Border.all(
+                                color: accent.withValues(alpha: 0.3),
+                                width: 2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: accent.withValues(alpha: 0.2),
+                                  blurRadius: 30,
+                                  spreadRadius: 5,
+                                ),
+                              ],
                             ),
-                            child: Icon(
-                              slide['icon'] as IconData,
-                              size: 60,
-                              color: AppColors.white,
+                            child: Center(
+                              child: Text(
+                                slide['emoji'] as String,
+                                style: const TextStyle(fontSize: 72),
+                              ),
                             ),
                           ),
-                        ],
-                        const SizedBox(height: 48),
-                        Text(
-                          slide['title'] as String,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.white,
-                            height: 1.2,
+                        ),
+                        const SizedBox(height: 40),
+
+                        // Badge numéro de slide
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: accent.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                                color: accent.withValues(alpha: 0.4)),
+                          ),
+                          child: Text(
+                            '${index + 1} / ${_slides.length}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: accent,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 20),
+
+                        // Titre
+                        Text(
+                          slide['title'] as String,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.w800,
+                            color: isGold ? const Color(0xFF1A5C38) : AppColors.white,
+                            height: 1.2,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Sous-titre
                         Text(
                           slide['subtitle'] as String,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 16,
-                            color: AppColors.white.withValues(alpha: 0.85),
-                            height: 1.5,
+                            color: (isGold ? const Color(0xFF1A5C38) : AppColors.white)
+                                .withValues(alpha: 0.85),
+                            height: 1.6,
                           ),
                         ),
                       ],
@@ -141,81 +212,119 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               );
             },
           ),
+
+          // Bouton "Passer" en haut à droite
           Positioned(
-            bottom: 40,
+            top: 16,
+            right: 16,
+            child: SafeArea(
+              child: TextButton(
+                onPressed: _goToLogin,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text(
+                    'Passer',
+                    style: TextStyle(
+                      color: AppColors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // Bas : dots + boutons
+          Positioned(
+            bottom: 0,
             left: 0,
             right: 0,
             child: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
+                padding: const EdgeInsets.fromLTRB(32, 0, 32, 20),
                 child: Column(
                   children: [
+                    // Indicateurs de pages
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: List.generate(
                         _slides.length,
-                        (index) => AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          width: _currentPage == index ? 28 : 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: _currentPage == index
-                                ? AppColors.white
-                                : AppColors.white.withValues(alpha: 0.4),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
+                        (index) {
+                          final isActive = _currentPage == index;
+                          final isGoldPage = _slides[_currentPage]['bgColor'] ==
+                              const Color(0xFFD4A017);
+                          final dotColor =
+                              isGoldPage ? const Color(0xFF1A5C38) : AppColors.white;
+                          return AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            width: isActive ? 32 : 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: isActive
+                                  ? dotColor
+                                  : dotColor.withValues(alpha: 0.35),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          );
+                        },
                       ),
                     ),
-                    const SizedBox(height: 32),
-                    Row(
-                      children: [
-                        if (_currentPage > 0)
-                          TextButton(
-                            onPressed: _goToLogin,
-                            child: const Text(
-                              'Passer',
-                              style: TextStyle(
-                                color: AppColors.white,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ),
-                        const Spacer(),
-                        ElevatedButton(
-                          onPressed: () {
-                            if (_currentPage == _slides.length - 1) {
-                              _goToLogin();
-                            } else {
-                              _pageController.nextPage(
-                                duration: const Duration(milliseconds: 400),
-                                curve: Curves.easeInOut,
-                              );
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.white,
-                            foregroundColor: AppColors.primary,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 32,
-                              vertical: 14,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                          ),
-                          child: Text(
-                            _currentPage == _slides.length - 1
-                                ? 'Commencer'
-                                : 'Suivant',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 16,
-                            ),
+                    const SizedBox(height: 28),
+
+                    // Bouton principal
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          if (_currentPage == _slides.length - 1) {
+                            _goToLogin();
+                          } else {
+                            _pageController.nextPage(
+                              duration: const Duration(milliseconds: 400),
+                              curve: Curves.easeInOut,
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _slides[_currentPage]['bgColor'] ==
+                                  const Color(0xFFD4A017)
+                              ? const Color(0xFF1A5C38)
+                              : const Color(0xFFD4A017),
+                          foregroundColor: AppColors.white,
+                          elevation: 6,
+                          shadowColor: Colors.black.withValues(alpha: 0.3),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
                           ),
                         ),
-                      ],
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              _currentPage == _slides.length - 1
+                                  ? '🚀  Commencer maintenant'
+                                  : 'Suivant',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 17,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                            if (_currentPage < _slides.length - 1) ...[
+                              const SizedBox(width: 8),
+                              const Icon(Icons.arrow_forward_rounded, size: 20),
+                            ],
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),

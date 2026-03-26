@@ -5,8 +5,16 @@ import '../services/api_service.dart';
 class QcmScreen extends StatefulWidget {
   final String matiere;
   final String label;
+  final Color? couleur;
+  final String? icone;
 
-  const QcmScreen({super.key, required this.matiere, required this.label});
+  const QcmScreen({
+    super.key,
+    required this.matiere,
+    required this.label,
+    this.couleur,
+    this.icone,
+  });
 
   @override
   State<QcmScreen> createState() => _QcmScreenState();
@@ -223,7 +231,7 @@ class _QcmScreenState extends State<QcmScreen> {
               boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
             ),
             child: Text(
-              q['question'] ?? '',
+              q['enonce'] ?? q['question'] ?? '',
               style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600, height: 1.5, color: AppColors.textDark),
             ),
           ),

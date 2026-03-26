@@ -24,11 +24,23 @@ class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStat
   }
 
   Future<void> _loadData() async {
-    final stats = await ApiService.getAdminStats();
+    // Forcer le rechargement à chaque ouverture (pas de cache)
+    setState(() {
+      _loadingStats = true;
+      _loadingDemandes = true;
+    });
+    
+    final statsResult = await ApiService.getAdminStats();
     final demandes = await ApiService.getDemandesAbonnement();
+    
     if (mounted) {
       setState(() {
-        _stats = stats;
+        // Extraire les stats de la réponse API (peut être dans stats.stats ou stats directement)
+        if (statsResult['stats'] != null) {
+          _stats = statsResult['stats'] as Map<String, dynamic>;
+        } else {
+          _stats = statsResult;
+        }
         _demandes = demandes;
         _loadingStats = false;
         _loadingDemandes = false;
@@ -92,25 +104,73 @@ class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStat
             const SizedBox(height: 16),
             Row(
               children: [
-                _buildStatCard('Utilisateurs', '${_stats['total_users'] ?? 0}', Icons.people_rounded, AppColors.primary),
+                _buildStatCard(
+                  'Utilisateurs',
+                  '${_stats['totalUsers'] ?? _stats['total_users'] ?? 0}',
+                  Icons.people_rounded,
+                  AppColors.primary,
+                ),
                 const SizedBox(width: 12),
-                _buildStatCard('Abonnes', '${_stats['total_abonnes'] ?? 0}', Icons.workspace_premium_rounded, AppColors.secondary),
+                _buildStatCard(
+                  'Abonnes',
+                  '${_stats['abonnes'] ?? _stats['total_abonnes'] ?? 0}',
+                  Icons.workspace_premium_rounded,
+                  AppColors.secondary,
+                ),
               ],
             ),
             const SizedBox(height: 12),
             Row(
               children: [
-                _buildStatCard('Questions', '${_stats['total_questions'] ?? 0}', Icons.quiz_rounded, Colors.blue),
+                _buildStatCard(
+                  'Questions',
+                  '${_stats['totalQuestions'] ?? _stats['total_questions'] ?? 0}',
+                  Icons.quiz_rounded,
+                  Colors.blue,
+                ),
                 const SizedBox(width: 12),
-                _buildStatCard('Simulations', '${_stats['total_sessions'] ?? 0}', Icons.timer_rounded, Colors.orange),
+                _buildStatCard(
+                  'Simulations',
+                  '${_stats['totalSimulations'] ?? _stats['total_sessions'] ?? 0}',
+                  Icons.timer_rounded,
+                  Colors.orange,
+                ),
               ],
             ),
             const SizedBox(height: 12),
             Row(
               children: [
-                _buildStatCard('Demandes', '${_stats['demandes_en_attente'] ?? 0}', Icons.pending_rounded, AppColors.red),
+                _buildStatCard(
+                  'Demandes',
+                  '${_stats['demandesEnAttente'] ?? _stats['demandes_en_attente'] ?? 0}',
+                  Icons.pending_rounded,
+                  AppColors.red,
+                ),
                 const SizedBox(width: 12),
-                _buildStatCard('Actualites', '${_stats['total_actualites'] ?? 0}', Icons.newspaper_rounded, Colors.teal),
+                _buildStatCard(
+                  'Actualites',
+                  '${_stats['totalActualites'] ?? _stats['total_actualites'] ?? 0}',
+                  Icons.newspaper_rounded,
+                  Colors.teal,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                _buildStatCard(
+                  'Entraide',
+                  '${_stats['messagesEntraide'] ?? 0}',
+                  Icons.forum_rounded,
+                  Colors.purple,
+                ),
+                const SizedBox(width: 12),
+                _buildStatCard(
+                  'Taux abonnement',
+                  '${(_stats['totalUsers'] ?? _stats['total_users'] ?? 1) > 0 ? (((_stats['abonnes'] ?? _stats['total_abonnes'] ?? 0) / ((_stats['totalUsers'] ?? _stats['total_users'] ?? 1) as num)) * 100).toStringAsFixed(0) : '0'}%',
+                  Icons.bar_chart_rounded,
+                  Colors.green,
+                ),
               ],
             ),
           ],

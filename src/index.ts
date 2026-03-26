@@ -6,6 +6,7 @@ import questions   from './api/questions';
 import simulation  from './api/simulation';
 import abonnements from './api/abonnements';
 import admin       from './api/admin';
+import entraide    from './api/entraide';
 import { getDB }   from './lib/db';
 
 const app = new Hono<{ Bindings: Env }>();
@@ -23,6 +24,7 @@ app.route('/api',              questions);     // /api/matieres + /api/questions
 app.route('/api/simulation',   simulation);
 app.route('/api/abonnements',  abonnements);
 app.route('/api/admin',        admin);
+app.route('/api/entraide',     entraide);
 
 // GET /api/actualites
 app.get('/api/actualites', async (c) => {

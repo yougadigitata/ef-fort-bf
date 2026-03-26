@@ -3,6 +3,7 @@ import '../core/theme/app_colors.dart';
 import 'dashboard_screen.dart';
 import 'matieres_screen.dart';
 import 'simulation_screen.dart';
+import 'entraide_screen.dart';
 import 'profil_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -15,59 +16,98 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = const [
-    DashboardScreen(),
-    MatieresScreen(),
-    SimulationLaunchScreen(),
-    ProfilScreen(),
-  ];
+  void _goToSimulation() {
+    setState(() => _currentIndex = 2);
+  }
+
+  void _goToMatieres() {
+    setState(() => _currentIndex = 1);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final pages = [
+      DashboardScreen(
+        onGoToSimulation: _goToSimulation,
+        onGoToMatieres: _goToMatieres,
+      ),
+      const MatieresScreen(),
+      const SimulationLaunchScreen(),
+      const EntraideScreen(),
+      const ProfilScreen(),
+    ];
+
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
-        children: _pages,
+        children: pages,
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
+          color: AppColors.white,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 12,
-              offset: const Offset(0, -2),
+              blurRadius: 16,
+              offset: const Offset(0, -3),
             ),
           ],
         ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) => setState(() => _currentIndex = index),
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: AppColors.white,
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: AppColors.textLight,
-          selectedFontSize: 12,
-          unselectedFontSize: 11,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard_rounded),
-              activeIcon: Icon(Icons.dashboard_rounded),
-              label: 'Accueil',
+        child: SafeArea(
+          child: SizedBox(
+            height: 65,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavItem(0, '🏠', 'Accueil'),
+                _buildNavItem(1, '📚', 'Matières'),
+                _buildNavItem(2, '⏱️', 'Examen'),
+                _buildNavItem(3, '🤝', 'Entraide'),
+                _buildNavItem(4, '👤', 'Profil'),
+              ],
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.menu_book_rounded),
-              activeIcon: Icon(Icons.menu_book_rounded),
-              label: 'Matieres',
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem(int index, String emoji, String label) {
+    final isActive = _currentIndex == index;
+    return GestureDetector(
+      onTap: () => setState(() => _currentIndex = index),
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: 64,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: isActive
+                    ? AppColors.primary.withValues(alpha: 0.12)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                emoji,
+                style: TextStyle(
+                  fontSize: isActive ? 26 : 22,
+                ),
+              ),
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.timer_rounded),
-              activeIcon: Icon(Icons.timer_rounded),
-              label: 'Examen',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_rounded),
-              activeIcon: Icon(Icons.person_rounded),
-              label: 'Profil',
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight:
+                    isActive ? FontWeight.w700 : FontWeight.w500,
+                color: isActive ? AppColors.primary : AppColors.textLight,
+              ),
             ),
           ],
         ),

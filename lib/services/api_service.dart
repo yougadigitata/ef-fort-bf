@@ -242,6 +242,46 @@ class ApiService {
     }
   }
 
+  // ══════════════════════════════════════════════════════════════
+  // ENTRAIDE
+  // ══════════════════════════════════════════════════════════════
+  static Future<List<dynamic>> getEntraideMsgs() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$apiBase/entraide'),
+        headers: _headers,
+      );
+      final data = jsonDecode(response.body);
+      return (data['messages'] as List?) ?? [];
+    } catch (e) {
+      if (kDebugMode) debugPrint('Entraide messages error: $e');
+      return [];
+    }
+  }
+
+  static Future<Map<String, dynamic>> sendEntraideMsgAPI({
+    required String contenu,
+    bool partagerWhatsApp = false,
+    String? telephone,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$apiBase/entraide'),
+        headers: _headers,
+        body: jsonEncode({
+          'contenu': contenu,
+          'partage_whatsapp': partagerWhatsApp,
+          if (telephone != null && telephone.isNotEmpty)
+            'telephone_partage': telephone,
+        }),
+      );
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Send entraide error: $e');
+      return {'error': 'Erreur de connexion.'};
+    }
+  }
+
   static Future<void> logout() async {
     _token = null;
     _currentUser = null;

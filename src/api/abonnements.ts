@@ -35,7 +35,7 @@ abonnements.post('/demande', requireAuth, async (c) => {
 
   return c.json({
     success: true,
-    message: 'Demande enregistrée. Marc va valider votre paiement sous peu. WhatsApp : 65 46 70 70',
+    message: 'Demande enregistrée. Notre équipe EF-FORT va valider votre paiement rapidement. WhatsApp : 65 46 70 70',
   });
 });
 

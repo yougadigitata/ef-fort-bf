@@ -1,11 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
 class AppTheme {
+  // Police principale (interface) : Poppins
+  static TextTheme get poppinsTextTheme => GoogleFonts.poppinsTextTheme();
+
+  // Police QCM (style académique) : Crimson Text
+  static TextStyle qcmQuestion({double fontSize = 17}) =>
+      GoogleFonts.crimsonText(
+        fontSize: fontSize,
+        fontWeight: FontWeight.w600,
+        height: 1.5,
+        color: AppColors.textDark,
+      );
+
+  static TextStyle qcmOption({double fontSize = 15}) => GoogleFonts.crimsonText(
+        fontSize: fontSize,
+        height: 1.4,
+        color: AppColors.textDark,
+      );
+
+  // Police scores (impact visuel) : Bebas Neue
+  static TextStyle scoreDisplay({double fontSize = 52}) =>
+      GoogleFonts.bebasNeue(
+        fontSize: fontSize,
+        letterSpacing: 1,
+        color: AppColors.white,
+      );
+
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
       colorSchemeSeed: AppColors.primary,
+      textTheme: GoogleFonts.poppinsTextTheme(),
       brightness: Brightness.light,
       scaffoldBackgroundColor: AppColors.background,
       appBarTheme: const AppBarTheme(

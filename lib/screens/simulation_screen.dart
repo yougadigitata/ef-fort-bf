@@ -144,6 +144,16 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
   late int _remainingSeconds;
   Timer? _timer;
   bool _finished = false;
+  bool _consignesAccepted = false;
+
+  // Blocage soumission avant 30 minutes
+  static const int _minSecondsBeforeSubmit = 30 * 60; // 30 min
+  bool get _canSubmit =>
+      _remainingSeconds <= (90 * 60 - _minSecondsBeforeSubmit);
+  int get _secondsBeforeCanSubmit =>
+      _remainingSeconds > (90 * 60 - _minSecondsBeforeSubmit)
+          ? _remainingSeconds - (90 * 60 - _minSecondsBeforeSubmit)
+          : 0;
 
   @override
   void initState() {
@@ -171,7 +181,105 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
       _loading = false;
     });
 
-    _startTimer();
+    // Afficher les consignes officielles avant de démarrer
+    if (mounted && !_consignesAccepted) {
+      _showConsignesDialog();
+    } else {
+      _startTimer();
+    }
+  }
+
+  void _showConsignesDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Text('📋', style: TextStyle(fontSize: 24)),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'CONSIGNES OFFICIELLES',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'À LIRE ATTENTIVEMENT',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(height: 12),
+              _consigne('📌', '50 questions — Durée : 1h30'),
+              _consigne('✅', 'Noircissez complètement la case choisie'),
+              _consigne('❌', 'Ne mettez pas de croix (X) ni de trait'),
+              _consigne('⚠️', 'Une mauvaise réponse = −1 point'),
+              _consigne('⭕', 'Sans réponse = 0 point (ne pénalise pas)'),
+              _consigne('🔒', 'Impossible de soumettre avant 30 minutes'),
+              _consigne('✔️', 'Vous pouvez sauter une question (0 point)'),
+              _consigne('📝', 'Une question peut avoir plusieurs réponses'),
+            ],
+          ),
+        ),
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                setState(() => _consignesAccepted = true);
+                _startTimer();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+              child: const Text(
+                "✅ J'ai compris — Démarrer l'examen",
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _consigne(String emoji, String texte) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 16)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              texte,
+              style: const TextStyle(fontSize: 13, height: 1.4),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _startTimer() {
@@ -181,6 +289,25 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
         _finishSimulation();
       } else {
         setState(() => _remainingSeconds--);
+        // Alertes sonores (simulation via debug print — sons réels nécessiteraient audioplayers)
+        if (_remainingSeconds == 15 * 60 && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('⚠️ Plus que 15 minutes !'),
+              backgroundColor: AppColors.secondary,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+        if (_remainingSeconds == 5 * 60 && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('🚨 ATTENTION : 5 minutes restantes !'),
+              backgroundColor: AppColors.error,
+              duration: Duration(seconds: 4),
+            ),
+          );
+        }
       }
     });
   }
@@ -521,18 +648,46 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                         if (_currentIndex < _questions.length - 1) {
                           setState(() => _currentIndex++);
                         } else {
+                          // Vérifier si 30 min se sont écoulées
+                          if (!_canSubmit) {
+                            final minsLeft = (_secondsBeforeCanSubmit ~/ 60);
+                            final secsLeft = (_secondsBeforeCanSubmit % 60);
+                            showDialog(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: const Text('⏰ Trop tôt pour soumettre'),
+                                content: Text(
+                                  'Vous devez attendre encore ${minsLeft}min ${secsLeft}s avant de pouvoir soumettre.\n\nCette règle simule les conditions réelles du concours.',
+                                ),
+                                actions: [
+                                  ElevatedButton(
+                                    onPressed: () => Navigator.pop(ctx),
+                                    style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.primary),
+                                    child: const Text('Continuer l\'examen'),
+                                  ),
+                                ],
+                              ),
+                            );
+                            return;
+                          }
                           showDialog(
                             context: context,
                             builder: (ctx) => AlertDialog(
                               title: const Text('Terminer la simulation ?'),
-                              content: Text('Vous avez repondu a $answeredCount/${_questions.length} questions.'),
+                              content: Text(
+                                  'Vous avez répondu à $answeredCount/${_questions.length} questions.\n\nÊtes-vous sûr de vouloir terminer ?'),
                               actions: [
-                                TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Continuer')),
+                                TextButton(
+                                    onPressed: () => Navigator.pop(ctx),
+                                    child: const Text('Continuer')),
                                 ElevatedButton(
                                   onPressed: () {
                                     Navigator.pop(ctx);
                                     _finishSimulation();
                                   },
+                                  style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.primary),
                                   child: const Text('Terminer'),
                                 ),
                               ],
@@ -542,11 +697,18 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                       },
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        backgroundColor: _currentIndex == _questions.length - 1 ? AppColors.secondary : AppColors.primary,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        backgroundColor: _currentIndex == _questions.length - 1
+                            ? (_canSubmit ? AppColors.error : AppColors.textLight)
+                            : AppColors.primary,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                       ),
                       child: Text(
-                        _currentIndex < _questions.length - 1 ? 'Suivant' : 'Terminer',
+                        _currentIndex < _questions.length - 1
+                            ? 'Suivant'
+                            : (_canSubmit
+                                ? 'Terminer 🏁'
+                                : 'Disponible dans ${_secondsBeforeCanSubmit ~/ 60}min'),
                         style: const TextStyle(fontWeight: FontWeight.w700),
                       ),
                     ),

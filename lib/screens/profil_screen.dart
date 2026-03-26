@@ -25,7 +25,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
     if (result['success'] == true) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Demande envoyee ! Marc vous contactera sous 24h.'),
+          content: Text('✅ Demande envoyée ! Notre équipe EF-FORT activera votre accès rapidement.'),
           backgroundColor: AppColors.success,
         ),
       );
@@ -40,7 +40,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
   }
 
   Future<void> _openWhatsApp() async {
-    final uri = Uri.parse('https://wa.me/22665467070?text=Bonjour%20Marc%2C%20je%20souhaite%20m%27abonner%20%C3%A0%20EF-FORT.BF');
+    final uri = Uri.parse('https://wa.me/22665467070?text=Bonjour%20EF-FORT%2C%20je%20souhaite%20m%27abonner%20%C3%A0%20EF-FORT.BF');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
@@ -269,7 +269,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
               _buildMenuItem(
                 Icons.info_outline_rounded,
                 'A propos d\'EF-FORT.BF',
-                'Version 2.0 | Marc LOMPO',
+                'Version 4.0 | Notre équipe EF-FORT',
                 AppColors.primary,
                 () => _showAboutDialog(),
               ),
@@ -395,7 +395,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
             const Text('Concours Directs', style: TextStyle(fontSize: 14, color: AppColors.secondary, fontWeight: FontWeight.w600)),
             const SizedBox(height: 12),
             Text(
-              'Plateforme de preparation aux concours directs de la Fonction Publique du Burkina Faso.\n\nProprietaire : Marc LOMPO\nWhatsApp : +226 65 46 70 70',
+              'Plateforme N°1 de préparation aux concours directs de la Fonction Publique du Burkina Faso.\n\nContact équipe : WhatsApp 65 46 70 70\nSite : ef-fort-bf.pages.dev',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 13, color: AppColors.textLight, height: 1.5),
             ),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
-import '../services/api_service.dart';
 import 'qcm_screen.dart';
 
 class MatieresScreen extends StatefulWidget {
@@ -11,44 +10,134 @@ class MatieresScreen extends StatefulWidget {
 }
 
 class _MatieresScreenState extends State<MatieresScreen> {
-  List<dynamic> _matieres = [];
-  bool _loading = true;
 
-  static const Map<String, Map<String, dynamic>> _matiereInfo = {
-    'culture_generale': {'icon': Icons.public_rounded, 'color': Color(0xFF1A5C38), 'label': 'Culture Generale'},
-    'francais': {'icon': Icons.translate_rounded, 'color': Color(0xFF2196F3), 'label': 'Francais'},
-    'mathematiques': {'icon': Icons.calculate_rounded, 'color': Color(0xFFFF5722), 'label': 'Mathematiques'},
-    'psychotechnique': {'icon': Icons.psychology_rounded, 'color': Color(0xFF9C27B0), 'label': 'Psychotechnique'},
-    'droit': {'icon': Icons.gavel_rounded, 'color': Color(0xFF795548), 'label': 'Droit'},
-    'economie': {'icon': Icons.trending_up_rounded, 'color': Color(0xFF4CAF50), 'label': 'Economie'},
-    'histoire_geo': {'icon': Icons.map_rounded, 'color': Color(0xFFFF9800), 'label': 'Histoire-Geo'},
-    'sciences': {'icon': Icons.science_rounded, 'color': Color(0xFF00BCD4), 'label': 'Sciences'},
-    'actualite': {'icon': Icons.newspaper_rounded, 'color': Color(0xFFD4A017), 'label': 'Actualite'},
-    'informatique': {'icon': Icons.computer_rounded, 'color': Color(0xFF607D8B), 'label': 'Informatique'},
-  };
-
-  @override
-  void initState() {
-    super.initState();
-    _loadMatieres();
-  }
-
-  Future<void> _loadMatieres() async {
-    final matieres = await ApiService.getMatieres();
-    if (mounted) {
-      setState(() {
-        _matieres = matieres;
-        _loading = false;
-      });
-    }
-  }
+  // ══════════════════════════════════════════════════════════
+  // LISTE OFFICIELLE DES MATIÈRES v4
+  // ⚠️ ENAREF n'est PAS une matière — c'est un concours
+  // ⚠️ Droit et Économie sont SÉPARÉS
+  // ⚠️ Sciences Physiques et SVT sont SÉPARÉS
+  // ══════════════════════════════════════════════════════════
+  static const List<Map<String, dynamic>> _matieresList = [
+    {
+      'id': 'culture_generale',
+      'nom': 'Culture Générale',
+      'icone': '🌍',
+      'couleur': Color(0xFF1A5C38),
+      'description': 'Histoire, géographie, institutions...',
+    },
+    {
+      'id': 'francais',
+      'nom': 'Français',
+      'icone': '📝',
+      'couleur': Color(0xFF2980B9),
+      'description': 'Grammaire, vocabulaire, orthographe...',
+    },
+    {
+      'id': 'mathematiques',
+      'nom': 'Mathématiques',
+      'icone': '📐',
+      'couleur': Color(0xFFE67E22),
+      'description': 'Calculs, géométrie, statistiques...',
+    },
+    {
+      'id': 'psychotechnique',
+      'nom': 'Psychotechnique',
+      'icone': '🧠',
+      'couleur': Color(0xFF8E44AD),
+      'description': 'Suites numériques, alphabétiques, mixtes...',
+    },
+    {
+      'id': 'logique_dominos',
+      'nom': 'Dominos & Logique',
+      'icone': '🎲',
+      'couleur': Color(0xFF16A085),
+      'description': 'Dominos visuels, progressions...',
+    },
+    {
+      'id': 'logique_cartes',
+      'nom': 'Cartes à Jouer',
+      'icone': '🃏',
+      'couleur': Color(0xFFC0392B),
+      'description': 'Logique des cartes à jouer...',
+    },
+    {
+      'id': 'logique_intrus',
+      'nom': "Trouver l'Intrus",
+      'icone': '🔍',
+      'couleur': Color(0xFF27AE60),
+      'description': 'Trouver l\'élément qui ne correspond pas...',
+    },
+    {
+      'id': 'logique_codages',
+      'nom': 'Codages & Substitutions',
+      'icone': '🔐',
+      'couleur': Color(0xFF2C3E50),
+      'description': 'Déchiffrer des codes et substitutions...',
+    },
+    {
+      'id': 'logique_syllogisme',
+      'nom': 'Syllogismes',
+      'icone': '💡',
+      'couleur': Color(0xFFF39C12),
+      'description': 'Raisonnement logique et syllogismes...',
+    },
+    {
+      'id': 'droit',
+      'nom': 'Droit',
+      'icone': '⚖️',
+      'couleur': Color(0xFF1A5C38),
+      'description': 'Droit public, fonctions publiques...',
+    },
+    {
+      'id': 'economie',
+      'nom': 'Économie',
+      'icone': '📊',
+      'couleur': Color(0xFFD4A017),
+      'description': 'Économie générale, microéconomie...',
+    },
+    {
+      'id': 'histoire_geo',
+      'nom': 'Histoire & Géographie',
+      'icone': '🗺️',
+      'couleur': Color(0xFF8B4513),
+      'description': 'Histoire du Burkina Faso et de l\'Afrique...',
+    },
+    {
+      'id': 'sciences_physiques',
+      'nom': 'Sciences Physiques',
+      'icone': '⚗️',
+      'couleur': Color(0xFF3498DB),
+      'description': 'Physique, chimie, sciences appliquées...',
+    },
+    {
+      'id': 'svt',
+      'nom': 'SVT',
+      'icone': '🌿',
+      'couleur': Color(0xFF2ECC71),
+      'description': 'Sciences de la vie et de la Terre...',
+    },
+    {
+      'id': 'actualite',
+      'nom': 'Actualité & Institutions',
+      'icone': '🏛️',
+      'couleur': Color(0xFFE74C3C),
+      'description': 'Institutions burkinabè et africaines...',
+    },
+    {
+      'id': 'figures_africaines',
+      'nom': 'Figures Africaines',
+      'icone': '👑',
+      'couleur': Color(0xFFD35400),
+      'description': 'Grandes figures africaines et burkinabè...',
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Matieres QCM'),
+        title: const Text('📚 Matières QCM'),
         automaticallyImplyLeading: false,
         flexibleSpace: Container(
           decoration: const BoxDecoration(
@@ -57,111 +146,99 @@ class _MatieresScreenState extends State<MatieresScreen> {
             ),
           ),
         ),
+        foregroundColor: AppColors.white,
       ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
-          : RefreshIndicator(
-              onRefresh: _loadMatieres,
-              child: _matieres.isEmpty
-                  ? ListView(
-                      children: [
-                        SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.6,
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.menu_book_rounded, size: 64, color: AppColors.textLight.withValues(alpha: 0.3)),
-                                const SizedBox(height: 16),
-                                const Text('Aucune matiere disponible', style: TextStyle(color: AppColors.textLight, fontSize: 16)),
-                                const SizedBox(height: 8),
-                                const Text('Tirez vers le bas pour recharger', style: TextStyle(color: AppColors.textLight, fontSize: 13)),
-                              ],
-                            ),
-                          ),
+      body: GridView.builder(
+              padding: const EdgeInsets.all(16),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 14,
+                crossAxisSpacing: 14,
+                childAspectRatio: 1.05,
+              ),
+              itemCount: _matieresList.length,
+              itemBuilder: (context, index) {
+                final matiere = _matieresList[index];
+                final color = matiere['couleur'] as Color;
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => QcmScreen(
+                          matiere: matiere['id'] as String,
+                          label: matiere['nom'] as String,
+                          couleur: color,
+                          icone: matiere['icone'] as String,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [
+                        BoxShadow(
+                          color: color.withValues(alpha: 0.15),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
                         ),
                       ],
-                    )
-                  : GridView.builder(
-                      padding: const EdgeInsets.all(16),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 14,
-                        crossAxisSpacing: 14,
-                        childAspectRatio: 1.1,
-                      ),
-                      itemCount: _matieres.length,
-                      itemBuilder: (context, index) {
-                        final matiere = _matieres[index];
-                        String matiereKey;
-                        int count = 0;
-                        if (matiere is Map) {
-                          matiereKey = (matiere['matiere'] ?? matiere['nom'] ?? '').toString();
-                          count = (matiere['count'] ?? matiere['nb'] ?? 0) as int;
-                        } else {
-                          matiereKey = matiere.toString();
-                        }
-                        final info = _matiereInfo[matiereKey] ?? {
-                          'icon': Icons.quiz_rounded,
-                          'color': AppColors.primary,
-                          'label': matiereKey.replaceAll('_', ' ').toUpperCase(),
-                        };
-                        final color = info['color'] as Color;
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => QcmScreen(matiere: matiereKey, label: info['label'] as String),
-                              ),
-                            );
-                          },
-                          child: Container(
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Icône 3D dans container stylisé
+                          Container(
+                            width: 58,
+                            height: 58,
                             decoration: BoxDecoration(
-                              color: AppColors.white,
-                              borderRadius: BorderRadius.circular(18),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: color.withValues(alpha: 0.12),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
+                              color: color.withValues(alpha: 0.12),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: color.withValues(alpha: 0.2),
+                                width: 1.5,
+                              ),
                             ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(14),
-                                  decoration: BoxDecoration(
-                                    color: color.withValues(alpha: 0.1),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(info['icon'] as IconData, color: color, size: 32),
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  info['label'] as String,
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.textDark,
-                                  ),
-                                ),
-                                if (count > 0) ...[
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    '$count questions',
-                                    style: TextStyle(fontSize: 11, color: AppColors.textLight),
-                                  ),
-                                ],
-                              ],
+                            child: Center(
+                              child: Text(
+                                matiere['icone'] as String,
+                                style: const TextStyle(fontSize: 28),
+                              ),
                             ),
                           ),
-                        );
-                      },
+                          const SizedBox(height: 10),
+                          Text(
+                            matiere['nom'] as String,
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textDark,
+                              height: 1.2,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          // Barre de couleur indicateur
+                          Container(
+                            height: 3,
+                            width: 40,
+                            decoration: BoxDecoration(
+                              color: color,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+                  ),
+                );
+              },
             ),
     );
   }
