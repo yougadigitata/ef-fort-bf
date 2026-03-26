@@ -13,11 +13,21 @@ class AbonnementScreen extends StatefulWidget {
 class _AbonnementScreenState extends State<AbonnementScreen> {
   bool _showFormDemande = false;
   bool _submitting = false;
-  String _moyenPaiement = 'Orange Money';
+  final String _moyenPaiement = 'Orange Money';
 
-  void _launchWhatsApp() async {
+  // ── TÂCHE 5 : Bouton "J'ai payé, envoyer la preuve" ──
+  void _launchWhatsAppPreuve() async {
     final uri = Uri.parse(
-        'https://wa.me/22665467070?text=Bonjour%20EF-FORT%2C%20je%20veux%20m%27abonner%20pour%2012%20000%20FCFA');
+        'https://wa.me/22665467070?text=Bonjour%20EF-FORT.BF%2C%20j%27ai%20effectu%u00e9%20le%20paiement%20de%2012%20000%20FCFA%20via%20Orange%20Money.%20Je%20vous%20envoie%20la%20capture%20de%20confirmation.');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  // ── TÂCHE 5 : Bouton "Autre moyen / question" ──
+  void _launchWhatsAppAutre() async {
+    final uri = Uri.parse(
+        'https://wa.me/22665467070?text=Bonjour%2C%20je%20souhaite%20m%27abonner%20%C3%A0%20EF-FORT.BF%20et%20j%27ai%20une%20question%20sur%20les%20moyens%20de%20paiement.');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
@@ -54,9 +64,41 @@ class _AbonnementScreenState extends State<AbonnementScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-                '✅ Demande envoyée ! Notre équipe activera votre accès rapidement.'),
+                'Demande envoyée ! Notre équipe va vous contacter très prochainement.'),
             backgroundColor: AppColors.success,
-            duration: Duration(seconds: 4),
+            duration: Duration(seconds: 5),
+          ),
+        );
+      } else if (result['pending'] == true) {
+        // ── TÂCHE 5 : Blocage doublon ──
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Row(
+              children: [
+                Text('⌛', style: TextStyle(fontSize: 24)),
+                SizedBox(width: 10),
+                Text('Demande en cours', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+              ],
+            ),
+            content: const Text(
+              'Votre demande est déjà en cours de traitement.\nNotre équipe va vous contacter très prochainement.',
+              style: TextStyle(height: 1.5, fontSize: 14),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('OK', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700)),
+              ),
+            ],
+          ),
+        );
+      } else if (result['already_subscribed'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Votre abonnement est déjà actif !'),
+            backgroundColor: AppColors.success,
           ),
         );
       } else {
@@ -298,14 +340,14 @@ class _AbonnementScreenState extends State<AbonnementScreen> {
                   ),
                   const SizedBox(height: 12),
                   _buildEtape(
-                    '②',
+                    '③',
                     'Envoyez la capture sur WhatsApp',
-                    'Envoyez la preuve de paiement à notre équipe',
+                    'Envoyez la preuve de paiement à notre équipe EF-FORT',
                     const Color(0xFF25D366),
                     action: ElevatedButton.icon(
-                      onPressed: _launchWhatsApp,
+                      onPressed: _launchWhatsAppPreuve,
                       icon: const Text('📲', style: TextStyle(fontSize: 16)),
-                      label: const Text('ENVOYER SUR WHATSAPP'),
+                      label: const Text('J\'AI PAYÉ, ENVOYER LA PREUVE'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF25D366),
                         foregroundColor: AppColors.white,
@@ -325,17 +367,17 @@ class _AbonnementScreenState extends State<AbonnementScreen> {
               ),
             ),
 
-            // ─── BOUTON PRINCIPAL ──────────────────────────────────────
+            // ─── BOUTON PRINCIPAL ─────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
               child: SizedBox(
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton.icon(
-                  onPressed: _launchWhatsApp,
+                  onPressed: _launchWhatsAppPreuve,
                   icon: const Text('📲', style: TextStyle(fontSize: 22)),
                   label: const Text(
-                    'CONTACTER L\'ÉQUIPE SUR WHATSAPP',
+                    'J\'AI PAYÉ — ENVOYER LA PREUVE',
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
                   ),
                   style: ElevatedButton.styleFrom(
@@ -350,7 +392,7 @@ class _AbonnementScreenState extends State<AbonnementScreen> {
               ),
             ),
 
-            // Bouton "J'ai déjà payé"
+            // Bouton "J'ai déjà soumis ma demande"
             if (!isAbonne) ...[
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
@@ -393,27 +435,27 @@ class _AbonnementScreenState extends State<AbonnementScreen> {
                           style: TextStyle(fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 8),
-                        DropdownButtonFormField<String>(
-                          initialValue: _moyenPaiement,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10)),
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 8),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFF7900).withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFFFF7900).withValues(alpha: 0.3)),
                           ),
-                          items: const [
-                            DropdownMenuItem(
-                                value: 'Orange Money',
-                                child: Text('🟠 Orange Money')),
-                            DropdownMenuItem(
-                                value: 'Moov Money',
-                                child: Text('🔵 Moov Money')),
-                            DropdownMenuItem(
-                                value: 'Virement',
-                                child: Text('🏦 Virement bancaire')),
-                          ],
-                          onChanged: (v) =>
-                              setState(() => _moyenPaiement = v!),
+                          child: const Row(
+                            children: [
+                              Text('🟠', style: TextStyle(fontSize: 20)),
+                              SizedBox(width: 10),
+                              Text(
+                                'Orange Money',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 15,
+                                  color: Color(0xFFFF7900),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 12),
                         SizedBox(
@@ -476,11 +518,11 @@ class _AbonnementScreenState extends State<AbonnementScreen> {
               ),
             ),
 
-            // Autre moyen de paiement
+            // ── TÂCHE 5 : Autre moyen de paiement ──
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
               child: GestureDetector(
-                onTap: _launchWhatsApp,
+                onTap: _launchWhatsAppAutre,
                 child: Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
@@ -494,13 +536,26 @@ class _AbonnementScreenState extends State<AbonnementScreen> {
                       const Text('💬', style: TextStyle(fontSize: 20)),
                       const SizedBox(width: 10),
                       Expanded(
-                        child: Text(
-                          'Vous souhaitez payer autrement (Moov Money, virement) ? Contactez notre équipe sur WhatsApp',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: AppColors.textDark,
-                            height: 1.4,
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Vous souhaitez payer autrement ?',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 13,
+                                color: AppColors.textDark,
+                              ),
+                            ),
+                            Text(
+                              'Contactez notre équipe sur WhatsApp.',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textLight,
+                                height: 1.4,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       const Icon(Icons.arrow_forward_ios_rounded,

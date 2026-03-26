@@ -21,8 +21,32 @@ abonnements.post('/demande', requireAuth, async (c) => {
 
   const db = getDB(c.env);
   const { data: user } = await db
-    .from('profiles').select('nom, prenom, telephone').eq('id', userId).single();
+    .from('profiles').select('nom, prenom, telephone, abonnement_actif').eq('id', userId).single();
   if (!user) return c.json({ error: 'Utilisateur introuvable.' }, 404);
+
+  // ── TÂCHE 5 : Vérifier si l'utilisateur est déjà abonné ──
+  if (user.abonnement_actif === true) {
+    return c.json({
+      success: false,
+      already_subscribed: true,
+      error: 'Votre abonnement est déjà actif. Profitez de toutes les fonctionnalités premium !',
+    }, 409);
+  }
+
+  // ── TÂCHE 5 : Bloquer les demandes en double ──
+  const { count: existingCount } = await db
+    .from('demandes_abonnement')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .eq('statut', 'EN_ATTENTE');
+
+  if (existingCount && existingCount > 0) {
+    return c.json({
+      success: false,
+      pending: true,
+      error: 'Votre demande est déjà en cours de traitement. Notre équipe va vous contacter très prochainement.',
+    }, 409);
+  }
 
   const { error } = await db.from('demandes_abonnement').insert({
     user_id: userId,

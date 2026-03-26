@@ -282,6 +282,45 @@ class ApiService {
     }
   }
 
+  // ══════════════════════════════════════════════════════════════
+  // TÂCHE 4 — Stats utilisateur pour le dashboard
+  // ══════════════════════════════════════════════════════════════
+  static Future<Map<String, dynamic>> getUserStats() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$apiBase/user/stats'),
+        headers: _headers,
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data as Map<String, dynamic>;
+      }
+      return {'nb_simulations': 0, 'score_moyen': 0.0, 'questions_repondues': 0};
+    } catch (e) {
+      if (kDebugMode) debugPrint('getUserStats error: $e');
+      return {'nb_simulations': 0, 'score_moyen': 0.0, 'questions_repondues': 0};
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // TÂCHE 5 — Vérifier si une demande abonnement est en cours
+  // ══════════════════════════════════════════════════════════════
+  static Future<Map<String, dynamic>> checkPendingSubscription() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$apiBase/abonnements/statut'),
+        headers: _headers,
+      );
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      }
+      return {'abonnement_actif': false};
+    } catch (e) {
+      if (kDebugMode) debugPrint('checkPending error: $e');
+      return {'abonnement_actif': false};
+    }
+  }
+
   static Future<void> logout() async {
     _token = null;
     _currentUser = null;

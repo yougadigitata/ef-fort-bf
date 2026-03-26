@@ -96,7 +96,7 @@ class _MatieresScreenState extends State<MatieresScreen> {
       'description': 'Économie générale, microéconomie...',
     },
     {
-      'id': 'histoire_geo',
+      'id': 'histoire_geographie',
       'nom': 'Histoire & Géographie',
       'icone': '🗺️',
       'couleur': Color(0xFF8B4513),

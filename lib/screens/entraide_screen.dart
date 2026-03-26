@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
+import 'abonnement_screen.dart';
 
 class EntraideScreen extends StatefulWidget {
   const EntraideScreen({super.key});
@@ -23,9 +24,13 @@ class _EntraideScreenState extends State<EntraideScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadMessages();
-    });
+    if (ApiService.isAbonne) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _loadMessages();
+      });
+    } else {
+      setState(() => _loading = false);
+    }
   }
 
   @override
@@ -73,7 +78,7 @@ class _EntraideScreenState extends State<EntraideScreen> {
         setState(() => _partagerWhatsApp = false);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('✅ Message publié avec succès !'),
+            content: Text('Message publié avec succès !'),
             backgroundColor: AppColors.success,
           ),
         );
@@ -139,10 +144,15 @@ class _EntraideScreenState extends State<EntraideScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // ── TÂCHE 2 : Afficher écran cadenas si non-abonné ──
+    if (!ApiService.isAbonne) {
+      return _buildPremiumLock(context);
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('🤝 Espace Entraide'),
+        title: const Text('Espace Entraide'),
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -192,7 +202,7 @@ class _EntraideScreenState extends State<EntraideScreen> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '⚠️ Soyez respectueux · Pas de publicité · Entraide uniquement',
+                          'Soyez respectueux · Pas de publicité · Entraide uniquement',
                           style: TextStyle(
                             fontSize: 10,
                             color: AppColors.error,
@@ -275,7 +285,6 @@ class _EntraideScreenState extends State<EntraideScreen> {
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // Avatar initiales colorées
                                   Container(
                                     width: 44,
                                     height: 44,
@@ -422,12 +431,11 @@ class _EntraideScreenState extends State<EntraideScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Switch WhatsApp
                 Row(
                   children: [
                     Expanded(
                       child: Text(
-                        '📲 Partager mon WhatsApp',
+                        'Partager mon WhatsApp',
                         style: TextStyle(
                           fontSize: 13,
                           color: AppColors.textDark,
@@ -464,7 +472,6 @@ class _EntraideScreenState extends State<EntraideScreen> {
                   const SizedBox(height: 8),
                 ],
 
-                // Champ message + bouton envoi
                 Row(
                   children: [
                     Expanded(
@@ -535,6 +542,126 @@ class _EntraideScreenState extends State<EntraideScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // ── Écran de verrouillage Premium (TÂCHE 2) ──
+  Widget _buildPremiumLock(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: const Text('Espace Entraide'),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+                colors: [AppColors.primary, AppColors.primaryDark]),
+          ),
+        ),
+        foregroundColor: AppColors.white,
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Icône cadenas
+              Container(
+                width: 110,
+                height: 110,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFFD4A017), Color(0xFFE67E22)],
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFD4A017).withValues(alpha: 0.4),
+                      blurRadius: 24,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.lock_rounded,
+                  color: Colors.white,
+                  size: 52,
+                ),
+              ),
+              const SizedBox(height: 28),
+              const Text(
+                'Fonctionnalité Premium',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.textDark,
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                'L\'espace Entraide est réservé aux membres abonnés.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: AppColors.textLight,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Rejoignez la communauté et échangez avec d\'autres candidats !',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textLight,
+                  fontStyle: FontStyle.italic,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 36),
+              SizedBox(
+                width: double.infinity,
+                height: 54,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AbonnementScreen(),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 4,
+                  ),
+                  child: const Text(
+                    'M\'abonner maintenant',
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Accès illimité · Entraide · Simulations · PDF',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textLight,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

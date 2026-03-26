@@ -99,7 +99,7 @@ auth.post('/init-admin', async (c) => {
     }).eq('telephone_clean', telClean);
     return c.json({
       success: true,
-      message: 'Compte admin Marc mis à jour.',
+      message: 'Compte administrateur mis à jour.',
       identifiants: { telephone: telClean, password },
     });
   }
@@ -141,7 +141,7 @@ auth.post('/init-admin', async (c) => {
         email,
         password,
         email_confirm: true,
-        user_metadata: { nom: 'LOMPO', prenom: 'Marc' },
+        user_metadata: { nom: 'EF-FORT', prenom: 'Admin' },
       }),
     });
     const authUser = await authResp.json() as { id?: string; error?: string };
@@ -155,9 +155,9 @@ auth.post('/init-admin', async (c) => {
   const passwordHash = await makePasswordHash(password);
   const { error } = await db.from('profiles').insert({
     id: userId,
-    nom: 'LOMPO',
-    prenom: 'Marc',
-    telephone: '+22672662161',
+    nom: 'EF-FORT',
+    prenom: 'Admin',
+    telephone: `+226${telClean}`,
     telephone_clean: telClean,
     niveau: 'MASTER',
     password_hash: passwordHash,
@@ -169,7 +169,7 @@ auth.post('/init-admin', async (c) => {
 
   return c.json({
     success: true,
-    message: 'Compte admin Marc créé avec succès.',
+    message: 'Compte administrateur créé avec succès.',
     identifiants: { telephone: telClean, password },
   });
 });

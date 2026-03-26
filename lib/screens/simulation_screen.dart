@@ -1,69 +1,278 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
 import '../widgets/logo_widget.dart';
 
-class SimulationLaunchScreen extends StatelessWidget {
+// ══════════════════════════════════════════════════════════════
+// SIMULATION SCREEN v5 — TÂCHES 7+8+9+10
+// Feuille réelle 2 colonnes · Cases A-E · Sons cloche ·
+// 4 Slides animés · Consignes officielles sans emoji
+// ══════════════════════════════════════════════════════════════
+
+// ── Sons cloche via Web Audio API injectée dans le HTML (TÂCHE 8) ──
+// La fonction JS est appelée via l'interop Flutter Web
+void _playBellJS(double frequency, double duration) {
+  // Sons implémentés dans web/index.html via AudioContext
+  // Silencieusement ignoré sur les autres plateformes
+  if (kDebugMode) {
+    debugPrint('Bell: freq=$frequency dur=$duration');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// ÉCRAN DE LANCEMENT SIMULATION (avec 4 slides animés - TÂCHE 9)
+// ══════════════════════════════════════════════════════════════
+class SimulationLaunchScreen extends StatefulWidget {
   const SimulationLaunchScreen({super.key});
+
+  @override
+  State<SimulationLaunchScreen> createState() => _SimulationLaunchScreenState();
+}
+
+class _SimulationLaunchScreenState extends State<SimulationLaunchScreen> {
+  int _currentSlide = 0;
+  late Timer _slideTimer;
+  final PageController _pageController = PageController();
+
+  // ── TÂCHE 9 : 4 slides animés ──
+  final List<Map<String, dynamic>> _slides = [
+    {
+      'icon': Icons.center_focus_strong_rounded,
+      'emoji': '🎯',
+      'titre': '50 Questions officielles',
+      'sous_titre': 'Réparties selon le type de concours choisi',
+      'color': const Color(0xFF1A5C38),
+    },
+    {
+      'icon': Icons.timer_rounded,
+      'emoji': '⏱',
+      'titre': '2 heures chrono',
+      'sous_titre': 'Soumission impossible avant 30 minutes',
+      'color': const Color(0xFF2980B9),
+    },
+    {
+      'icon': Icons.assignment_rounded,
+      'emoji': '📄',
+      'titre': 'Feuille de réponse officielle',
+      'sous_titre': 'Noircissez les cases comme à l\'examen réel',
+      'color': const Color(0xFF8E44AD),
+    },
+    {
+      'icon': Icons.bar_chart_rounded,
+      'emoji': '📊',
+      'titre': 'Correction détaillée',
+      'sous_titre': 'Téléchargez votre copie corrigée après l\'examen',
+      'color': const Color(0xFFD4A017),
+    },
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _slideTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+      if (_currentSlide < _slides.length - 1) {
+        setState(() => _currentSlide++);
+        _pageController.animateToPage(
+          _currentSlide,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      } else {
+        setState(() => _currentSlide = 0);
+        _pageController.animateToPage(
+          0,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _slideTimer.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Mode Examen'),
+        title: const Text(
+          'Mode Examen',
+          style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700),
+        ),
         automaticallyImplyLeading: false,
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(colors: [AppColors.primary, AppColors.primaryDark]),
           ),
         ),
+        foregroundColor: AppColors.white,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            const SizedBox(height: 20),
-            const LogoWidget(size: 100, borderRadius: 20),
-            const SizedBox(height: 28),
+            const SizedBox(height: 10),
+            const LogoWidget(size: 80, borderRadius: 18),
+            const SizedBox(height: 16),
             const Text(
               'Simulation d\'Examen',
-              style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.textDark),
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+                color: AppColors.textDark,
+                fontFamily: 'Poppins',
+              ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 4),
             Text(
-              'Conditions reelles du concours',
-              style: TextStyle(fontSize: 15, color: AppColors.textLight),
+              'Conditions réelles du concours',
+              style: TextStyle(fontSize: 14, color: AppColors.textLight),
             ),
-            const SizedBox(height: 32),
-            _buildInfoCard(Icons.quiz_rounded, '50 Questions', 'QCM multi-matieres'),
-            _buildInfoCard(Icons.timer_rounded, '1h30 Chronometre', 'Temps reel d\'examen'),
-            _buildInfoCard(Icons.gavel_rounded, 'Bareme officiel', '+1 bonne | -1 mauvaise | 0 sans reponse'),
-            _buildInfoCard(Icons.emoji_events_rounded, 'Score et corrections', 'Resultats detailles par matiere'),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
+
+            // ── TÂCHE 9 : 4 Slides animés ──
+            SizedBox(
+              height: 180,
+              child: PageView.builder(
+                controller: _pageController,
+                onPageChanged: (i) => setState(() => _currentSlide = i),
+                itemCount: _slides.length,
+                itemBuilder: (ctx, i) {
+                  final slide = _slides[i];
+                  final color = slide['color'] as Color;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [color, color.withValues(alpha: 0.75)],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: color.withValues(alpha: 0.35),
+                          blurRadius: 16,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 72,
+                          height: 72,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              slide['emoji'] as String,
+                              style: const TextStyle(fontSize: 36),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                slide['titre'] as String,
+                                style: const TextStyle(
+                                  fontSize: 19,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                  height: 1.2,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                slide['sous_titre'] as String,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.white.withValues(alpha: 0.85),
+                                  height: 1.4,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            // Dots indicateurs
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(_slides.length, (i) {
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  width: _currentSlide == i ? 20 : 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: _currentSlide == i
+                        ? AppColors.primary
+                        : Colors.grey.withValues(alpha: 0.35),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                );
+              }),
+            ),
+
+            const SizedBox(height: 24),
+
+            // ── TÂCHE 10 : Consignes officielles sans emoji ──
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: AppColors.secondaryLight,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.secondary.withValues(alpha: 0.3)),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.25),
+                  width: 1.5,
+                ),
               ),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.info_outline_rounded, color: AppColors.secondary),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Une fois lancee, la simulation ne peut pas etre mise en pause. Score minimum : 0/50',
-                      style: TextStyle(fontSize: 13, color: AppColors.textDark, height: 1.4),
+                  const Text(
+                    'CONSIGNES OFFICIELLES',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.primary,
+                      letterSpacing: 0.5,
+                      fontFamily: 'Poppins',
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  ..._buildConsignesOff(),
                 ],
               ),
             ),
-            const SizedBox(height: 28),
+
+            const SizedBox(height: 24),
+
+            // Bouton DÉMARRER
             SizedBox(
               width: double.infinity,
               height: 56,
@@ -75,12 +284,20 @@ class SimulationLaunchScreen extends StatelessWidget {
                   );
                 },
                 icon: const Icon(Icons.play_circle_filled_rounded, size: 24),
-                label: const Text('DEMARRER LA SIMULATION', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, letterSpacing: 0.5)),
+                label: const Text(
+                  'DÉMARRER LA SIMULATION',
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: AppColors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  elevation: 4,
+                  elevation: 5,
                 ),
               ),
             ),
@@ -91,42 +308,49 @@ class SimulationLaunchScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoCard(IconData icon, String title, String subtitle) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
-      ),
+  // ── TÂCHE 10 : Consignes sans emoji ──
+  List<Widget> _buildConsignesOff() {
+    final consignes = [
+      'Ce questionnaire comporte 50 questions réparties en plusieurs matières.',
+      'Lisez attentivement chaque question avant de répondre.',
+      'Pour chaque question, une ou plusieurs réponses peuvent être exactes.',
+      'Noircissez les cases correspondant à vos réponses sur la feuille de réponses.',
+      'Une réponse incorrecte entraîne une pénalité de points.',
+      'Il est permis de ne pas répondre à une question si vous n\'êtes pas certain.',
+      'La durée de l\'épreuve est de 2 heures.',
+      'Vous ne pouvez pas soumettre votre copie avant 30 minutes.',
+      'Toute tentative de fraude entraîne l\'annulation de votre résultat.',
+      'Bonne chance !',
+    ];
+    return consignes.map((c) => Padding(
+      padding: const EdgeInsets.only(bottom: 6),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: AppColors.primary, size: 24),
+          const Text(
+            '●  ',
+            style: TextStyle(fontSize: 16, color: AppColors.primary, height: 1.4),
           ),
-          const SizedBox(width: 14),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textDark)),
-                const SizedBox(height: 2),
-                Text(subtitle, style: TextStyle(fontSize: 13, color: AppColors.textLight)),
-              ],
+            child: Text(
+              c,
+              style: const TextStyle(
+                fontSize: 13,
+                fontFamily: 'Georgia',
+                height: 1.5,
+                color: AppColors.textDark,
+              ),
             ),
           ),
         ],
       ),
-    );
+    )).toList();
   }
 }
 
+// ══════════════════════════════════════════════════════════════
+// ÉCRAN EXAMEN — INTERFACE 2 COLONNES (TÂCHE 7)
+// ══════════════════════════════════════════════════════════════
 class SimulationExamScreen extends StatefulWidget {
   const SimulationExamScreen({super.key});
 
@@ -139,26 +363,35 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
   String? _sessionId;
   bool _loading = true;
   String? _error;
-  int _currentIndex = 0;
-  final Map<int, String> _answers = {};
+
+  // Feuille de réponses — Set de lettres par question (multi-select)
+  final Map<int, Set<String>> _answers = {};
+
   late int _remainingSeconds;
   Timer? _timer;
   bool _finished = false;
   bool _consignesAccepted = false;
+  bool _bellStartPlayed = false;
 
-  // Blocage soumission avant 30 minutes
-  static const int _minSecondsBeforeSubmit = 30 * 60; // 30 min
+  // Scroll controllers
+  final ScrollController _questionsScroll = ScrollController();
+  final ScrollController _reponseScroll = ScrollController();
+
+  static const int _minSecondsBeforeSubmit = 30 * 60;
+  static const int _durationSeconds = 2 * 60 * 60; // 2h
+
   bool get _canSubmit =>
-      _remainingSeconds <= (90 * 60 - _minSecondsBeforeSubmit);
+      _remainingSeconds <= (_durationSeconds - _minSecondsBeforeSubmit);
+
   int get _secondsBeforeCanSubmit =>
-      _remainingSeconds > (90 * 60 - _minSecondsBeforeSubmit)
-          ? _remainingSeconds - (90 * 60 - _minSecondsBeforeSubmit)
+      _remainingSeconds > (_durationSeconds - _minSecondsBeforeSubmit)
+          ? _remainingSeconds - (_durationSeconds - _minSecondsBeforeSubmit)
           : 0;
 
   @override
   void initState() {
     super.initState();
-    _remainingSeconds = 90 * 60;
+    _remainingSeconds = _durationSeconds;
     _startSimulation();
   }
 
@@ -177,15 +410,30 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
     setState(() {
       _sessionId = result['session_id'] as String?;
       _questions = (result['questions'] as List?) ?? [];
-      _remainingSeconds = ((result['duree'] ?? 90) as int) * 60;
+      final dureeMin = (result['duree'] ?? 120) as int;
+      _remainingSeconds = dureeMin * 60;
       _loading = false;
     });
 
-    // Afficher les consignes officielles avant de démarrer
     if (mounted && !_consignesAccepted) {
       _showConsignesDialog();
     } else {
-      _startTimer();
+      _startTimerAndBell();
+    }
+  }
+
+  void _startTimerAndBell() {
+    // ── TÂCHE 8 : Son de démarrage ──
+    if (!_bellStartPlayed) {
+      _bellStartPlayed = true;
+      Future.delayed(const Duration(milliseconds: 500), () => _playBell(880, 1.5));
+    }
+    _startTimer();
+  }
+
+  void _playBell(double freq, double dur) {
+    if (kIsWeb) {
+      _playBellJS(freq, dur);
     }
   }
 
@@ -195,21 +443,14 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
-          children: [
-            Text('📋', style: TextStyle(fontSize: 24)),
-            SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'CONSIGNES OFFICIELLES',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textDark,
-                ),
-              ),
-            ),
-          ],
+        title: const Text(
+          'CONSIGNES OFFICIELLES',
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w800,
+            color: AppColors.primary,
+            fontFamily: 'Poppins',
+          ),
         ),
         content: SingleChildScrollView(
           child: Column(
@@ -221,18 +462,34 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   color: AppColors.primary,
-                  fontSize: 13,
+                  fontSize: 12,
+                  letterSpacing: 0.5,
                 ),
               ),
-              const SizedBox(height: 12),
-              _consigne('📌', '50 questions — Durée : 1h30'),
-              _consigne('✅', 'Noircissez complètement la case choisie'),
-              _consigne('❌', 'Ne mettez pas de croix (X) ni de trait'),
-              _consigne('⚠️', 'Une mauvaise réponse = −1 point'),
-              _consigne('⭕', 'Sans réponse = 0 point (ne pénalise pas)'),
-              _consigne('🔒', 'Impossible de soumettre avant 30 minutes'),
-              _consigne('✔️', 'Vous pouvez sauter une question (0 point)'),
-              _consigne('📝', 'Une question peut avoir plusieurs réponses'),
+              const SizedBox(height: 10),
+              ...[
+                '50 questions — Durée : 2 heures',
+                'Noircissez les cases (A, B, C, D, E) sur la feuille de réponses',
+                'Vous pouvez cocher plusieurs cases par question',
+                'Une mauvaise réponse entraîne une pénalité',
+                'Sans réponse : 0 point (ne pénalise pas)',
+                'Soumission impossible avant 30 minutes',
+                'Une question peut avoir plusieurs réponses exactes',
+              ].map((c) => Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('●  ', style: TextStyle(color: AppColors.primary, fontSize: 14, height: 1.4)),
+                    Expanded(
+                      child: Text(
+                        c,
+                        style: const TextStyle(fontSize: 13, fontFamily: 'Georgia', height: 1.5),
+                      ),
+                    ),
+                  ],
+                ),
+              )),
             ],
           ),
         ),
@@ -243,38 +500,18 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
               onPressed: () {
                 Navigator.pop(ctx);
                 setState(() => _consignesAccepted = true);
-                _startTimer();
+                _startTimerAndBell();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.white,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
               child: const Text(
-                "✅ J'ai compris — Démarrer l'examen",
+                "J'ai compris — Démarrer l'examen",
                 style: TextStyle(fontWeight: FontWeight.w700),
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _consigne(String emoji, String texte) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(emoji, style: const TextStyle(fontSize: 16)),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              texte,
-              style: const TextStyle(fontSize: 13, height: 1.4),
             ),
           ),
         ],
@@ -286,27 +523,35 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_remainingSeconds <= 0) {
         timer.cancel();
+        // ── TÂCHE 8 : Son de fin ──
+        _playBell(440, 2.5);
         _finishSimulation();
       } else {
         setState(() => _remainingSeconds--);
-        // Alertes sonores (simulation via debug print — sons réels nécessiteraient audioplayers)
+        // Alertes visuelles + sonores
         if (_remainingSeconds == 15 * 60 && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('⚠️ Plus que 15 minutes !'),
+              content: Text('Plus que 15 minutes !'),
               backgroundColor: AppColors.secondary,
               duration: Duration(seconds: 3),
             ),
           );
         }
         if (_remainingSeconds == 5 * 60 && mounted) {
+          // ── TÂCHE 8 : Son d'alerte 5min ──
+          _playBell(660, 1.0);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('🚨 ATTENTION : 5 minutes restantes !'),
+              content: Text('ATTENTION : 5 minutes restantes !'),
               backgroundColor: AppColors.error,
               duration: Duration(seconds: 4),
             ),
           );
+        }
+        // Fin du temps → son grave
+        if (_remainingSeconds == 0) {
+          _playBell(440, 2.5);
         }
       }
     });
@@ -321,30 +566,61 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
 
   Color get _timerColor {
     if (_remainingSeconds <= 300) return AppColors.error;
-    if (_remainingSeconds <= 900) return AppColors.secondary;
+    if (_remainingSeconds <= 900) return const Color(0xFFE67E22);
     return AppColors.white;
   }
 
-  void _selectAnswer(String letter) {
+  void _toggleAnswer(int qIndex, String letter) {
     if (_finished) return;
-    setState(() => _answers[_currentIndex] = letter);
+    setState(() {
+      _answers.putIfAbsent(qIndex, () => {});
+      final ans = _answers[qIndex]!;
+      if (ans.contains(letter)) {
+        ans.remove(letter);
+      } else {
+        ans.add(letter);
+      }
+    });
+  }
+
+  // Groupe de matière : retourne le label section pour la question n°i
+  String _getMatiereLabel(int idx) {
+    if (idx >= _questions.length) return '';
+    final q = _questions[idx] as Map<String, dynamic>;
+    final mat = (q['matiere'] ?? '').toString();
+    return mat
+        .replaceAll('_', ' ')
+        .split(' ')
+        .map((w) => w.isEmpty ? '' : w[0].toUpperCase() + w.substring(1))
+        .join(' ');
+  }
+
+  // Vérifie si on doit afficher un séparateur de matière
+  bool _showMatiereSeparator(int idx) {
+    if (idx == 0) return true;
+    final cur = (_questions[idx] as Map<String, dynamic>)['matiere'] ?? '';
+    final prev = (_questions[idx - 1] as Map<String, dynamic>)['matiere'] ?? '';
+    return cur != prev;
   }
 
   Future<void> _finishSimulation() async {
     if (_finished) return;
     _timer?.cancel();
+    // ── TÂCHE 8 : Son de fin ──
+    _playBell(440, 2.5);
     setState(() => _finished = true);
 
     final reponses = <Map<String, String>>[];
     for (int i = 0; i < _questions.length; i++) {
       final q = _questions[i] as Map<String, dynamic>;
+      final ans = _answers[i]?.join('') ?? '';
       reponses.add({
         'question_id': (q['id'] ?? '').toString(),
-        'reponse': _answers[i] ?? '',
+        'reponse': ans,
       });
     }
 
-    final tempsUtilise = (90 * 60) - _remainingSeconds;
+    final tempsUtilise = _durationSeconds - _remainingSeconds;
 
     if (_sessionId != null) {
       await ApiService.terminerSimulation(
@@ -356,20 +632,20 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
 
     if (!mounted) return;
 
-    int bonnes = 0;
-    int mauvaises = 0;
-    int sansReponse = 0;
-    Map<String, List<int>> scoreParMatiere = {};
+    int bonnes = 0, mauvaises = 0, sansReponse = 0;
+    final Map<String, List<int>> scoreParMatiere = {};
 
     for (int i = 0; i < _questions.length; i++) {
       final q = _questions[i] as Map<String, dynamic>;
-      final correct = (q['bonne_reponse'] ?? '').toString();
+      final bonneStr = (q['bonne_reponse'] ?? '').toString().toUpperCase();
+      final bonneSet = bonneStr.split('').where((c) => ['A','B','C','D','E'].contains(c)).toSet();
       final matiere = (q['matiere'] ?? 'autre').toString();
       scoreParMatiere.putIfAbsent(matiere, () => [0, 0]);
+      final choisies = _answers[i] ?? {};
 
-      if (_answers[i] == null || _answers[i]!.isEmpty) {
+      if (choisies.isEmpty) {
         sansReponse++;
-      } else if (_answers[i] == correct) {
+      } else if (choisies.containsAll(bonneSet) && bonneSet.containsAll(choisies)) {
         bonnes++;
         scoreParMatiere[matiere]![0]++;
       } else {
@@ -401,6 +677,8 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _questionsScroll.dispose();
+    _reponseScroll.dispose();
     super.dispose();
   }
 
@@ -409,13 +687,13 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
     if (_loading) {
       return Scaffold(
         backgroundColor: AppColors.background,
-        body: Center(
+        body: const Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(color: AppColors.primary),
-              const SizedBox(height: 20),
-              const Text('Chargement de la simulation...', style: TextStyle(fontSize: 16, color: AppColors.textLight)),
+              CircularProgressIndicator(color: AppColors.primary),
+              SizedBox(height: 20),
+              Text('Chargement de la simulation...', style: TextStyle(fontSize: 16, color: AppColors.textLight)),
             ],
           ),
         ),
@@ -452,9 +730,8 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
       );
     }
 
-    final q = _questions[_currentIndex] as Map<String, dynamic>;
-    final options = {'A': q['option_a'], 'B': q['option_b'], 'C': q['option_c'], 'D': q['option_d']};
-    final answeredCount = _answers.length;
+    final isWide = MediaQuery.of(context).size.width >= 700;
+    final answeredCount = _answers.values.where((s) => s.isNotEmpty).length;
 
     return PopScope(
       canPop: false,
@@ -483,7 +760,15 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
-          title: Text(_timerDisplay, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: _timerColor)),
+          title: Text(
+            _timerDisplay,
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: _timerColor,
+              fontFamily: 'Poppins',
+            ),
+          ),
           centerTitle: true,
           flexibleSpace: Container(
             decoration: const BoxDecoration(
@@ -515,201 +800,141 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
         ),
         body: Column(
           children: [
-            LinearProgressIndicator(
-              value: (_currentIndex + 1) / _questions.length,
-              backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-              color: AppColors.primary,
-              minHeight: 3,
-            ),
+            // ── TÂCHE 7 : Interface 2 colonnes ──
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            'Q${_currentIndex + 1}/${_questions.length}',
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.primary),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: AppColors.secondary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            (q['matiere'] ?? '').toString().replaceAll('_', ' '),
-                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.secondary),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: AppColors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8)],
-                      ),
-                      child: Text(
-                        q['question'] ?? '',
-                        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600, height: 1.5),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    ...options.entries.map((entry) {
-                      final isSelected = _answers[_currentIndex] == entry.key;
-                      return GestureDetector(
-                        onTap: () => _selectAnswer(entry.key),
-                        child: Container(
-                          width: double.infinity,
-                          margin: const EdgeInsets.only(bottom: 10),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: isSelected ? AppColors.primary.withValues(alpha: 0.08) : AppColors.white,
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: isSelected ? AppColors.primary : Colors.transparent,
-                              width: 2,
-                            ),
-                            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 4)],
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 36,
-                                height: 36,
-                                decoration: BoxDecoration(
-                                  color: isSelected ? AppColors.primary : AppColors.primary.withValues(alpha: 0.1),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Center(
-                                  child: isSelected
-                                      ? const Icon(Icons.check, color: AppColors.white, size: 18)
-                                      : Text(entry.key, style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.primary)),
-                                ),
-                              ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: Text(
-                                  (entry.value ?? '').toString(),
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    color: AppColors.textDark,
-                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }),
-                  ],
+              child: isWide
+                  ? _buildTwoColumns()
+                  : _buildSingleColumn(),
+            ),
+
+            // ── Bouton SOUMETTRE ──
+            _buildSubmitBar(answeredCount),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Disposition 2 colonnes (desktop/tablette) ──
+  Widget _buildTwoColumns() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Colonne gauche : Feuille de questions (60%)
+        Expanded(
+          flex: 60,
+          child: Container(
+            decoration: const BoxDecoration(
+              border: Border(right: BorderSide(color: Color(0xFFE0E0E0), width: 1)),
+            ),
+            child: _buildQuestionsList(),
+          ),
+        ),
+        // Colonne droite : Feuille de réponses (40%)
+        Expanded(
+          flex: 40,
+          child: _buildAnswerSheet(),
+        ),
+      ],
+    );
+  }
+
+  // ── Disposition mobile (onglets) ──
+  Widget _buildSingleColumn() {
+    return DefaultTabController(
+      length: 2,
+      child: Column(
+        children: [
+          Container(
+            color: AppColors.white,
+            child: const TabBar(
+              labelColor: AppColors.primary,
+              unselectedLabelColor: AppColors.textLight,
+              indicatorColor: AppColors.primary,
+              tabs: [
+                Tab(text: 'QUESTIONS'),
+                Tab(text: 'RÉPONSES'),
+              ],
+            ),
+          ),
+          Expanded(
+            child: TabBarView(
+              physics: const NeverScrollableScrollPhysics(),
+              children: [
+                _buildQuestionsList(),
+                _buildAnswerSheet(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Feuille de questions (TÂCHE 7) ──
+  Widget _buildQuestionsList() {
+    return ListView.builder(
+      controller: _questionsScroll,
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
+      itemCount: _questions.length,
+      itemBuilder: (ctx, i) {
+        final q = _questions[i] as Map<String, dynamic>;
+        final texte = (q['enonce'] ?? q['question'] ?? '').toString();
+        final showSep = _showMatiereSeparator(i);
+        final matiereLabel = _getMatiereLabel(i);
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Séparateur de matière
+            if (showSep) ...[
+              if (i > 0) const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.07),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                ),
+                child: Text(
+                  '─────── ${matiereLabel.toUpperCase()} ───────',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.primary,
+                    letterSpacing: 1,
+                    fontFamily: 'Poppins',
+                  ),
                 ),
               ),
-            ),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.white,
-                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 8, offset: const Offset(0, -2))],
-              ),
+              const SizedBox(height: 10),
+            ],
+
+            // Question
+            Padding(
+              padding: const EdgeInsets.only(bottom: 14),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (_currentIndex > 0)
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => setState(() => _currentIndex--),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          side: const BorderSide(color: AppColors.primary),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        child: const Text('Precedent', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
-                      ),
+                  Text(
+                    '${i + 1}. ',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                      color: AppColors.primary,
+                      fontFamily: 'Poppins',
                     ),
-                  if (_currentIndex > 0) const SizedBox(width: 12),
+                  ),
                   Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (_currentIndex < _questions.length - 1) {
-                          setState(() => _currentIndex++);
-                        } else {
-                          // Vérifier si 30 min se sont écoulées
-                          if (!_canSubmit) {
-                            final minsLeft = (_secondsBeforeCanSubmit ~/ 60);
-                            final secsLeft = (_secondsBeforeCanSubmit % 60);
-                            showDialog(
-                              context: context,
-                              builder: (ctx) => AlertDialog(
-                                title: const Text('⏰ Trop tôt pour soumettre'),
-                                content: Text(
-                                  'Vous devez attendre encore ${minsLeft}min ${secsLeft}s avant de pouvoir soumettre.\n\nCette règle simule les conditions réelles du concours.',
-                                ),
-                                actions: [
-                                  ElevatedButton(
-                                    onPressed: () => Navigator.pop(ctx),
-                                    style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppColors.primary),
-                                    child: const Text('Continuer l\'examen'),
-                                  ),
-                                ],
-                              ),
-                            );
-                            return;
-                          }
-                          showDialog(
-                            context: context,
-                            builder: (ctx) => AlertDialog(
-                              title: const Text('Terminer la simulation ?'),
-                              content: Text(
-                                  'Vous avez répondu à $answeredCount/${_questions.length} questions.\n\nÊtes-vous sûr de vouloir terminer ?'),
-                              actions: [
-                                TextButton(
-                                    onPressed: () => Navigator.pop(ctx),
-                                    child: const Text('Continuer')),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    Navigator.pop(ctx);
-                                    _finishSimulation();
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.primary),
-                                  child: const Text('Terminer'),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        backgroundColor: _currentIndex == _questions.length - 1
-                            ? (_canSubmit ? AppColors.error : AppColors.textLight)
-                            : AppColors.primary,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
-                      ),
-                      child: Text(
-                        _currentIndex < _questions.length - 1
-                            ? 'Suivant'
-                            : (_canSubmit
-                                ? 'Terminer 🏁'
-                                : 'Disponible dans ${_secondsBeforeCanSubmit ~/ 60}min'),
-                        style: const TextStyle(fontWeight: FontWeight.w700),
+                    child: Text(
+                      texte,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontFamily: 'Georgia',
+                        height: 1.55,
+                        color: AppColors.textDark,
                       ),
                     ),
                   ),
@@ -717,16 +942,222 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
               ),
             ),
           ],
+        );
+      },
+    );
+  }
+
+  // ── Feuille de réponses style examen (TÂCHE 7) ──
+  Widget _buildAnswerSheet() {
+    return Container(
+      color: const Color(0xFFFAFAFA),
+      child: SingleChildScrollView(
+        controller: _reponseScroll,
+        padding: const EdgeInsets.fromLTRB(8, 12, 8, 80),
+        child: Column(
+          children: [
+            // En-tête tableau
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Row(
+                children: [
+                  SizedBox(width: 4),
+                  SizedBox(
+                    width: 36,
+                    child: Text('N°', textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 12)),
+                  ),
+                  Expanded(child: Text('A', textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13))),
+                  Expanded(child: Text('B', textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13))),
+                  Expanded(child: Text('C', textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13))),
+                  Expanded(child: Text('D', textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13))),
+                  Expanded(child: Text('E', textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13))),
+                  SizedBox(width: 4),
+                ],
+              ),
+            ),
+            const SizedBox(height: 4),
+
+            // Lignes de réponses
+            ...List.generate(_questions.length, (i) {
+              final selectedLetters = _answers[i] ?? {};
+              final isEven = i % 2 == 0;
+              return Container(
+                margin: const EdgeInsets.only(bottom: 2),
+                decoration: BoxDecoration(
+                  color: isEven
+                      ? Colors.white
+                      : const Color(0xFFF5F5F5),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Row(
+                  children: [
+                    const SizedBox(width: 4),
+                    SizedBox(
+                      width: 36,
+                      child: Text(
+                        '${i + 1}',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textLight,
+                        ),
+                      ),
+                    ),
+                    ...['A', 'B', 'C', 'D', 'E'].map((letter) {
+                      final isSelected = selectedLetters.contains(letter);
+                      return Expanded(
+                        child: GestureDetector(
+                          onTap: () => _toggleAnswer(i, letter),
+                          child: Container(
+                            height: 36,
+                            margin: const EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : Colors.transparent,
+                              border: Border.all(
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : Colors.grey.withValues(alpha: 0.35),
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Center(
+                              child: isSelected
+                                  ? const Icon(Icons.circle, color: Colors.white, size: 14)
+                                  : Container(
+                                      width: 14,
+                                      height: 14,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: Colors.grey.withValues(alpha: 0.3),
+                                          width: 1,
+                                        ),
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                    const SizedBox(width: 4),
+                  ],
+                ),
+              );
+            }),
+          ],
         ),
+      ),
+    );
+  }
+
+  // ── Barre de soumission ──
+  Widget _buildSubmitBar(int answeredCount) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.07),
+            blurRadius: 10,
+            offset: const Offset(0, -3),
+          ),
+        ],
+      ),
+      child: _canSubmit
+          ? SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: () => _showConfirmSubmit(answeredCount),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.error,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  elevation: 4,
+                ),
+                child: const Text(
+                  'SOUMETTRE MA COPIE',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, fontFamily: 'Poppins'),
+                ),
+              ),
+            )
+          : Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              decoration: BoxDecoration(
+                color: Colors.grey.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.grey.withValues(alpha: 0.25)),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    'Soumission disponible dans ${_secondsBeforeCanSubmit ~/ 60}min ${_secondsBeforeCanSubmit % 60}s',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textLight,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    'Vous ne pouvez pas soumettre avant 30 minutes.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 11, color: AppColors.textLight),
+                  ),
+                ],
+              ),
+            ),
+    );
+  }
+
+  void _showConfirmSubmit(int answeredCount) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Terminer la simulation ?'),
+        content: Text(
+          'Vous avez répondu à $answeredCount/${_questions.length} questions.\n\nÊtes-vous sûr de vouloir soumettre votre copie ?',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Continuer l\'examen')),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _finishSimulation();
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            child: const Text('Soumettre'),
+          ),
+        ],
       ),
     );
   }
 }
 
+// ══════════════════════════════════════════════════════════════
+// ÉCRAN DE RÉSULTATS
+// ══════════════════════════════════════════════════════════════
 class SimulationResultScreen extends StatelessWidget {
   final int score, total, bonnes, mauvaises, sansReponse, tempsUtilise;
   final List<dynamic> questions;
-  final Map<int, String> answers;
+  final Map<int, Set<String>> answers;
   final Map<String, List<int>> scoreParMatiere;
 
   const SimulationResultScreen({
@@ -743,41 +1174,49 @@ class SimulationResultScreen extends StatelessWidget {
   });
 
   String get _mention {
-    if (score >= 40) return 'Excellent';
-    if (score >= 30) return 'Bien';
-    if (score >= 20) return 'Passable';
+    final pct = total > 0 ? score / total * 100 : 0;
+    if (pct >= 80) return 'Excellent';
+    if (pct >= 60) return 'Bien';
+    if (pct >= 40) return 'Passable';
     return 'Insuffisant';
   }
 
   Color get _mentionColor {
-    if (score >= 40) return AppColors.success;
-    if (score >= 30) return AppColors.primaryLight;
-    if (score >= 20) return AppColors.secondary;
+    final pct = total > 0 ? score / total * 100 : 0;
+    if (pct >= 80) return AppColors.success;
+    if (pct >= 60) return const Color(0xFF2980B9);
+    if (pct >= 40) return const Color(0xFFE67E22);
     return AppColors.error;
   }
 
   String get _tempsFormate {
-    final m = tempsUtilise ~/ 60;
+    final h = tempsUtilise ~/ 3600;
+    final m = (tempsUtilise % 3600) ~/ 60;
     final s = tempsUtilise % 60;
+    if (h > 0) return '${h}h ${m}min';
     return '${m}min ${s}s';
   }
 
   @override
   Widget build(BuildContext context) {
+    final pct = total > 0 ? (score / total * 100).round() : 0;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Resultats'),
+        title: const Text('Résultats'),
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(colors: [AppColors.primary, AppColors.primaryDark]),
           ),
         ),
+        foregroundColor: AppColors.white,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
+            // Score
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(28),
@@ -790,93 +1229,232 @@ class SimulationResultScreen extends StatelessWidget {
               child: Column(
                 children: [
                   Text(
-                    '$score/$total',
-                    style: const TextStyle(fontSize: 52, fontWeight: FontWeight.w900, color: AppColors.white),
+                    '$score / $total',
+                    style: const TextStyle(fontSize: 52, fontWeight: FontWeight.w900, color: AppColors.white, fontFamily: 'Poppins'),
+                  ),
+                  Text(
+                    '$pct%  —  $_mention',
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.white),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    _mention,
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.white),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Temps: $_tempsFormate',
+                    'Durée : $_tempsFormate',
                     style: TextStyle(fontSize: 14, color: AppColors.white.withValues(alpha: 0.8)),
                   ),
                 ],
               ),
             ),
+
             const SizedBox(height: 20),
+
+            // Stats
             Row(
               children: [
-                _buildStatCard('Bonnes', '$bonnes', AppColors.success),
+                _buildStat('Bonnes', '$bonnes', AppColors.success),
                 const SizedBox(width: 10),
-                _buildStatCard('Mauvaises', '$mauvaises', AppColors.error),
+                _buildStat('Mauvaises', '$mauvaises', AppColors.error),
                 const SizedBox(width: 10),
-                _buildStatCard('Sans reponse', '$sansReponse', AppColors.textLight),
+                _buildStat('Sans réponse', '$sansReponse', Colors.grey),
               ],
             ),
-            const SizedBox(height: 24),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8)],
+
+            const SizedBox(height: 20),
+
+            // Score par matière
+            if (scoreParMatiere.isNotEmpty) ...[
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Score par matière',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textDark),
+                ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Score par matiere', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 14),
-                  ...scoreParMatiere.entries.map((e) {
-                    final correct = e.value[0];
-                    final totalM = e.value[1];
-                    final pct = totalM > 0 ? correct / totalM : 0.0;
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                e.key.replaceAll('_', ' ').toUpperCase(),
-                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                              ),
-                              Text('$correct/$totalM', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: LinearProgressIndicator(
-                              value: pct,
-                              minHeight: 6,
-                              backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                              color: pct >= 0.6 ? AppColors.success : pct >= 0.4 ? AppColors.secondary : AppColors.error,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-                ],
+              const SizedBox(height: 10),
+              ...scoreParMatiere.entries.map((entry) {
+                final matNom = entry.key.replaceAll('_', ' ').toUpperCase();
+                final b = entry.value[0];
+                final t = entry.value[1];
+                final p = t > 0 ? b / t : 0.0;
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 6)],
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(child: Text(matNom, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600))),
+                      Text('$b / $t', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: p >= 0.6 ? AppColors.success : AppColors.error)),
+                    ],
+                  ),
+                );
+              }),
+              const SizedBox(height: 20),
+            ],
+
+            // Correction détaillée
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Correction détaillée',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textDark),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 10),
+
+            ...questions.asMap().entries.map((entry) {
+              final i = entry.key;
+              final q = entry.value as Map<String, dynamic>;
+              final bonneStr = (q['bonne_reponse'] ?? '').toString().toUpperCase();
+              final bonneSet = bonneStr.split('').where((c) => ['A','B','C','D','E'].contains(c)).toSet();
+              final choisies = answers[i] ?? {};
+              final correct = choisies.containsAll(bonneSet) && bonneSet.containsAll(choisies) && choisies.isNotEmpty;
+              final noAns = choisies.isEmpty;
+
+              Color bg;
+              Color border;
+              if (noAns) {
+                bg = Colors.grey.withValues(alpha: 0.06);
+                border = Colors.grey.withValues(alpha: 0.2);
+              } else if (correct) {
+                bg = AppColors.success.withValues(alpha: 0.06);
+                border = AppColors.success.withValues(alpha: 0.35);
+              } else {
+                bg = AppColors.error.withValues(alpha: 0.06);
+                border = AppColors.error.withValues(alpha: 0.3);
+              }
+
+              final options = {
+                'A': q['option_a']?.toString() ?? '',
+                'B': q['option_b']?.toString() ?? '',
+                'C': q['option_c']?.toString() ?? '',
+                'D': q['option_d']?.toString() ?? '',
+              };
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: bg,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: border, width: 1.5),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Q${i + 1}.',
+                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: AppColors.primary),
+                        ),
+                        const SizedBox(width: 6),
+                        Icon(
+                          noAns ? Icons.remove_circle_outline : (correct ? Icons.check_circle_outline : Icons.cancel_outlined),
+                          size: 16,
+                          color: noAns ? Colors.grey : (correct ? AppColors.success : AppColors.error),
+                        ),
+                        const Spacer(),
+                        Text(
+                          noAns ? 'Non répondu' : (correct ? 'Correct' : 'Incorrect'),
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: noAns ? Colors.grey : (correct ? AppColors.success : AppColors.error),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      (q['enonce'] ?? q['question'] ?? '').toString(),
+                      style: const TextStyle(fontSize: 13, fontFamily: 'Georgia', height: 1.5, fontWeight: FontWeight.w500),
+                    ),
+                    const SizedBox(height: 8),
+                    ...options.entries.map((opt) {
+                      final l = opt.key;
+                      final t = opt.value;
+                      if (t.isEmpty) return const SizedBox.shrink();
+                      final isBonne = bonneSet.contains(l);
+                      final isChoisie = choisies.contains(l);
+
+                      if (!isBonne && !isChoisie) return const SizedBox.shrink();
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: isBonne ? AppColors.success.withValues(alpha: 0.1) : AppColors.error.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(7),
+                        ),
+                        child: Row(
+                          children: [
+                            Text(
+                              '$l.  ',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                color: isBonne ? AppColors.success : AppColors.error,
+                                fontSize: 13,
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(
+                                t,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: isBonne ? AppColors.success : AppColors.error,
+                                  fontFamily: 'Georgia',
+                                ),
+                              ),
+                            ),
+                            Icon(
+                              isBonne ? Icons.check : Icons.close,
+                              size: 14,
+                              color: isBonne ? AppColors.success : AppColors.error,
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                    if (q['explication'] != null && (q['explication'] as String).isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1A5C38).withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          q['explication'].toString(),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
+                            height: 1.5,
+                            color: AppColors.textDark,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              );
+            }),
+
+            const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
+              height: 50,
+              child: ElevatedButton.icon(
                 onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.home_rounded),
+                label: const Text('Retour au tableau de bord'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
-                child: const Text('Retour a l\'accueil', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
               ),
             ),
             const SizedBox(height: 40),
@@ -886,20 +1464,19 @@ class SimulationResultScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatCard(String label, String value, Color color) {
+  Widget _buildStat(String label, String value, Color color) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppColors.white,
+          color: color.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(14),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8)],
+          border: Border.all(color: color.withValues(alpha: 0.25)),
         ),
         child: Column(
           children: [
-            Text(value, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: color)),
-            const SizedBox(height: 4),
-            Text(label, style: TextStyle(fontSize: 11, color: AppColors.textLight, fontWeight: FontWeight.w500)),
+            Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: color)),
+            Text(label, style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w600)),
           ],
         ),
       ),

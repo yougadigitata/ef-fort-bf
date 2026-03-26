@@ -20,12 +20,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool _loadingActu = true;
   bool _showWelcome = true;
 
+  // ── TÂCHE 4 : Stats utilisateur dynamiques ──
+  String _scoresMoyen = '--';
+  String _nbSimulations = '0';
+  String _nbQuestions = '0';
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
+      _loadUserStats();
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+  }
+
+  // ── Recharger stats quand on revient sur l'écran ──
+  @override
+  void activate() {
+    super.activate();
+    _loadUserStats();
   }
 
   Future<void> _loadData() async {
@@ -34,6 +52,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
       setState(() {
         _actualites = actu;
         _loadingActu = false;
+      });
+    }
+  }
+
+  // ── TÂCHE 4 : Charger les stats depuis Supabase via sessions_examen ──
+  Future<void> _loadUserStats() async {
+    final stats = await ApiService.getUserStats();
+    if (mounted) {
+      setState(() {
+        final nbSim = stats['nb_simulations'] ?? 0;
+        final score = stats['score_moyen'] ?? 0.0;
+        final questions = stats['questions_repondues'] ?? 0;
+        _nbSimulations = '$nbSim';
+        _scoresMoyen = nbSim > 0 ? '${score.toStringAsFixed(0)}%' : '--';
+        _nbQuestions = '$questions';
       });
     }
   }
@@ -160,11 +193,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       const SizedBox(height: 20),
                       Row(
                         children: [
-                          _buildStatBadge('🎯', 'Score moyen', '--', AppColors.white),
+                          _buildStatBadge('🎯', 'Score moyen', _scoresMoyen, AppColors.white),
                           const SizedBox(width: 10),
-                          _buildStatBadge('📝', 'Simulations', '0', AppColors.white),
+                          _buildStatBadge('📝', 'Simulations', _nbSimulations, AppColors.white),
                           const SizedBox(width: 10),
-                          _buildStatBadge('✅', 'Questions', '0', AppColors.white),
+                          _buildStatBadge('✅', 'Questions', _nbQuestions, AppColors.white),
                         ],
                       ),
                     ],

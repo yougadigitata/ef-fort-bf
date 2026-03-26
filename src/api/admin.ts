@@ -175,4 +175,144 @@ admin.post('/actualites', requireAdmin, async (c) => {
   return c.json({ success: true, message: 'Actualité publiée.' });
 });
 
+// ── POST /api/admin/migrate — Créer les tables manquantes ────
+// Endpoint de migration sécurisé — NE PAS SUPPRIMER (utilisé par setup)
+admin.post('/migrate', async (c) => {
+  const body = await c.req.json().catch(() => ({})) as Record<string, unknown>;
+  if (body['secret'] !== 'EfFortAdmin2026!BF') {
+    return c.json({ error: 'Secret invalide.' }, 403);
+  }
+
+  const db = getDB(c.env);
+  const results: Record<string, string> = {};
+
+  // ── 1. Créer table messages_entraide (via insertions conditionnelles) ──
+  // On utilise l'API Supabase pour tester et créer la table
+  try {
+    const { error: testError } = await db
+      .from('messages_entraide')
+      .select('id')
+      .limit(1);
+
+    if (testError && (testError.code === '42P01' || testError.message.includes('does not exist'))) {
+      // La table n'existe pas — on ne peut pas la créer via REST API
+      // Retourner les SQLs à exécuter manuellement
+      results['messages_entraide'] = 'TABLE_MISSING_NEEDS_MANUAL_SQL';
+    } else if (testError) {
+      results['messages_entraide'] = `error: ${testError.message}`;
+    } else {
+      results['messages_entraide'] = 'exists';
+    }
+  } catch (e: any) {
+    results['messages_entraide'] = `exception: ${e.message}`;
+  }
+
+  // ── 2. Vérifier table resultats ──
+  try {
+    const { error: testError2 } = await db
+      .from('resultats')
+      .select('id')
+      .limit(1);
+
+    if (testError2 && (testError2.code === '42P01' || testError2.message.includes('does not exist'))) {
+      results['resultats'] = 'TABLE_MISSING_NEEDS_MANUAL_SQL';
+    } else if (testError2) {
+      results['resultats'] = `error: ${testError2.message}`;
+    } else {
+      results['resultats'] = 'exists';
+    }
+  } catch (e: any) {
+    results['resultats'] = `exception: ${e.message}`;
+  }
+
+  // ── 3. Retourner les SQLs nécessaires si tables manquantes ──
+  const sqlsNeeded: string[] = [];
+
+  if (results['messages_entraide'] === 'TABLE_MISSING_NEEDS_MANUAL_SQL') {
+    sqlsNeeded.push(`
+CREATE TABLE IF NOT EXISTS public.messages_entraide (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  contenu TEXT NOT NULL,
+  partage_whatsapp BOOLEAN DEFAULT false,
+  telephone_partage VARCHAR(20),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  actif BOOLEAN DEFAULT true
+);
+ALTER TABLE public.messages_entraide ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Lire messages actifs" ON public.messages_entraide FOR SELECT USING (actif = true);
+CREATE POLICY "Inserer message" ON public.messages_entraide FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Supprimer message" ON public.messages_entraide FOR DELETE USING (auth.uid() = user_id);
+    `.trim());
+  }
+
+  if (results['resultats'] === 'TABLE_MISSING_NEEDS_MANUAL_SQL') {
+    sqlsNeeded.push(`
+CREATE TABLE IF NOT EXISTS public.resultats (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  session_id UUID DEFAULT gen_random_uuid(),
+  matiere VARCHAR(100),
+  type_session VARCHAR(50) DEFAULT 'serie',
+  nb_questions INTEGER DEFAULT 0,
+  nb_correctes INTEGER DEFAULT 0,
+  nb_incorrectes INTEGER DEFAULT 0,
+  nb_sautees INTEGER DEFAULT 0,
+  score_pourcentage DECIMAL(5,2) DEFAULT 0,
+  duree_secondes INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE public.resultats ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Voir ses resultats" ON public.resultats FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Inserer ses resultats" ON public.resultats FOR INSERT WITH CHECK (auth.uid() = user_id);
+    `.trim());
+  }
+
+  return c.json({
+    success: true,
+    tables_status: results,
+    sqls_to_run: sqlsNeeded,
+    message: sqlsNeeded.length > 0
+      ? 'Tables manquantes détectées. Exécutez les SQLs fournis dans Supabase Dashboard > SQL Editor.'
+      : 'Toutes les tables sont en place.',
+  });
+});
+
+// ── GET /api/admin/user-stats/:userId — Stats dashboard utilisateur ──
+admin.get('/user-stats/:userId', requireAdmin, async (c) => {
+  const userId = c.req.param('userId');
+  const db = getDB(c.env);
+
+  try {
+    // Sessions examen
+    const { count: nbSimulations } = await db
+      .from('sessions_examen')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('termine', true);
+
+    // Score moyen des simulations
+    const { data: sessions } = await db
+      .from('sessions_examen')
+      .select('score_pourcentage')
+      .eq('user_id', userId)
+      .eq('termine', true);
+
+    const avgScore = sessions && sessions.length > 0
+      ? sessions.reduce((sum: number, s: any) => sum + (s.score_pourcentage || 0), 0) / sessions.length
+      : 0;
+
+    return c.json({
+      success: true,
+      stats: {
+        nb_simulations: nbSimulations ?? 0,
+        score_moyen: Math.round(avgScore * 10) / 10,
+        questions_repondues: (nbSimulations ?? 0) * 50,
+      }
+    });
+  } catch (e: any) {
+    return c.json({ error: e.message }, 500);
+  }
+});
+
 export default admin;
