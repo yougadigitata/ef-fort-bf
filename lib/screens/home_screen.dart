@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import 'dashboard_screen.dart';
 import 'matieres_screen.dart';
-import 'simulation_screen.dart';
+import 'examen_selection_screen.dart';
 import 'entraide_screen.dart';
 import 'profil_screen.dart';
 
@@ -32,7 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
         onGoToMatieres: _goToMatieres,
       ),
       const MatieresScreen(),
-      const SimulationLaunchScreen(),
+      const ExamenSelectionScreen(),   // Phase 3 : 10 examens
       const EntraideScreen(),
       const ProfilScreen(),
     ];
@@ -61,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 _buildNavItem(0, '🏠', 'Accueil'),
                 _buildNavItem(1, '📚', 'Matières'),
-                _buildNavItem(2, '⏱️', 'Examen'),
+                _buildNavItem(2, '🎓', 'Concours'),
                 _buildNavItem(3, '🤝', 'Entraide'),
                 _buildNavItem(4, '👤', 'Profil'),
               ],

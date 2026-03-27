@@ -1447,7 +1447,7 @@ class SimulationResultScreen extends StatelessWidget {
               width: double.infinity,
               height: 50,
               child: ElevatedButton.icon(
-                onPressed: () => _exportPDF(),
+                onPressed: () => _exportPDF(context),
                 icon: const Icon(Icons.file_download_rounded),
                 label: const Text('Telecharger copie (PDF)'),
                 style: ElevatedButton.styleFrom(
@@ -1479,8 +1479,8 @@ class SimulationResultScreen extends StatelessWidget {
     );
   }
 
-  void _exportPDF() {
-    ScaffoldMessenger.of(context).showSnackBar(
+  void _exportPDF(BuildContext ctx) {
+    ScaffoldMessenger.of(ctx).showSnackBar(
       const SnackBar(
         content: Text('Export PDF en cours de développement...'),
         duration: Duration(seconds: 2),

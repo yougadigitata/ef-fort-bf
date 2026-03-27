@@ -3,21 +3,30 @@ import { getDB, Env } from '../lib/db';
 
 const questions = new Hono<{ Bindings: Env }>();
 
-// ── GET /api/matieres ────────────────────────────────────────
+// ── GET /api/matieres — 16 matières avec caching ──────────────
 questions.get('/matieres', async (c) => {
   const db = getDB(c.env);
 
-  // Récupérer les matières existantes
+  // Récupérer uniquement les 16 matières officielles (triées par ordre)
   const { data: matieres, error: mErr } = await db
     .from('matieres')
-    .select('id, nom, code, icone, couleur');
+    .select('id, nom, code, icone, couleur, ordre')
+    .order('ordre', { ascending: true })
+    .limit(30);
 
   if (mErr) return c.json({ error: mErr.message }, 500);
 
-  // Compter les questions par matière
+  // Les 16 codes officiels
+  const CODES_OFFICIELS = ['DROIT2','ECO2','MATHS','SP','SVT','CG','ACTU','PANA','HISTO','ARMEE','PSYCHO','FR','ANG','INFO','COMM','HG'];
+
+  // Filtrer uniquement les 16 matières officielles
+  const matieresFiltrees = (matieres ?? []).filter(m => CODES_OFFICIELS.includes(m.code));
+
+  // Compter les questions par matière (requête unique optimisée)
   const { data: questionsData } = await db
     .from('questions')
-    .select('matiere_id');
+    .select('matiere_id')
+    .limit(5000);
 
   const countMap: Record<string, number> = {};
   for (const q of questionsData ?? []) {
@@ -26,7 +35,7 @@ questions.get('/matieres', async (c) => {
     }
   }
 
-  const result = (matieres ?? []).map(m => ({
+  const result = matieresFiltrees.map(m => ({
     id: m.code?.toLowerCase() || m.id,
     nom: m.nom,
     icone: m.icone ?? '📚',
@@ -34,24 +43,29 @@ questions.get('/matieres', async (c) => {
     nb_questions: countMap[m.id] ?? 0,
     abonne_only: false,
     matiere_id: m.id,
-  }));
+    ordre: m.ordre ?? 99,
+  })).sort((a, b) => a.ordre - b.ordre);
+
+  // Headers de cache (5 minutes)
+  c.header('Cache-Control', 'public, max-age=300');
 
   return c.json({ success: true, matieres: result });
 });
 
-// ── GET /api/questions ───────────────────────────────────────
+// ── GET /api/questions — Avec pagination et optimisation ───────
 questions.get('/questions', async (c) => {
   const matiereCode = c.req.query('matiere');
-  const limit = Math.min(parseInt(c.req.query('limit') ?? '30'), 100);
+  const page = Math.max(1, parseInt(c.req.query('page') ?? '1'));
+  const limit = Math.min(parseInt(c.req.query('limit') ?? '20'), 100);
+  const offset = (page - 1) * limit;
 
   const db = getDB(c.env);
 
   let query = db.from('questions')
-    .select('id, matiere_id, enonce, option_a, option_b, option_c, option_d, bonne_reponse, explication, difficulte');
+    .select('id, matiere_id, enonce, option_a, option_b, option_c, option_d, option_e, bonne_reponse, explication, difficulte');
 
-  // Si on filtre par matière (code), résoudre l'id
+  // Filtrer par matière si spécifié
   if (matiereCode) {
-    // Chercher l'id de la matière par code
     const { data: mat } = await db
       .from('matieres')
       .select('id')
@@ -63,26 +77,30 @@ questions.get('/questions', async (c) => {
     }
   }
 
-  const { data, error } = await query.limit(limit);
+  // Pagination optimisée
+  const { data, error } = await query
+    .range(offset, offset + limit - 1)
+    .limit(limit);
+
   if (error) return c.json({ error: error.message }, 500);
 
-  // Mapper vers la structure attendue par le frontend
   const shuffled = (data ?? [])
     .sort(() => Math.random() - 0.5)
     .map(q => ({
       id: q.id,
       matiere: q.matiere_id,
-      question: q.enonce,     // Adapter le champ
+      question: q.enonce,
       option_a: q.option_a,
       option_b: q.option_b,
       option_c: q.option_c,
       option_d: q.option_d,
+      option_e: q.option_e ?? null,
       bonne_reponse: q.bonne_reponse,
       explication: q.explication,
       difficulte: q.difficulte,
     }));
 
-  return c.json({ success: true, questions: shuffled });
+  return c.json({ success: true, questions: shuffled, page, limit });
 });
 
 export default questions;

@@ -9,6 +9,13 @@ class ApiService {
   static String? _token;
   static Map<String, dynamic>? _currentUser;
 
+  // ── Cache en mémoire (performances) ──
+  static List<dynamic>? _cachedMatieres;
+  static DateTime? _matieresCacheTime;
+  static List<dynamic>? _cachedExamens;
+  static DateTime? _examensCacheTime;
+  static const Duration _cacheDuration = Duration(minutes: 5);
+
   static String cleanPhone(String tel) {
     String digits = tel.replaceAll(RegExp(r'\D'), '');
     return digits.length > 8 ? digits.substring(digits.length - 8) : digits;
@@ -122,24 +129,71 @@ class ApiService {
 
   static Future<List<dynamic>> getMatieres() async {
     try {
+      // Vérifier le cache
+      if (_cachedMatieres != null && _matieresCacheTime != null) {
+        if (DateTime.now().difference(_matieresCacheTime!) < _cacheDuration) {
+          return _cachedMatieres!;
+        }
+      }
       final response = await http.get(
         Uri.parse('$apiBase/matieres'),
         headers: _headers,
-      );
+      ).timeout(const Duration(seconds: 10));
       final data = jsonDecode(response.body);
-      return (data['matieres'] as List?) ?? [];
+      final matieres = (data['matieres'] as List?) ?? [];
+      // Mettre en cache
+      _cachedMatieres = matieres;
+      _matieresCacheTime = DateTime.now();
+      return matieres;
     } catch (e) {
       if (kDebugMode) debugPrint('Matieres error: $e');
+      return _cachedMatieres ?? [];
+    }
+  }
+
+  static Future<List<dynamic>> getExamens() async {
+    try {
+      // Vérifier le cache
+      if (_cachedExamens != null && _examensCacheTime != null) {
+        if (DateTime.now().difference(_examensCacheTime!) < _cacheDuration) {
+          return _cachedExamens!;
+        }
+      }
+      final response = await http.get(
+        Uri.parse('$apiBase/examens'),
+        headers: _headers,
+      ).timeout(const Duration(seconds: 10));
+      final data = jsonDecode(response.body);
+      final examens = (data['examens'] as List?) ?? [];
+      _cachedExamens = examens;
+      _examensCacheTime = DateTime.now();
+      return examens;
+    } catch (e) {
+      if (kDebugMode) debugPrint('Examens error: $e');
+      return _cachedExamens ?? [];
+    }
+  }
+
+  static Future<List<dynamic>> getExamenQuestions(String examenId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$apiBase/examens/$examenId/questions'),
+        headers: _headers,
+      ).timeout(const Duration(seconds: 15));
+      final data = jsonDecode(response.body);
+      return (data['questions'] as List?) ?? [];
+    } catch (e) {
+      if (kDebugMode) debugPrint('ExamenQuestions error: $e');
       return [];
     }
   }
 
-  static Future<List<dynamic>> getQuestions(String matiere, {int limit = 30}) async {
+  static Future<List<dynamic>> getQuestions(String matiere, {int limit = 20}) async {
     try {
       final response = await http.get(
         Uri.parse('$apiBase/questions?matiere=$matiere&limit=$limit'),
         headers: _headers,
-      );
+      ).timeout(const Duration(seconds: 10));
       final data = jsonDecode(response.body);
       return (data['questions'] as List?) ?? [];
     } catch (e) {
