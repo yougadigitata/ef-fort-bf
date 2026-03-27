@@ -52,17 +52,41 @@ questions.get('/matieres', async (c) => {
   return c.json({ success: true, matieres: result });
 });
 
-// ── GET /api/questions — Avec pagination et optimisation ───────
+// ── GET /api/questions — Avec pagination, série et optimisation ─
 questions.get('/questions', async (c) => {
   const matiereCode = c.req.query('matiere');
-  const page = Math.max(1, parseInt(c.req.query('page') ?? '1'));
+  const serieId     = c.req.query('serie_id');
+  const page  = Math.max(1, parseInt(c.req.query('page') ?? '1'));
   const limit = Math.min(parseInt(c.req.query('limit') ?? '20'), 100);
   const offset = (page - 1) * limit;
 
   const db = getDB(c.env);
 
   let query = db.from('questions')
-    .select('id, matiere_id, enonce, option_a, option_b, option_c, option_d, option_e, bonne_reponse, explication, difficulte');
+    .select('id, serie_id, matiere_id, numero, enonce, option_a, option_b, option_c, option_d, option_e, bonne_reponse, explication, difficulte');
+
+  // Filtrer par série si fourni (priorité sur matière)
+  if (serieId) {
+    query = query.eq('serie_id', serieId) as typeof query;
+    const { data, error } = await query.order('numero', { ascending: true }).limit(limit);
+    if (error) return c.json({ error: error.message }, 500);
+    const mapped = (data ?? []).map(q => ({
+      id: q.id,
+      serie_id: q.serie_id,
+      matiere: q.matiere_id,
+      question: q.enonce,
+      enonce: q.enonce,
+      option_a: q.option_a,
+      option_b: q.option_b,
+      option_c: q.option_c,
+      option_d: q.option_d,
+      option_e: q.option_e ?? null,
+      bonne_reponse: q.bonne_reponse,
+      explication: q.explication,
+      difficulte: q.difficulte,
+    }));
+    return c.json({ success: true, questions: mapped, page: 1, limit });
+  }
 
   // Filtrer par matière si spécifié
   if (matiereCode) {
@@ -88,8 +112,10 @@ questions.get('/questions', async (c) => {
     .sort(() => Math.random() - 0.5)
     .map(q => ({
       id: q.id,
+      serie_id: q.serie_id,
       matiere: q.matiere_id,
       question: q.enonce,
+      enonce: q.enonce,
       option_a: q.option_a,
       option_b: q.option_b,
       option_c: q.option_c,
@@ -101,6 +127,26 @@ questions.get('/questions', async (c) => {
     }));
 
   return c.json({ success: true, questions: shuffled, page, limit });
+});
+
+// ── GET /api/series — Séries par matière ───────────────────────
+questions.get('/series', async (c) => {
+  const matiereId = c.req.query('matiere_id');
+  const db = getDB(c.env);
+
+  let query = db.from('series_qcm')
+    .select('id, matiere_id, titre, numero, niveau, duree_minutes, nb_questions, est_demo, actif')
+    .eq('actif', true)
+    .order('numero', { ascending: true });
+
+  if (matiereId) {
+    query = query.eq('matiere_id', matiereId) as typeof query;
+  }
+
+  const { data, error } = await query.limit(50);
+  if (error) return c.json({ error: error.message }, 500);
+
+  return c.json({ success: true, series: data ?? [] });
 });
 
 export default questions;

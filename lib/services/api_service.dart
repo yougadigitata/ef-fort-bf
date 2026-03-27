@@ -202,6 +202,36 @@ class ApiService {
     }
   }
 
+  // ── Récupérer les questions d'une série spécifique (WhatsApp QCM) ──
+  static Future<List<dynamic>> getQuestionsBySerie(String serieId, {int limit = 20}) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$apiBase/questions?serie_id=$serieId&limit=$limit'),
+        headers: _headers,
+      ).timeout(const Duration(seconds: 10));
+      final data = jsonDecode(response.body);
+      return (data['questions'] as List?) ?? [];
+    } catch (e) {
+      if (kDebugMode) debugPrint('QuestionsBySerie error: $e');
+      return [];
+    }
+  }
+
+  // ── Récupérer les séries d'une matière ────────────────────────────
+  static Future<List<dynamic>> getSeriesByMatiere(String matiereId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$apiBase/series?matiere_id=$matiereId'),
+        headers: _headers,
+      ).timeout(const Duration(seconds: 10));
+      final data = jsonDecode(response.body);
+      return (data['series'] as List?) ?? [];
+    } catch (e) {
+      if (kDebugMode) debugPrint('Series error: $e');
+      return [];
+    }
+  }
+
   static Future<List<dynamic>> getActualites() async {
     try {
       final response = await http.get(

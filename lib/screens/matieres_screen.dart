@@ -1,6 +1,19 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import 'qcm_screen.dart';
+import 'serie_selection_screen.dart';
+
+// IDs Supabase des matières avec QCM WhatsApp (Master 1)
+const Map<String, String> _matiereSupabaseIds = {
+  'hg':     '0a88b3ac-33b7-4d8c-bc19-fe68bb514aef', // Histoire-Geographie
+  'droit2': '9497ca2c-dc1b-43dd-8b7a-af11dde7039d', // Droit
+  'eco2':   '3f2937de-7ba9-463e-9519-7d1481b89549', // Economie
+  'ang':    '37febc5e-8ab5-4875-b7ad-71b30a8253e7', // Anglais
+  'sp':     '12e5b05a-6410-4b55-97b7-b8a838dcfb9a', // Sciences Physiques
+};
+
+// Matieres utilisant le nouveau mode WhatsApp QCM (Master 1)
+const Set<String> _whatsappMatieres = {'hg', 'droit2', 'eco2', 'ang', 'sp'};
 
 /// PHASE 2 — Les 16 matières officielles EF-FORT.BF
 class MatieresScreen extends StatefulWidget {
@@ -165,81 +178,144 @@ class _MatieresScreenState extends State<MatieresScreen> {
   }
 
   Widget _buildMatiereCard(BuildContext context, Map<String, dynamic> matiere, Color color) {
+    final matiereId = matiere['id'] as String;
+    final isWhatsapp = _whatsappMatieres.contains(matiereId);
+    final supabaseId = _matiereSupabaseIds[matiereId];
+
     return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => QcmScreen(
-            matiere: matiere['id'] as String,
-            label: matiere['nom'] as String,
-            couleur: color,
-            icone: matiere['icone'] as String,
-          ),
-        ),
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: 0.15),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+      onTap: () {
+        if (isWhatsapp && supabaseId != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => SerieSelectionScreen(
+                matiereId: supabaseId,
+                matiereCode: matiereId,
+                matiereNom: matiere['nom'] as String,
+                icone: matiere['icone'] as String,
+                couleur: color,
+              ),
             ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Icône
-              Container(
-                width: 54,
-                height: 54,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: color.withValues(alpha: 0.25),
-                    width: 1.5,
+          );
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => QcmScreen(
+                matiere: matiereId,
+                label: matiere['nom'] as String,
+                couleur: color,
+                icone: matiere['icone'] as String,
+              ),
+            ),
+          );
+        }
+      },
+      child: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.15),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Icône
+                  Container(
+                    width: 54,
+                    height: 54,
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.12),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: color.withValues(alpha: 0.25),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        matiere['icone'] as String,
+                        style: const TextStyle(fontSize: 26),
+                      ),
+                    ),
                   ),
-                ),
-                child: Center(
-                  child: Text(
-                    matiere['icone'] as String,
-                    style: const TextStyle(fontSize: 26),
+                  const SizedBox(height: 8),
+                  // Nom
+                  Text(
+                    matiere['nom'] as String,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textDark,
+                      height: 1.2,
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 4),
+                  // Barre couleur ou badge WhatsApp
+                  if (isWhatsapp)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF25D366).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: const Text(
+                        '💬 25 séries',
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF128C7E),
+                        ),
+                      ),
+                    )
+                  else
+                    Container(
+                      height: 3,
+                      width: 36,
+                      decoration: BoxDecoration(
+                        color: color,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                ],
               ),
-              const SizedBox(height: 8),
-              // Nom
-              Text(
-                matiere['nom'] as String,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textDark,
-                  height: 1.2,
-                ),
-              ),
-              const SizedBox(height: 4),
-              // Barre couleur
-              Container(
-                height: 3,
-                width: 36,
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+          // Badge NOUVEAU pour les matières WhatsApp
+          if (isWhatsapp)
+            Positioned(
+              top: 6,
+              right: 6,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF25D366),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Text(
+                  'NEW',
+                  style: TextStyle(
+                    fontSize: 8,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

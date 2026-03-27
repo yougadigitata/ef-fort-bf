@@ -419,6 +419,7 @@ class _QcmScreenState extends State<QcmScreen> {
     final pct = total > 0 ? (score / total * 100).round() : 0;
 
     String mention;
+    // ignore: unused_local_variable
     Color mentionColor;
     if (pct >= 80) {
       mention = 'Excellent !';
