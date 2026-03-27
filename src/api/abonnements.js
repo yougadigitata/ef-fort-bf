@@ -9,12 +9,14 @@ async function requireAuth(c, next) {
     const p = await verifyJWT(h.slice(7));
     if (!p)
         return c.json({ error: 'Token invalide.' }, 401);
-    c.set('userId', p['id']);
+    const context = c;
+    context.userId = p['id'];
     await next();
 }
-// ── POST /api/abonnements/demande ────────────────────────────
+// ── POST /api/abonnements/demande ───────────────────────────
 abonnements.post('/demande', requireAuth, async (c) => {
-    const userId = c.get('userId');
+    const context = c;
+    const userId = context.userId;
     const body = await c.req.json().catch(() => ({}));
     const moyen_paiement = body['moyen_paiement'] ?? 'Orange Money';
     const db = getDB(c.env);
@@ -57,9 +59,10 @@ abonnements.post('/demande', requireAuth, async (c) => {
         message: 'Demande enregistrée. Notre équipe EF-FORT va valider votre paiement rapidement. WhatsApp : 65 46 70 70',
     });
 });
-// ── GET /api/abonnements/statut ──────────────────────────────
+// ── GET /api/abonnements/statut ───────────────────────────
 abonnements.get('/statut', requireAuth, async (c) => {
-    const userId = c.get('userId');
+    const context = c;
+    const userId = context.userId;
     const db = getDB(c.env);
     const { data: user } = await db
         .from('profiles')

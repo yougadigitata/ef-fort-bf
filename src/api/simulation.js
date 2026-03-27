@@ -11,13 +11,15 @@ async function requireAuth(c, next) {
     const payload = await verifyJWT(authHeader.slice(7));
     if (!payload)
         return c.json({ error: 'Token invalide ou expiré.' }, 401);
-    c.set('userId', payload['id']);
-    c.set('isAdmin', payload['is_admin']);
+    const context = c;
+    context.userId = payload['id'];
+    context.isAdmin = payload['is_admin'];
     await next();
 }
 // ── POST /api/simulation/demarrer ───────────────────────────
 simulation.post('/demarrer', requireAuth, async (c) => {
-    const userId = c.get('userId');
+    const context = c;
+    const userId = context.userId;
     const db = getDB(c.env);
     // Récupérer jusqu'à 200 questions, mélanger et prendre 50 (ou moins si dispo)
     const { data: allQ, error } = await db
@@ -60,7 +62,8 @@ simulation.post('/demarrer', requireAuth, async (c) => {
 });
 // ── POST /api/simulation/terminer ───────────────────────────
 simulation.post('/terminer', requireAuth, async (c) => {
-    const userId = c.get('userId');
+    const context = c;
+    const userId = context.userId;
     const body = await c.req.json().catch(() => null);
     if (!body)
         return c.json({ error: 'Corps invalide.' }, 400);

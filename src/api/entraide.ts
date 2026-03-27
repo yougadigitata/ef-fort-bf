@@ -12,7 +12,8 @@ async function requireAuth(c: any, next: any) {
   if (!h?.startsWith('Bearer ')) return c.json({ error: 'Auth requise.' }, 401);
   const p = await verifyJWT(h.slice(7));
   if (!p) return c.json({ error: 'Token invalide.' }, 401);
-  c.set('userId', p.id);
+  const context = c as any;
+  context.userId = (p as any).id as string;
   await next();
 }
 
@@ -34,7 +35,8 @@ entraide.get('/', requireAuth, async (c) => {
 
 // POST /api/entraide — Publier un message
 entraide.post('/', requireAuth, async (c) => {
-  const userId = c.get('userId') as string;
+  const context = c as any;
+  const userId = context.userId as string;
   const body = await c.req.json().catch(() => ({}));
   const { contenu, partage_whatsapp, telephone_partage } = body;
   
@@ -66,7 +68,8 @@ entraide.post('/', requireAuth, async (c) => {
 
 // DELETE /api/entraide/:id — Supprimer son propre message
 entraide.delete('/:id', requireAuth, async (c) => {
-  const userId = c.get('userId') as string;
+  const context = c as any;
+  const userId = context.userId as string;
   const id = c.req.param('id');
   const db = getDB(c.env);
   await db.from('messages_entraide')

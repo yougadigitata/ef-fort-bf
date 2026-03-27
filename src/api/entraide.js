@@ -12,7 +12,8 @@ async function requireAuth(c, next) {
     const p = await verifyJWT(h.slice(7));
     if (!p)
         return c.json({ error: 'Token invalide.' }, 401);
-    c.set('userId', p.id);
+    const context = c;
+    context.userId = p.id;
     await next();
 }
 // GET /api/entraide — Messages récents
@@ -33,7 +34,8 @@ entraide.get('/', requireAuth, async (c) => {
 });
 // POST /api/entraide — Publier un message
 entraide.post('/', requireAuth, async (c) => {
-    const userId = c.get('userId');
+    const context = c;
+    const userId = context.userId;
     const body = await c.req.json().catch(() => ({}));
     const { contenu, partage_whatsapp, telephone_partage } = body;
     if (!contenu || String(contenu).trim().length < 3) {
@@ -60,7 +62,8 @@ entraide.post('/', requireAuth, async (c) => {
 });
 // DELETE /api/entraide/:id — Supprimer son propre message
 entraide.delete('/:id', requireAuth, async (c) => {
-    const userId = c.get('userId');
+    const context = c;
+    const userId = context.userId;
     const id = c.req.param('id');
     const db = getDB(c.env);
     await db.from('messages_entraide')

@@ -9,13 +9,15 @@ async function requireAuth(c: any, next: any) {
   if (!h?.startsWith('Bearer ')) return c.json({ error: 'Auth requise.' }, 401);
   const p = await verifyJWT(h.slice(7));
   if (!p) return c.json({ error: 'Token invalide.' }, 401);
-  c.set('userId', p['id']);
+  const context = c as any;
+  context.userId = p['id'] as string;
   await next();
 }
 
-// ── POST /api/abonnements/demande ────────────────────────────
+// ── POST /api/abonnements/demande ───────────────────────────
 abonnements.post('/demande', requireAuth, async (c) => {
-  const userId = c.get('userId') as string;
+  const context = c as any;
+  const userId = context.userId as string;
   const body = await c.req.json().catch(() => ({})) as Record<string, unknown>;
   const moyen_paiement = body['moyen_paiement'] as string ?? 'Orange Money';
 
@@ -63,9 +65,10 @@ abonnements.post('/demande', requireAuth, async (c) => {
   });
 });
 
-// ── GET /api/abonnements/statut ──────────────────────────────
+// ── GET /api/abonnements/statut ───────────────────────────
 abonnements.get('/statut', requireAuth, async (c) => {
-  const userId = c.get('userId') as string;
+  const context = c as any;
+  const userId = context.userId as string;
   const db = getDB(c.env);
   const { data: user } = await db
     .from('profiles')

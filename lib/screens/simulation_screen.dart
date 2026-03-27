@@ -1447,6 +1447,21 @@ class SimulationResultScreen extends StatelessWidget {
               width: double.infinity,
               height: 50,
               child: ElevatedButton.icon(
+                onPressed: () => _exportPDF(),
+                icon: const Icon(Icons.file_download_rounded),
+                label: const Text('Telecharger copie (PDF)'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF27AE60),
+                  foregroundColor: AppColors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton.icon(
                 onPressed: () => Navigator.pop(context),
                 icon: const Icon(Icons.home_rounded),
                 label: const Text('Retour au tableau de bord'),
@@ -1460,6 +1475,15 @@ class SimulationResultScreen extends StatelessWidget {
             const SizedBox(height: 40),
           ],
         ),
+      ),
+    );
+  }
+
+  void _exportPDF() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Export PDF en cours de développement...'),
+        duration: Duration(seconds: 2),
       ),
     );
   }
