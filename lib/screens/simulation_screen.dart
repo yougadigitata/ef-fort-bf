@@ -6,6 +6,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
+import '../services/supabase_service.dart';
 import '../services/bell_service.dart';
 import '../widgets/logo_widget.dart';
 import 'abonnement_screen.dart';
@@ -773,12 +774,28 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
       if (result['quota_atteint'] == true) {
         setState(() {
           _loading = false;
-          _error = null; // Pas d'erreur brute, on affiche la page premium
+          _error = null;
         });
-        // Afficher dialog d'abonnement
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _showQuotaDialog();
         });
+        return;
+      }
+      // ── Fallback : charger les questions directement depuis Supabase ──
+      final sbQuestions = await SupabaseService.getExamenBlanc50Questions();
+      if (!mounted) return;
+      if (sbQuestions.isNotEmpty) {
+        setState(() {
+          _sessionId = null;
+          _questions = sbQuestions;
+          _remainingSeconds = _durationSeconds;
+          _loading = false;
+        });
+        if (mounted && !_consignesAccepted) {
+          _showConsignesDialog();
+        } else {
+          _startTimerAndBell();
+        }
         return;
       }
       setState(() {
@@ -788,10 +805,18 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
       return;
     }
 
+    List<dynamic> questions = (result['questions'] as List?) ?? [];
+
+    // Si pas de questions depuis l'API, charger depuis Supabase directement
+    if (questions.isEmpty) {
+      questions = await SupabaseService.getExamenBlanc50Questions();
+    }
+
+    if (!mounted) return;
     setState(() {
       _sessionId = result['session_id'] as String?;
-      _questions = (result['questions'] as List?) ?? [];
-      final dureeMin = (result['duree'] ?? 120) as int;
+      _questions = questions;
+      final dureeMin = (result['duree'] ?? 90) as int;
       _remainingSeconds = dureeMin * 60;
       _loading = false;
     });
@@ -1073,16 +1098,9 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
 
     final tempsUtilise = _durationSeconds - _remainingSeconds;
 
-    if (_sessionId != null) {
-      await ApiService.terminerSimulation(
-        sessionId: _sessionId!,
-        reponses: reponses,
-        tempsUtilise: tempsUtilise,
-      );
-    }
-
     if (!mounted) return;
 
+    // Calculer les scores d'abord
     int bonnes = 0, mauvaises = 0, sansReponse = 0;
     final Map<String, List<int>> scoreParMatiere = {};
 
@@ -1106,6 +1124,27 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
     }
 
     final score = (bonnes - mauvaises).clamp(0, _questions.length);
+
+    // Sauvegarder les résultats après calcul des scores
+    final user = ApiService.currentUser;
+    if (_sessionId != null) {
+      await ApiService.terminerSimulation(
+        sessionId: _sessionId!,
+        reponses: reponses,
+        tempsUtilise: tempsUtilise,
+      );
+    } else if (user != null) {
+      // Fallback: sauvegarder directement via Supabase
+      await SupabaseService.saveExamenBlanc(
+        userId: user['id'].toString(),
+        score: score,
+        total: _questions.length,
+        tempsUtilise: tempsUtilise,
+        reponses: _answers,
+      );
+    }
+
+    if (!mounted) return;
 
     Navigator.pushReplacement(
       context,
