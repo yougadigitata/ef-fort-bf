@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
-import 'examen_screen.dart';
+import 'simulation_screen.dart';
 
 /// PHASE 3 — Écran de sélection des 10 examens professionnels
 class ExamenSelectionScreen extends StatefulWidget {
@@ -211,19 +211,26 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen> {
     final nom = examen['nom'] as String? ?? '';
     final description = examen['description'] as String? ?? '';
     final icone = examen['icone'] as String? ?? '📋';
+    // id conservé si nécessaire pour navigation future
+    // ignore: unused_local_variable
     final id = examen['id'] as String? ?? '';
 
     return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ExamenScreen(
-            examenId: id,
-            nomExamen: nom,
-            couleur: color,
+      onTap: () {
+        // V3 : Flow Simulation (Slide1 → Slide2 → Interface OMR double colonne)
+        final user = ApiService.currentUser;
+        final nomCandidat = user != null
+            ? '${user['prenom'] ?? ''} ${user['nom'] ?? ''}'.trim()
+            : 'Candidat';
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ExamWelcomeSlide(
+              candidatName: nomCandidat.isNotEmpty ? nomCandidat : 'Candidat',
+            ),
           ),
-        ),
-      ),
+        );
+      },
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,

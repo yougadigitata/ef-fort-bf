@@ -1,8 +1,12 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
+import '../services/bell_service.dart';
 import '../widgets/logo_widget.dart';
 import 'abonnement_screen.dart';
 
@@ -12,32 +16,13 @@ import 'abonnement_screen.dart';
 // Sons cloche Web Audio API · Consignes officielles
 // ══════════════════════════════════════════════════════════════
 
-// ── Sons cloche via Web Audio API (TÂCHE 8) ──
-// Appel JS injecté dans web/index.html
-void _playBellJS(double frequency, double duration) {
-  if (kIsWeb) {
-    try {
-      // ignore: undefined_prefixed_name
-      // Appel de la fonction JS window.effortPlayBell(frequency, duration)
-      // Via eval JavaScript pour éviter les dépendances js package
-      _callJsBell(frequency, duration);
-    } catch (e) {
-      if (kDebugMode) debugPrint('Bell JS error: $e');
-    }
+// ── Sons cloche via BellService (multi-plateforme) ──
+Future<void> _playBellAsset(String assetName) async {
+  if (assetName.contains('start')) {
+    await BellService.playStart();
+  } else {
+    await BellService.playEnd();
   }
-  if (kDebugMode) {
-    debugPrint('Bell: freq=$frequency dur=$duration');
-  }
-}
-
-void _callJsBell(double frequency, double duration) {
-  if (!kIsWeb) return;
-  // dart:html interop via eval-like approach for web
-  // La fonction est définie dans web/index.html
-  try {
-    // Utilise js_util si disponible, sinon silencieux
-    // ignore: avoid_dynamic_calls
-  } catch (_) {}
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -819,18 +804,17 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
   }
 
   void _startTimerAndBell() {
-    // ── TÂCHE 8 : Son de démarrage ──
+    // ── TÂCHE 8 : Son de démarrage (audioplayers) ──
     if (!_bellStartPlayed) {
       _bellStartPlayed = true;
-      Future.delayed(const Duration(milliseconds: 500), () => _playBell(880, 1.5));
+      Future.delayed(const Duration(milliseconds: 500), () => _playBellAsset('bell_start.mp3'));
     }
     _startTimer();
   }
 
   void _playBell(double freq, double dur) {
-    if (kIsWeb) {
-      _playBellJS(freq, dur);
-    }
+    // Conservé pour compatibilité - utilise maintenant audioplayers
+    _playBellAsset(dur > 2.0 ? 'bell_end.mp3' : 'bell_start.mp3');
   }
 
   void _showQuotaDialog() {
@@ -1073,8 +1057,8 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
   Future<void> _finishSimulation() async {
     if (_finished) return;
     _timer?.cancel();
-    // ── TÂCHE 8 : Son de fin ──
-    _playBell(440, 2.5);
+    // ── TÂCHE 8 : Son de fin (bell_end.mp3) ──
+    await _playBellAsset('bell_end.mp3');
     setState(() => _finished = true);
 
     final reponses = <Map<String, String>>[];
@@ -1946,11 +1930,310 @@ class SimulationResultScreen extends StatelessWidget {
     );
   }
 
-  void _exportPDF(BuildContext ctx) {
+  Future<void> _exportPDF(BuildContext ctx) async {
     ScaffoldMessenger.of(ctx).showSnackBar(
       const SnackBar(
-        content: Text('Export PDF en cours de développement...'),
+        content: Text('Génération du PDF en cours...'),
         duration: Duration(seconds: 2),
+        backgroundColor: AppColors.primary,
+      ),
+    );
+
+    try {
+      final pdfBytes = await _generatePdfBytes(ctx);
+      await Printing.sharePdf(
+        bytes: pdfBytes,
+        filename: 'EF-FORT_Resultats_Examen.pdf',
+      );
+    } catch (e) {
+      if (ctx.mounted) {
+        ScaffoldMessenger.of(ctx).showSnackBar(
+          SnackBar(
+            content: Text('Erreur PDF: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<Uint8List> _generatePdfBytes(BuildContext ctx) async {
+    final pdf = pw.Document();
+    final user = ApiService.currentUser;
+    final nomCandidat = user != null
+        ? '${user['prenom'] ?? ''} ${user['nom'] ?? ''}'.trim()
+        : 'Candidat';
+    final now = DateTime.now();
+    final dateStr = '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}  ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+
+    // Calcul score
+    int bonnes = 0;
+    int mauvaises = 0;
+    int sansRep = 0;
+    final List<Map<String, dynamic>> correction = [];
+
+    for (int i = 0; i < questions.length; i++) {
+      final q = questions[i] as Map<String, dynamic>;
+      final bonneStr = (q['bonne_reponse'] ?? '').toString().toUpperCase();
+      final bonneSet = bonneStr.split('').where((c) => ['A','B','C','D','E'].contains(c)).toSet();
+      final choisies = answers[i] ?? {};
+      final correct = choisies.isNotEmpty && choisies.containsAll(bonneSet) && bonneSet.containsAll(choisies);
+      final noAns = choisies.isEmpty;
+
+      if (noAns) {
+        sansRep++;
+      } else if (correct) {
+        bonnes++;
+      } else {
+        mauvaises++;
+      }
+
+      correction.add({
+        'num': i + 1,
+        'enonce': (q['enonce'] ?? q['question'] ?? '').toString(),
+        'choisies': choisies.join(', '),
+        'bonne': bonneStr.isEmpty ? '?' : bonneStr,
+        'correct': correct,
+        'noAns': noAns,
+        'explication': q['explication']?.toString() ?? '',
+      });
+    }
+
+    final total = questions.length;
+    final pct = total > 0 ? (bonnes / total * 100).round() : 0;
+    final mention = pct >= 70 ? 'Félicitations !' : pct >= 50 ? 'Bonne progression, continuez !' : 'Courage ! Chaque effort compte.';
+
+    final primaryColor = PdfColor.fromHex('1A5C38');
+    // ignore: unused_local_variable
+    final accentColor = PdfColor.fromHex('D4A017');
+    final errorColor = PdfColor.fromHex('D32F2F');
+    final successColor = PdfColor.fromHex('22C55E');
+    final greyColor = PdfColor.fromHex('6C757D');
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(30),
+        header: (context) => pw.Container(
+          padding: const pw.EdgeInsets.only(bottom: 10),
+          decoration: pw.BoxDecoration(
+            border: pw.Border(bottom: pw.BorderSide(color: primaryColor, width: 2)),
+          ),
+          child: pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text('EF-FORT.BF',
+                      style: pw.TextStyle(
+                        fontSize: 20,
+                        fontWeight: pw.FontWeight.bold,
+                        color: primaryColor,
+                      )),
+                  pw.Text('Résultats Examen Blanc',
+                      style: pw.TextStyle(fontSize: 12, color: greyColor)),
+                ],
+              ),
+              pw.Text('ef-fort-bf.pages.dev',
+                  style: pw.TextStyle(fontSize: 10, color: greyColor)),
+            ],
+          ),
+        ),
+        footer: (context) => pw.Container(
+          alignment: pw.Alignment.center,
+          padding: const pw.EdgeInsets.only(top: 8),
+          decoration: pw.BoxDecoration(
+            border: pw.Border(top: pw.BorderSide(color: PdfColors.grey300)),
+          ),
+          child: pw.Text(
+            'EF-FORT.BF — Transformer l\'effort en réussite  |  Page ${context.pageNumber}/${context.pagesCount}',
+            style: pw.TextStyle(fontSize: 9, color: greyColor),
+          ),
+        ),
+        build: (context) => [
+          // Informations candidat
+          pw.Container(
+            padding: const pw.EdgeInsets.all(14),
+            decoration: pw.BoxDecoration(
+              color: PdfColor.fromHex('F8F9FA'),
+              border: pw.Border.all(color: PdfColor.fromHex('E9ECEF')),
+              borderRadius: pw.BorderRadius.circular(8),
+            ),
+            child: pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text('Candidat : $nomCandidat',
+                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 13)),
+                    pw.SizedBox(height: 4),
+                    pw.Text('Date : $dateStr',
+                        style: const pw.TextStyle(fontSize: 11)),
+                  ],
+                ),
+                pw.Container(
+                  padding: const pw.EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: pw.BoxDecoration(
+                    color: pct >= 50 ? successColor : errorColor,
+                    borderRadius: pw.BorderRadius.circular(8),
+                  ),
+                  child: pw.Text(
+                    '$bonnes / $total   ($pct%)',
+                    style: pw.TextStyle(
+                      color: PdfColors.white,
+                      fontWeight: pw.FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          pw.SizedBox(height: 16),
+
+          // Statistiques
+          pw.Row(
+            children: [
+              _pdfStat('Bonnes réponses', '$bonnes', successColor),
+              pw.SizedBox(width: 10),
+              _pdfStat('Mauvaises', '$mauvaises', errorColor),
+              pw.SizedBox(width: 10),
+              _pdfStat('Sans réponse', '$sansRep', greyColor),
+              pw.SizedBox(width: 10),
+              _pdfStat('Score %', '$pct%', pct >= 50 ? successColor : errorColor),
+            ],
+          ),
+          pw.SizedBox(height: 16),
+
+          // Message d'encouragement
+          pw.Container(
+            padding: const pw.EdgeInsets.all(12),
+            decoration: pw.BoxDecoration(
+              color: pct >= 70 ? PdfColor.fromHex('E8F5E9') : PdfColor.fromHex('FFF3E0'),
+              borderRadius: pw.BorderRadius.circular(8),
+            ),
+            child: pw.Text(
+              mention,
+              style: pw.TextStyle(
+                fontSize: 13,
+                fontWeight: pw.FontWeight.bold,
+                color: pct >= 70 ? primaryColor : PdfColor.fromHex('E65100'),
+              ),
+            ),
+          ),
+          pw.SizedBox(height: 20),
+
+          // Titre corrigé
+          pw.Text(
+            'CORRIGÉ DÉTAILLÉ',
+            style: pw.TextStyle(
+              fontSize: 14,
+              fontWeight: pw.FontWeight.bold,
+              color: primaryColor,
+            ),
+          ),
+          pw.Divider(color: primaryColor, thickness: 1.5),
+          pw.SizedBox(height: 8),
+
+          // Correction question par question
+          ...correction.map((c) {
+            final correct = c['correct'] as bool;
+            final noAns = c['noAns'] as bool;
+            final bgColor = noAns
+                ? PdfColor.fromHex('F5F5F5')
+                : correct
+                    ? PdfColor.fromHex('E8F5E9')
+                    : PdfColor.fromHex('FFEBEE');
+            final statusIcon = noAns ? '—' : correct ? '✓' : '✗';
+            final statusColor = noAns ? greyColor : correct ? successColor : errorColor;
+
+            return pw.Container(
+              margin: const pw.EdgeInsets.only(bottom: 8),
+              padding: const pw.EdgeInsets.all(10),
+              decoration: pw.BoxDecoration(
+                color: bgColor,
+                borderRadius: pw.BorderRadius.circular(6),
+                border: pw.Border.all(
+                  color: noAns ? PdfColors.grey300 : correct ? PdfColor.fromHex('A5D6A7') : PdfColor.fromHex('FFCDD2'),
+                ),
+              ),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Text(
+                        'Q${c['num']}.  ${(c['enonce'] as String).length > 80 ? '${(c['enonce'] as String).substring(0, 80)}...' : c['enonce']}',
+                        style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+                      ),
+                      pw.Container(
+                        padding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: pw.BoxDecoration(
+                          color: statusColor,
+                          borderRadius: pw.BorderRadius.circular(4),
+                        ),
+                        child: pw.Text(
+                          statusIcon,
+                          style: pw.TextStyle(color: PdfColors.white, fontSize: 10, fontWeight: pw.FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                  pw.SizedBox(height: 4),
+                  pw.Row(
+                    children: [
+                      pw.Text('Votre réponse: ', style: const pw.TextStyle(fontSize: 9)),
+                      pw.Text(
+                        c['choisies'].toString().isEmpty ? 'Aucune' : c['choisies'].toString(),
+                        style: pw.TextStyle(
+                          fontSize: 9,
+                          fontWeight: pw.FontWeight.bold,
+                          color: correct ? successColor : errorColor,
+                        ),
+                      ),
+                      pw.SizedBox(width: 12),
+                      pw.Text('Bonne réponse: ', style: const pw.TextStyle(fontSize: 9)),
+                      pw.Text(
+                        c['bonne'].toString(),
+                        style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, color: successColor),
+                      ),
+                    ],
+                  ),
+                  if ((c['explication'] as String).isNotEmpty) ...[
+                    pw.SizedBox(height: 3),
+                    pw.Text(
+                      '📖 ${c['explication']}',
+                      style: pw.TextStyle(fontSize: 8, color: greyColor, fontStyle: pw.FontStyle.italic),
+                    ),
+                  ],
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+
+    return pdf.save();
+  }
+
+  pw.Widget _pdfStat(String label, String value, PdfColor color) {
+    return pw.Expanded(
+      child: pw.Container(
+        padding: const pw.EdgeInsets.all(10),
+        decoration: pw.BoxDecoration(
+          color: color,
+          borderRadius: pw.BorderRadius.circular(6),
+        ),
+        child: pw.Column(
+          children: [
+            pw.Text(value, style: pw.TextStyle(color: PdfColors.white, fontWeight: pw.FontWeight.bold, fontSize: 16)),
+            pw.Text(label, style: const pw.TextStyle(color: PdfColors.white, fontSize: 8)),
+          ],
+        ),
       ),
     );
   }
