@@ -406,42 +406,157 @@ class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStat
   void _showAddActualiteDialog() {
     final titreCtrl = TextEditingController();
     final contenuCtrl = TextEditingController();
+    String selectedColor = '#1A5C38'; // Vert EF-FORT par défaut
+
+    // Palette de couleurs disponibles
+    const colorOptions = [
+      {'hex': '#1A5C38', 'label': 'Vert EF-FORT'},
+      {'hex': '#6B21A8', 'label': 'Violet'},
+      {'hex': '#D4A017', 'label': 'Or Burkina'},
+      {'hex': '#CE1126', 'label': 'Rouge Faso'},
+      {'hex': '#1D4ED8', 'label': 'Bleu Royal'},
+      {'hex': '#0F766E', 'label': 'Teal'},
+      {'hex': '#B45309', 'label': 'Orange'},
+      {'hex': '#7C3AED', 'label': 'Violet Vif'},
+    ];
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(ctx).viewInsets.bottom + 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Publier une actualite', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 16),
-            TextField(controller: titreCtrl, decoration: const InputDecoration(labelText: 'Titre')),
-            const SizedBox(height: 10),
-            TextField(controller: contenuCtrl, decoration: const InputDecoration(labelText: 'Contenu'), maxLines: 4),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () async {
-                  final result = await ApiService.addActualite({
-                    'titre': titreCtrl.text,
-                    'contenu': contenuCtrl.text,
-                  });
-                  Navigator.pop(ctx);
-                  if (result['success'] == true) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Actualite publiee !'), backgroundColor: AppColors.success),
-                    );
-                  }
-                },
-                child: const Text('Publier'),
-              ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) => Padding(
+          padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(ctx).viewInsets.bottom + 20),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 4, height: 22,
+                      decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(2)),
+                    ),
+                    const SizedBox(width: 10),
+                    const Text('Publier une actualité', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: titreCtrl,
+                  decoration: InputDecoration(
+                    labelText: 'Titre de l\'actualité *',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    filled: true,
+                    fillColor: AppColors.background,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: contenuCtrl,
+                  maxLines: 4,
+                  decoration: InputDecoration(
+                    labelText: 'Contenu *',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    filled: true,
+                    fillColor: AppColors.background,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text('Couleur de fond (style Status)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 10),
+                // Sélecteur de couleurs
+                SizedBox(
+                  height: 52,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: colorOptions.length,
+                    itemBuilder: (_, i) {
+                      final opt = colorOptions[i];
+                      final hexStr = opt['hex']!.replaceFirst('#', '');
+                      final color = Color(int.parse('FF$hexStr', radix: 16));
+                      final isSelected = selectedColor == opt['hex'];
+                      return GestureDetector(
+                        onTap: () => setModalState(() => selectedColor = opt['hex']!),
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          margin: const EdgeInsets.only(right: 10),
+                          decoration: BoxDecoration(
+                            color: color,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isSelected ? Colors.white : Colors.transparent,
+                              width: 3,
+                            ),
+                            boxShadow: isSelected
+                                ? [BoxShadow(color: color.withValues(alpha: 0.6), blurRadius: 8, spreadRadius: 2)]
+                                : [],
+                          ),
+                          child: isSelected
+                              ? const Icon(Icons.check_rounded, color: Colors.white, size: 20)
+                              : null,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Prévisualisation
+                Container(
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Color(int.parse('FF${selectedColor.replaceFirst('#', '')}', radix: 16)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                    child: Text(
+                      titreCtrl.text.isEmpty ? 'Aperçu de l\'actualité' : titreCtrl.text,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    onPressed: () async {
+                      if (titreCtrl.text.trim().isEmpty || contenuCtrl.text.trim().isEmpty) {
+                        ScaffoldMessenger.of(ctx).showSnackBar(
+                          const SnackBar(content: Text('Titre et contenu requis'), backgroundColor: AppColors.error),
+                        );
+                        return;
+                      }
+                      final result = await ApiService.addActualite({
+                        'titre': titreCtrl.text.trim(),
+                        'contenu': contenuCtrl.text.trim(),
+                        'couleur_fond': selectedColor,
+                      });
+                      if (!ctx.mounted) return;
+                      Navigator.pop(ctx);
+                      if (result['success'] == true) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('✅ Actualité publiée !'), backgroundColor: AppColors.success),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(result['error']?.toString() ?? 'Erreur lors de la publication'), backgroundColor: AppColors.error),
+                        );
+                      }
+                    },
+                    child: const Text('Publier l\'actualité', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: Colors.white)),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

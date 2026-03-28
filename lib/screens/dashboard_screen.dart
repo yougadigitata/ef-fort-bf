@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
 import '../widgets/logo_widget.dart';
+import '../widgets/actualites_status_widget.dart';
 import 'abonnement_screen.dart';
-import 'actualite_detail_screen.dart';
 import 'entraide_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -382,182 +382,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
 
-              // ─── SECTION 6 : Actualités ──────────────────────────────
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 4,
-                        height: 22,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      const Text(
-                        '📰 Actualités Concours',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textDark,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppColors.error.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Text(
-                          'NOUVEAU',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.error,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
+              // ─── SECTION 6 : Actualités style WhatsApp Status ──────────
               if (_loadingActu)
                 const SliverToBoxAdapter(
                   child: Padding(
                     padding: EdgeInsets.all(40),
                     child: Center(
-                        child:
-                            CircularProgressIndicator(color: AppColors.primary)),
-                  ),
-                )
-              else if (_actualites.isEmpty)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(32),
-                    child: Center(
-                      child: Column(
-                        children: [
-                          Text('📰',
-                              style: TextStyle(
-                                  fontSize: 40,
-                                  color:
-                                      AppColors.textLight.withValues(alpha: 0.3))),
-                          const SizedBox(height: 12),
-                          const Text('Aucune actualité pour le moment',
-                              style: TextStyle(color: AppColors.textLight)),
-                        ],
-                      ),
-                    ),
+                        child: CircularProgressIndicator(color: AppColors.primary)),
                   ),
                 )
               else
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final actu = _actualites[index] as Map<String, dynamic>;
-                      return GestureDetector(
-                        onTap: () {
-                          // ✅ Ouvrir le contenu intégral de l'actualité
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  ActualiteDetailScreen(actualite: actu),
-                            ),
-                          );
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 6),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: AppColors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.05),
-                                blurRadius: 10,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 50,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Center(
-                                  child:
-                                      Text('📢', style: TextStyle(fontSize: 24)),
-                                ),
-                              ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      actu['titre'] ?? '',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 14,
-                                        color: AppColors.textDark,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      actu['contenu'] ?? '',
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        color: AppColors.textLight,
-                                        height: 1.4,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Column(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primary.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: const Text(
-                                      'Lire →',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: AppColors.primary,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                    childCount: _actualites.length,
-                  ),
+                SliverToBoxAdapter(
+                  child: ActualitesStatusWidget(actualites: _actualites),
                 ),
 
               // ─── SECTION 7 : Abonnement ──────────────────────────────
