@@ -23,7 +23,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen> {
       'couleur': '#2C3E50',
       'icone': '📋',
       'nombre_questions': 50,
-      'duree_minutes': 120,
+      'duree_minutes': 90,
       'ordre': 1,
     },
     {
@@ -33,7 +33,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen> {
       'couleur': '#C0392B',
       'icone': '⚖️',
       'nombre_questions': 50,
-      'duree_minutes': 120,
+      'duree_minutes': 90,
       'ordre': 2,
     },
     {
@@ -43,7 +43,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen> {
       'couleur': '#27AE60',
       'icone': '💰',
       'nombre_questions': 50,
-      'duree_minutes': 120,
+      'duree_minutes': 90,
       'ordre': 3,
     },
     {
@@ -53,7 +53,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen> {
       'couleur': '#E74C3C',
       'icone': '⚕️',
       'nombre_questions': 50,
-      'duree_minutes': 120,
+      'duree_minutes': 90,
       'ordre': 4,
     },
     {
@@ -63,7 +63,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen> {
       'couleur': '#3498DB',
       'icone': '🎓',
       'nombre_questions': 50,
-      'duree_minutes': 120,
+      'duree_minutes': 90,
       'ordre': 5,
     },
     {
@@ -73,7 +73,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen> {
       'couleur': '#F39C12',
       'icone': '🔧',
       'nombre_questions': 50,
-      'duree_minutes': 120,
+      'duree_minutes': 90,
       'ordre': 6,
     },
     {
@@ -83,7 +83,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen> {
       'couleur': '#16A085',
       'icone': '🌾',
       'nombre_questions': 50,
-      'duree_minutes': 120,
+      'duree_minutes': 90,
       'ordre': 7,
     },
     {
@@ -93,7 +93,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen> {
       'couleur': '#2ECC71',
       'icone': '💻',
       'nombre_questions': 50,
-      'duree_minutes': 120,
+      'duree_minutes': 90,
       'ordre': 8,
     },
     {
@@ -103,7 +103,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen> {
       'couleur': '#9B59B6',
       'icone': '🏗️',
       'nombre_questions': 50,
-      'duree_minutes': 120,
+      'duree_minutes': 90,
       'ordre': 9,
     },
     {
@@ -113,7 +113,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen> {
       'couleur': '#34495E',
       'icone': '📊',
       'nombre_questions': 50,
-      'duree_minutes': 120,
+      'duree_minutes': 90,
       'ordre': 10,
     },
   ];
@@ -177,7 +177,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   color: const Color(0xFF1A1A2E),
                   child: const Text(
-                    '10 examens professionnels · 50 questions · 2 heures',
+                    '10 examens professionnels · 50 questions · 1h30',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white70,
@@ -192,9 +192,9 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen> {
                       padding: const EdgeInsets.all(16),
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
-                        mainAxisSpacing: 14,
-                        crossAxisSpacing: 14,
-                        childAspectRatio: 0.9,
+                        mainAxisSpacing: 16, // ✅ Espacement vertical 16px
+                        crossAxisSpacing: 16, // ✅ Espacement horizontal 16px
+                        childAspectRatio: 0.85,
                       ),
                       itemCount: _examens.length,
                       itemBuilder: (ctx, i) => _buildExamenCard(_examens[i]),
@@ -286,28 +286,50 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen> {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          fontSize: 10,
+                          fontSize: 11,
                           color: Colors.black54,
-                          height: 1.3,
+                          height: 1.4,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      // Badge
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: color.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: color.withValues(alpha: 0.3)),
-                        ),
-                        child: Text(
-                          '50 questions • 2h',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: color,
-                            fontWeight: FontWeight.w600,
+                      const SizedBox(height: 10),
+                      // Badge 50 questions / 1h30
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: color.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: color.withValues(alpha: 0.3)),
+                            ),
+                            child: Text(
+                              '50 q.',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: color,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                           ),
-                        ),
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: color.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: color.withValues(alpha: 0.3)),
+                            ),
+                            child: Text(
+                              '1h30',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: color,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

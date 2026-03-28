@@ -284,7 +284,7 @@ class _ActualitesStatusScreenState extends State<ActualitesStatusScreen>
             ),
           ),
 
-          // ── Bouton Répondre en bas ──
+          // ── Info bas : entraînement professionnel ──
           Positioned(
             bottom: 0,
             left: 0,
@@ -292,48 +292,21 @@ class _ActualitesStatusScreenState extends State<ActualitesStatusScreen>
             child: SafeArea(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.4),
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.4),
-                          ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            'Répondre',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.8),
-                              fontSize: 15,
-                            ),
-                          ),
-                        ),
-                      ),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.35),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '📖 Entraînement par série — Comprenez vos forces et faiblesses',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic,
                     ),
-                    const SizedBox(width: 12),
-                    // Bouton coeur (like)
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.4),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.4),
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.favorite_border_rounded,
-                        color: Colors.white,
-                        size: 22,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -388,10 +361,14 @@ class _ActualitesStatusScreenState extends State<ActualitesStatusScreen>
               ),
             ),
           ),
-          // Contenu centré
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 120),
+          // Contenu scrollable centré
+          Positioned(
+            top: 110,
+            bottom: 70,
+            left: 0,
+            right: 0,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -429,12 +406,11 @@ class _ActualitesStatusScreenState extends State<ActualitesStatusScreen>
                   if (titre.isNotEmpty && contenu.isNotEmpty)
                     const SizedBox(height: 16),
 
-                  // Contenu
+                  // Contenu — SCROLLABLE (texte long)
                   if (contenu.isNotEmpty)
                     Text(
                       contenu,
                       textAlign: TextAlign.center,
-                      maxLines: null,
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.92),
                         fontSize: 16,

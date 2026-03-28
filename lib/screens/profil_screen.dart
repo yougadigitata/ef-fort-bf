@@ -210,22 +210,23 @@ class _ProfilScreenState extends State<ProfilScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 Container(
                   margin: const EdgeInsets.symmetric(horizontal: 20),
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: AppColors.secondaryLight,
+                    color: const Color(0xFFFFF3E0),
                     borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFFF7900).withValues(alpha: 0.3)),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(Icons.phone_android_rounded, color: AppColors.secondary, size: 20),
-                      SizedBox(width: 10),
-                      Expanded(
+                      const Icon(Icons.info_outline_rounded, color: Color(0xFFFF7900), size: 18),
+                      const SizedBox(width: 10),
+                      const Expanded(
                         child: Text(
-                          'Orange Money : *144*10*65 46 70 70*12000#',
-                          style: TextStyle(fontSize: 13, color: AppColors.textDark, height: 1.5, fontWeight: FontWeight.w600),
+                          'Paiement via Orange Money — 65 46 70 70\nActivation sous 24h après vérification',
+                          style: TextStyle(fontSize: 12, color: AppColors.textDark, height: 1.5),
                         ),
                       ),
                     ],
@@ -566,26 +567,46 @@ class _AboutScreen extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(24, 28, 24, 36),
               child: Column(
                 children: [
+                  // LOGO EF-FORT RESTAURÉ ✅ (vrai logo PNG)
                   Container(
-                    width: 90,
-                    height: 90,
+                    width: 110,
+                    height: 110,
                     decoration: BoxDecoration(
-                      color: AppColors.secondary,
-                      borderRadius: BorderRadius.circular(22),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.secondary.withValues(alpha: 0.4),
+                          color: Colors.black.withValues(alpha: 0.2),
                           blurRadius: 20,
                           offset: const Offset(0, 6),
                         ),
                       ],
                     ),
-                    child: const Center(
-                      child: Text('EF', style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 32,
-                        fontWeight: FontWeight.w900,
-                      )),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: Image.asset(
+                        'assets/images/logo_effort.png',
+                        width: 110,
+                        height: 110,
+                        fit: BoxFit.contain,
+                        errorBuilder: (ctx, err, _) => Container(
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [AppColors.primary, AppColors.primaryDark],
+                            ),
+                          ),
+                          child: const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text('🎓', style: TextStyle(fontSize: 36)),
+                              Text('EF-FORT', style: TextStyle(
+                                color: Colors.white, fontSize: 11,
+                                fontWeight: FontWeight.w900,
+                              )),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),

@@ -51,7 +51,7 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
   final Map<int, Set<String>> _selectedAnswers = {};
   final Set<int> _skipped = {};
   bool _serieTerminee = false;
-  bool _showCorrection = false; // correction immédiate après validation
+  // Note: Correction uniquement en fin de série — PAS de correction instantanée (v2.1)
 
   // ─── Timer ────────────────────────────────────────────────────────
   int _secondsElapsed = 0;
@@ -114,7 +114,7 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
 
   // ══ Actions réponse ════════════════════════════════════════════════
   void _toggleAnswer(String letter) {
-    if (_serieTerminee || _showCorrection) return;
+    if (_serieTerminee) return;
     setState(() {
       _selectedAnswers.putIfAbsent(_currentIndex, () => {});
       final sel = _selectedAnswers[_currentIndex]!;
@@ -127,10 +127,7 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
   }
 
   void _valider() {
-    if (_showCorrection) {
-      _goNext();
-      return;
-    }
+    // Pas de correction instantanée — on passe directement à la question suivante
     if ((_selectedAnswers[_currentIndex] ?? {}).isEmpty) {
       // Pas de réponse → avertissement
       ScaffoldMessenger.of(context).showSnackBar(
@@ -142,12 +139,11 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
       );
       return;
     }
-    setState(() => _showCorrection = true);
-    _scrollToBottom();
+    // Aller directement à la prochaine question sans afficher la correction
+    _goNext();
   }
 
   void _goNext() {
-    setState(() => _showCorrection = false);
     if (_currentIndex < _questions.length - 1) {
       setState(() => _currentIndex++);
       _scrollToTop();
@@ -159,7 +155,6 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
   void _goPrev() {
     if (_currentIndex > 0) {
       setState(() {
-        _showCorrection = false;
         _currentIndex--;
       });
       _scrollToTop();
@@ -167,11 +162,9 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
   }
 
   void _sauter() {
-    if (_showCorrection) return;
     setState(() {
       _skipped.add(_currentIndex);
       _selectedAnswers.remove(_currentIndex);
-      _showCorrection = false;
     });
     if (_currentIndex < _questions.length - 1) {
       setState(() => _currentIndex++);
@@ -185,7 +178,6 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
     _timer?.cancel();
     setState(() {
       _serieTerminee = true;
-      _showCorrection = false;
     });
     _scrollToTop();
   }
@@ -237,15 +229,7 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
     });
   }
 
-  void _scrollToBottom() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollCtrl.hasClients) {
-        _scrollCtrl.animateTo(_scrollCtrl.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 400),
-            curve: Curves.easeOut);
-      }
-    });
-  }
+  // _scrollToBottom supprimé (correction instantanée désactivée)
 
   // ══ Build ══════════════════════════════════════════════════════════
   @override
@@ -383,12 +367,6 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
 
                 // Bulle RÉPONSES (gauche, grise)
                 _buildReponsesBubble(),
-
-                // Correction immédiate (si validé)
-                if (_showCorrection) ...[
-                  const SizedBox(height: 8),
-                  _buildCorrectionBubble(),
-                ],
 
                 // Bannière abonnement
                 if (!ApiService.isAbonne && _currentIndex >= 4) ...[
@@ -588,39 +566,13 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
                   final letter = entry.key;
                   final text = entry.value;
                   final isSelected = selected.contains(letter);
-                  final isCorrect = _showCorrection && bonnes.contains(letter);
-                  final isWrong = _showCorrection && isSelected && !bonnes.contains(letter);
-
-                  Color bgColor;
-                  Color borderColor;
-                  Color textColor;
-                  Widget? trailingWidget;
-
-                  if (_showCorrection) {
-                    if (isCorrect) {
-                      bgColor = const Color(0xFF25D366).withValues(alpha: 0.15);
-                      borderColor = _waGreen;
-                      textColor = _waDarkGreen;
-                      trailingWidget = const Icon(Icons.check_circle_rounded,
-                          color: _waGreen, size: 18);
-                    } else if (isWrong) {
-                      bgColor = Colors.red.withValues(alpha: 0.08);
-                      borderColor = Colors.red.shade300;
-                      textColor = Colors.red.shade700;
-                      trailingWidget = Icon(Icons.cancel_rounded,
-                          color: Colors.red.shade400, size: 18);
-                    } else {
-                      bgColor = Colors.transparent;
-                      borderColor = Colors.transparent;
-                      textColor = Colors.black54;
-                    }
-                  } else {
-                    bgColor = isSelected
-                        ? _waBlue.withValues(alpha: 0.15)
-                        : Colors.white.withValues(alpha: 0.7);
-                    borderColor = isSelected ? _waBlue : Colors.grey.shade300;
-                    textColor = isSelected ? _waDarkGreen : const Color(0xFF1A1A1A);
-                  }
+                  // Pas de correction instantanée — couleurs simples sélection/non-sélection
+                  final Color bgColor = isSelected
+                      ? _waBlue.withValues(alpha: 0.15)
+                      : Colors.white.withValues(alpha: 0.7);
+                  final Color borderColor = isSelected ? _waBlue : Colors.grey.shade300;
+                  final Color textColor = isSelected ? _waDarkGreen : const Color(0xFF1A1A1A);
+                  const Widget? trailingWidget = null;
 
                   return GestureDetector(
                     onTap: () => _toggleAnswer(letter),
@@ -636,48 +588,28 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
                       ),
                       child: Row(
                         children: [
-                          // Cercle radio
+                          // Cercle radio (simple, sans correction instantanée)
                           AnimatedContainer(
                             duration: const Duration(milliseconds: 200),
                             width: 28,
                             height: 28,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: _showCorrection
-                                  ? (isCorrect
-                                      ? _waGreen
-                                      : isWrong
-                                          ? Colors.red.shade400
-                                          : Colors.grey.shade200)
-                                  : (isSelected ? _waBlue : Colors.white),
+                              color: isSelected ? _waBlue : Colors.white,
                               border: Border.all(
-                                color: _showCorrection
-                                    ? Colors.transparent
-                                    : (isSelected
-                                        ? _waBlue
-                                        : Colors.grey.shade400),
+                                color: isSelected ? _waBlue : Colors.grey.shade400,
                                 width: 1.5,
                               ),
                             ),
                             child: Center(
-                              child: _showCorrection
-                                  ? Icon(
-                                      isCorrect
-                                          ? Icons.check
-                                          : isWrong
-                                              ? Icons.close
-                                              : null,
-                                      color: Colors.white,
-                                      size: 14,
-                                    )
+                              child: isSelected
+                                  ? const Icon(Icons.check, color: Colors.white, size: 14)
                                   : Text(
                                       letter,
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w800,
-                                        color: isSelected
-                                            ? Colors.white
-                                            : Colors.grey.shade600,
+                                        color: Colors.grey.shade600,
                                       ),
                                     ),
                             ),
@@ -727,121 +659,7 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
     );
   }
 
-  // ── Bulle CORRECTION (après validation) ───────────────────────────
-  Widget _buildCorrectionBubble() {
-    final q = _questions[_currentIndex] as Map<String, dynamic>;
-    final bonnes = _getBonnesReponses(q);
-    final choisies = _selectedAnswers[_currentIndex] ?? {};
-    final isCorrect = choisies.isNotEmpty &&
-        choisies.containsAll(bonnes) &&
-        bonnes.containsAll(choisies);
-    final explication = (q['explication'] ?? '').toString();
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Flexible(
-          child: Container(
-            constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.85,
-            ),
-            margin: const EdgeInsets.only(left: 30),
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: isCorrect
-                  ? const Color(0xFFDCF8C6)
-                  : const Color(0xFFFFEDED),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(4),
-                bottomLeft: Radius.circular(16),
-                bottomRight: Radius.circular(16),
-              ),
-              border: Border.all(
-                color: isCorrect
-                    ? _waGreen.withValues(alpha: 0.5)
-                    : Colors.red.withValues(alpha: 0.3),
-                width: 1.5,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Status
-                Row(
-                  children: [
-                    Icon(
-                      isCorrect
-                          ? Icons.check_circle_rounded
-                          : Icons.cancel_rounded,
-                      color: isCorrect ? _waGreen : Colors.red,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      isCorrect ? '✅ Correct !' : '❌ Incorrect',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 14,
-                        color: isCorrect ? _waDarkGreen : Colors.red.shade700,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      'Réponse : ${bonnes.join(", ")}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: _waDarkGreen,
-                      ),
-                    ),
-                  ],
-                ),
-                if (explication.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.6),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('💡', style: TextStyle(fontSize: 14)),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            explication,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontFamily: 'Roboto',
-                              color: Colors.grey.shade800,
-                              height: 1.45,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(width: 4),
-        _buildBubbleTail(isRight: true),
-      ],
-    );
-  }
+  // _buildCorrectionBubble supprimée — correction uniquement en fin de série
 
   // ── Queue de bulle ─────────────────────────────────────────────────
   Widget _buildBubbleTail({required bool isRight}) {
@@ -918,34 +736,29 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
               _navBtn(
                 icon: Icons.skip_next_rounded,
                 label: 'Sauter',
-                onTap: _showCorrection || isLast ? null : _sauter,
+                onTap: isLast ? null : _sauter,
                 color: Colors.orange,
                 outlined: true,
               ),
               const SizedBox(width: 8),
-              // Valider / Suivant
+              // Valider / Terminer (pas de correction instantanée)
               Expanded(
                 flex: 2,
                 child: ElevatedButton.icon(
                   onPressed: _valider,
                   icon: Icon(
-                    _showCorrection
-                        ? Icons.arrow_forward_rounded
-                        : Icons.check_rounded,
+                    isLast ? Icons.check_circle_rounded : Icons.arrow_forward_rounded,
                     size: 18,
                   ),
                   label: Text(
-                    _showCorrection
-                        ? (isLast ? 'Résultats' : 'Suivant')
-                        : (isLast ? 'Terminer' : 'Valider'),
+                    isLast ? 'Terminer' : 'Valider & Suivant',
                     style: const TextStyle(
                       fontWeight: FontWeight.w800,
                       fontFamily: 'Roboto',
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        _showCorrection ? _waDarkGreen : _waGreen,
+                    backgroundColor: isLast ? _waDarkGreen : _waGreen,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 13),
                     shape: RoundedRectangleBorder(
@@ -1378,7 +1191,6 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
                         _selectedAnswers.clear();
                         _skipped.clear();
                         _serieTerminee = false;
-                        _showCorrection = false;
                         _secondsElapsed = 0;
                         _isPaused = false;
                       });

@@ -48,7 +48,7 @@ class _SimulationLaunchScreenState extends State<SimulationLaunchScreen> {
     {
       'icon': Icons.timer_rounded,
       'emoji': '⏱',
-      'titre': '2 heures chrono',
+      'titre': '1h30 chrono',
       'sous_titre': 'Soumission impossible avant 30 minutes',
       'color': const Color(0xFF2980B9),
     },
@@ -378,7 +378,7 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
   final ScrollController _reponseScroll = ScrollController();
 
   static const int _minSecondsBeforeSubmit = 30 * 60;
-  static const int _durationSeconds = 2 * 60 * 60; // 2h
+  static const int _durationSeconds = 90 * 60; // 1h30
 
   bool get _canSubmit =>
       _remainingSeconds <= (_durationSeconds - _minSecondsBeforeSubmit);
@@ -468,7 +468,7 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
               ),
               const SizedBox(height: 10),
               ...[
-                '50 questions — Durée : 2 heures',
+                '50 questions — Durée : 1h30',
                 'Noircissez les cases (A, B, C, D, E) sur la feuille de réponses',
                 'Vous pouvez cocher plusieurs cases par question',
                 'Une mauvaise réponse entraîne une pénalité',

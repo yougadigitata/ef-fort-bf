@@ -26,7 +26,7 @@ class _ExamenScreenState extends State<ExamenScreen> {
   bool _loading = true;
   String? _error;
   late Timer _timer;
-  int _remainingSeconds = 7200; // 2 heures
+  int _remainingSeconds = 5400; // 1h30 (90 minutes)
   bool _submitted = false;
 
   @override
@@ -131,7 +131,7 @@ class _ExamenScreenState extends State<ExamenScreen> {
           answers: _answers,
           nomExamen: widget.nomExamen,
           couleur: widget.couleur,
-          tempsUtilise: 7200 - _remainingSeconds,
+          tempsUtilise: 5400 - _remainingSeconds,
         ),
       ),
     );
