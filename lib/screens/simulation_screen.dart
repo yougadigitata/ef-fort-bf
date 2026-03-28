@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
 import '../widgets/logo_widget.dart';
+import 'abonnement_screen.dart';
 
 // ══════════════════════════════════════════════════════════════
 // SIMULATION SCREEN v6 — MEGA PROMPT v3.0
@@ -783,6 +784,18 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
     if (!mounted) return;
 
     if (result['error'] != null) {
+      // Gérer le quota freemium (1 simulation gratuite)
+      if (result['quota_atteint'] == true) {
+        setState(() {
+          _loading = false;
+          _error = null; // Pas d'erreur brute, on affiche la page premium
+        });
+        // Afficher dialog d'abonnement
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _showQuotaDialog();
+        });
+        return;
+      }
       setState(() {
         _error = result['error'] as String;
         _loading = false;
@@ -818,6 +831,77 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
     if (kIsWeb) {
       _playBellJS(freq, dur);
     }
+  }
+
+  void _showQuotaDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Text('👑', style: TextStyle(fontSize: 28)),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Simulation Premium',
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF3CD),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFFFD700)),
+              ),
+              child: const Text(
+                'Vous avez utilisé votre simulation gratuite.\n\nAbonnez-vous pour accéder aux simulations illimitées avec corrigé détaillé et export PDF.',
+                style: TextStyle(fontSize: 13, height: 1.5),
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              '✅ Simulations illimitées\n✅ Corrigé détaillé\n✅ Export PDF\n✅ 25 séries par matière\n✅ Toutes les 16 matières',
+              style: TextStyle(fontSize: 13, height: 1.7, color: Color(0xFF128C7E)),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.pop(context);
+            },
+            child: const Text('Plus tard', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AbonnementScreen()),
+              );
+            },
+            icon: const Icon(Icons.star_rounded, size: 18),
+            label: const Text('S\'abonner maintenant'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFD4A017),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showConsignesDialog() {

@@ -146,7 +146,51 @@ questions.get('/series', async (c) => {
   const { data, error } = await query.limit(50);
   if (error) return c.json({ error: error.message }, 500);
 
+  // Pas de cache sur les séries (données sensibles freemium)
+  c.header('Cache-Control', 'no-store, no-cache, must-revalidate');
   return c.json({ success: true, series: data ?? [] });
+});
+
+// ── POST /api/questions — Ajouter question avec anti-doublon ───────────
+questions.post('/questions', async (c) => {
+  const body = await c.req.json();
+  const { enonce, serie_id, matiere_id } = body;
+
+  if (!enonce || !matiere_id) {
+    return c.json({ error: 'enonce et matiere_id requis' }, 400);
+  }
+
+  const db = getDB(c.env);
+
+  // Vérification anti-doublon (même énoncé dans la même série)
+  if (serie_id) {
+    const { data: existing } = await db
+      .from('questions')
+      .select('id')
+      .eq('serie_id', serie_id)
+      .ilike('enonce', enonce.trim())
+      .limit(1);
+
+    if (existing && existing.length > 0) {
+      return c.json({ error: 'Question en double: cet énoncé existe déjà dans cette série', duplicate: true }, 409);
+    }
+  }
+
+  // Anti-doublon global dans la même matière
+  const { data: globalExisting } = await db
+    .from('questions')
+    .select('id, serie_id')
+    .eq('matiere_id', matiere_id)
+    .ilike('enonce', enonce.trim())
+    .limit(1);
+
+  if (globalExisting && globalExisting.length > 0) {
+    return c.json({ error: 'Question en double: cet énoncé existe déjà dans cette matière', duplicate: true }, 409);
+  }
+
+  const { data, error } = await db.from('questions').insert(body).select().single();
+  if (error) return c.json({ error: error.message }, 500);
+  return c.json({ success: true, question: data });
 });
 
 export default questions;

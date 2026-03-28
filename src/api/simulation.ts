@@ -24,6 +24,28 @@ simulation.post('/demarrer', requireAuth, async (c) => {
   const userId = context.userId as string;
   const db = getDB(c.env);
 
+  // Vérifier abonnement et quota freemium
+  const { data: userRow } = await db.from('users').select('abonnement_actif, is_admin').eq('id', userId).single();
+  const isAbonne = userRow?.abonnement_actif === true;
+  const isAdmin = userRow?.is_admin === true;
+
+  if (!isAbonne && !isAdmin) {
+    // Compter les simulations déjà faites
+    const { count: nbSim } = await db
+      .from('sessions_examen')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('type_session', 'SIMULATION')
+      .eq('termine', true);
+
+    if ((nbSim ?? 0) >= 1) {
+      return c.json({
+        error: 'Accès limité. Abonnez-vous pour accéder à toutes les simulations illimitées.',
+        quota_atteint: true,
+      }, 403);
+    }
+  }
+
   // Récupérer jusqu'à 200 questions, mélanger et prendre 50 (ou moins si dispo)
   const { data: allQ, error } = await db
     .from('questions')

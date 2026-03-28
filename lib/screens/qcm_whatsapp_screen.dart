@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
 import 'abonnement_screen.dart';
@@ -1163,57 +1164,210 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
 
             const SizedBox(height: 20),
 
-            // ── Boutons action ─────────────────────────────────────
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back),
-                    label: const Text('Retour'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: _waDarkGreen,
-                      side: const BorderSide(color: _waDarkGreen, width: 1.5),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                    ),
-                  ),
+            // ── Bouton PDF (abonnés) ou Recommencer (gratuit) ──────
+            if (ApiService.isAbonne) ...
+              _buildPDFButton()
+            else ...
+              _buildRecommencerButton(),
+
+            const SizedBox(height: 12),
+
+            // ── Bouton Retour ─────────────────────────────────────
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.arrow_back),
+                label: const Text('Retour aux séries'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: _waDarkGreen,
+                  side: const BorderSide(color: _waDarkGreen, width: 1.5),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      setState(() {
-                        _questions = [];
-                        _loading = true;
-                        _currentIndex = 0;
-                        _selectedAnswers.clear();
-                        _skipped.clear();
-                        _serieTerminee = false;
-                        _secondsElapsed = 0;
-                        _isPaused = false;
-                      });
-                      _loadQuestions();
-                      _startTimer();
-                    },
-                    icon: const Icon(Icons.refresh_rounded),
-                    label: const Text('Recommencer',
-                        style: TextStyle(fontWeight: FontWeight.w700)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _waGreen,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
             const SizedBox(height: 30),
           ],
         ),
+      ),
+    );
+  }
+
+  // ── Bouton PDF pour abonnés ──────────────────────────────────────
+  List<Widget> _buildPDFButton() {
+    return [
+      SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          onPressed: () => _exportResultsPDF(),
+          icon: const Icon(Icons.picture_as_pdf_rounded, size: 20),
+          label: const Text(
+            'Imprimer en PDF',
+            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFC1672B),
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12)),
+            elevation: 2,
+          ),
+        ),
+      ),
+    ];
+  }
+
+  // ── Bouton Recommencer pour non-abonnés ───────────────────────────
+  List<Widget> _buildRecommencerButton() {
+    return [
+      SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          onPressed: () {
+            setState(() {
+              _questions = [];
+              _loading = true;
+              _currentIndex = 0;
+              _selectedAnswers.clear();
+              _skipped.clear();
+              _serieTerminee = false;
+              _secondsElapsed = 0;
+              _isPaused = false;
+            });
+            _loadQuestions();
+            _startTimer();
+          },
+          icon: const Icon(Icons.refresh_rounded),
+          label: const Text('Recommencer',
+              style: TextStyle(fontWeight: FontWeight.w700)),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: _waGreen,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        ),
+      ),
+    ];
+  }
+
+  // ── Export PDF des résultats ──────────────────────────────────────
+  void _exportResultsPDF() {
+    if (!ApiService.isAbonne) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const AbonnementScreen()),
+      );
+      return;
+    }
+
+    // Construire le contenu PDF textuel
+    final score = _calculerScoreFinal();
+    final total = _questions.length;
+    final pct = total > 0 ? (score / total * 100).round() : 0;
+    final sur20 = total > 0 ? (score / total * 20).toStringAsFixed(1) : '0';
+    final dureeStr = _timerDisplay;
+
+    final user = ApiService.currentUser;
+    final nom = user != null
+        ? '${user['prenom'] ?? ''} ${user['nom'] ?? ''}'.trim()
+        : 'Candidat';
+
+    final buffer = StringBuffer();
+    buffer.writeln('EF-FORT.BF — Résultats de la Série');
+    buffer.writeln('═══════════════════════════════════');
+    buffer.writeln('Candidat : $nom');
+    buffer.writeln('Matière  : ${widget.label}');
+    buffer.writeln('Date     : ${DateTime.now().toString().substring(0, 16)}');
+    buffer.writeln('');
+    buffer.writeln('SCORE : $score/$total ($pct%) — /20 : $sur20');
+    buffer.writeln('Temps écoulé : $dureeStr');
+    buffer.writeln('');
+    buffer.writeln('CORRIGÉ DÉTAILLÉ :');
+    buffer.writeln('──────────────────');
+
+    for (int i = 0; i < _questions.length; i++) {
+      final q = _questions[i] as Map<String, dynamic>;
+      final bonnes = _getBonnesReponses(q);
+      final choisies = _selectedAnswers[i] ?? {};
+      final skipped = _skipped.contains(i);
+      final correct = !skipped &&
+          choisies.isNotEmpty &&
+          choisies.containsAll(bonnes) &&
+          bonnes.containsAll(choisies);
+
+      final status = skipped || choisies.isEmpty
+          ? 'Non répondu'
+          : correct
+              ? 'CORRECT'
+              : 'INCORRECT';
+      buffer.writeln('Q${i + 1}. $status');
+      buffer.writeln('  Énoncé : ${(q['enonce'] ?? q['question'] ?? '').toString()}');
+      buffer.writeln('  Votre réponse : ${choisies.isEmpty ? '-' : choisies.join(', ')}');
+      buffer.writeln('  Bonne(s) réponse(s) : ${bonnes.join(', ')}');
+      if ((q['explication'] ?? '').toString().isNotEmpty) {
+        buffer.writeln('  Explication : ${q['explication']}');
+      }
+      buffer.writeln('');
+    }
+
+    buffer.writeln('───────────────────────────────────');
+    buffer.writeln('EF-FORT.BF — Transformer l\'effort en réussite');
+
+    // Copier dans le presse-papiers et afficher dialog
+    Clipboard.setData(ClipboardData(text: buffer.toString()));
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Text('📄', style: TextStyle(fontSize: 24)),
+            SizedBox(width: 8),
+            Text('Résultats copiés',
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Score : $score/$total ($pct%) — Note /20 : $sur20',
+              style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                  color: Color(0xFF128C7E)),
+            ),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFDCF8C6),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Text(
+                '✅ Le corrigé complet a été copié dans le presse-papiers.\n\nCollez-le dans un document Word ou Google Docs pour l\'imprimer.',
+                style: TextStyle(fontSize: 12, height: 1.5),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF128C7E),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('OK'),
+          ),
+        ],
       ),
     );
   }
