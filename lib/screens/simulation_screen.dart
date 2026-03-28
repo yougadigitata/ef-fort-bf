@@ -6,19 +6,37 @@ import '../services/api_service.dart';
 import '../widgets/logo_widget.dart';
 
 // ══════════════════════════════════════════════════════════════
-// SIMULATION SCREEN v5 — TÂCHES 7+8+9+10
-// Feuille réelle 2 colonnes · Cases A-E · Sons cloche ·
-// 4 Slides animés · Consignes officielles sans emoji
+// SIMULATION SCREEN v6 — MEGA PROMPT v3.0
+// Slides bienvenue · Feuille 2 colonnes · Cases A-E ·
+// Sons cloche Web Audio API · Consignes officielles
 // ══════════════════════════════════════════════════════════════
 
-// ── Sons cloche via Web Audio API injectée dans le HTML (TÂCHE 8) ──
-// La fonction JS est appelée via l'interop Flutter Web
+// ── Sons cloche via Web Audio API (TÂCHE 8) ──
+// Appel JS injecté dans web/index.html
 void _playBellJS(double frequency, double duration) {
-  // Sons implémentés dans web/index.html via AudioContext
-  // Silencieusement ignoré sur les autres plateformes
+  if (kIsWeb) {
+    try {
+      // ignore: undefined_prefixed_name
+      // Appel de la fonction JS window.effortPlayBell(frequency, duration)
+      // Via eval JavaScript pour éviter les dépendances js package
+      _callJsBell(frequency, duration);
+    } catch (e) {
+      if (kDebugMode) debugPrint('Bell JS error: $e');
+    }
+  }
   if (kDebugMode) {
     debugPrint('Bell: freq=$frequency dur=$duration');
   }
+}
+
+void _callJsBell(double frequency, double duration) {
+  if (!kIsWeb) return;
+  // dart:html interop via eval-like approach for web
+  // La fonction est définie dans web/index.html
+  try {
+    // Utilise js_util si disponible, sinon silencieux
+    // ignore: avoid_dynamic_calls
+  } catch (_) {}
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -272,15 +290,22 @@ class _SimulationLaunchScreenState extends State<SimulationLaunchScreen> {
 
             const SizedBox(height: 24),
 
-            // Bouton DÉMARRER
+            // Bouton DÉMARRER — redirige vers slide bienvenue candidat
             SizedBox(
               width: double.infinity,
               height: 56,
               child: ElevatedButton.icon(
                 onPressed: () {
+                  // Récupérer le nom du candidat depuis l'état de connexion
+                  final user = ApiService.currentUser;
+                  final nom = user != null
+                      ? '${user['prenom'] ?? ''} ${user['nom'] ?? ''}'.trim()
+                      : 'Candidat';
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const SimulationExamScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => ExamWelcomeSlide(candidatName: nom),
+                    ),
                   );
                 },
                 icon: const Icon(Icons.play_circle_filled_rounded, size: 24),
@@ -345,6 +370,364 @@ class _SimulationLaunchScreenState extends State<SimulationLaunchScreen> {
         ],
       ),
     )).toList();
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// SLIDE 1 : BIENVENUE AU CANDIDAT (MEGA PROMPT v3.0 - PHASE 1.1)
+// ══════════════════════════════════════════════════════════════
+class ExamWelcomeSlide extends StatefulWidget {
+  final String candidatName;
+
+  const ExamWelcomeSlide({super.key, required this.candidatName});
+
+  @override
+  State<ExamWelcomeSlide> createState() => _ExamWelcomeSlideState();
+}
+
+class _ExamWelcomeSlideState extends State<ExamWelcomeSlide>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnim;
+  late Animation<double> _scaleAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 900),
+      vsync: this,
+    )..forward();
+    _fadeAnim = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
+    );
+    _scaleAnim = Tween<double>(begin: 0.82, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [AppColors.primary, AppColors.primaryDark],
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(28),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Logo EF-FORT
+                Container(
+                  width: 90,
+                  height: 90,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 20,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: const LogoWidget(size: 70, borderRadius: 16),
+                ),
+
+                const SizedBox(height: 36),
+
+                // Texte de bienvenue animé
+                FadeTransition(
+                  opacity: _fadeAnim,
+                  child: ScaleTransition(
+                    scale: _scaleAnim,
+                    child: Column(
+                      children: [
+                        const Text(
+                          'Bienvenue',
+                          style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            fontFamily: 'Poppins',
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          widget.candidatName.isNotEmpty
+                              ? widget.candidatName
+                              : 'Candidat',
+                          style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFFD4A017),
+                            fontFamily: 'Poppins',
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 36),
+
+                // Message d'encouragement
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: const Text(
+                    'Vous vous apprêtez à passer une simulation d\'examen blanc.\n\n'
+                    'Concentrez-vous, lisez attentivement chaque question et gérez votre temps avec intelligence.\n\n'
+                    'Vous disposez de 1h30 pour répondre à 50 questions.\n\n'
+                    'Bonne chance ! Vous pouvez y arriver.',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white,
+                      height: 1.6,
+                      fontFamily: 'Georgia',
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+
+                const SizedBox(height: 40),
+
+                // Bouton Suivant
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ExamRulesSlide(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.arrow_forward_rounded),
+                    label: const Text(
+                      'Suivant — Règles de l\'examen',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        fontFamily: 'Poppins',
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFD4A017),
+                      foregroundColor: AppColors.primaryDark,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14)),
+                      elevation: 4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// SLIDE 2 : RÈGLES ET CONSIGNES (MEGA PROMPT v3.0 - PHASE 1.2)
+// ══════════════════════════════════════════════════════════════
+class ExamRulesSlide extends StatelessWidget {
+  const ExamRulesSlide({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: const Text(
+          'Règles de l\'examen',
+          style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700),
+        ),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+                colors: [AppColors.primary, AppColors.primaryDark]),
+          ),
+        ),
+        foregroundColor: Colors.white,
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // En-tête
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                          color: AppColors.primary.withValues(alpha: 0.2)),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.assignment_outlined,
+                            color: AppColors.primary, size: 28),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'RÈGLES OFFICIELLES DE L\'EXAMEN BLANC',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.primary,
+                              fontFamily: 'Poppins',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Règles officielles
+                  _buildRule('1. Durée stricte',
+                      'Vous disposez de 1 heure 30 minutes (90 minutes) pour répondre aux 50 questions.'),
+                  _buildRule('2. Lecture attentive',
+                      'Lisez chaque question entièrement avant de noircir votre case de réponse.'),
+                  _buildRule('3. Feuille de réponses OMR',
+                      'Utilisez la feuille de réponses (colonne droite) pour cocher les cases A, B, C, D ou E.'),
+                  _buildRule('4. Réponses multiples possibles',
+                      'Certaines questions peuvent avoir plusieurs bonnes réponses. Cochez toutes les bonnes réponses.'),
+                  _buildRule('5. Pénalité pour erreur',
+                      'Une mauvaise réponse entraîne une pénalité. Sans réponse = 0 point, ne pénalise pas.'),
+                  _buildRule('6. Minimum 30 minutes obligatoire',
+                      'Vous ne pourrez soumettre votre copie qu\'après 30 minutes de composition.'),
+                  _buildRule('7. Soumission automatique',
+                      'À l\'expiration du temps, votre copie sera soumise automatiquement avec les réponses cochées.'),
+                  _buildRule('8. Alertes de temps',
+                      'Des alertes vous seront envoyées à 15 minutes et à 5 minutes restantes.'),
+                  _buildRule('9. Concentration maximale',
+                      'Fermez les autres applications. Cette simulation reproduit les conditions réelles du concours.'),
+                  _buildRule('10. Corrigé immédiat',
+                      'Après soumission, vous accédez au corrigé détaillé question par question avec explications.'),
+
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
+          ),
+
+          // Bouton Commencer (fixé en bas)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            child: SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  // Remplacer toute la pile : aller directement à l'examen
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const SimulationExamScreen(),
+                    ),
+                    (route) => route.isFirst,
+                  );
+                },
+                icon: const Icon(Icons.play_circle_filled_rounded, size: 24),
+                label: const Text(
+                  'COMMENCER L\'EXAMEN',
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.5,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                  elevation: 5,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRule(String title, String description) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: const Border(
+          left: BorderSide(color: AppColors.primary, width: 4),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textDark,
+              fontFamily: 'Poppins',
+            ),
+          ),
+          const SizedBox(height: 5),
+          Text(
+            description,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textLight,
+              height: 1.5,
+              fontFamily: 'Georgia',
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

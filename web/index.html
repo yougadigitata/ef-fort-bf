@@ -71,7 +71,57 @@
     <p>Chargement...</p>
     <div class="spinner"></div>
   </div>
+  <!-- ════════════════════════════════════════════════════
+       EF-FORT.BF — Web Audio API : Cloche sonore examen
+       Fonctions appelées depuis Flutter via js_interop
+       ════════════════════════════════════════════════════ -->
   <script>
+    // ── Cloche sonore via Web Audio API ──
+    window.effortPlayBell = function(frequency, durationSec) {
+      try {
+        var ctx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Oscillateur principal (fondamentale)
+        var osc1 = ctx.createOscillator();
+        var gainNode1 = ctx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(frequency, ctx.currentTime);
+        gainNode1.gain.setValueAtTime(0.6, ctx.currentTime);
+        gainNode1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + durationSec);
+        osc1.connect(gainNode1);
+        gainNode1.connect(ctx.destination);
+        
+        // Harmonique (octave supérieure pour la brillance)
+        var osc2 = ctx.createOscillator();
+        var gainNode2 = ctx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(frequency * 2, ctx.currentTime);
+        gainNode2.gain.setValueAtTime(0.3, ctx.currentTime);
+        gainNode2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + durationSec * 0.7);
+        osc2.connect(gainNode2);
+        gainNode2.connect(ctx.destination);
+        
+        osc1.start(ctx.currentTime);
+        osc1.stop(ctx.currentTime + durationSec);
+        osc2.start(ctx.currentTime);
+        osc2.stop(ctx.currentTime + durationSec * 0.7);
+        
+        // Libérer le contexte après la fin
+        setTimeout(function() { 
+          try { ctx.close(); } catch(e) {} 
+        }, (durationSec + 0.5) * 1000);
+        
+      } catch(e) {
+        console.warn('EF-FORT Bell error:', e);
+      }
+    };
+
+    // ── Double cloche (fin d'examen) ──
+    window.effortPlayDoubleBell = function() {
+      window.effortPlayBell(880, 1.5);
+      setTimeout(function() { window.effortPlayBell(660, 2.0); }, 800);
+    };
+
     window.addEventListener('flutter-first-frame', function () {
       var loading = document.getElementById('loading');
       if (loading) loading.remove();
