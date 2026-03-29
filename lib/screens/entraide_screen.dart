@@ -123,12 +123,7 @@ class _EntraideScreenState extends State<EntraideScreen> {
       return;
     }
 
-    final isAbonne = ApiService.isAbonne;
-    if (!isAbonne) {
-      _showUpgradeDialog();
-      return;
-    }
-
+    // Fonctionnalité disponible pour tous les utilisateurs connectés
     final result = await Navigator.push<bool>(
       context,
       MaterialPageRoute(

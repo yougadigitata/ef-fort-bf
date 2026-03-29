@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
 import 'simulation_screen.dart';
 
 /// PHASE 3 — Écran de sélection des 10 examens professionnels
+/// Design harmonisé : header vert, cartes uniformes, sans bandes noires
 class ExamenSelectionScreen extends StatefulWidget {
   const ExamenSelectionScreen({super.key});
 
@@ -20,7 +22,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen> {
       'id': 'exam_001',
       'nom': 'Administration générale',
       'description': 'Adjoints administratifs, agents administratifs, assistants de direction',
-      'couleur': '#2C3E50',
+      'couleur': '#1A5C38',
       'icone': '📋',
       'nombre_questions': 50,
       'duree_minutes': 90,
@@ -50,7 +52,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen> {
       'id': 'exam_004',
       'nom': 'Concours de la santé',
       'description': 'Infirmiers, sages-femmes, agents de santé',
-      'couleur': '#E74C3C',
+      'couleur': '#8E44AD',
       'icone': '⚕️',
       'nombre_questions': 50,
       'duree_minutes': 90,
@@ -60,7 +62,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen> {
       'id': 'exam_005',
       'nom': 'Éducation & formation',
       'description': 'Enseignants du primaire, enseignants du secondaire',
-      'couleur': '#3498DB',
+      'couleur': '#2980B9',
       'icone': '🎓',
       'nombre_questions': 50,
       'duree_minutes': 90,
@@ -70,7 +72,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen> {
       'id': 'exam_006',
       'nom': 'Concours techniques',
       'description': 'Techniciens génie civil, électricité, mécanique, supérieurs',
-      'couleur': '#F39C12',
+      'couleur': '#D4A017',
       'icone': '🔧',
       'nombre_questions': 50,
       'duree_minutes': 90,
@@ -148,53 +150,69 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen> {
     try {
       return Color(int.parse('0xFF${hex.replaceAll('#', '')}'));
     } catch (_) {
-      return const Color(0xFF1A5C38);
+      return AppColors.primary;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1A1A2E),
-        foregroundColor: Colors.white,
+        automaticallyImplyLeading: false,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [AppColors.primary, AppColors.primaryDark],
+            ),
+          ),
+        ),
+        foregroundColor: AppColors.white,
+        elevation: 0,
         title: const Text(
           'Choisir votre Concours',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
         ),
         centerTitle: true,
-        elevation: 0,
-        automaticallyImplyLeading: false,
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF1A5C38)))
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
           : Column(
               children: [
-                // Header informatif
+                // Header informatif — même couleur que l'AppBar (vert)
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  color: const Color(0xFF1A1A2E),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppColors.primaryDark, AppColors.primary],
+                    ),
+                  ),
                   child: const Text(
                     '10 examens professionnels · 50 questions · 1h30',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white70,
-                      fontSize: 13,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
                 Expanded(
                   child: RefreshIndicator(
                     onRefresh: _loadExamens,
+                    color: AppColors.primary,
                     child: GridView.builder(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(14),
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
-                        mainAxisSpacing: 16, // ✅ Espacement vertical 16px
-                        crossAxisSpacing: 16, // ✅ Espacement horizontal 16px
-                        childAspectRatio: 0.85,
+                        mainAxisSpacing: 14,
+                        crossAxisSpacing: 14,
+                        // Ratio harmonisé pour que toutes les cartes soient identiques
+                        childAspectRatio: 0.88,
                       ),
                       itemCount: _examens.length,
                       itemBuilder: (ctx, i) => _buildExamenCard(_examens[i]),
@@ -211,13 +229,10 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen> {
     final nom = examen['nom'] as String? ?? '';
     final description = examen['description'] as String? ?? '';
     final icone = examen['icone'] as String? ?? '📋';
-    // id conservé si nécessaire pour navigation future
-    // ignore: unused_local_variable
-    final id = examen['id'] as String? ?? '';
 
     return GestureDetector(
       onTap: () {
-        // V3 : Flow Simulation (Slide1 → Slide2 → Interface OMR double colonne)
+        // Flow : directement vers l'écran de lancement simulation
         final user = ApiService.currentUser;
         final nomCandidat = user != null
             ? '${user['prenom'] ?? ''} ${user['nom'] ?? ''}'.trim()
@@ -227,6 +242,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen> {
           MaterialPageRoute(
             builder: (_) => ExamWelcomeSlide(
               candidatName: nomCandidat.isNotEmpty ? nomCandidat : 'Candidat',
+              examenNom: nom,
             ),
           ),
         );
@@ -234,116 +250,95 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen> {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: color.withValues(alpha: 0.18),
-              blurRadius: 14,
-              offset: const Offset(0, 5),
+              color: color.withValues(alpha: 0.15),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(18),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Bandeau couleur en haut
+              // Icône dans un cercle coloré
               Container(
-                height: 6,
-                color: color,
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(14),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Icône
-                      Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          color: color.withValues(alpha: 0.12),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: Text(icone, style: const TextStyle(fontSize: 28)),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      // Nom
-                      Text(
-                        nom,
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w800,
-                          color: color,
-                          height: 1.2,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      // Description courte
-                      Text(
-                        description,
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: Colors.black54,
-                          height: 1.4,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      // Badge 50 questions / 1h30
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: color.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: color.withValues(alpha: 0.3)),
-                            ),
-                            child: Text(
-                              '50 q.',
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: color,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: color.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: color.withValues(alpha: 0.3)),
-                            ),
-                            child: Text(
-                              '1h30',
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: color,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                width: 58,
+                height: 58,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: color.withValues(alpha: 0.3),
+                    width: 1.5,
                   ),
                 ),
+                child: Center(
+                  child: Text(icone, style: const TextStyle(fontSize: 26)),
+                ),
+              ),
+              const SizedBox(height: 8),
+              // Nom de l'examen
+              Text(
+                nom,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: color,
+                  height: 1.2,
+                ),
+              ),
+              const SizedBox(height: 4),
+              // Description courte
+              Text(
+                description,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 10,
+                  color: Colors.black45,
+                  height: 1.3,
+                ),
+              ),
+              const SizedBox(height: 8),
+              // Badges 50 questions / 1h30
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _badge('50 q.', color),
+                  const SizedBox(width: 6),
+                  _badge('1h30', color),
+                ],
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _badge(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.35)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 10,
+          color: color,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );

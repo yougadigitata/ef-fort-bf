@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
 import 'abonnement_screen.dart';
@@ -78,14 +81,14 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
 
   // ══ Chargement ════════════════════════════════════════════════════
   Future<void> _loadQuestions() async {
-    final isAbonne = ApiService.isAbonne;
-    final limit = isAbonne ? 20 : 5;
+    // Toutes les questions disponibles — pas de limitation artificielle
+    const limit = 1000;
     List<dynamic> questions;
 
     if (widget.serieId != null) {
       questions = await ApiService.getQuestionsBySerie(widget.serieId!, limit: limit);
     } else {
-      questions = await ApiService.getQuestions(widget.matiere, limit: limit);
+      questions = await ApiService.getQuestions(widget.matiere, limit: 20);
     }
 
     if (mounted) {
@@ -1164,11 +1167,10 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
 
             const SizedBox(height: 20),
 
-            // ── Bouton PDF (abonnés) ou Recommencer (gratuit) ──────
-            if (ApiService.isAbonne) ...
-              _buildPDFButton()
-            else ...
-              _buildRecommencerButton(),
+            // ── Boutons action résultats ──────────────────────────
+            ..._buildPDFButton(),
+            const SizedBox(height: 8),
+            ..._buildRecommencerButton(),
 
             const SizedBox(height: 12),
 
@@ -1195,20 +1197,20 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
     );
   }
 
-  // ── Bouton PDF pour abonnés ──────────────────────────────────────
+  // ── Bouton Enregistrer PDF (disponible pour tous) ─────────────────
   List<Widget> _buildPDFButton() {
     return [
       SizedBox(
         width: double.infinity,
         child: ElevatedButton.icon(
           onPressed: () => _exportResultsPDF(),
-          icon: const Icon(Icons.picture_as_pdf_rounded, size: 20),
+          icon: const Icon(Icons.save_alt_rounded, size: 20),
           label: const Text(
-            'Imprimer en PDF',
+            'Enregistrer PDF',
             style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
           ),
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFC1672B),
+            backgroundColor: const Color(0xFF1A5C38),
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 14),
             shape: RoundedRectangleBorder(
@@ -1255,16 +1257,8 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
     ];
   }
 
-  // ── Export PDF des résultats ──────────────────────────────────────
+  // ── Export PDF des résultats — Disponible pour tous ───────────────
   void _exportResultsPDF() {
-    if (!ApiService.isAbonne) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const AbonnementScreen()),
-      );
-      return;
-    }
-
     // Construire le contenu PDF textuel
     final score = _calculerScoreFinal();
     final total = _questions.length;
@@ -1318,58 +1312,151 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
     buffer.writeln('───────────────────────────────────');
     buffer.writeln('EF-FORT.BF — Transformer l\'effort en réussite');
 
-    // Copier dans le presse-papiers et afficher dialog
+    // Copier dans le presse-papiers
     Clipboard.setData(ClipboardData(text: buffer.toString()));
 
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
-          children: [
-            Text('📄', style: TextStyle(fontSize: 24)),
-            SizedBox(width: 8),
-            Text('Résultats copiés',
-                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Score : $score/$total ($pct%) — Note /20 : $sur20',
-              style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
-                  color: Color(0xFF128C7E)),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: const Color(0xFFDCF8C6),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Text(
-                '✅ Le corrigé complet a été copié dans le presse-papiers.\n\nCollez-le dans un document Word ou Google Docs pour l\'imprimer.',
-                style: TextStyle(fontSize: 12, height: 1.5),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF128C7E),
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('OK'),
-          ),
-        ],
+    // Générer et partager le PDF via printing
+    _generateAndSharePDF(buffer.toString(), score, total, pct, sur20);
+  }
+
+  Future<void> _generateAndSharePDF(String content, int score, int total, int pct, String sur20) async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Génération du PDF en cours...'),
+        duration: Duration(seconds: 2),
+        backgroundColor: Color(0xFF1A5C38),
       ),
     );
+
+    try {
+      final user = ApiService.currentUser;
+      final nom = user != null
+          ? '${user['prenom'] ?? ''} ${user['nom'] ?? ''}'.trim()
+          : 'Candidat';
+      final now = DateTime.now();
+      final dateStr = '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}';
+
+      final pdf = pw.Document();
+      final primaryColor = PdfColor.fromHex('1A5C38');
+      final greyColor = PdfColor.fromHex('6C757D');
+      final successColor = PdfColor.fromHex('22C55E');
+      final errorColor = PdfColor.fromHex('EF4444');
+
+      pdf.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(28),
+          header: (ctx) => pw.Container(
+            padding: const pw.EdgeInsets.only(bottom: 10),
+            decoration: pw.BoxDecoration(
+              border: pw.Border(bottom: pw.BorderSide(color: primaryColor, width: 2)),
+            ),
+            child: pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text('EF-FORT.BF', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold, color: primaryColor)),
+                    pw.Text('Résultats Série — ${widget.label}', style: pw.TextStyle(fontSize: 11, color: greyColor)),
+                  ],
+                ),
+                pw.Text('ef-fort.bf.pages.dev', style: pw.TextStyle(fontSize: 9, color: greyColor)),
+              ],
+            ),
+          ),
+          footer: (ctx) => pw.Container(
+            alignment: pw.Alignment.center,
+            padding: const pw.EdgeInsets.only(top: 6),
+            decoration: pw.BoxDecoration(
+              border: pw.Border(top: pw.BorderSide(color: PdfColors.grey300)),
+            ),
+            child: pw.Text(
+              'EF-FORT.BF — Page ${ctx.pageNumber}/${ctx.pagesCount}',
+              style: pw.TextStyle(fontSize: 9, color: greyColor),
+            ),
+          ),
+          build: (ctx) => [
+            pw.Container(
+              padding: const pw.EdgeInsets.all(14),
+              decoration: pw.BoxDecoration(
+                color: PdfColor.fromHex('F8F9FA'),
+                border: pw.Border.all(color: PdfColor.fromHex('E9ECEF')),
+                borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+              ),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text('Candidat : ${nom.isEmpty ? "Candidat" : nom}', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+                  pw.SizedBox(height: 4),
+                  pw.Text('Matière : ${widget.label}', style: pw.TextStyle(fontSize: 12)),
+                  pw.Text('Date : $dateStr', style: pw.TextStyle(fontSize: 12)),
+                  pw.Text('Score : $score/$total ($pct%) — Note /20 : $sur20',
+                      style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, color: primaryColor)),
+                ],
+              ),
+            ),
+            pw.SizedBox(height: 16),
+            pw.Text('CORRIGÉ DÉTAILLÉ', style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, color: primaryColor)),
+            pw.SizedBox(height: 10),
+            ...List.generate(_questions.length, (i) {
+              final q = _questions[i] as Map<String, dynamic>;
+              final bonnes = _getBonnesReponses(q);
+              final choisies = _selectedAnswers[i] ?? {};
+              final skipped = _skipped.contains(i);
+              final correct = !skipped && choisies.isNotEmpty && choisies.containsAll(bonnes) && bonnes.containsAll(choisies);
+              final noAns = choisies.isEmpty || skipped;
+              final statusColor = noAns ? greyColor : (correct ? successColor : errorColor);
+              final statusText = noAns ? 'Non répondu' : (correct ? 'CORRECT' : 'INCORRECT');
+
+              return pw.Container(
+                margin: const pw.EdgeInsets.only(bottom: 8),
+                padding: const pw.EdgeInsets.all(10),
+                decoration: pw.BoxDecoration(
+                  color: noAns ? PdfColors.grey100 : (correct ? PdfColor.fromHex('F0FDF4') : PdfColor.fromHex('FEF2F2')),
+                  borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+                  border: pw.Border.all(color: statusColor, width: 1),
+                ),
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Text('Q${i + 1}.', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11, color: primaryColor)),
+                        pw.Text(statusText, style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, color: statusColor)),
+                      ],
+                    ),
+                    pw.SizedBox(height: 4),
+                    pw.Text((q['enonce'] ?? q['question'] ?? '').toString(), style: const pw.TextStyle(fontSize: 11)),
+                    pw.SizedBox(height: 4),
+                    pw.Text('Votre réponse : ${choisies.isEmpty ? "-" : choisies.join(", ")} | Bonne(s) : ${bonnes.isEmpty ? "?" : bonnes.join(", ")}',
+                        style: pw.TextStyle(fontSize: 10, color: greyColor)),
+                    if ((q['explication'] ?? '').toString().isNotEmpty)
+                      pw.Text('Explication : ${q['explication']}',
+                          style: pw.TextStyle(fontSize: 10, color: greyColor, fontStyle: pw.FontStyle.italic)),
+                  ],
+                ),
+              );
+            }),
+          ],
+        ),
+      );
+
+      await Printing.sharePdf(
+        bytes: await pdf.save(),
+        filename: 'EF-FORT_Serie_${widget.label.replaceAll(' ', '_')}.pdf',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur PDF: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   // ── Bannière Premium ──────────────────────────────────────────────

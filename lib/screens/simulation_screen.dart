@@ -365,8 +365,13 @@ class _SimulationLaunchScreenState extends State<SimulationLaunchScreen> {
 // ══════════════════════════════════════════════════════════════
 class ExamWelcomeSlide extends StatefulWidget {
   final String candidatName;
+  final String examenNom;
 
-  const ExamWelcomeSlide({super.key, required this.candidatName});
+  const ExamWelcomeSlide({
+    super.key,
+    required this.candidatName,
+    this.examenNom = '',
+  });
 
   @override
   State<ExamWelcomeSlide> createState() => _ExamWelcomeSlideState();
@@ -766,22 +771,15 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
   }
 
   Future<void> _startSimulation() async {
+    // Tentative via API
     final result = await ApiService.demarrerSimulation();
     if (!mounted) return;
 
-    if (result['error'] != null) {
-      // Gérer le quota freemium (1 simulation gratuite)
-      if (result['quota_atteint'] == true) {
-        setState(() {
-          _loading = false;
-          _error = null;
-        });
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _showQuotaDialog();
-        });
-        return;
-      }
-      // ── Fallback : charger les questions directement depuis Supabase ──
+    List<dynamic> questions = (result['questions'] as List?) ?? [];
+
+    // Si l'API retourne une erreur OU quota atteint → charger directement depuis Supabase
+    // Aucun blocage premium : tous les utilisateurs connectés ont accès
+    if (result['error'] != null || questions.isEmpty) {
       final sbQuestions = await SupabaseService.getExamenBlanc50Questions();
       if (!mounted) return;
       if (sbQuestions.isNotEmpty) {
@@ -798,18 +796,14 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
         }
         return;
       }
-      setState(() {
-        _error = result['error'] as String;
-        _loading = false;
-      });
-      return;
-    }
-
-    List<dynamic> questions = (result['questions'] as List?) ?? [];
-
-    // Si pas de questions depuis l'API, charger depuis Supabase directement
-    if (questions.isEmpty) {
-      questions = await SupabaseService.getExamenBlanc50Questions();
+      // Si vraiment aucune question disponible
+      if (result['error'] != null && questions.isEmpty) {
+        setState(() {
+          _error = 'Aucune question disponible. Vérifiez votre connexion.';
+          _loading = false;
+        });
+        return;
+      }
     }
 
     if (!mounted) return;

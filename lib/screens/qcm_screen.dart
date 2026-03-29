@@ -45,8 +45,8 @@ class _QcmScreenState extends State<QcmScreen> {
   }
 
   Future<void> _loadQuestions() async {
-    final isAbonne = ApiService.isAbonne;
-    final limit = isAbonne ? 30 : 5;
+    // 20 questions standard par session
+    const limit = 20;
     final questions = await ApiService.getQuestions(widget.matiere, limit: limit);
     if (mounted) {
       setState(() {

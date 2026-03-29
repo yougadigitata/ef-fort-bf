@@ -203,12 +203,13 @@ class ApiService {
   }
 
   // ── Récupérer les questions d'une série spécifique (WhatsApp QCM) ──
-  static Future<List<dynamic>> getQuestionsBySerie(String serieId, {int limit = 20}) async {
+  // Limite haute (1000) pour récupérer TOUTES les questions de la série
+  static Future<List<dynamic>> getQuestionsBySerie(String serieId, {int limit = 1000}) async {
     try {
       final response = await http.get(
         Uri.parse('$apiBase/questions?serie_id=$serieId&limit=$limit'),
         headers: _headers,
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 15));
       final data = jsonDecode(response.body);
       return (data['questions'] as List?) ?? [];
     } catch (e) {
