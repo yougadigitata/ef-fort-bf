@@ -1049,6 +1049,8 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
         ans.remove(letter);
       } else {
         ans.add(letter);
+        // Son de clic différent du son de démarrage
+        BellService.playClick();
       }
     });
   }
@@ -1510,28 +1512,30 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                               shape: BoxShape.circle,
                               color: isSelected
                                   ? AppColors.primary
-                                  : Colors.transparent,
+                                  : Colors.white,
                               border: Border.all(
                                 color: isSelected
                                     ? AppColors.primary
-                                    : Colors.grey.withValues(alpha: 0.35),
-                                width: 1.5,
+                                    : Colors.grey.withValues(alpha: 0.4),
+                                width: isSelected ? 2 : 1.5,
                               ),
+                              boxShadow: isSelected ? [
+                                BoxShadow(
+                                  color: AppColors.primary.withValues(alpha: 0.3),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ] : null,
                             ),
                             child: Center(
-                              child: isSelected
-                                  ? const Icon(Icons.circle, color: Colors.white, size: 14)
-                                  : Container(
-                                      width: 14,
-                                      height: 14,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: Colors.grey.withValues(alpha: 0.3),
-                                          width: 1,
-                                        ),
-                                      ),
-                                    ),
+                              child: Text(
+                                letter,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                  color: isSelected ? Colors.white : Colors.grey.shade500,
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -2037,39 +2041,70 @@ class SimulationResultScreen extends StatelessWidget {
     final mention = pct >= 70 ? 'Félicitations !' : pct >= 50 ? 'Bonne progression, continuez !' : 'Courage ! Chaque effort compte.';
 
     final primaryColor = PdfColor.fromHex('1A5C38');
-    // ignore: unused_local_variable
     final accentColor = PdfColor.fromHex('D4A017');
     final errorColor = PdfColor.fromHex('D32F2F');
     final successColor = PdfColor.fromHex('22C55E');
     final greyColor = PdfColor.fromHex('6C757D');
+    final lightGreen = PdfColor.fromHex('E8F5E9');
 
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(30),
         header: (context) => pw.Container(
-          padding: const pw.EdgeInsets.only(bottom: 10),
+          padding: const pw.EdgeInsets.only(bottom: 12),
           decoration: pw.BoxDecoration(
             border: pw.Border(bottom: pw.BorderSide(color: primaryColor, width: 2)),
           ),
-          child: pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          child: pw.Column(
             children: [
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
+              // Logo + titre centré
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.center,
                 children: [
-                  pw.Text('EF-FORT.BF',
-                      style: pw.TextStyle(
-                        fontSize: 20,
-                        fontWeight: pw.FontWeight.bold,
-                        color: primaryColor,
-                      )),
-                  pw.Text('Résultats Examen Blanc',
-                      style: pw.TextStyle(fontSize: 12, color: greyColor)),
+                  pw.Container(
+                    width: 50,
+                    height: 50,
+                    decoration: pw.BoxDecoration(
+                      color: primaryColor,
+                      borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+                    ),
+                    child: pw.Center(
+                      child: pw.Text('EF',
+                          style: pw.TextStyle(
+                            fontSize: 20,
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColors.white,
+                          )),
+                    ),
+                  ),
+                  pw.SizedBox(width: 12),
+                  pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text('EF-FORT.BF',
+                          style: pw.TextStyle(
+                            fontSize: 22,
+                            fontWeight: pw.FontWeight.bold,
+                            color: primaryColor,
+                          )),
+                      pw.Text('Chaque effort te rapproche de ton admission',
+                          style: pw.TextStyle(fontSize: 10, color: accentColor, fontStyle: pw.FontStyle.italic)),
+                    ],
+                  ),
                 ],
               ),
-              pw.Text('ef-fort-bf.pages.dev',
-                  style: pw.TextStyle(fontSize: 10, color: greyColor)),
+              pw.SizedBox(height: 6),
+              pw.Container(
+                width: double.infinity,
+                padding: const pw.EdgeInsets.symmetric(vertical: 4),
+                color: lightGreen,
+                child: pw.Text(
+                  'Résultats Examen Blanc — ef-fort-bf.pages.dev',
+                  textAlign: pw.TextAlign.center,
+                  style: pw.TextStyle(fontSize: 10, color: primaryColor, fontWeight: pw.FontWeight.bold),
+                ),
+              ),
             ],
           ),
         ),
@@ -2079,9 +2114,18 @@ class SimulationResultScreen extends StatelessWidget {
           decoration: pw.BoxDecoration(
             border: pw.Border(top: pw.BorderSide(color: PdfColors.grey300)),
           ),
-          child: pw.Text(
-            'EF-FORT.BF — Transformer l\'effort en réussite  |  Page ${context.pageNumber}/${context.pagesCount}',
-            style: pw.TextStyle(fontSize: 9, color: greyColor),
+          child: pw.Column(
+            children: [
+              pw.Text(
+                'EF-FORT.BF  ·  Chaque effort te rapproche de ton admission',
+                style: pw.TextStyle(fontSize: 9, color: primaryColor, fontStyle: pw.FontStyle.italic),
+              ),
+              pw.SizedBox(height: 2),
+              pw.Text(
+                'ef-fort-bf.pages.dev  |  Page ${context.pageNumber}/${context.pagesCount}',
+                style: pw.TextStyle(fontSize: 8, color: greyColor),
+              ),
+            ],
           ),
         ),
         build: (context) => [

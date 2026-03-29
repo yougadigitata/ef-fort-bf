@@ -1,34 +1,14 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
-import '../screens/actualites_status_screen.dart';
+import '../screens/actualites_chat_screen.dart';
 
-/// Widget de prévisualisation des actualités style "bulles WhatsApp Status"
-/// Affiche des cercles colorés défilables horizontalement sur le Dashboard
+/// Widget de prévisualisation des actualités — Style discussion officielle
+/// Affiche les 3 dernières actualités sous forme de bulles de chat sur le Dashboard
+/// Clic → ouvre l'écran Actualités complet style chat
 class ActualitesStatusWidget extends StatelessWidget {
   final List<dynamic> actualites;
 
   const ActualitesStatusWidget({super.key, required this.actualites});
-
-  // Mêmes gradients que ActualitesStatusScreen
-  static const List<List<Color>> _gradients = [
-    [Color(0xFF1A5C38), Color(0xFF0E3D24)],
-    [Color(0xFF6B21A8), Color(0xFF4C1D95)],
-    [Color(0xFFD4A017), Color(0xFFB8860B)],
-    [Color(0xFFCE1126), Color(0xFF8B0000)],
-    [Color(0xFF1D4ED8), Color(0xFF1E3A8A)],
-    [Color(0xFF0F766E), Color(0xFF134E4A)],
-    [Color(0xFFB45309), Color(0xFF92400E)],
-    [Color(0xFF7C3AED), Color(0xFF5B21B6)],
-    [Color(0xFF059669), Color(0xFF047857)],
-    [Color(0xFFDC2626), Color(0xFFB91C1C)],
-  ];
-
-  List<Color> _getGradient(int index) => _gradients[index % _gradients.length];
-
-  String _getFirstLetter(String title) {
-    if (title.isEmpty) return 'E';
-    return title[0].toUpperCase();
-  }
 
   String _formatDateShort(String? dateStr) {
     if (dateStr == null || dateStr.isEmpty) return '';
@@ -37,7 +17,7 @@ class ActualitesStatusWidget extends StatelessWidget {
       final now = DateTime.now();
       final diff = now.difference(dt);
       if (diff.inMinutes < 60) return '${diff.inMinutes}min';
-      if (diff.inHours < 24) return '${diff.inHours}h';
+      if (diff.inHours < 24) return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
       if (diff.inDays == 1) return 'Hier';
       return '${dt.day}/${dt.month}';
     } catch (_) {
@@ -51,12 +31,15 @@ class ActualitesStatusWidget extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
+    // Prendre les 3 dernières actualités pour l'aperçu
+    final preview = actualites.take(3).toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // ── Header section ──
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
           child: Row(
             children: [
               Container(
@@ -69,7 +52,7 @@ class ActualitesStatusWidget extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               const Text(
-                '📰 Actualités',
+                '💬 Actualités',
                 style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
@@ -77,141 +60,263 @@ class ActualitesStatusWidget extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: AppColors.error.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Text(
-                  'NOUVEAU',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.error,
+              if (actualites.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '${actualites.length}',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.primary,
+                    ),
                   ),
                 ),
-              ),
               const Spacer(),
-              // Compteur d'actualités
-              Text(
-                '${actualites.length} actu.',
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textLight,
+              GestureDetector(
+                onTap: () => _openChat(context),
+                child: const Text(
+                  'Voir tout',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary,
+                  ),
                 ),
               ),
             ],
           ),
         ),
 
-        // ── Bulles défilables horizontalement ──
-        SizedBox(
-          height: 96,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.only(left: 16, right: 16),
-            itemCount: actualites.length,
-            itemBuilder: (context, index) {
-              final actu = actualites[index] as Map<String, dynamic>;
-              final gradient = _getGradient(index);
-              final titre = (actu['titre'] ?? '').toString();
-              final dateStr = _formatDateShort(actu['created_at']?.toString());
-
-              return GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      pageBuilder: (_, __, ___) => ActualitesStatusScreen(
-                        actualites: actualites,
-                        initialIndex: index,
-                      ),
-                      transitionsBuilder: (_, animation, __, child) =>
-                          FadeTransition(opacity: animation, child: child),
-                      transitionDuration: const Duration(milliseconds: 300),
+        // ── Aperçu des 3 dernières actualités style mini-bulles ──
+        GestureDetector(
+          onTap: () => _openChat(context),
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.primary.withValues(alpha: 0.12)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                // En-tête style conversation
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      topRight: Radius.circular(16),
                     ),
-                  );
-                },
-                child: Container(
-                  width: 72,
-                  margin: const EdgeInsets.only(right: 12),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                        ),
+                        child: ClipOval(
+                          child: Image.asset(
+                            'assets/images/logo_effort.png',
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'EF-FORT.BF',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                              ),
+                            ),
+                            Text(
+                              'Annonces officielles',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.white70,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(Icons.arrow_forward_ios_rounded, color: Colors.white.withValues(alpha: 0.7), size: 14),
+                    ],
+                  ),
+                ),
+
+                // Fond papier peint
+                Container(
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF0F7F4),
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(16),
+                      bottomRight: Radius.circular(16),
+                    ),
+                  ),
+                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
                   child: Column(
                     children: [
-                      // Cercle avec bordure colorée (style WhatsApp)
-                      Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          // Bordure gradient externe
-                          Container(
-                            width: 64,
-                            height: 64,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: LinearGradient(
-                                colors: gradient,
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                            ),
-                          ),
-                          // Cercle blanc interne (gap)
-                          Container(
-                            width: 59,
-                            height: 59,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white,
-                            ),
-                          ),
-                          // Avatar intérieur avec gradient
-                          Container(
-                            width: 55,
-                            height: 55,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: LinearGradient(
-                                colors: gradient,
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                            ),
-                            child: Center(
-                              child: Text(
-                                _getFirstLetter(titre),
-                                style: const TextStyle(
+                      ...preview.map((item) {
+                        final actu = item as Map<String, dynamic>;
+                        final titre = (actu['titre'] ?? '').toString();
+                        final contenu = (actu['contenu'] ?? '').toString();
+                        final dateStr = _formatDateShort(actu['created_at']?.toString());
+
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              // Mini avatar
+                              Container(
+                                width: 26,
+                                height: 26,
+                                margin: const EdgeInsets.only(right: 6),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
                                   color: Colors.white,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 22,
+                                  border: Border.all(
+                                    color: AppColors.primary.withValues(alpha: 0.25),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: ClipOval(
+                                  child: Image.asset(
+                                    'assets/images/logo_effort.png',
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
                               ),
-                            ),
+                              // Bulle mini
+                              Flexible(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(3),
+                                      topRight: Radius.circular(10),
+                                      bottomLeft: Radius.circular(10),
+                                      bottomRight: Radius.circular(10),
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.06),
+                                        blurRadius: 3,
+                                        offset: const Offset(0, 1),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            if (titre.isNotEmpty)
+                                              Text(
+                                                titre,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: Color(0xFF1A1A1A),
+                                                ),
+                                              ),
+                                            if (contenu.isNotEmpty)
+                                              Text(
+                                                contenu,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontSize: 11,
+                                                  color: Colors.grey[600],
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        dateStr,
+                                        style: TextStyle(
+                                          fontSize: 9,
+                                          color: Colors.black.withValues(alpha: 0.35),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      // Titre tronqué
-                      Text(
-                        titre.isNotEmpty
-                            ? titre
-                            : (dateStr.isNotEmpty ? dateStr : 'Actualité'),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textDark,
+                        );
+                      }),
+
+                      // Bouton "Voir toutes les actualités"
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.chat_bubble_outline_rounded, size: 14, color: AppColors.primary),
+                            SizedBox(width: 6),
+                            Text(
+                              'Ouvrir la discussion',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
-              );
-            },
+              ],
+            ),
           ),
         ),
       ],
+    );
+  }
+
+  void _openChat(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ActualitesChatScreen(actualites: actualites),
+      ),
     );
   }
 }

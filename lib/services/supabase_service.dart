@@ -465,4 +465,167 @@ class SupabaseService {
       return false;
     }
   }
+
+  // ═══════════════════════════════════════════════════════════
+  // ENTRAIDE v3.0 — Statuts (1 par jour, 24h)
+  // Table: statuts_entraide
+  //   - user_id, prenom, nom, texte, type, created_at
+  //   - Expires automatiquement après 24h (filtré côté client)
+  // ═══════════════════════════════════════════════════════════
+
+  /// Charger les statuts actifs (moins de 24h), triés du plus récent au plus ancien
+  static Future<List<Map<String, dynamic>>> fetchStatuts() async {
+    try {
+      // Filtrer côté serveur: created_at >= maintenant - 24h
+      final cutoff = DateTime.now().toUtc().subtract(const Duration(hours: 24));
+      final cutoffStr = cutoff.toIso8601String();
+
+      // Essayer d'abord avec la table statuts_entraide
+      final url = '$_supabaseUrl/rest/v1/statuts_entraide'
+          '?select=id,user_id,prenom,nom,texte,type,is_admin,created_at'
+          '&created_at=gte.$cutoffStr'
+          '&order=created_at.desc'
+          '&limit=50';
+
+      final resp = await http.get(Uri.parse(url), headers: _readHeaders)
+          .timeout(const Duration(seconds: 10));
+
+      if (resp.statusCode == 200) {
+        final raw = jsonDecode(resp.body) as List;
+        return raw.cast<Map<String, dynamic>>();
+      }
+
+      // Fallback: table messages_entraide si statuts_entraide n'existe pas
+      if (resp.statusCode == 404 || resp.body.contains('does not exist')) {
+        final fallbackUrl = '$_supabaseUrl/rest/v1/messages_entraide'
+            '?select=id,user_id,contenu,created_at,profiles:user_id(prenom,nom)'
+            '&created_at=gte.$cutoffStr'
+            '&actif=eq.true'
+            '&order=created_at.desc'
+            '&limit=50';
+        final fallback = await http.get(Uri.parse(fallbackUrl), headers: _readHeaders);
+        if (fallback.statusCode == 200) {
+          final raw = jsonDecode(fallback.body) as List;
+          return raw.map((item) {
+            final m = item as Map<String, dynamic>;
+            final profile = m['profiles'] as Map<String, dynamic>? ?? {};
+            return {
+              'id': m['id'],
+              'user_id': m['user_id'],
+              'prenom': profile['prenom'] ?? 'Utilisateur',
+              'nom': profile['nom'] ?? '',
+              'texte': m['contenu'] ?? '',
+              'type': 'info',
+              'is_admin': false,
+              'created_at': m['created_at'],
+            };
+          }).toList();
+        }
+      }
+      return [];
+    } catch (e) {
+      if (kDebugMode) debugPrint('fetchStatuts error: $e');
+      return [];
+    }
+  }
+
+  /// Publier un statut (1 seul par jour par utilisateur)
+  static Future<Map<String, dynamic>> publierStatut({
+    required String userId,
+    required String prenom,
+    required String nom,
+    required String texte,
+    required String type,
+  }) async {
+    try {
+      // Vérifier si l'utilisateur a déjà posté dans les 24 dernières heures
+      final cutoff = DateTime.now().toUtc().subtract(const Duration(hours: 24));
+      final checkUrl = '$_supabaseUrl/rest/v1/statuts_entraide'
+          '?select=id,created_at'
+          '&user_id=eq.$userId'
+          '&created_at=gte.${cutoff.toIso8601String()}'
+          '&limit=1';
+
+      final checkResp = await http.get(Uri.parse(checkUrl), headers: _readHeaders);
+      if (checkResp.statusCode == 200) {
+        final existing = jsonDecode(checkResp.body) as List;
+        if (existing.isNotEmpty) {
+          return {'error': 'Vous avez déjà posté votre statut aujourd\'hui. Revenez demain !', 'already_posted': true};
+        }
+      }
+
+      // Créer le statut
+      final body = jsonEncode({
+        'user_id': userId,
+        'prenom': prenom,
+        'nom': nom,
+        'texte': texte.trim().substring(0, texte.trim().length > 280 ? 280 : texte.trim().length),
+        'type': type,
+        'is_admin': false,
+        'created_at': DateTime.now().toUtc().toIso8601String(),
+      });
+
+      final resp = await http.post(
+        Uri.parse('$_supabaseUrl/rest/v1/statuts_entraide'),
+        headers: _headers,
+        body: body,
+      );
+
+      if (resp.statusCode == 201 || resp.statusCode == 200) {
+        return {'success': true};
+      }
+
+      // Si la table n'existe pas, tenter de créer via messages_entraide
+      if (resp.statusCode == 404 || (resp.body.contains('does not exist'))) {
+        // Fallback vers messages_entraide
+        final fallbackBody = jsonEncode({
+          'user_id': userId,
+          'contenu': texte.trim(),
+          'partage_whatsapp': false,
+          'actif': true,
+        });
+        final fallback = await http.post(
+          Uri.parse('$_supabaseUrl/rest/v1/messages_entraide'),
+          headers: _headers,
+          body: fallbackBody,
+        );
+        if (fallback.statusCode == 201 || fallback.statusCode == 200) {
+          return {'success': true};
+        }
+        return {'error': 'Table statuts_entraide introuvable. Contactez l\'administrateur.'};
+      }
+
+      final errData = jsonDecode(resp.body);
+      return {'error': errData['message'] ?? 'Erreur lors de la publication'};
+    } catch (e) {
+      if (kDebugMode) debugPrint('publierStatut error: $e');
+      return {'error': 'Erreur de connexion. Vérifiez votre internet.'};
+    }
+  }
+
+  /// Supprimer son propre statut
+  static Future<bool> supprimerStatut({
+    required String statutId,
+    required String userId,
+  }) async {
+    try {
+      // Essayer d'abord statuts_entraide
+      final resp = await http.delete(
+        Uri.parse('$_supabaseUrl/rest/v1/statuts_entraide?id=eq.$statutId&user_id=eq.$userId'),
+        headers: _readHeaders,
+      );
+      if (resp.statusCode == 200 || resp.statusCode == 204) return true;
+
+      // Fallback messages_entraide
+      final fallback = await http.patch(
+        Uri.parse('$_supabaseUrl/rest/v1/messages_entraide?id=eq.$statutId&user_id=eq.$userId'),
+        headers: _headers,
+        body: jsonEncode({'actif': false}),
+      );
+      return fallback.statusCode == 200 || fallback.statusCode == 204;
+    } catch (e) {
+      if (kDebugMode) debugPrint('supprimerStatut error: $e');
+      return false;
+    }
+  }
 }

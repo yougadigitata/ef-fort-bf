@@ -2,23 +2,14 @@ import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
 import '../services/supabase_service.dart';
-import 'abonnement_screen.dart';
 
 // ══════════════════════════════════════════════════════════════
-// ENTRAIDE v2.0 — Système Questions-Réponses structuré
-// Remplace l'ancien chat libre par un forum paginé
-// Architecture: table messages — parent_id=null → question
-//                              — parent_id=uuid → réponse
+// ENTRAIDE v3.0 — Système de Statuts (1 statut/jour, 24h)
+// Chaque utilisateur peut poster UN seul statut par jour
+// Le statut expire après 24h (automatiquement supprimé de l'UI)
+// Style: stories/statuts avec bulle + avatar + texte
+// L'admin (logo EF-FORT) apparaît toujours en premier
 // ══════════════════════════════════════════════════════════════
-
-const List<String> _categories = [
-  'Tous',
-  'Concours',
-  'Révisions',
-  'Orientation',
-  'Emploi',
-  'Général',
-];
 
 class EntraideScreen extends StatefulWidget {
   const EntraideScreen({super.key});
@@ -28,21 +19,31 @@ class EntraideScreen extends StatefulWidget {
 }
 
 class _EntraideScreenState extends State<EntraideScreen> {
-  List<Map<String, dynamic>> _questions = [];
+  List<Map<String, dynamic>> _statuts = [];
   bool _loading = true;
-  bool _loadingMore = false;
-  String _selectedCat = 'Tous';
-  int _page = 0;
-  bool _hasMore = true;
+  bool _sending = false;
+  bool _aDejaPoste = false; // L'utilisateur a-t-il déjà posté aujourd'hui ?
+  String? _monStatutId;
+  DateTime? _prochain; // Quand peut-il reposer ?
 
-  final ScrollController _scrollController = ScrollController();
+  final TextEditingController _textCtrl = TextEditingController();
+  final ScrollController _scrollCtrl = ScrollController();
+
+  // Types de statuts disponibles
+  static const List<Map<String, dynamic>> _types = [
+    {'label': '📢 Signaler', 'value': 'signaler', 'color': Color(0xFFE74C3C)},
+    {'label': '🤝 Aide', 'value': 'aide', 'color': Color(0xFF2980B9)},
+    {'label': '💡 Info', 'value': 'info', 'color': Color(0xFF27AE60)},
+    {'label': '📚 Révision', 'value': 'revision', 'color': Color(0xFF8E44AD)},
+    {'label': '🎉 Succès', 'value': 'succes', 'color': Color(0xFFD4A017)},
+  ];
+  String _typeSelectionne = 'info';
 
   @override
   void initState() {
     super.initState();
     _syncUserAuth();
-    _scrollController.addListener(_onScroll);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadQuestions());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadStatuts());
   }
 
   void _syncUserAuth() {
@@ -55,124 +56,120 @@ class _EntraideScreenState extends State<EntraideScreen> {
 
   @override
   void dispose() {
-    _scrollController.dispose();
+    _textCtrl.dispose();
+    _scrollCtrl.dispose();
     super.dispose();
   }
 
-  void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      if (!_loadingMore && _hasMore) {
-        _loadMore();
+  Future<void> _loadStatuts() async {
+    setState(() => _loading = true);
+
+    try {
+      // Charger tous les statuts actifs (moins de 24h)
+      final data = await SupabaseService.fetchStatuts();
+
+      // Vérifier si l'utilisateur actuel a déjà posté aujourd'hui
+      final user = ApiService.currentUser;
+      bool dejaPoste = false;
+      String? monId;
+      DateTime? prochain;
+
+      if (user != null) {
+        final userId = user['id'].toString();
+        for (final s in data) {
+          if (s['user_id']?.toString() == userId) {
+            dejaPoste = true;
+            monId = s['id']?.toString();
+            // Calculer quand il peut reposer (24h après le post)
+            try {
+              final createdAt = DateTime.parse(s['created_at'].toString()).toLocal();
+              prochain = createdAt.add(const Duration(hours: 24));
+            } catch (_) {}
+            break;
+          }
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _statuts = data;
+          _aDejaPoste = dejaPoste;
+          _monStatutId = monId;
+          _prochain = prochain;
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _loading = false);
       }
     }
   }
 
-  Future<void> _loadQuestions({bool reset = false}) async {
-    if (reset) {
-      setState(() {
-        _page = 0;
-        _questions = [];
-        _hasMore = true;
-        _loading = true;
-      });
-    } else {
-      setState(() => _loading = true);
+  Future<void> _publierStatut() async {
+    final texte = _textCtrl.text.trim();
+    if (texte.length < 5) {
+      _showSnack('Message trop court (minimum 5 caractères)', isError: true);
+      return;
     }
-
-    final cat = _selectedCat == 'Tous' ? null : _selectedCat;
-    final data = await SupabaseService.fetchQuestions(page: 0, categorie: cat);
-
-    if (mounted) {
-      setState(() {
-        _questions = data;
-        _page = 1;
-        _hasMore = data.length >= 10;
-        _loading = false;
-      });
-    }
-  }
-
-  Future<void> _loadMore() async {
-    if (_loadingMore || !_hasMore) return;
-    setState(() => _loadingMore = true);
-
-    final cat = _selectedCat == 'Tous' ? null : _selectedCat;
-    final data =
-        await SupabaseService.fetchQuestions(page: _page, categorie: cat);
-
-    if (mounted) {
-      setState(() {
-        _questions.addAll(data);
-        _page++;
-        _hasMore = data.length >= 10;
-        _loadingMore = false;
-      });
-    }
-  }
-
-  void _onCatChanged(String cat) {
-    setState(() => _selectedCat = cat);
-    _loadQuestions(reset: true);
-  }
-
-  Future<void> _onPublierQuestion() async {
-    final user = ApiService.currentUser;
-    if (user == null) {
-      _showSnack('Connectez-vous pour publier une question', isError: true);
+    if (texte.length > 280) {
+      _showSnack('Message trop long (maximum 280 caractères)', isError: true);
       return;
     }
 
-    // Fonctionnalité disponible pour tous les utilisateurs connectés
-    final result = await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(
-        builder: (_) => PublierQuestionScreen(userId: user['id'].toString()),
-      ),
+    final user = ApiService.currentUser;
+    if (user == null) {
+      _showSnack('Connectez-vous pour publier un statut', isError: true);
+      return;
+    }
+
+    if (_aDejaPoste) {
+      _showSnack('Vous avez déjà posté votre statut aujourd\'hui', isError: true);
+      return;
+    }
+
+    setState(() => _sending = true);
+
+    final result = await SupabaseService.publierStatut(
+      userId: user['id'].toString(),
+      prenom: user['prenom']?.toString() ?? 'Anonyme',
+      nom: user['nom']?.toString() ?? '',
+      texte: texte,
+      type: _typeSelectionne,
     );
-    if (result == true) {
-      _loadQuestions(reset: true);
+
+    if (mounted) {
+      setState(() => _sending = false);
+      if (result['success'] == true) {
+        _textCtrl.clear();
+        _showSnack('Statut publié ! Il sera visible 24h.');
+        await _loadStatuts();
+      } else {
+        final errMsg = result['error']?.toString() ?? 'Erreur lors de la publication';
+        if (errMsg.contains('already_posted') || errMsg.contains('une seule fois')) {
+          _showSnack('Vous avez déjà posté votre statut aujourd\'hui', isError: true);
+          setState(() => _aDejaPoste = true);
+        } else {
+          _showSnack(errMsg, isError: true);
+        }
+      }
     }
   }
 
-  void _showUpgradeDialog() {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
-          'Fonctionnalité Premium',
-          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17),
-        ),
-        content: const Text(
-          'Seuls les membres premium peuvent publier des questions.\n\n'
-          'Passez à premium pour accéder à toutes les fonctionnalités !',
-          style: TextStyle(fontSize: 14, height: 1.5),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Fermer', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const AbonnementScreen()),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-            ),
-            child: const Text('Passer Premium',
-                style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+  Future<void> _supprimerMonStatut() async {
+    if (_monStatutId == null) return;
+    final user = ApiService.currentUser;
+    if (user == null) return;
+
+    final ok = await SupabaseService.supprimerStatut(
+      statutId: _monStatutId!,
+      userId: user['id'].toString(),
     );
+
+    if (ok && mounted) {
+      _showSnack('Statut supprimé.');
+      await _loadStatuts();
+    }
   }
 
   void _showSnack(String msg, {bool isError = false}) {
@@ -180,34 +177,64 @@ class _EntraideScreenState extends State<EntraideScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(msg),
       backgroundColor: isError ? AppColors.error : AppColors.success,
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
     ));
   }
 
-  String _formatDate(String? dateStr) {
+  String _formatDateRestant(DateTime? expiration) {
+    if (expiration == null) return '';
+    final now = DateTime.now();
+    final remaining = expiration.difference(now);
+    if (remaining.isNegative) return 'Expiré';
+    if (remaining.inHours > 0) {
+      return 'Expire dans ${remaining.inHours}h${remaining.inMinutes.remainder(60).toString().padLeft(2, '0')}';
+    }
+    return 'Expire dans ${remaining.inMinutes} min';
+  }
+
+  String _formatAge(String? dateStr) {
     if (dateStr == null) return '';
     try {
       final dt = DateTime.parse(dateStr).toLocal();
       final now = DateTime.now();
       final diff = now.difference(dt);
       if (diff.inMinutes < 1) return 'À l\'instant';
-      if (diff.inHours < 1) return 'Il y a ${diff.inMinutes} min';
-      if (diff.inDays < 1) return 'Il y a ${diff.inHours}h';
-      if (diff.inDays < 7) return 'Il y a ${diff.inDays}j';
+      if (diff.inMinutes < 60) return 'Il y a ${diff.inMinutes} min';
+      if (diff.inHours < 24) return 'Il y a ${diff.inHours}h';
       return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}';
     } catch (_) {
       return '';
     }
   }
 
+  Color _getTypeColor(String type) {
+    for (final t in _types) {
+      if (t['value'] == type) return t['color'] as Color;
+    }
+    return AppColors.primary;
+  }
+
+  String _getTypeEmoji(String type) {
+    const map = {
+      'signaler': '📢',
+      'aide': '🤝',
+      'info': '💡',
+      'revision': '📚',
+      'succes': '🎉',
+    };
+    return map[type] ?? '💬';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final user = ApiService.currentUser;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text(
           'Entraide',
-          style:
-              TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700),
+          style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700),
         ),
         automaticallyImplyLeading: false,
         flexibleSpace: Container(
@@ -220,1050 +247,452 @@ class _EntraideScreenState extends State<EntraideScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
-            onPressed: () => _loadQuestions(reset: true),
+            onPressed: _loadStatuts,
+            tooltip: 'Actualiser',
           ),
         ],
       ),
       body: Column(
         children: [
-          // Filtres par catégorie
-          _buildCatFilter(),
-
-          // Liste des questions
-          Expanded(
-            child: _loading
-                ? const Center(
-                    child:
-                        CircularProgressIndicator(color: AppColors.primary))
-                : RefreshIndicator(
-                    onRefresh: () => _loadQuestions(reset: true),
-                    child: _questions.isEmpty
-                        ? _buildEmptyState()
-                        : ListView.builder(
-                            controller: _scrollController,
-                            padding: const EdgeInsets.all(12),
-                            itemCount:
-                                _questions.length + (_loadingMore ? 1 : 0),
-                            itemBuilder: (ctx, i) {
-                              if (i == _questions.length) {
-                                return const Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(16),
-                                    child: CircularProgressIndicator(
-                                        color: AppColors.primary),
-                                  ),
-                                );
-                              }
-                              return _buildQuestionCard(_questions[i]);
-                            },
-                          ),
-                  ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _onPublierQuestion,
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Poser une question',
-            style: TextStyle(fontWeight: FontWeight.w700)),
-      ),
-    );
-  }
-
-  Widget _buildCatFilter() {
-    return Container(
-      height: 44,
-      color: Colors.white,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        itemCount: _categories.length,
-        itemBuilder: (ctx, i) {
-          final cat = _categories[i];
-          final isSelected = _selectedCat == cat;
-          return GestureDetector(
-            onTap: () => _onCatChanged(cat),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              margin: const EdgeInsets.only(right: 8),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
-              decoration: BoxDecoration(
-                color: isSelected ? AppColors.primary : Colors.transparent,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: isSelected
-                      ? AppColors.primary
-                      : AppColors.primary.withValues(alpha: 0.3),
-                ),
-              ),
-              child: Center(
-                child: Text(
-                  cat,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: isSelected ? Colors.white : AppColors.primary,
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text('🤝', style: TextStyle(fontSize: 56)),
-          const SizedBox(height: 16),
-          const Text(
-            'Aucune question pour l\'instant.\nSoyez le premier à partager !',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: AppColors.textLight, fontSize: 15),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: _onPublierQuestion,
-            icon: const Icon(Icons.add),
-            label: const Text('Poser une question'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuestionCard(Map<String, dynamic> q) {
-    final titre = q['titre'] as String? ?? '';
-    final texte = q['texte'] as String? ?? '';
-    final cat = q['categorie'] as String? ?? 'Général';
-    final auteur = q['auteur_prenom'] as String? ?? 'Anonyme';
-    final nbRep = q['nb_reponses'] as int? ?? 0;
-    final dateStr = q['created_at'] as String?;
-
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => QuestionDetailScreen(question: q),
-          ),
-        ).then((_) => _loadQuestions(reset: true));
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Catégorie + date
-            Row(
-              children: [
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    cat,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ),
-                const Spacer(),
-                Text(
-                  _formatDate(dateStr),
-                  style: const TextStyle(
-                      fontSize: 11, color: AppColors.textLight),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-
-            // Titre
-            Text(
-              titre,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textDark,
-                height: 1.3,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-
-            if (texte.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Text(
-                texte,
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: AppColors.textLight,
-                  height: 1.4,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-
-            const SizedBox(height: 10),
-            const Divider(height: 1),
-            const SizedBox(height: 8),
-
-            // Auteur + nb réponses
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 12,
-                  backgroundColor: AppColors.primary,
-                  child: Text(
-                    auteur.isNotEmpty ? auteur[0].toUpperCase() : '?',
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold),
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  auteur,
-                  style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textDark),
-                ),
-                const Spacer(),
-                Icon(Icons.chat_bubble_outline_rounded,
-                    size: 14, color: AppColors.textLight),
-                const SizedBox(width: 4),
-                Text(
-                  '$nbRep réponse${nbRep > 1 ? 's' : ''}',
-                  style: const TextStyle(
-                      fontSize: 12, color: AppColors.textLight),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ══════════════════════════════════════════════════════════════
-// ÉCRAN DÉTAIL D'UNE QUESTION + RÉPONSES
-// ══════════════════════════════════════════════════════════════
-class QuestionDetailScreen extends StatefulWidget {
-  final Map<String, dynamic> question;
-
-  const QuestionDetailScreen({super.key, required this.question});
-
-  @override
-  State<QuestionDetailScreen> createState() => _QuestionDetailScreenState();
-}
-
-class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
-  List<Map<String, dynamic>> _reponses = [];
-  bool _loading = true;
-  bool _sending = false;
-  int _page = 0;
-  bool _hasMore = true;
-  bool _loadingMore = false;
-
-  final TextEditingController _reponseCtrl = TextEditingController();
-  final ScrollController _scrollCtrl = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollCtrl.addListener(_onScroll);
-    _loadReponses();
-  }
-
-  @override
-  void dispose() {
-    _reponseCtrl.dispose();
-    _scrollCtrl.dispose();
-    super.dispose();
-  }
-
-  void _onScroll() {
-    if (_scrollCtrl.position.pixels >=
-        _scrollCtrl.position.maxScrollExtent - 200) {
-      if (!_loadingMore && _hasMore) _loadMore();
-    }
-  }
-
-  Future<void> _loadReponses() async {
-    setState(() => _loading = true);
-    final data = await SupabaseService.fetchReponses(
-      questionId: widget.question['id'] as String,
-      page: 0,
-    );
-    if (mounted) {
-      setState(() {
-        _reponses = data;
-        _page = 1;
-        _hasMore = data.length >= 15;
-        _loading = false;
-      });
-    }
-  }
-
-  Future<void> _loadMore() async {
-    setState(() => _loadingMore = true);
-    final data = await SupabaseService.fetchReponses(
-      questionId: widget.question['id'] as String,
-      page: _page,
-    );
-    if (mounted) {
-      setState(() {
-        _reponses.addAll(data);
-        _page++;
-        _hasMore = data.length >= 15;
-        _loadingMore = false;
-      });
-    }
-  }
-
-  Future<void> _envoyerReponse() async {
-    final texte = _reponseCtrl.text.trim();
-    if (texte.length < 3) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Réponse trop courte (min. 3 caractères)'),
-        backgroundColor: AppColors.error,
-      ));
-      return;
-    }
-
-    final user = ApiService.currentUser;
-    if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Connectez-vous pour répondre'),
-        backgroundColor: AppColors.error,
-      ));
-      return;
-    }
-
-    setState(() => _sending = true);
-    final result = await SupabaseService.ajouterReponse(
-      userId: user['id'].toString(),
-      questionId: widget.question['id'] as String,
-      texte: texte,
-    );
-
-    if (mounted) {
-      setState(() => _sending = false);
-      if (result['success'] == true) {
-        _reponseCtrl.clear();
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Réponse publiée !'),
-          backgroundColor: AppColors.success,
-        ));
-        _loadReponses();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(result['error'] ?? 'Erreur lors de l\'envoi'),
-          backgroundColor: AppColors.error,
-        ));
-      }
-    }
-  }
-
-  Future<void> _likerReponse(String reponseId, int index) async {
-    final ok = await SupabaseService.likerReponse(reponseId);
-    if (ok && mounted) {
-      setState(() {
-        _reponses[index]['likes'] = (_reponses[index]['likes'] as int? ?? 0) + 1;
-      });
-    }
-  }
-
-  Future<void> _marquerMeilleureReponse(String reponseId, int index) async {
-    final ok = await SupabaseService.marquerMeilleureReponse(
-      reponseId: reponseId,
-      questionId: widget.question['id'] as String,
-    );
-    if (ok && mounted) {
-      setState(() {
-        for (int i = 0; i < _reponses.length; i++) {
-          _reponses[i]['est_meilleure'] = (i == index);
-        }
-      });
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('⭐ Meilleure réponse marquée !'),
-        backgroundColor: AppColors.success,
-      ));
-    }
-  }
-
-  String _formatDate(String? dateStr) {
-    if (dateStr == null) return '';
-    try {
-      final dt = DateTime.parse(dateStr).toLocal();
-      final now = DateTime.now();
-      final diff = now.difference(dt);
-      if (diff.inMinutes < 1) return 'À l\'instant';
-      if (diff.inHours < 1) return 'Il y a ${diff.inMinutes} min';
-      if (diff.inDays < 1) return 'Il y a ${diff.inHours}h';
-      return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}';
-    } catch (_) {
-      return '';
-    }
-  }
-
-  bool get _isAuteurQuestion {
-    final user = ApiService.currentUser;
-    if (user == null) return false;
-    return user['id'].toString() == widget.question['auteur_id'].toString();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final q = widget.question;
-    final titre = q['titre'] as String? ?? '';
-    final texte = q['texte'] as String? ?? '';
-    final auteur = q['auteur_prenom'] as String? ?? 'Anonyme';
-    final cat = q['categorie'] as String? ?? 'Général';
-    final dateStr = q['created_at'] as String?;
-
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Question',
-            style: TextStyle(
-                fontFamily: 'Poppins', fontWeight: FontWeight.w700)),
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-                colors: [AppColors.primary, AppColors.primaryDark]),
-          ),
-        ),
-        foregroundColor: AppColors.white,
-      ),
-      body: Column(
-        children: [
-          // Corps défilable
-          Expanded(
-            child: ListView(
-              controller: _scrollCtrl,
-              padding: const EdgeInsets.all(14),
-              children: [
-                // ── Question principale ──
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.2)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(cat,
-                                style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.primary)),
-                          ),
-                          const Spacer(),
-                          Text(_formatDate(dateStr),
-                              style: const TextStyle(
-                                  fontSize: 11, color: AppColors.textLight)),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        titre,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.textDark,
-                          height: 1.3,
-                        ),
-                      ),
-                      if (texte.isNotEmpty) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          texte,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: AppColors.textDark,
-                            height: 1.6,
-                            fontFamily: 'Georgia',
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 14,
-                            backgroundColor: AppColors.primary,
-                            child: Text(
-                              auteur.isNotEmpty ? auteur[0].toUpperCase() : '?',
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(auteur,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w600, fontSize: 13)),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // ── Titre réponses ──
-                Row(
-                  children: [
-                    Text(
-                      '${_reponses.length} Réponse${_reponses.length > 1 ? 's' : ''}',
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textDark,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-
-                // ── Liste des réponses ──
-                if (_loading)
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(24),
-                      child: CircularProgressIndicator(
-                          color: AppColors.primary),
-                    ),
-                  )
-                else if (_reponses.isEmpty)
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        children: [
-                          const Text('💬',
-                              style: TextStyle(fontSize: 40)),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Soyez le premier à répondre !',
-                            style: TextStyle(
-                                color: AppColors.textLight, fontSize: 14),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                else
-                  ..._reponses.asMap().entries.map((e) {
-                    final i = e.key;
-                    final r = e.value;
-                    return _buildReponseCard(r, i);
-                  }),
-
-                if (_loadingMore)
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(16),
-                      child: CircularProgressIndicator(
-                          color: AppColors.primary),
-                    ),
-                  ),
-
-                const SizedBox(height: 80),
-              ],
-            ),
-          ),
-
-          // ── Zone de saisie de réponse ──
+          // ── Bandeau explicatif ──
           Container(
-            padding: EdgeInsets.fromLTRB(
-                12, 10, 12, MediaQuery.of(context).viewInsets.bottom + 10),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
-                  blurRadius: 10,
-                  offset: const Offset(0, -2),
-                ),
-              ],
-            ),
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            color: AppColors.primary.withValues(alpha: 0.06),
             child: Row(
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: _reponseCtrl,
-                    maxLines: 3,
-                    minLines: 1,
-                    maxLength: 500,
-                    decoration: InputDecoration(
-                      hintText: 'Votre réponse...',
-                      hintStyle:
-                          const TextStyle(color: AppColors.textLight),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                            color: AppColors.primary.withValues(alpha: 0.3)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                            color: AppColors.primary, width: 1.5),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 10),
-                      isDense: true,
-                      counterText: '',
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                GestureDetector(
-                  onTap: _sending ? null : _envoyerReponse,
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: _sending
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                                color: Colors.white, strokeWidth: 2),
-                          )
-                        : const Icon(Icons.send_rounded,
-                            color: Colors.white, size: 20),
+                const Icon(Icons.info_outline_rounded, size: 16, color: AppColors.primary),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text(
+                    '1 statut par jour • Visible 24h • Signalez, demandez de l\'aide ou partagez !',
+                    style: TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w500),
                   ),
                 ),
               ],
             ),
+          ),
+
+          // ── Zone de saisie (si pas encore posté) ──
+          if (user != null)
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              child: _aDejaPoste
+                  ? _buildDejaPosteBar()
+                  : _buildPublierBar(),
+            ),
+
+          // ── Liste des statuts ──
+          Expanded(
+            child: _loading
+                ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+                : RefreshIndicator(
+                    onRefresh: _loadStatuts,
+                    color: AppColors.primary,
+                    child: _statuts.isEmpty
+                        ? _buildVide()
+                        : ListView.builder(
+                            controller: _scrollCtrl,
+                            padding: const EdgeInsets.fromLTRB(12, 8, 12, 100),
+                            itemCount: _statuts.length,
+                            itemBuilder: (ctx, i) => _buildStatutCard(_statuts[i]),
+                          ),
+                  ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildReponseCard(Map<String, dynamic> r, int index) {
-    final texte = r['texte'] as String? ?? '';
-    final auteur = r['auteur_prenom'] as String? ?? 'Anonyme';
-    final likes = r['likes'] as int? ?? 0;
-    final isMeilleure = r['est_meilleure'] == true;
-    final dateStr = r['created_at'] as String?;
-    final reponseId = r['id'] as String;
+  Widget _buildPublierBar() {
+    final typeInfo = _types.firstWhere(
+      (t) => t['value'] == _typeSelectionne,
+      orElse: () => _types[2],
+    );
+    final typeColor = typeInfo['color'] as Color;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
       decoration: BoxDecoration(
-        color: isMeilleure
-            ? const Color(0xFFFFF8E1)
-            : Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isMeilleure
-              ? const Color(0xFFFFD700)
-              : Colors.grey.withValues(alpha: 0.15),
-          width: isMeilleure ? 1.5 : 1,
-        ),
+        color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Badge meilleure réponse
-          if (isMeilleure)
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              margin: const EdgeInsets.only(bottom: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFD700).withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Text(
-                '⭐ Meilleure réponse',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFFA07A00),
-                ),
-              ),
-            ),
-
-          // Texte de la réponse
-          Text(
-            texte,
-            style: const TextStyle(
-              fontSize: 14,
-              height: 1.55,
-              color: AppColors.textDark,
-              fontFamily: 'Georgia',
+          // Sélecteur de type
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: _types.map((t) {
+                final isSelected = t['value'] == _typeSelectionne;
+                return GestureDetector(
+                  onTap: () => setState(() => _typeSelectionne = t['value'] as String),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    margin: const EdgeInsets.only(right: 8, bottom: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? (t['color'] as Color).withValues(alpha: 0.15)
+                          : Colors.grey.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isSelected ? t['color'] as Color : Colors.grey.withValues(alpha: 0.2),
+                        width: isSelected ? 1.5 : 1,
+                      ),
+                    ),
+                    child: Text(
+                      t['label'] as String,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                        color: isSelected ? t['color'] as Color : AppColors.textLight,
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
           ),
 
-          const SizedBox(height: 10),
-          const Divider(height: 1),
-          const SizedBox(height: 8),
-
-          // Auteur + date + actions
+          // Zone de texte + bouton envoyer
           Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              CircleAvatar(
-                radius: 12,
-                backgroundColor: AppColors.secondary,
-                child: Text(
-                  auteur.isNotEmpty ? auteur[0].toUpperCase() : '?',
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold),
-                ),
-              ),
-              const SizedBox(width: 6),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(auteur,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w600, fontSize: 12)),
-                    Text(_formatDate(dateStr),
-                        style: const TextStyle(
-                            fontSize: 10, color: AppColors.textLight)),
-                  ],
+                child: TextField(
+                  controller: _textCtrl,
+                  maxLines: 3,
+                  minLines: 1,
+                  maxLength: 280,
+                  decoration: InputDecoration(
+                    hintText: 'Signalez quelque chose, demandez de l\'aide...',
+                    hintStyle: TextStyle(color: AppColors.textLight, fontSize: 13),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: typeColor.withValues(alpha: 0.3)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: typeColor, width: 1.5),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    isDense: true,
+                    counterText: '',
+                  ),
                 ),
               ),
-
-              // Bouton liker
+              const SizedBox(width: 8),
               GestureDetector(
-                onTap: () => _likerReponse(reponseId, index),
+                onTap: _sending ? null : _publierStatut,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.error.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    color: typeColor,
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.favorite_border_rounded,
-                          size: 14, color: AppColors.error),
-                      const SizedBox(width: 4),
-                      Text(
-                        '$likes',
-                        style: const TextStyle(
-                            fontSize: 12,
-                            color: AppColors.error,
-                            fontWeight: FontWeight.w600),
-                      ),
-                    ],
-                  ),
+                  child: _sending
+                      ? const SizedBox(
+                          width: 20, height: 20,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        )
+                      : const Icon(Icons.send_rounded, color: Colors.white, size: 20),
                 ),
               ),
-
-              // Bouton marquer meilleure réponse (auteur question seulement)
-              if (_isAuteurQuestion && !isMeilleure) ...[
-                const SizedBox(width: 6),
-                GestureDetector(
-                  onTap: () =>
-                      _marquerMeilleureReponse(reponseId, index),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFD700).withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.star_border_rounded,
-                            size: 14, color: Color(0xFFA07A00)),
-                        SizedBox(width: 2),
-                        Text('⭐',
-                            style: TextStyle(fontSize: 10)),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
             ],
           ),
         ],
       ),
     );
   }
-}
 
-// ══════════════════════════════════════════════════════════════
-// ÉCRAN PUBLICATION DE QUESTION
-// ══════════════════════════════════════════════════════════════
-class PublierQuestionScreen extends StatefulWidget {
-  final String userId;
-
-  const PublierQuestionScreen({super.key, required this.userId});
-
-  @override
-  State<PublierQuestionScreen> createState() => _PublierQuestionScreenState();
-}
-
-class _PublierQuestionScreenState extends State<PublierQuestionScreen> {
-  final _titreCtrl = TextEditingController();
-  final _texteCtrl = TextEditingController();
-  String _categorie = 'Concours';
-  bool _sending = false;
-
-  @override
-  void dispose() {
-    _titreCtrl.dispose();
-    _texteCtrl.dispose();
-    super.dispose();
-  }
-
-  Future<void> _publier() async {
-    final titre = _titreCtrl.text.trim();
-    final texte = _texteCtrl.text.trim();
-
-    if (titre.length < 5) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Le titre doit faire au moins 5 caractères'),
-        backgroundColor: AppColors.error,
-      ));
-      return;
-    }
-    if (texte.length < 10) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Le contenu doit faire au moins 10 caractères'),
-        backgroundColor: AppColors.error,
-      ));
-      return;
-    }
-
-    setState(() => _sending = true);
-    final result = await SupabaseService.publierQuestion(
-      userId: widget.userId,
-      titre: titre,
-      texte: texte,
-      categorie: _categorie,
-    );
-
-    if (mounted) {
-      setState(() => _sending = false);
-      if (result['success'] == true) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Question publiée avec succès !'),
-          backgroundColor: AppColors.success,
-        ));
-        Navigator.pop(context, true);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(result['error'] ?? 'Erreur lors de la publication'),
-          backgroundColor: AppColors.error,
-        ));
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Poser une question',
-            style:
-                TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700)),
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-                colors: [AppColors.primary, AppColors.primaryDark]),
-          ),
-        ),
-        foregroundColor: AppColors.white,
+  Widget _buildDejaPosteBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Colors.grey.withValues(alpha: 0.15))),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Info premium
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFF3CD),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFFFFD700)),
-              ),
-              child: const Row(
-                children: [
-                  Text('👑', style: TextStyle(fontSize: 20)),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Fonctionnalité réservée aux membres Premium',
-                      style: TextStyle(
-                          fontSize: 13, fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ],
-              ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
             ),
-            const SizedBox(height: 16),
-
-            // Catégorie
-            const Text('Catégorie',
-                style:
-                    TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              children: _categories.skip(1).map((cat) {
-                final isSelected = _categorie == cat;
-                return ChoiceChip(
-                  label: Text(cat),
-                  selected: isSelected,
-                  onSelected: (_) => setState(() => _categorie = cat),
-                  selectedColor: AppColors.primary,
-                  labelStyle: TextStyle(
-                    color: isSelected ? Colors.white : AppColors.textDark,
-                    fontWeight: FontWeight.w600,
+            child: const Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 18),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Statut posté aujourd\'hui ✅',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textDark),
+                ),
+                if (_prochain != null)
+                  Text(
+                    _formatDateRestant(_prochain),
+                    style: const TextStyle(fontSize: 11, color: AppColors.textLight),
+                  ),
+              ],
+            ),
+          ),
+          if (_monStatutId != null)
+            GestureDetector(
+              onTap: () async {
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    title: const Text('Supprimer le statut ?'),
+                    content: const Text('Vous pourrez en poster un nouveau demain.'),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annuler')),
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(ctx, true),
+                        style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+                        child: const Text('Supprimer', style: TextStyle(color: Colors.white)),
+                      ),
+                    ],
                   ),
                 );
-              }).toList(),
-            ),
-            const SizedBox(height: 16),
-
-            // Titre
-            const Text('Titre de votre question *',
-                style:
-                    TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _titreCtrl,
-              maxLength: 150,
-              decoration: InputDecoration(
-                hintText: 'Ex: Comment préparer le concours ENAREF ?',
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10)),
-                focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(
-                        color: AppColors.primary, width: 1.5)),
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // Contenu
-            const Text('Détails (optionnel)',
-                style:
-                    TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _texteCtrl,
-              maxLines: 5,
-              maxLength: 1000,
-              decoration: InputDecoration(
-                hintText:
-                    'Expliquez votre question en détail pour obtenir une meilleure réponse...',
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10)),
-                focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(
-                        color: AppColors.primary, width: 1.5)),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Bouton publier
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                onPressed: _sending ? null : _publier,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
+                if (confirm == true) _supprimerMonStatut();
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.error.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                child: _sending
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text(
-                        'Publier la question',
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            fontFamily: 'Poppins'),
-                      ),
+                child: const Text(
+                  'Supprimer',
+                  style: TextStyle(fontSize: 11, color: AppColors.error, fontWeight: FontWeight.w700),
+                ),
               ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVide() {
+    return Center(
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('🤝', style: TextStyle(fontSize: 56)),
+            const SizedBox(height: 16),
+            const Text(
+              'Aucun statut pour l\'instant.',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textDark),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Soyez le premier à signaler quelque chose\nou à demander de l\'aide !',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppColors.textLight, fontSize: 13),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildStatutCard(Map<String, dynamic> s) {
+    final userId = s['user_id']?.toString() ?? '';
+    final prenom = s['prenom']?.toString() ?? 'Utilisateur';
+    final nom = s['nom']?.toString() ?? '';
+    final texte = s['texte']?.toString() ?? s['contenu']?.toString() ?? '';
+    final type = s['type']?.toString() ?? 'info';
+    final dateStr = s['created_at']?.toString();
+    final isAdminPost = s['is_admin'] == true || s['is_admin'] == 1;
+    final currentUserId = ApiService.currentUser?['id']?.toString() ?? '';
+    final isMyPost = userId == currentUserId;
+
+    // Calculer l'expiration
+    DateTime? expiration;
+    try {
+      expiration = DateTime.parse(dateStr!).toLocal().add(const Duration(hours: 24));
+    } catch (_) {}
+
+    final typeColor = _getTypeColor(type);
+    final typeEmoji = _getTypeEmoji(type);
+    final initiale = prenom.isNotEmpty ? prenom[0].toUpperCase() : 'U';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: isMyPost
+            ? Border.all(color: typeColor.withValues(alpha: 0.4), width: 1.5)
+            : Border.all(color: Colors.grey.withValues(alpha: 0.12)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Avatar
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isAdminPost ? AppColors.primary : typeColor.withValues(alpha: 0.15),
+                    border: Border.all(
+                      color: isAdminPost ? AppColors.primary : typeColor.withValues(alpha: 0.4),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: isAdminPost
+                      ? ClipOval(
+                          child: Image.asset(
+                            'assets/images/logo_effort.png',
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : Center(
+                          child: Text(
+                            initiale,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: typeColor,
+                            ),
+                          ),
+                        ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            isAdminPost ? 'EF-FORT.BF' : '$prenom $nom'.trim(),
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                              color: isAdminPost ? AppColors.primary : AppColors.textDark,
+                            ),
+                          ),
+                          if (isAdminPost) ...[
+                            const SizedBox(width: 5),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text(
+                                'OFFICIEL',
+                                style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.white),
+                              ),
+                            ),
+                          ],
+                          if (isMyPost && !isAdminPost) ...[
+                            const SizedBox(width: 5),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: typeColor.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text(
+                                'MOI',
+                                style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: AppColors.primary),
+                              ),
+                            ),
+                          ],
+                          const Spacer(),
+                          Text(
+                            _formatAge(dateStr),
+                            style: const TextStyle(fontSize: 11, color: AppColors.textLight),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      // Badge type
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: typeColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          '$typeEmoji ${type.capitalize()}',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: typeColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 10),
+
+            // Contenu du statut
+            Text(
+              texte,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Color(0xFF1A1A1A),
+                height: 1.5,
+              ),
+            ),
+
+            if (expiration != null) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.access_time_rounded, size: 12, color: Colors.grey[400]),
+                  const SizedBox(width: 4),
+                  Text(
+                    _formatDateRestant(expiration),
+                    style: TextStyle(fontSize: 10, color: Colors.grey[400]),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Extension pour capitaliser
+extension StringExt on String {
+  String capitalize() {
+    if (isEmpty) return this;
+    return this[0].toUpperCase() + substring(1);
   }
 }

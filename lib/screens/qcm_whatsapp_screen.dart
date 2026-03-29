@@ -81,14 +81,17 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
 
   // ══ Chargement ════════════════════════════════════════════════════
   Future<void> _loadQuestions() async {
-    // Toutes les questions disponibles — pas de limitation artificielle
-    const limit = 1000;
+    // 20 questions par série — standard officiel EF-FORT
+    const serieLimit = 20;
     List<dynamic> questions;
 
     if (widget.serieId != null) {
-      questions = await ApiService.getQuestionsBySerie(widget.serieId!, limit: limit);
+      // Charger les questions de la série (limité à 20)
+      final all = await ApiService.getQuestionsBySerie(widget.serieId!, limit: 1000);
+      // Prendre exactement 20 questions (les premières de la série)
+      questions = all.length > serieLimit ? all.sublist(0, serieLimit) : all;
     } else {
-      questions = await ApiService.getQuestions(widget.matiere, limit: 20);
+      questions = await ApiService.getQuestions(widget.matiere, limit: serieLimit);
     }
 
     if (mounted) {
@@ -1339,29 +1342,68 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
       final pdf = pw.Document();
       final primaryColor = PdfColor.fromHex('1A5C38');
       final greyColor = PdfColor.fromHex('6C757D');
+      final accentColor = PdfColor.fromHex('D4A017');
       final successColor = PdfColor.fromHex('22C55E');
       final errorColor = PdfColor.fromHex('EF4444');
+      final lightGreen = PdfColor.fromHex('E8F5E9');
 
       pdf.addPage(
         pw.MultiPage(
           pageFormat: PdfPageFormat.a4,
           margin: const pw.EdgeInsets.all(28),
           header: (ctx) => pw.Container(
-            padding: const pw.EdgeInsets.only(bottom: 10),
+            padding: const pw.EdgeInsets.only(bottom: 12),
             decoration: pw.BoxDecoration(
               border: pw.Border(bottom: pw.BorderSide(color: primaryColor, width: 2)),
             ),
-            child: pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            child: pw.Column(
               children: [
-                pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.center,
                   children: [
-                    pw.Text('EF-FORT.BF', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold, color: primaryColor)),
-                    pw.Text('Résultats Série — ${widget.label}', style: pw.TextStyle(fontSize: 11, color: greyColor)),
+                    pw.Container(
+                      width: 46,
+                      height: 46,
+                      decoration: pw.BoxDecoration(
+                        color: primaryColor,
+                        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+                      ),
+                      child: pw.Center(
+                        child: pw.Text('EF',
+                            style: pw.TextStyle(
+                              fontSize: 18,
+                              fontWeight: pw.FontWeight.bold,
+                              color: PdfColors.white,
+                            )),
+                      ),
+                    ),
+                    pw.SizedBox(width: 12),
+                    pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text('EF-FORT.BF',
+                            style: pw.TextStyle(
+                              fontSize: 20,
+                              fontWeight: pw.FontWeight.bold,
+                              color: primaryColor,
+                            )),
+                        pw.Text('Chaque effort te rapproche de ton admission',
+                            style: pw.TextStyle(fontSize: 10, color: accentColor, fontStyle: pw.FontStyle.italic)),
+                      ],
+                    ),
                   ],
                 ),
-                pw.Text('ef-fort.bf.pages.dev', style: pw.TextStyle(fontSize: 9, color: greyColor)),
+                pw.SizedBox(height: 6),
+                pw.Container(
+                  width: double.infinity,
+                  padding: const pw.EdgeInsets.symmetric(vertical: 4),
+                  color: lightGreen,
+                  child: pw.Text(
+                    'Résultats Série — ${widget.label}  ·  ef-fort-bf.pages.dev',
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(fontSize: 10, color: primaryColor, fontWeight: pw.FontWeight.bold),
+                  ),
+                ),
               ],
             ),
           ),
@@ -1371,9 +1413,18 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
             decoration: pw.BoxDecoration(
               border: pw.Border(top: pw.BorderSide(color: PdfColors.grey300)),
             ),
-            child: pw.Text(
-              'EF-FORT.BF — Page ${ctx.pageNumber}/${ctx.pagesCount}',
-              style: pw.TextStyle(fontSize: 9, color: greyColor),
+            child: pw.Column(
+              children: [
+                pw.Text(
+                  'EF-FORT.BF  ·  Chaque effort te rapproche de ton admission',
+                  style: pw.TextStyle(fontSize: 9, color: primaryColor, fontStyle: pw.FontStyle.italic),
+                ),
+                pw.SizedBox(height: 2),
+                pw.Text(
+                  'ef-fort-bf.pages.dev  |  Page ${ctx.pageNumber}/${ctx.pagesCount}',
+                  style: pw.TextStyle(fontSize: 8, color: greyColor),
+                ),
+              ],
             ),
           ),
           build: (ctx) => [

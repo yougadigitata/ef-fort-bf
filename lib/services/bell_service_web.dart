@@ -22,3 +22,12 @@ Future<void> playBellEndPlatform() async {
     if (kDebugMode) debugPrint('Web bell end error: $e');
   }
 }
+
+Future<void> playBellClickPlatform() async {
+  if (!kIsWeb) return;
+  try {
+    _effortPlayBell(1100, 0.08); // Son court aigü de clic
+  } catch (e) {
+    if (kDebugMode) debugPrint('Web bell click error: $e');
+  }
+}

@@ -225,16 +225,36 @@ class _MatieresScreenState extends State<MatieresScreen> {
         }
       },
       child: Stack(
+        clipBehavior: Clip.none,
         children: [
+          // ── Rectangle vert en arrière-plan (ombre verte style consignes) ──
+          Positioned(
+            bottom: -4,
+            left: 4,
+            right: -4,
+            child: Container(
+              height: double.infinity,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.22),
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          ),
+
+          // ── Rectangle blanc principal ──
           Container(
             decoration: BoxDecoration(
               color: AppColors.white,
               borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: color.withValues(alpha: 0.15),
+                width: 1,
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: color.withValues(alpha: 0.12),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
+                  color: color.withValues(alpha: 0.14),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
@@ -251,7 +271,7 @@ class _MatieresScreenState extends State<MatieresScreen> {
                       color: color.withValues(alpha: 0.12),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: color.withValues(alpha: 0.25),
+                        color: color.withValues(alpha: 0.3),
                         width: 1.5,
                       ),
                     ),

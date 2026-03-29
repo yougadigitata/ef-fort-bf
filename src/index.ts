@@ -27,6 +27,86 @@ app.route('/api/abonnements',  abonnements);
 app.route('/api/admin',        admin);
 app.route('/api/entraide',     entraide);
 
+// ── GET /api/statuts — Statuts Entraide v3 (actifs < 24h) ──
+app.get('/api/statuts', async (c) => {
+  const db = getDB(c.env);
+  const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { data, error } = await db
+    .from('statuts_entraide')
+    .select('id,user_id,prenom,nom,texte,type,is_admin,created_at')
+    .gte('created_at', cutoff)
+    .order('created_at', { ascending: false })
+    .limit(50);
+  if (error) return c.json({ error: error.message }, 500);
+  return c.json({ success: true, statuts: data ?? [] });
+});
+
+// ── POST /api/statuts — Publier un statut (1/jour max) ──
+app.post('/api/statuts', async (c) => {
+  const h = c.req.header('Authorization');
+  if (!h?.startsWith('Bearer ')) return c.json({ error: 'Auth requise.' }, 401);
+  const { verifyJWT } = await import('./lib/auth');
+  const payload = await verifyJWT(h.slice(7));
+  if (!payload) return c.json({ error: 'Token invalide.' }, 401);
+  const userId = (payload as any).id as string;
+
+  const db = getDB(c.env);
+  const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  
+  // Vérifier si l'utilisateur a déjà posté dans les 24h
+  const { data: existing } = await db
+    .from('statuts_entraide')
+    .select('id')
+    .eq('user_id', userId)
+    .gte('created_at', cutoff)
+    .limit(1);
+
+  if (existing && existing.length > 0) {
+    return c.json({ error: 'Vous avez déjà posté votre statut aujourd\'hui. Revenez demain !', already_posted: true }, 429);
+  }
+
+  const body = await c.req.json().catch(() => ({})) as any;
+  const { texte, type, prenom, nom } = body;
+  
+  if (!texte || String(texte).trim().length < 5) {
+    return c.json({ error: 'Message trop court (minimum 5 caractères).' }, 400);
+  }
+
+  const { error } = await db.from('statuts_entraide').insert({
+    user_id: userId,
+    prenom: String(prenom || 'Anonyme').trim().substring(0, 50),
+    nom: String(nom || '').trim().substring(0, 50),
+    texte: String(texte).trim().substring(0, 280),
+    type: ['signaler','aide','info','revision','succes'].includes(type) ? type : 'info',
+    is_admin: false,
+    created_at: new Date().toISOString(),
+  });
+  
+  if (error) return c.json({ error: error.message }, 500);
+  return c.json({ success: true, message: 'Statut publié !' });
+});
+
+// ── DELETE /api/statuts/:id — Supprimer son statut ──
+app.delete('/api/statuts/:id', async (c) => {
+  const h = c.req.header('Authorization');
+  if (!h?.startsWith('Bearer ')) return c.json({ error: 'Auth requise.' }, 401);
+  const { verifyJWT } = await import('./lib/auth');
+  const payload = await verifyJWT(h.slice(7));
+  if (!payload) return c.json({ error: 'Token invalide.' }, 401);
+  const userId = (payload as any).id as string;
+  const id = c.req.param('id');
+
+  const db = getDB(c.env);
+  const { error } = await db
+    .from('statuts_entraide')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', userId);
+  
+  if (error) return c.json({ error: error.message }, 500);
+  return c.json({ success: true });
+});
+
 // ── GET /api/actualites ──
 app.get('/api/actualites', async (c) => {
   const db = getDB(c.env);

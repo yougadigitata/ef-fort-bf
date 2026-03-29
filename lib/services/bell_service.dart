@@ -20,4 +20,13 @@ class BellService {
       if (kDebugMode) debugPrint('BellService.playEnd error: $e');
     }
   }
+
+  /// Son de clic — noircissement d'une case
+  static Future<void> playClick() async {
+    try {
+      await playBellClickPlatform();
+    } catch (e) {
+      if (kDebugMode) debugPrint('BellService.playClick error: $e');
+    }
+  }
 }
