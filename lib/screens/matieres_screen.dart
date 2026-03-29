@@ -3,19 +3,44 @@ import '../core/theme/app_colors.dart';
 import 'qcm_screen.dart';
 import 'serie_selection_screen.dart';
 
-// IDs Supabase des matières avec QCM WhatsApp (Master 1)
+// ══════════════════════════════════════════════════════════════
+// IDs Supabase des matières — Phase 3 (Banque QCM complète)
+// Mise à jour après import massif de 3736 questions
+// ══════════════════════════════════════════════════════════════
 const Map<String, String> _matiereSupabaseIds = {
-  'hg':     '0a88b3ac-33b7-4d8c-bc19-fe68bb514aef', // Histoire-Geographie
-  'droit2': '9497ca2c-dc1b-43dd-8b7a-af11dde7039d', // Droit
-  'eco2':   '3f2937de-7ba9-463e-9519-7d1481b89549', // Economie
-  'ang':    '37febc5e-8ab5-4875-b7ad-71b30a8253e7', // Anglais
+  // ── Matières avec séries (WhatsApp QCM) ──
+  'hg':     '0a88b3ac-33b7-4d8c-bc19-fe68bb514aef', // Histoire-Géographie
+  'droit2': '9497ca2c-dc1b-43dd-8b7a-af11dde7039d', // Droit (26 séries)
+  'eco2':   '756e1ca6-7f7f-4f42-940a-b6d9952ffcdf', // Économie (52 séries)
+  'ang':    '37febc5e-8ab5-4875-b7ad-71b30a8253e7', // Anglais (51 séries)
   'sp':     '12e5b05a-6410-4b55-97b7-b8a838dcfb9a', // Sciences Physiques
+  // ── Nouvelles matières importées (Phase 3) ──
+  'psycho': 'cbd22275-d260-40d1-8ff3-d31545f3f1ab', // Psychotechnique (31 séries)
+  'histo':  '104f51e4-be6e-4ce8-961e-56e604818670', // Figure Africaine (30 séries)
+  'info':   'a72cc6f9-1282-4c2a-ae19-298933047694', // Informatique (20 séries)
+  'comm':   'cc979206-e60d-4224-940d-943b8c68c8fa', // Communication (2 séries)
 };
 
-// Matieres utilisant le nouveau mode WhatsApp QCM (Master 1)
-const Set<String> _whatsappMatieres = {'hg', 'droit2', 'eco2', 'ang', 'sp'};
+// Compteurs de séries par matière (info pour affichage)
+const Map<String, int> _nbSeriesParMatiere = {
+  'hg':     13,
+  'droit2': 51,
+  'eco2':   52,
+  'ang':    51,
+  'sp':     0,
+  'psycho': 31,
+  'histo':  30,
+  'info':   20,
+  'comm':   2,
+};
 
-/// PHASE 2 — Les 16 matières officielles EF-FORT.BF
+// Matières utilisant le mode SerieSelection (QCM avec séries)
+const Set<String> _whatsappMatieres = {
+  'hg', 'droit2', 'eco2', 'ang',
+  'psycho', 'histo', 'info', 'comm',
+};
+
+/// PHASE 3 — Les 16 matières officielles EF-FORT.BF
 class MatieresScreen extends StatefulWidget {
   const MatieresScreen({super.key});
 
@@ -26,9 +51,23 @@ class MatieresScreen extends StatefulWidget {
 class _MatieresScreenState extends State<MatieresScreen> {
 
   // ══════════════════════════════════════════════════════════
-  // LES 16 MATIÈRES OFFICIELLES — Phase 2
+  // LES 16 MATIÈRES OFFICIELLES — Phase 3
   // ══════════════════════════════════════════════════════════
   static const List<Map<String, dynamic>> _matieresList = [
+    {
+      'id': 'psycho',
+      'nom': 'Psychotechnique',
+      'icone': '🧩',
+      'couleur': Color(0xFF8E44AD),
+      'description': 'Séries, matrices, raisonnement logique, dominos...',
+    },
+    {
+      'id': 'histo',
+      'nom': 'Figure Africaine',
+      'icone': '👤',
+      'couleur': Color(0xFFC0392B),
+      'description': 'Grandes figures africaines et burkinabè...',
+    },
     {
       'id': 'droit2',
       'nom': 'Droit',
@@ -42,6 +81,27 @@ class _MatieresScreenState extends State<MatieresScreen> {
       'icone': '💰',
       'couleur': Color(0xFF27AE60),
       'description': 'Microéconomie, macroéconomie, finances...',
+    },
+    {
+      'id': 'ang',
+      'nom': 'Anglais',
+      'icone': '🗣️',
+      'couleur': Color(0xFF2980B9),
+      'description': 'Grammaire anglaise, vocabulaire, compréhension...',
+    },
+    {
+      'id': 'info',
+      'nom': 'Informatique',
+      'icone': '💻',
+      'couleur': Color(0xFF2ECC71),
+      'description': 'Bureautique, systèmes, réseaux, programmation...',
+    },
+    {
+      'id': 'comm',
+      'nom': 'Communication',
+      'icone': '📢',
+      'couleur': Color(0xFFE67E22),
+      'description': 'Communication institutionnelle, médias, presse...',
     },
     {
       'id': 'maths',
@@ -86,13 +146,6 @@ class _MatieresScreenState extends State<MatieresScreen> {
       'description': 'Union Africaine, CEDEAO, intégration africaine...',
     },
     {
-      'id': 'histo',
-      'nom': 'Figure Africaine',
-      'icone': '👤',
-      'couleur': Color(0xFFC0392B),
-      'description': 'Grandes figures africaines et burkinabè...',
-    },
-    {
       'id': 'armee',
       'nom': 'Force Armée Nationale',
       'icone': '🪖',
@@ -100,39 +153,11 @@ class _MatieresScreenState extends State<MatieresScreen> {
       'description': 'Organisation militaire, défense nationale...',
     },
     {
-      'id': 'psycho',
-      'nom': 'Psychotechnique',
-      'icone': '🧩',
-      'couleur': Color(0xFF8E44AD),
-      'description': 'Séries, puzzles, raisonnement logique...',
-    },
-    {
       'id': 'fr',
       'nom': 'Français',
       'icone': '📖',
       'couleur': Color(0xFF1ABC9C),
       'description': 'Grammaire, vocabulaire, orthographe, rédaction...',
-    },
-    {
-      'id': 'ang',
-      'nom': 'Anglais',
-      'icone': '🗣️',
-      'couleur': Color(0xFF2980B9),
-      'description': 'Grammaire anglaise, vocabulaire, compréhension...',
-    },
-    {
-      'id': 'info',
-      'nom': 'Informatique',
-      'icone': '💻',
-      'couleur': Color(0xFF2ECC71),
-      'description': 'Bureautique, systèmes, réseaux, programmation...',
-    },
-    {
-      'id': 'comm',
-      'nom': 'Communication',
-      'icone': '📢',
-      'couleur': Color(0xFFE67E22),
-      'description': 'Communication institutionnelle, médias, presse...',
     },
     {
       'id': 'hg',
@@ -181,6 +206,7 @@ class _MatieresScreenState extends State<MatieresScreen> {
     final matiereId = matiere['id'] as String;
     final isWhatsapp = _whatsappMatieres.contains(matiereId);
     final supabaseId = _matiereSupabaseIds[matiereId];
+    final nbSeries = _nbSeriesParMatiere[matiereId] ?? 0;
 
     return GestureDetector(
       onTap: () {
@@ -264,8 +290,24 @@ class _MatieresScreenState extends State<MatieresScreen> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  // Barre couleur ou badge WhatsApp
-                  if (isWhatsapp)
+                  // Badge séries ou barre couleur
+                  if (isWhatsapp && nbSeries > 0)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF25D366).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Text(
+                        '📋 $nbSeries séries',
+                        style: const TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF128C7E),
+                        ),
+                      ),
+                    )
+                  else if (isWhatsapp)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
@@ -273,7 +315,7 @@ class _MatieresScreenState extends State<MatieresScreen> {
                         borderRadius: BorderRadius.circular(5),
                       ),
                       child: const Text(
-                        '💬 25 séries',
+                        '📋 Séries QCM',
                         style: TextStyle(
                           fontSize: 9,
                           fontWeight: FontWeight.w800,
@@ -294,7 +336,7 @@ class _MatieresScreenState extends State<MatieresScreen> {
               ),
             ),
           ),
-          // Badge NOUVEAU pour les matières WhatsApp
+          // Badge pour les matières avec de nombreuses séries
           if (isWhatsapp)
             Positioned(
               top: 6,
@@ -302,12 +344,14 @@ class _MatieresScreenState extends State<MatieresScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF25D366),
+                  color: nbSeries >= 20
+                      ? const Color(0xFF25D366)
+                      : const Color(0xFFF39C12),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: const Text(
-                  'NEW',
-                  style: TextStyle(
+                child: Text(
+                  nbSeries >= 20 ? 'TOP' : 'NEW',
+                  style: const TextStyle(
                     fontSize: 8,
                     fontWeight: FontWeight.w900,
                     color: Colors.white,

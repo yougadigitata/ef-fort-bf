@@ -69,24 +69,60 @@ app.get('/api/examens', async (c) => {
 });
 
 // ── GET /api/examens/:id/questions — Questions pour un examen ──
+// Phase 3 : Puise dans les 3736 questions de la banque complète
+// Répartition par matière pour un examen équilibré
 app.get('/api/examens/:id/questions', async (c) => {
   const examenId = c.req.param('id');
   const db = getDB(c.env);
 
-  // Récupérer 50 questions aléatoires toutes matières confondues
-  const { data, error } = await db
-    .from('questions')
-    .select('id, matiere_id, enonce, option_a, option_b, option_c, option_d, option_e, bonne_reponse, explication, difficulte')
-    .limit(200);
+  // IDs des matières principales importées (Phase 3)
+  const MATIERES_EXAMEN = [
+    { id: 'cbd22275-d260-40d1-8ff3-d31545f3f1ab', nom: 'Psychotechnique',  quota: 10 },
+    { id: '104f51e4-be6e-4ce8-961e-56e604818670', nom: 'Figure Africaine', quota: 10 },
+    { id: '756e1ca6-7f7f-4f42-940a-b6d9952ffcdf', nom: 'Économie',         quota: 10 },
+    { id: '37febc5e-8ab5-4875-b7ad-71b30a8253e7', nom: 'Anglais',          quota: 10 },
+    { id: '9497ca2c-dc1b-43dd-8b7a-af11dde7039d', nom: 'Droit',            quota: 10 },
+  ];
 
-  if (error) return c.json({ error: error.message }, 500);
+  const allSelected: any[] = [];
 
-  const shuffled = (data ?? [])
+  for (const mat of MATIERES_EXAMEN) {
+    // Récupérer un échantillon aléatoire par matière
+    const { data: matData, error: matErr } = await db
+      .from('questions')
+      .select('id, matiere_id, enonce, option_a, option_b, option_c, option_d, option_e, bonne_reponse, explication, difficulte')
+      .eq('matiere_id', mat.id)
+      .limit(200);  // Large pool pour le shuffle
+
+    if (!matErr && matData && matData.length > 0) {
+      const shuffledMat = matData.sort(() => Math.random() - 0.5).slice(0, mat.quota);
+      allSelected.push(...shuffledMat);
+    }
+  }
+
+  // Si pas assez de questions des matières cibles, compléter avec d'autres matières
+  if (allSelected.length < 50) {
+    const { data: extra } = await db
+      .from('questions')
+      .select('id, matiere_id, enonce, option_a, option_b, option_c, option_d, option_e, bonne_reponse, explication, difficulte')
+      .not('matiere_id', 'in', `(${MATIERES_EXAMEN.map(m => m.id).join(',')})`)
+      .limit(100);
+
+    if (extra && extra.length > 0) {
+      const needed = 50 - allSelected.length;
+      const shuffledExtra = extra.sort(() => Math.random() - 0.5).slice(0, needed);
+      allSelected.push(...shuffledExtra);
+    }
+  }
+
+  // Mélanger l'ensemble final
+  const finalQuestions = allSelected
     .sort(() => Math.random() - 0.5)
     .slice(0, 50)
-    .map(q => ({
+    .map((q, idx) => ({
       id: q.id,
       examen_id: examenId,
+      numero: idx + 1,
       enonce: q.enonce,
       option_a: q.option_a,
       option_b: q.option_b,
@@ -98,7 +134,7 @@ app.get('/api/examens/:id/questions', async (c) => {
       difficulte: q.difficulte ?? 'moyen',
     }));
 
-  return c.json({ success: true, questions: shuffled });
+  return c.json({ success: true, questions: finalQuestions });
 });
 
 // ── TÂCHE 4 : GET /api/user/stats — Stats dashboard utilisateur ──

@@ -22,16 +22,18 @@ questions.get('/matieres', async (c) => {
   // Filtrer uniquement les 16 matières officielles
   const matieresFiltrees = (matieres ?? []).filter(m => CODES_OFFICIELS.includes(m.code));
 
-  // Compter les questions par matière (requête unique optimisée)
-  const { data: questionsData } = await db
-    .from('questions')
-    .select('matiere_id')
-    .limit(5000);
-
+  // Compter les questions par matière via count exact (une requête par matière)
+  // Note: Supabase PostgREST est limité à 1000 rows max, on utilise count=exact
   const countMap: Record<string, number> = {};
-  for (const q of questionsData ?? []) {
-    if (q.matiere_id) {
-      countMap[q.matiere_id] = (countMap[q.matiere_id] ?? 0) + 1;
+  for (const mat of matieresFiltrees) {
+    try {
+      const { count } = await db
+        .from('questions')
+        .select('*', { count: 'exact', head: true })
+        .eq('matiere_id', mat.id);
+      countMap[mat.id] = count ?? 0;
+    } catch (_) {
+      countMap[mat.id] = 0;
     }
   }
 
@@ -57,7 +59,7 @@ questions.get('/questions', async (c) => {
   const matiereCode = c.req.query('matiere');
   const serieId     = c.req.query('serie_id');
   const page  = Math.max(1, parseInt(c.req.query('page') ?? '1'));
-  const limit = Math.min(parseInt(c.req.query('limit') ?? '20'), 100);
+  const limit = Math.min(parseInt(c.req.query('limit') ?? '20'), 200);
   const offset = (page - 1) * limit;
 
   const db = getDB(c.env);
@@ -143,7 +145,7 @@ questions.get('/series', async (c) => {
     query = query.eq('matiere_id', matiereId) as typeof query;
   }
 
-  const { data, error } = await query.limit(50);
+  const { data, error } = await query.limit(200);
   if (error) return c.json({ error: error.message }, 500);
 
   // Pas de cache sur les séries (données sensibles freemium)
