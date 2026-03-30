@@ -655,6 +655,70 @@ adminCms.post('/questions/bulk-import', requireAdmin, async (c) => {
   let importedCount = 0;
   let failedCount = 0;
 
+  // ── Cache des séries par matière (pour éviter trop de requêtes) ──────────
+  const seriesCacheByMatiere: Record<string, { id: string; numero: number; count: number }> = {};
+
+  async function getOrCreateSerieForBulk(qMatiereId: string): Promise<string | null> {
+    if (!qMatiereId) return null;
+
+    // Initialiser le cache pour cette matière si nécessaire
+    if (!seriesCacheByMatiere[qMatiereId]) {
+      const { data: lastSerie } = await db.from('series_qcm')
+        .select('id, numero, nb_questions')
+        .eq('matiere_id', qMatiereId)
+        .eq('actif', true)
+        .order('numero', { ascending: false })
+        .limit(1);
+
+      if (lastSerie && lastSerie.length > 0) {
+        // Compter les vraies questions de cette série
+        const { count: vraiCount } = await db.from('questions')
+          .select('*', { count: 'exact', head: true })
+          .eq('serie_id', lastSerie[0].id);
+        seriesCacheByMatiere[qMatiereId] = {
+          id: lastSerie[0].id,
+          numero: lastSerie[0].numero ?? 1,
+          count: vraiCount ?? 0,
+        };
+      } else {
+        seriesCacheByMatiere[qMatiereId] = { id: '', numero: 0, count: 0 };
+      }
+    }
+
+    const cache = seriesCacheByMatiere[qMatiereId];
+
+    // Si la série actuelle est pleine (>= 20 questions), en créer une nouvelle
+    if (!cache.id || cache.count >= 20) {
+      const newNum = cache.numero + 1;
+      const { data: matInfo } = await db.from('matieres').select('nom').eq('id', qMatiereId).single();
+      const nomSerie = `Série ${String(newNum).padStart(2, '0')} — ${matInfo?.nom ?? 'Matière'}`;
+
+      const { data: newSerie } = await db.from('series_qcm').insert({
+        titre: nomSerie,
+        matiere_id: qMatiereId,
+        numero: newNum,
+        nb_questions: 0,
+        niveau: 'INTERMEDIAIRE',
+        duree_minutes: 20,
+        actif: true,
+        published: true,
+        est_demo: false,
+        created_by: adminId,
+        created_at: new Date().toISOString(),
+      }).select('id, numero').single();
+
+      if (newSerie) {
+        seriesCacheByMatiere[qMatiereId] = { id: newSerie.id, numero: newSerie.numero, count: 0 };
+      } else {
+        return null;
+      }
+    }
+
+    // Incrémenter le compteur local
+    seriesCacheByMatiere[qMatiereId].count++;
+    return seriesCacheByMatiere[qMatiereId].id;
+  }
+
   // Log import en cours
   let importLogId: any = null;
   try {
@@ -695,11 +759,9 @@ adminCms.post('/questions/bulk-import', requireAdmin, async (c) => {
 
       currentNumero++;
 
-      // Calcul numero_serie
-      const totalInMatiere = importedCount + (
-        qMatiereId ? 0 : 0
-      );
-      const numero_serie = Math.ceil(currentNumero / 20);
+      // ── Auto-assignation de série (20 questions max par série) ──
+      const serieId = qMatiereId ? await getOrCreateSerieForBulk(qMatiereId) : null;
+      const numero_serie = seriesCacheByMatiere[qMatiereId]?.numero ?? Math.ceil(currentNumero / 20);
 
       batchData.push({
         enonce: enonce.trim(),
@@ -712,6 +774,7 @@ adminCms.post('/questions/bulk-import', requireAdmin, async (c) => {
         explication: explication.trim(),
         difficulte: ['FACILE', 'MOYEN', 'DIFFICILE'].includes(difficulte) ? difficulte : 'MOYEN',
         matiere_id: qMatiereId,
+        serie_id: serieId,
         numero: currentNumero,
         numero_serie,
         published: true,
@@ -732,6 +795,18 @@ adminCms.post('/questions/bulk-import', requireAdmin, async (c) => {
         importedCount += inserted?.length ?? 0;
         importedIds.push(...(inserted?.map((q: any) => q.id) ?? []));
       }
+    }
+  }
+
+  // ── Mettre à jour nb_questions pour toutes les séries touchées ──
+  for (const [qMatiereId, serieCache] of Object.entries(seriesCacheByMatiere)) {
+    if (serieCache.id) {
+      try {
+        const { count: newNb } = await db.from('questions')
+          .select('*', { count: 'exact', head: true })
+          .eq('serie_id', serieCache.id);
+        await db.from('series_qcm').update({ nb_questions: newNb ?? 0 }).eq('id', serieCache.id);
+      } catch (_) {}
     }
   }
 
@@ -765,6 +840,7 @@ adminCms.post('/questions/bulk-import', requireAdmin, async (c) => {
     duration_seconds: duration,
     created_questions: importedIds.slice(0, 50),
     errors: errors.slice(0, 10),
+    series_created: Object.keys(seriesCacheByMatiere).length,
   });
 });
 

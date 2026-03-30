@@ -9,6 +9,7 @@ import 'serie_selection_screen.dart';
 // ══════════════════════════════════════════════════════════════
 
 /// Matières officielles avec leurs métadonnées visuelles
+/// Pour AES: utiliser 'asset:assets/logo/aes_logo.png' pour logo PNG
 const Map<String, Map<String, dynamic>> _matieresMeta = {
   'hg':           {'icone': '🗺️', 'couleur': Color(0xFFBD3B3B)},
   'droit2':       {'icone': '⚖️', 'couleur': Color(0xFF1A5C38)},
@@ -19,7 +20,7 @@ const Map<String, Map<String, dynamic>> _matieresMeta = {
   'histo':        {'icone': '👤', 'couleur': Color(0xFFC0392B)},
   'info':         {'icone': '💻', 'couleur': Color(0xFF16A085)},
   'comm':         {'icone': '📢', 'couleur': Color(0xFFE67E22)},
-  'aes':          {'icone': '🤝', 'couleur': Color(0xFF006B3F)},
+  'aes':          {'icone': 'asset:assets/logo/aes_logo.png', 'couleur': Color(0xFF006B3F)},
   'bf':           {'icone': '🇧🇫', 'couleur': Color(0xFFEF2B2D)},
   'burkina_faso': {'icone': '🇧🇫', 'couleur': Color(0xFFEF2B2D)},
   'armee':        {'icone': '🪖', 'couleur': Color(0xFF34495E)},
@@ -269,7 +270,7 @@ class _MatieresScreenState extends State<MatieresScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Icône
+                  // Icône — supporte emoji ET asset image (ex: logo AES)
                   Container(
                     width: 50, height: 50,
                     decoration: BoxDecoration(
@@ -278,7 +279,7 @@ class _MatieresScreenState extends State<MatieresScreen> {
                       border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
                     ),
                     child: Center(
-                      child: Text(icone, style: const TextStyle(fontSize: 22)),
+                      child: _buildIconeWidget(icone, 28),
                     ),
                   ),
                   const SizedBox(height: 7),
@@ -347,5 +348,32 @@ class _MatieresScreenState extends State<MatieresScreen> {
         ],
       ),
     );
+  }
+
+  /// Widget icône intelligent : gère emoji, asset image (asset:...) et URL http
+  Widget _buildIconeWidget(String icone, double size) {
+    // Asset local (ex: 'asset:assets/logo/aes_logo.png')
+    if (icone.startsWith('asset:')) {
+      final path = icone.substring(6);
+      return Image.asset(
+        path,
+        width: size,
+        height: size,
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) => Text('🏛️', style: TextStyle(fontSize: size * 0.8)),
+      );
+    }
+    // URL externe (http/https)
+    if (icone.startsWith('http://') || icone.startsWith('https://')) {
+      return Image.network(
+        icone,
+        width: size,
+        height: size,
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) => Text('🌐', style: TextStyle(fontSize: size * 0.8)),
+      );
+    }
+    // Emoji ou texte simple
+    return Text(icone, style: TextStyle(fontSize: size * 0.8));
   }
 }
