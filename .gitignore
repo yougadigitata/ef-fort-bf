@@ -53,3 +53,7 @@ build/
 
 # Wrangler cache
 .wrangler/
+
+# Admin Panel (node_modules seulement, garder admin-dist)
+admin-panel/node_modules/
+admin-panel/dist/

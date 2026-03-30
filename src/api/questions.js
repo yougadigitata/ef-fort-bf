@@ -1,30 +1,37 @@
 import { Hono } from 'hono';
 import { getDB } from '../lib/db';
 const questions = new Hono();
-// ── GET /api/matieres — 16 matières avec caching ──────────────
+// ── GET /api/matieres — 18 matières avec caching (v5.1) ──────────────
 questions.get('/matieres', async (c) => {
     const db = getDB(c.env);
-    // Récupérer uniquement les 16 matières officielles (triées par ordre)
+    // Récupérer toutes les matières officielles (triées par ordre)
     const { data: matieres, error: mErr } = await db
         .from('matieres')
         .select('id, nom, code, icone, couleur, ordre')
         .order('ordre', { ascending: true })
-        .limit(30);
+        .limit(50);
     if (mErr)
         return c.json({ error: mErr.message }, 500);
-    // Les 16 codes officiels
-    const CODES_OFFICIELS = ['DROIT2', 'ECO2', 'MATHS', 'SP', 'SVT', 'CG', 'ACTU', 'PANA', 'HISTO', 'ARMEE', 'PSYCHO', 'FR', 'ANG', 'INFO', 'COMM', 'HG'];
-    // Filtrer uniquement les 16 matières officielles
+    // Les 18 codes officiels v5.1 (+ AES + BF)
+    const CODES_OFFICIELS = [
+        'DROIT2', 'ECO2', 'MATHS', 'SP', 'SVT', 'CG', 'ACTU', 'PANA',
+        'HISTO', 'ARMEE', 'PSYCHO', 'FR', 'ANG', 'INFO', 'COMM', 'HG',
+        'AES', 'BF' // Nouvelles matières v5.1
+    ];
+    // Filtrer uniquement les matières officielles
     const matieresFiltrees = (matieres ?? []).filter(m => CODES_OFFICIELS.includes(m.code));
-    // Compter les questions par matière (requête unique optimisée)
-    const { data: questionsData } = await db
-        .from('questions')
-        .select('matiere_id')
-        .limit(5000);
+    // Compter les questions par matière via count exact
     const countMap = {};
-    for (const q of questionsData ?? []) {
-        if (q.matiere_id) {
-            countMap[q.matiere_id] = (countMap[q.matiere_id] ?? 0) + 1;
+    for (const mat of matieresFiltrees) {
+        try {
+            const { count } = await db
+                .from('questions')
+                .select('*', { count: 'exact', head: true })
+                .eq('matiere_id', mat.id);
+            countMap[mat.id] = count ?? 0;
+        }
+        catch (_) {
+            countMap[mat.id] = 0;
         }
     }
     const result = matieresFiltrees.map(m => ({
@@ -41,12 +48,13 @@ questions.get('/matieres', async (c) => {
     c.header('Cache-Control', 'public, max-age=300');
     return c.json({ success: true, matieres: result });
 });
-// ── GET /api/questions — Avec pagination, série et optimisation ─
+// ── GET /api/questions — Avec pagination et support 20 000+ QCM ─
 questions.get('/questions', async (c) => {
     const matiereCode = c.req.query('matiere');
     const serieId = c.req.query('serie_id');
     const page = Math.max(1, parseInt(c.req.query('page') ?? '1'));
-    const limit = Math.min(parseInt(c.req.query('limit') ?? '20'), 100);
+    // Support jusqu'à 20 000 QCM — limite max portée à 1000
+    const limit = Math.min(parseInt(c.req.query('limit') ?? '20'), 1000);
     const offset = (page - 1) * limit;
     const db = getDB(c.env);
     let query = db.from('questions')
@@ -54,7 +62,8 @@ questions.get('/questions', async (c) => {
     // Filtrer par série si fourni (priorité sur matière)
     if (serieId) {
         query = query.eq('serie_id', serieId);
-        const { data, error } = await query.order('numero', { ascending: true }).limit(limit);
+        // Récupérer TOUTES les questions de la série (pas de limite artificielle)
+        const { data, error } = await query.order('numero', { ascending: true }).limit(1000);
         if (error)
             return c.json({ error: error.message }, 500);
         const mapped = (data ?? []).map(q => ({
@@ -72,7 +81,7 @@ questions.get('/questions', async (c) => {
             explication: q.explication,
             difficulte: q.difficulte,
         }));
-        return c.json({ success: true, questions: mapped, page: 1, limit });
+        return c.json({ success: true, questions: mapped, page: 1, limit: mapped.length, total: mapped.length });
     }
     // Filtrer par matière si spécifié
     if (matiereCode) {
@@ -85,15 +94,26 @@ questions.get('/questions', async (c) => {
             query = query.eq('matiere_id', mat.id);
         }
     }
-    // Pagination optimisée
+    // Compter le total pour la pagination
+    let totalCount = 0;
+    try {
+        let countQuery = db.from('questions').select('*', { count: 'exact', head: true });
+        if (matiereCode) {
+            const { data: mat } = await db.from('matieres').select('id').ilike('code', matiereCode).maybeSingle();
+            if (mat)
+                countQuery = countQuery.eq('matiere_id', mat.id);
+        }
+        const { count } = await countQuery;
+        totalCount = count ?? 0;
+    }
+    catch (_) { }
+    // Pagination optimisée avec range
     const { data, error } = await query
         .range(offset, offset + limit - 1)
-        .limit(limit);
+        .order('numero', { ascending: true });
     if (error)
         return c.json({ error: error.message }, 500);
-    const shuffled = (data ?? [])
-        .sort(() => Math.random() - 0.5)
-        .map(q => ({
+    const mapped = (data ?? []).map(q => ({
         id: q.id,
         serie_id: q.serie_id,
         matiere: q.matiere_id,
@@ -108,7 +128,7 @@ questions.get('/questions', async (c) => {
         explication: q.explication,
         difficulte: q.difficulte,
     }));
-    return c.json({ success: true, questions: shuffled, page, limit });
+    return c.json({ success: true, questions: mapped, page, limit, total: totalCount });
 });
 // ── GET /api/series — Séries par matière ───────────────────────
 questions.get('/series', async (c) => {
@@ -121,12 +141,31 @@ questions.get('/series', async (c) => {
     if (matiereId) {
         query = query.eq('matiere_id', matiereId);
     }
-    const { data, error } = await query.limit(50);
+    // Support 20 000+ QCM : toutes les séries sans limite artificielle
+    const { data, error } = await query.limit(2000);
     if (error)
         return c.json({ error: error.message }, 500);
-    // Pas de cache sur les séries (données sensibles freemium)
+    // Pas de cache sur les séries
     c.header('Cache-Control', 'no-store, no-cache, must-revalidate');
     return c.json({ success: true, series: data ?? [] });
+});
+// ── GET /api/questions/count — Compter les questions par matière ─
+questions.get('/questions/count', async (c) => {
+    const matiereId = c.req.query('matiere_id');
+    const db = getDB(c.env);
+    try {
+        let countQuery = db.from('questions').select('*', { count: 'exact', head: true });
+        if (matiereId) {
+            countQuery = countQuery.eq('matiere_id', matiereId);
+        }
+        const { count, error } = await countQuery;
+        if (error)
+            return c.json({ error: error.message }, 500);
+        return c.json({ success: true, count: count ?? 0 });
+    }
+    catch (e) {
+        return c.json({ error: e.message }, 500);
+    }
 });
 // ── POST /api/questions — Ajouter question avec anti-doublon ───────────
 questions.post('/questions', async (c) => {
@@ -162,5 +201,50 @@ questions.post('/questions', async (c) => {
     if (error)
         return c.json({ error: error.message }, 500);
     return c.json({ success: true, question: data });
+});
+// ── DELETE /api/questions/:id — Supprimer une question ─────────
+questions.delete('/questions/:id', async (c) => {
+    const id = c.req.param('id');
+    const db = getDB(c.env);
+    const { error } = await db.from('questions').delete().eq('id', id);
+    if (error)
+        return c.json({ error: error.message }, 500);
+    return c.json({ success: true, message: 'Question supprimée.' });
+});
+// ── POST /api/questions/purge-doublons — Supprimer les doublons ──
+questions.post('/questions/purge-doublons', async (c) => {
+    const db = getDB(c.env);
+    try {
+        // Récupérer toutes les questions groupées par énoncé + matiere_id
+        const { data: allQ, error } = await db
+            .from('questions')
+            .select('id, enonce, matiere_id, serie_id, created_at')
+            .order('created_at', { ascending: true });
+        if (error)
+            return c.json({ error: error.message }, 500);
+        const seen = new Map(); // clé -> premier id
+        const toDelete = [];
+        for (const q of (allQ ?? [])) {
+            const key = `${q.matiere_id}::${q.enonce?.trim().toLowerCase()}`;
+            if (seen.has(key)) {
+                toDelete.push(q.id);
+            }
+            else {
+                seen.set(key, q.id);
+            }
+        }
+        // Supprimer les doublons par batch
+        let deleted = 0;
+        for (let i = 0; i < toDelete.length; i += 100) {
+            const batch = toDelete.slice(i, i + 100);
+            const { error: delErr } = await db.from('questions').delete().in('id', batch);
+            if (!delErr)
+                deleted += batch.length;
+        }
+        return c.json({ success: true, doublons_supprimes: deleted, total_analyses: allQ?.length ?? 0 });
+    }
+    catch (e) {
+        return c.json({ error: e.message }, 500);
+    }
 });
 export default questions;

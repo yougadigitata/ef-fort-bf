@@ -1,0 +1,191 @@
+import { useState, useEffect } from 'react';
+import { getDashboard, runMigration } from '../api';
+const COLORS = { green: '#1A5C38', gold: '#D4A017', blue: '#3b82f6', red: '#ef4444', purple: '#8b5cf6', cyan: '#06b6d4' };
+export default function DashboardPage({ onNavigate }) {
+    const [stats, setStats] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [migrationStatus, setMigrationStatus] = useState(null);
+    const [migrating, setMigrating] = useState(false);
+    useEffect(() => { loadStats(); }, []);
+    async function loadStats() {
+        try {
+            const data = await getDashboard();
+            setStats(data.stats);
+        }
+        catch (err) {
+            console.error(err);
+        }
+        finally {
+            setLoading(false);
+        }
+    }
+    async function handleMigration() {
+        setMigrating(true);
+        try {
+            const result = await runMigration();
+            setMigrationStatus(result);
+        }
+        catch (err) {
+            setMigrationStatus({ error: err.message });
+        }
+        finally {
+            setMigrating(false);
+        }
+    }
+    if (loading)
+        return <LoadingSpinner />;
+    const cards = [
+        { label: 'Utilisateurs', value: stats?.total_users ?? 0, icon: '👥', color: COLORS.blue, page: null },
+        { label: 'Questions publiées', value: stats?.total_questions ?? 0, icon: '📚', color: COLORS.green, page: 'questions' },
+        { label: 'Simulations jouées', value: stats?.total_simulations_played ?? 0, icon: '🎯', color: COLORS.purple, page: null },
+        { label: 'Score moyen', value: `${stats?.avg_score ?? 0}%`, icon: '⭐', color: COLORS.gold, page: null },
+        { label: 'Signalements en attente', value: stats?.pending_flags ?? 0, icon: '🚨', color: stats?.pending_flags > 0 ? COLORS.red : '#334155', page: 'flags' },
+        { label: 'Simulations d\'examen', value: stats?.total_simulations_examens ?? 0, icon: '📝', color: COLORS.cyan, page: 'simulations' },
+    ];
+    return (<div>
+      <div style={{ marginBottom: 24 }}>
+        <h2 style={{ color: '#f1f5f9', fontSize: 22, fontWeight: 700 }}>Tableau de bord</h2>
+        <p style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>Vue d'ensemble de la plateforme EF-FORT.BF</p>
+      </div>
+
+      {/* Stats Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16, marginBottom: 32 }}>
+        {cards.map(card => (<div key={card.label} onClick={() => card.page && onNavigate(card.page)} style={{
+                background: '#1e293b', borderRadius: 12, padding: 20,
+                border: `1px solid ${card.color}33`,
+                cursor: card.page ? 'pointer' : 'default',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+                boxShadow: `0 4px 20px ${card.color}11`,
+            }} onMouseEnter={e => card.page && ((e.currentTarget.style.transform = 'translateY(-2px)', e.currentTarget.style.boxShadow = `0 8px 30px ${card.color}22`))} onMouseLeave={e => card.page && ((e.currentTarget.style.transform = 'none', e.currentTarget.style.boxShadow = `0 4px 20px ${card.color}11`))}>
+            <div style={{ fontSize: 28, marginBottom: 8 }}>{card.icon}</div>
+            <div style={{ color: card.color, fontSize: 28, fontWeight: 800, lineHeight: 1 }}>{card.value.toLocaleString()}</div>
+            <div style={{ color: '#94a3b8', fontSize: 13, marginTop: 6 }}>{card.label}</div>
+          </div>))}
+      </div>
+
+      {/* Quick Actions */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 16, marginBottom: 32 }}>
+        <QuickAction icon="✚" title="Créer une question" desc="Ajouter une nouvelle QCM à la base" color={COLORS.green} onClick={() => onNavigate('create-question')}/>
+        <QuickAction icon="📤" title="Import en masse" desc="Importer 400+ questions en CSV/JSON" color={COLORS.blue} onClick={() => onNavigate('bulk-import')}/>
+        <QuickAction icon="📚" title="Gérer les séries" desc="Créer et organiser les séries QCM" color={COLORS.purple} onClick={() => onNavigate('series')}/>
+        <QuickAction icon="🎯" title="Créer simulation" desc="Examen blanc multi-matières" color={COLORS.gold} onClick={() => onNavigate('simulations')}/>
+      </div>
+
+      {/* Section Matières */}
+      {stats?.matiere_stats?.length > 0 && (<div style={{ background: '#1e293b', borderRadius: 12, padding: 20, marginBottom: 24, border: '1px solid #334155' }}>
+          <h3 style={{ color: '#f1f5f9', fontSize: 16, fontWeight: 600, marginBottom: 16 }}>📊 Questions par matière</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {stats.matiere_stats.map((m) => {
+                const pct = stats.total_questions > 0 ? Math.round((m.nb_questions / stats.total_questions) * 100) : 0;
+                return (<div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ width: 140, color: '#94a3b8', fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.nom}</div>
+                  <div style={{ flex: 1, height: 6, background: '#334155', borderRadius: 3, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', background: COLORS.green, width: `${pct}%`, borderRadius: 3 }}/>
+                  </div>
+                  <div style={{ color: '#64748b', fontSize: 12, width: 60, textAlign: 'right' }}>{m.nb_questions} Q</div>
+                </div>);
+            })}
+          </div>
+        </div>)}
+
+      {/* Signalements récents */}
+      {stats?.recent_flags?.length > 0 && (<div style={{ background: '#1e293b', borderRadius: 12, padding: 20, marginBottom: 24, border: '1px solid rgba(239,68,68,0.3)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <h3 style={{ color: '#ef4444', fontSize: 16, fontWeight: 600 }}>🚨 Signalements récents</h3>
+            <button onClick={() => onNavigate('flags')} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444', padding: '4px 12px', borderRadius: 6, cursor: 'pointer', fontSize: 13 }}>
+              Voir tous
+            </button>
+          </div>
+          {stats.recent_flags.map((f) => (<div key={f.id} style={{ padding: '8px 0', borderBottom: '1px solid #334155', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+              <span style={{ color: '#ef4444', fontSize: 14 }}>⚠️</span>
+              <div>
+                <div style={{ color: '#e2e8f0', fontSize: 13 }}>Q#{f.question_id?.substring(0, 8)}... — {f.reason}</div>
+                <div style={{ color: '#64748b', fontSize: 12 }}>{new Date(f.created_at).toLocaleDateString('fr-FR')}</div>
+              </div>
+            </div>))}
+        </div>)}
+
+      {/* Imports récents */}
+      {stats?.recent_imports?.length > 0 && (<div style={{ background: '#1e293b', borderRadius: 12, padding: 20, marginBottom: 24, border: '1px solid #334155' }}>
+          <h3 style={{ color: '#f1f5f9', fontSize: 16, fontWeight: 600, marginBottom: 16 }}>📤 Derniers imports</h3>
+          {stats.recent_imports.map((imp) => (<div key={imp.id} style={{ padding: '8px 0', borderBottom: '1px solid #334155', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ color: '#e2e8f0', fontSize: 13 }}>{imp.filename ?? 'Import'}</div>
+                <div style={{ color: '#64748b', fontSize: 12 }}>{new Date(imp.created_at).toLocaleDateString('fr-FR')}</div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span style={{ color: '#4ade80', fontSize: 13 }}>{imp.imported_count} questions</span>
+                <StatusBadge status={imp.status}/>
+              </div>
+            </div>))}
+        </div>)}
+
+      {/* Migration */}
+      <div style={{ background: '#1e293b', borderRadius: 12, padding: 20, border: '1px solid #334155' }}>
+        <h3 style={{ color: '#f1f5f9', fontSize: 16, fontWeight: 600, marginBottom: 8 }}>🔧 Configuration CMS</h3>
+        <p style={{ color: '#64748b', fontSize: 13, marginBottom: 16 }}>
+          Vérifier et créer les tables CMS si nécessaire (première installation)
+        </p>
+        <button onClick={handleMigration} disabled={migrating} style={{
+            padding: '8px 16px', background: migrating ? '#334155' : '#1A5C38',
+            border: 'none', borderRadius: 8, color: 'white', cursor: migrating ? 'not-allowed' : 'pointer',
+            fontSize: 14, fontWeight: 500,
+        }}>
+          {migrating ? '⏳ Vérification...' : '🔍 Vérifier les tables CMS'}
+        </button>
+        {migrationStatus && (<div style={{ marginTop: 12 }}>
+            {migrationStatus.error ? (<div style={{ color: '#ef4444', fontSize: 13 }}>❌ {migrationStatus.error}</div>) : (<div>
+                <div style={{ color: '#4ade80', fontSize: 13, marginBottom: 8 }}>✅ Vérification terminée</div>
+                <div style={{ background: '#0f172a', borderRadius: 8, padding: 12, fontSize: 12, fontFamily: 'monospace', color: '#94a3b8' }}>
+                  {Object.entries(migrationStatus.tables_status ?? {}).map(([table, status]) => (<div key={table}>{status === 'OK' ? '✅' : '❌'} {table}: {status}</div>))}
+                </div>
+                {migrationStatus.migration_sql && migrationStatus.tables_status && Object.values(migrationStatus.tables_status).some(s => s === 'MISSING') && (<div style={{ marginTop: 12 }}>
+                    <p style={{ color: '#D4A017', fontSize: 13, marginBottom: 8 }}>⚠️ Des tables manquent. Exécutez ce SQL dans Supabase Dashboard :</p>
+                    <a href="https://supabase.com/dashboard/project/xqifdbgqxyrlhrkwlyir/sql/new" target="_blank" style={{ color: '#3b82f6', fontSize: 13 }}>
+                      → Ouvrir Supabase SQL Editor
+                    </a>
+                    <pre style={{ background: '#0f172a', borderRadius: 8, padding: 12, fontSize: 11, color: '#94a3b8', overflow: 'auto', maxHeight: 300, marginTop: 8 }}>
+                      {migrationStatus.migration_sql}
+                    </pre>
+                  </div>)}
+              </div>)}
+          </div>)}
+      </div>
+    </div>);
+}
+function QuickAction({ icon, title, desc, color, onClick }) {
+    return (<button onClick={onClick} style={{
+            background: '#1e293b', border: `1px solid ${color}33`,
+            borderRadius: 12, padding: 20, cursor: 'pointer', textAlign: 'left',
+            transition: 'all 0.2s', display: 'flex', alignItems: 'flex-start', gap: 14,
+        }} onMouseEnter={e => { e.currentTarget.style.background = `${color}11`; e.currentTarget.style.borderColor = `${color}66`; }} onMouseLeave={e => { e.currentTarget.style.background = '#1e293b'; e.currentTarget.style.borderColor = `${color}33`; }}>
+      <span style={{ fontSize: 24 }}>{icon}</span>
+      <div>
+        <div style={{ color: '#f1f5f9', fontSize: 15, fontWeight: 600 }}>{title}</div>
+        <div style={{ color: '#64748b', fontSize: 13, marginTop: 2 }}>{desc}</div>
+      </div>
+    </button>);
+}
+function StatusBadge({ status }) {
+    const colors = {
+        success: { bg: 'rgba(74,222,128,0.1)', color: '#4ade80', label: '✅ Succès' },
+        pending: { bg: 'rgba(251,191,36,0.1)', color: '#fbbf24', label: '⏳ En cours' },
+        failed: { bg: 'rgba(239,68,68,0.1)', color: '#ef4444', label: '❌ Échoué' },
+        partial_error: { bg: 'rgba(251,191,36,0.1)', color: '#fbbf24', label: '⚠️ Partiel' },
+        cancelled: { bg: 'rgba(148,163,184,0.1)', color: '#94a3b8', label: '🚫 Annulé' },
+    };
+    const c = colors[status] ?? colors.pending;
+    return (<span style={{ background: c.bg, color: c.color, padding: '2px 8px', borderRadius: 12, fontSize: 12 }}>
+      {c.label}
+    </span>);
+}
+function LoadingSpinner() {
+    return (<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300 }}>
+      <div style={{
+            width: 40, height: 40, border: '3px solid #334155',
+            borderTop: '3px solid #1A5C38', borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+        }}/>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>);
+}

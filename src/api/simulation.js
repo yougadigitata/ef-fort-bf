@@ -40,15 +40,31 @@ simulation.post('/demarrer', requireAuth, async (c) => {
             }, 403);
         }
     }
-    // Récupérer jusqu'à 200 questions, mélanger et prendre 50 (ou moins si dispo)
+    // Récupérer des questions de toutes les matières (y compris AES et Burkina Faso v5.1)
+    // Stratégie : tirer aléatoirement depuis toutes les matières disponibles
     const { data: allQ, error } = await db
         .from('questions')
         .select('id, matiere_id, enonce, option_a, option_b, option_c, option_d, bonne_reponse, explication, difficulte')
-        .limit(200);
+        .limit(500);
     if (error)
         return c.json({ error: error.message }, 500);
     const available = allQ ?? [];
-    const shuffled = available.sort(() => Math.random() - 0.5).slice(0, Math.min(50, available.length));
+    // Regrouper par matière pour assurer la diversité
+    const byMatiere = {};
+    for (const q of available) {
+        const mid = q.matiere_id ?? 'unknown';
+        if (!byMatiere[mid])
+            byMatiere[mid] = [];
+        byMatiere[mid].push(q);
+    }
+    // Prendre jusqu'à 3 questions par matière, puis compléter avec le reste
+    const selected = [];
+    for (const matQuestions of Object.values(byMatiere)) {
+        const shuffledMat = matQuestions.sort(() => Math.random() - 0.5);
+        selected.push(...shuffledMat.slice(0, 3));
+    }
+    // Mélanger et compléter jusqu'à 50
+    const shuffled = selected.sort(() => Math.random() - 0.5).slice(0, Math.min(50, selected.length));
     // Créer la session
     const { data: session, error: sErr } = await db
         .from('sessions_examen')

@@ -6,6 +6,7 @@ import questions   from './api/questions';
 import simulation  from './api/simulation';
 import abonnements from './api/abonnements';
 import admin       from './api/admin';
+import adminCms    from './api/admin-cms';
 import entraide    from './api/entraide';
 import { getDB }   from './lib/db';
 import { verifyJWT } from './lib/auth';
@@ -25,6 +26,7 @@ app.route('/api',              questions);     // /api/matieres + /api/questions
 app.route('/api/simulation',   simulation);
 app.route('/api/abonnements',  abonnements);
 app.route('/api/admin',        admin);
+app.route('/api/admin-cms',    adminCms);    // CMS v6.0 — Gestion QCM
 app.route('/api/entraide',     entraide);
 
 // ── GET /api/statuts — Statuts Entraide v3 (actifs < 24h) ──
