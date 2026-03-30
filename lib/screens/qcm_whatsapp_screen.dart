@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
@@ -1347,6 +1348,20 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
       final errorColor = PdfColor.fromHex('EF4444');
       final lightGreen = PdfColor.fromHex('E8F5E9');
 
+      // Charger le vrai logo de l'application
+      pw.MemoryImage? logoImage;
+      try {
+        final ByteData logoData = await rootBundle.load('assets/images/logo_effort.png');
+        logoImage = pw.MemoryImage(logoData.buffer.asUint8List());
+      } catch (_) {
+        try {
+          final ByteData logoData = await rootBundle.load('assets/icons/logo_effort.png');
+          logoImage = pw.MemoryImage(logoData.buffer.asUint8List());
+        } catch (_) {
+          logoImage = null;
+        }
+      }
+
       pdf.addPage(
         pw.MultiPage(
           pageFormat: PdfPageFormat.a4,
@@ -1361,21 +1376,26 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
                 pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.center,
                   children: [
+                    // Logo RÉEL de l'application
                     pw.Container(
-                      width: 46,
-                      height: 46,
+                      width: 60,
+                      height: 60,
                       decoration: pw.BoxDecoration(
-                        color: primaryColor,
-                        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+                        color: PdfColors.white,
+                        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(10)),
+                        border: pw.Border.all(color: primaryColor, width: 1.5),
                       ),
-                      child: pw.Center(
-                        child: pw.Text('EF',
-                            style: pw.TextStyle(
-                              fontSize: 18,
-                              fontWeight: pw.FontWeight.bold,
-                              color: PdfColors.white,
-                            )),
-                      ),
+                      padding: const pw.EdgeInsets.all(4),
+                      child: logoImage != null
+                          ? pw.Image(logoImage, fit: pw.BoxFit.contain)
+                          : pw.Center(
+                              child: pw.Text('EF-FORT',
+                                  style: pw.TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: pw.FontWeight.bold,
+                                    color: primaryColor,
+                                  )),
+                            ),
                     ),
                     pw.SizedBox(width: 12),
                     pw.Column(
@@ -1387,8 +1407,10 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
                               fontWeight: pw.FontWeight.bold,
                               color: primaryColor,
                             )),
-                        pw.Text('Chaque effort te rapproche de ton admission',
-                            style: pw.TextStyle(fontSize: 10, color: accentColor, fontStyle: pw.FontStyle.italic)),
+                        pw.Text('Plateforme N°1 — Concours Burkina Faso',
+                            style: pw.TextStyle(fontSize: 9, color: greyColor)),
+                        pw.Text('"Chaque effort te rapproche de ton admission finale"',
+                            style: pw.TextStyle(fontSize: 9, color: accentColor, fontStyle: pw.FontStyle.italic)),
                       ],
                     ),
                   ],

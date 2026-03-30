@@ -4,7 +4,7 @@ import 'qcm_screen.dart';
 import 'serie_selection_screen.dart';
 
 // ══════════════════════════════════════════════════════════════
-// IDs Supabase des matières — Phase 3 (Banque QCM complète)
+// IDs Supabase des matières — v5.1 (2228 questions + AES + BF)
 // ══════════════════════════════════════════════════════════════
 const Map<String, String> _matiereSupabaseIds = {
   'hg':     '0a88b3ac-33b7-4d8c-bc19-fe68bb514aef',
@@ -16,26 +16,38 @@ const Map<String, String> _matiereSupabaseIds = {
   'histo':  '104f51e4-be6e-4ce8-961e-56e604818670',
   'info':   'a72cc6f9-1282-4c2a-ae19-298933047694',
   'comm':   'cc979206-e60d-4224-940d-943b8c68c8fa',
+  // Nouvelles matières v5.1
+  'aes':          'c7681b66-91af-423b-9ef6-becbe8f5bd85',
+  'burkina_faso': '7c2b0599-4971-4d31-87ce-aeeb5c5cb394',
+  'armee':        'b8df7f6e-587d-4871-856c-30dbaa6a52c3',
+  'actu':         '5f7ef458-9fd3-4f70-b498-d3391b5d5677',
 };
 
 const Map<String, int> _nbSeriesParMatiere = {
-  'hg':     13,
-  'droit2': 51,
-  'eco2':   52,
-  'ang':    51,
-  'sp':     0,
-  'psycho': 31,
-  'histo':  30,
-  'info':   20,
-  'comm':   2,
+  'hg':           13,
+  'droit2':       51,
+  'eco2':         52,
+  'ang':          51,
+  'sp':           0,
+  'psycho':       31,
+  'histo':        30,
+  'info':         20,
+  'comm':         2,
+  // Nouvelles matières v5.1
+  'aes':          8,
+  'burkina_faso': 1,
+  'armee':        10,
+  'actu':         3,
 };
 
 const Set<String> _whatsappMatieres = {
   'hg', 'droit2', 'eco2', 'ang',
   'psycho', 'histo', 'info', 'comm',
+  // Nouvelles matières v5.1
+  'aes', 'burkina_faso', 'armee', 'actu',
 };
 
-/// PHASE 3 — Les 16 matières officielles EF-FORT.BF
+/// v5.1 — Les 18 matières officielles EF-FORT.BF (+ AES + Burkina Faso)
 /// Design harmonisé : cartes toutes identiques, espacements uniformes
 class MatieresScreen extends StatefulWidget {
   const MatieresScreen({super.key});
@@ -47,101 +59,139 @@ class MatieresScreen extends StatefulWidget {
 class _MatieresScreenState extends State<MatieresScreen> {
 
   static const List<Map<String, dynamic>> _matieresList = [
+    // ── NOUVELLES MATIÈRES v5.1 en tête (mises en avant) ──────
+    {
+      'id': 'aes',
+      'nom': 'Alliance des États du Sahel',
+      'sous_titre': 'AES — Burkina, Mali, Niger',
+      'icone_type': 'IMAGE',
+      'icone': '🤝',
+      'icone_asset': 'assets/logo/aes_logo.png',
+      'couleur': Color(0xFF006B3F),
+      'badge': 'NEW',
+    },
+    {
+      'id': 'burkina_faso',
+      'nom': 'Burkina Faso',
+      'sous_titre': 'Pays des Hommes Intègres',
+      'icone_type': 'EMOJI',
+      'icone': '🇧🇫',
+      'couleur': Color(0xFFEF2B2D),
+      'badge': 'NEW',
+    },
+    // ── MATIÈRES ENRICHIES v5.1 ────────────────────────────────
+    {
+      'id': 'droit2',
+      'nom': 'Droit',
+      'icone_type': 'EMOJI',
+      'icone': '⚖️',
+      'couleur': Color(0xFF1A5C38),
+    },
+    {
+      'id': 'armee',
+      'nom': 'Force Armée Nationale',
+      'icone_type': 'EMOJI',
+      'icone': '🪖',
+      'couleur': Color(0xFF34495E),
+    },
+    {
+      'id': 'info',
+      'nom': 'Informatique',
+      'icone_type': 'EMOJI',
+      'icone': '💻',
+      'couleur': Color(0xFF16A085),
+    },
+    {
+      'id': 'hg',
+      'nom': 'Histoire-Géographie',
+      'icone_type': 'EMOJI',
+      'icone': '🗺️',
+      'couleur': Color(0xFFBD3B3B),
+    },
+    {
+      'id': 'actu',
+      'nom': 'Actualité Internationale',
+      'icone_type': 'EMOJI',
+      'icone': '📰',
+      'couleur': Color(0xFFF39C12),
+    },
+    // ── MATIÈRES CLASSIQUES ────────────────────────────────────
     {
       'id': 'psycho',
       'nom': 'Psychotechnique',
+      'icone_type': 'EMOJI',
       'icone': '🧩',
       'couleur': Color(0xFF8E44AD),
     },
     {
       'id': 'histo',
       'nom': 'Figure Africaine',
+      'icone_type': 'EMOJI',
       'icone': '👤',
       'couleur': Color(0xFFC0392B),
     },
     {
-      'id': 'droit2',
-      'nom': 'Droit',
-      'icone': '⚖️',
-      'couleur': Color(0xFF1A5C38),
-    },
-    {
       'id': 'eco2',
       'nom': 'Économie',
+      'icone_type': 'EMOJI',
       'icone': '💰',
       'couleur': Color(0xFF27AE60),
     },
     {
       'id': 'ang',
       'nom': 'Anglais',
+      'icone_type': 'EMOJI',
       'icone': '🗣️',
       'couleur': Color(0xFF2980B9),
     },
     {
-      'id': 'info',
-      'nom': 'Informatique',
-      'icone': '💻',
-      'couleur': Color(0xFF16A085),
-    },
-    {
       'id': 'comm',
       'nom': 'Communication',
+      'icone_type': 'EMOJI',
       'icone': '📢',
       'couleur': Color(0xFFE67E22),
     },
     {
       'id': 'maths',
       'nom': 'Mathématiques',
+      'icone_type': 'EMOJI',
       'icone': '🔢',
       'couleur': Color(0xFF3498DB),
     },
     {
       'id': 'sp',
       'nom': 'Sciences Physiques',
+      'icone_type': 'EMOJI',
       'icone': '⚛️',
       'couleur': Color(0xFFE74C3C),
     },
     {
       'id': 'svt',
       'nom': 'SVT',
+      'icone_type': 'EMOJI',
       'icone': '🧬',
       'couleur': Color(0xFF1ABC9C),
     },
     {
       'id': 'cg',
       'nom': 'Culture Générale',
+      'icone_type': 'EMOJI',
       'icone': '🌍',
       'couleur': Color(0xFF9B59B6),
     },
     {
-      'id': 'actu',
-      'nom': 'Actualité Internationale',
-      'icone': '📰',
-      'couleur': Color(0xFFF39C12),
-    },
-    {
       'id': 'pana',
       'nom': 'Guide Panafricain',
+      'icone_type': 'EMOJI',
       'icone': '🌍',
       'couleur': Color(0xFFD35400),
     },
     {
-      'id': 'armee',
-      'nom': 'Force Armée Nationale',
-      'icone': '🪖',
-      'couleur': Color(0xFF34495E),
-    },
-    {
       'id': 'fr',
       'nom': 'Français',
+      'icone_type': 'EMOJI',
       'icone': '📖',
       'couleur': Color(0xFF1A5C38),
-    },
-    {
-      'id': 'hg',
-      'nom': 'Histoire-Géographie',
-      'icone': '🗺️',
-      'couleur': Color(0xFFBD3B3B),
     },
   ];
 
@@ -151,7 +201,7 @@ class _MatieresScreenState extends State<MatieresScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text(
-          '📚 16 Matières QCM',
+          '📚 18 Matières QCM',
           style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
         ),
         automaticallyImplyLeading: false,
@@ -190,10 +240,16 @@ class _MatieresScreenState extends State<MatieresScreen> {
     final supabaseId = _matiereSupabaseIds[matiereId];
     final nbSeries = _nbSeriesParMatiere[matiereId] ?? 0;
 
-    // Badge label
-    String? badgeLabel;
-    if (isWhatsapp && nbSeries >= 20) badgeLabel = 'TOP';
-    if (isWhatsapp && nbSeries > 0 && nbSeries < 20) badgeLabel = 'NEW';
+    // Badge label — NEW pour nouvelles matières, TOP pour les grandes
+    String? badgeLabel = matiere['badge'] as String?;
+    if (badgeLabel == null) {
+      if (isWhatsapp && nbSeries >= 20) badgeLabel = 'TOP';
+      if (isWhatsapp && nbSeries > 0 && nbSeries < 20) badgeLabel = 'NEW';
+    }
+
+    // Type d'icône
+    final iconeType = (matiere['icone_type'] as String?) ?? 'EMOJI';
+    final iconeAsset = matiere['icone_asset'] as String?;
 
     return GestureDetector(
       onTap: () {
@@ -263,12 +319,14 @@ class _MatieresScreenState extends State<MatieresScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Icône dans un cercle coloré — taille fixe
+                  // Icône dans un cercle coloré — IMAGE ou EMOJI
                   Container(
                     width: 50,
                     height: 50,
                     decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.12),
+                      color: iconeType == 'IMAGE'
+                          ? Colors.white
+                          : color.withValues(alpha: 0.12),
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: color.withValues(alpha: 0.3),
@@ -276,10 +334,23 @@ class _MatieresScreenState extends State<MatieresScreen> {
                       ),
                     ),
                     child: Center(
-                      child: Text(
-                        matiere['icone'] as String,
-                        style: const TextStyle(fontSize: 22),
-                      ),
+                      child: iconeType == 'IMAGE' && iconeAsset != null
+                          ? ClipOval(
+                              child: Image.asset(
+                                iconeAsset,
+                                width: 44,
+                                height: 44,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => Text(
+                                  matiere['icone'] as String,
+                                  style: const TextStyle(fontSize: 22),
+                                ),
+                              ),
+                            )
+                          : Text(
+                              matiere['icone'] as String,
+                              style: const TextStyle(fontSize: 22),
+                            ),
                     ),
                   ),
                   const SizedBox(height: 7),

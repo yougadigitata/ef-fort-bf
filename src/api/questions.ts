@@ -3,23 +3,27 @@ import { getDB, Env } from '../lib/db';
 
 const questions = new Hono<{ Bindings: Env }>();
 
-// ── GET /api/matieres — 16 matières avec caching ──────────────
+// ── GET /api/matieres — 18 matières avec caching (v5.1) ──────────────
 questions.get('/matieres', async (c) => {
   const db = getDB(c.env);
 
-  // Récupérer uniquement les 16 matières officielles (triées par ordre)
+  // Récupérer toutes les matières officielles (triées par ordre)
   const { data: matieres, error: mErr } = await db
     .from('matieres')
     .select('id, nom, code, icone, couleur, ordre')
     .order('ordre', { ascending: true })
-    .limit(30);
+    .limit(50);
 
   if (mErr) return c.json({ error: mErr.message }, 500);
 
-  // Les 16 codes officiels
-  const CODES_OFFICIELS = ['DROIT2','ECO2','MATHS','SP','SVT','CG','ACTU','PANA','HISTO','ARMEE','PSYCHO','FR','ANG','INFO','COMM','HG'];
+  // Les 18 codes officiels v5.1 (+ AES + BF)
+  const CODES_OFFICIELS = [
+    'DROIT2','ECO2','MATHS','SP','SVT','CG','ACTU','PANA',
+    'HISTO','ARMEE','PSYCHO','FR','ANG','INFO','COMM','HG',
+    'AES', 'BF'  // Nouvelles matières v5.1
+  ];
 
-  // Filtrer uniquement les 16 matières officielles
+  // Filtrer uniquement les matières officielles
   const matieresFiltrees = (matieres ?? []).filter(m => CODES_OFFICIELS.includes(m.code));
 
   // Compter les questions par matière via count exact

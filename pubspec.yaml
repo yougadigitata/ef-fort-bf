@@ -1,7 +1,7 @@
 name: ef_fort_bf
 description: "EF-FORT.BF - Plateforme N1 de preparation aux concours directs de la Fonction Publique du Burkina Faso"
 publish_to: 'none'
-version: 2.0.0+2
+version: 5.1.0+5
 
 environment:
   sdk: ^3.9.2
@@ -30,3 +30,4 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/sounds/
+    - assets/logo/

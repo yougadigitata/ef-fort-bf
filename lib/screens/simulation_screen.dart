@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -2000,6 +2002,20 @@ class SimulationResultScreen extends StatelessWidget {
     final nomCandidat = user != null
         ? '${user['prenom'] ?? ''} ${user['nom'] ?? ''}'.trim()
         : 'Candidat';
+
+    // ── Charger le VRAI logo de l'application ──
+    pw.MemoryImage? logoImage;
+    try {
+      final ByteData data = await rootBundle.load('assets/images/logo_effort.png');
+      logoImage = pw.MemoryImage(data.buffer.asUint8List());
+    } catch (_) {
+      try {
+        final ByteData data = await rootBundle.load('assets/icons/logo_effort.png');
+        logoImage = pw.MemoryImage(data.buffer.asUint8List());
+      } catch (_) {
+        logoImage = null;
+      }
+    }
     final now = DateTime.now();
     final dateStr = '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}  ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
 
@@ -2058,27 +2074,32 @@ class SimulationResultScreen extends StatelessWidget {
           ),
           child: pw.Column(
             children: [
-              // Logo + titre centré
+              // Logo RÉEL + titre centré
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.center,
                 children: [
+                  // Logo réel de l'application (livre ouvert EF-FORT)
                   pw.Container(
-                    width: 50,
-                    height: 50,
+                    width: 64,
+                    height: 64,
                     decoration: pw.BoxDecoration(
-                      color: primaryColor,
-                      borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+                      color: PdfColors.white,
+                      borderRadius: const pw.BorderRadius.all(pw.Radius.circular(10)),
+                      border: pw.Border.all(color: primaryColor, width: 1.5),
                     ),
-                    child: pw.Center(
-                      child: pw.Text('EF',
-                          style: pw.TextStyle(
-                            fontSize: 20,
-                            fontWeight: pw.FontWeight.bold,
-                            color: PdfColors.white,
-                          )),
-                    ),
+                    padding: const pw.EdgeInsets.all(4),
+                    child: logoImage != null
+                        ? pw.Image(logoImage, fit: pw.BoxFit.contain)
+                        : pw.Center(
+                            child: pw.Text('EF-FORT',
+                                style: pw.TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: pw.FontWeight.bold,
+                                  color: primaryColor,
+                                )),
+                          ),
                   ),
-                  pw.SizedBox(width: 12),
+                  pw.SizedBox(width: 14),
                   pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
@@ -2088,8 +2109,10 @@ class SimulationResultScreen extends StatelessWidget {
                             fontWeight: pw.FontWeight.bold,
                             color: primaryColor,
                           )),
-                      pw.Text('Chaque effort te rapproche de ton admission',
-                          style: pw.TextStyle(fontSize: 10, color: accentColor, fontStyle: pw.FontStyle.italic)),
+                      pw.Text('Plateforme N°1 — Concours Burkina Faso',
+                          style: pw.TextStyle(fontSize: 9, color: PdfColors.grey700)),
+                      pw.Text('"Chaque effort te rapproche de ton admission finale"',
+                          style: pw.TextStyle(fontSize: 9, color: accentColor, fontStyle: pw.FontStyle.italic)),
                     ],
                   ),
                 ],
