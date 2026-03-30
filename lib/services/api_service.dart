@@ -27,6 +27,7 @@ class ApiService {
       };
 
   static Map<String, dynamic>? get currentUser => _currentUser;
+  static String? get token => _token;
   static bool get isLoggedIn => _token != null;
   static bool get isAdmin => _currentUser?['is_admin'] == true;
   static bool get isAbonne => _currentUser?['abonnement_actif'] == true;
