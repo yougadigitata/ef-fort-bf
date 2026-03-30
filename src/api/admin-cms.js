@@ -236,6 +236,68 @@ adminCms.post('/questions', requireAdmin, async (c) => {
         .select('*', { count: 'exact', head: true })
         .eq('matiere_id', matiere_id);
     const numero_serie = Math.ceil(((totalInMatiere ?? 0) + 1) / 20);
+    // ── AUTO-ASSIGNATION DE SÉRIE ─────────────────────────────
+    // Si pas de serie_id fourni, trouver ou créer une série pour cette matière
+    let serieId = body['serie_id'] ?? null;
+    if (!serieId) {
+        // Chercher la dernière série active de cette matière avec des places disponibles
+        const { data: existingSeries } = await db.from('series_qcm')
+            .select('id, titre, nb_questions, numero')
+            .eq('matiere_id', matiere_id)
+            .eq('actif', true)
+            .order('numero', { ascending: false })
+            .limit(1);
+        if (existingSeries && existingSeries.length > 0) {
+            const lastSerie = existingSeries[0];
+            // Compter les vraies questions de cette série
+            const { count: vraiNbQ } = await db.from('questions')
+                .select('*', { count: 'exact', head: true })
+                .eq('serie_id', lastSerie.id);
+            if ((vraiNbQ ?? 0) < 20) {
+                // Il y a de la place dans cette série
+                serieId = lastSerie.id;
+            }
+            else {
+                // Créer une nouvelle série auto
+                const { data: matInfo } = await db.from('matieres').select('nom').eq('id', matiere_id).single();
+                const newNum = (lastSerie.numero ?? 0) + 1;
+                const { data: newSerie } = await db.from('series_qcm').insert({
+                    titre: `Série ${String(newNum).padStart(2, '0')} — ${matInfo?.nom ?? 'Matière'}`,
+                    matiere_id,
+                    numero: newNum,
+                    nb_questions: 0,
+                    niveau: 'INTERMEDIAIRE',
+                    duree_minutes: 20,
+                    actif: true,
+                    published: true,
+                    est_demo: false,
+                    created_by: adminId,
+                    created_at: new Date().toISOString(),
+                }).select().single();
+                if (newSerie)
+                    serieId = newSerie.id;
+            }
+        }
+        else {
+            // Aucune série pour cette matière — en créer une première
+            const { data: matInfo } = await db.from('matieres').select('nom').eq('id', matiere_id).single();
+            const { data: newSerie } = await db.from('series_qcm').insert({
+                titre: `Série 01 — ${matInfo?.nom ?? 'Matière'}`,
+                matiere_id,
+                numero: 1,
+                nb_questions: 0,
+                niveau: 'INTERMEDIAIRE',
+                duree_minutes: 20,
+                actif: true,
+                published: true,
+                est_demo: false,
+                created_by: adminId,
+                created_at: new Date().toISOString(),
+            }).select().single();
+            if (newSerie)
+                serieId = newSerie.id;
+        }
+    }
     const questionData = {
         enonce: enonce.trim(),
         option_a: body['option_a'] ?? '',
@@ -247,7 +309,7 @@ adminCms.post('/questions', requireAdmin, async (c) => {
         explication: body['explication'] ?? '',
         difficulte: body['difficulte'] ?? 'MOYEN',
         matiere_id,
-        serie_id: body['serie_id'] ?? null,
+        serie_id: serieId,
         pieges: body['pieges'] ?? null,
         sources: body['sources'] ?? null,
         numero,
@@ -260,9 +322,19 @@ adminCms.post('/questions', requireAdmin, async (c) => {
     const { data, error } = await db.from('questions').insert(questionData).select().single();
     if (error)
         return c.json({ error: error.message }, 500);
+    // ── Mettre à jour nb_questions sur la série ─────────────
+    if (serieId) {
+        try {
+            const { count: newNb } = await db.from('questions')
+                .select('*', { count: 'exact', head: true })
+                .eq('serie_id', serieId);
+            await db.from('series_qcm').update({ nb_questions: newNb ?? 1 }).eq('id', serieId);
+        }
+        catch (_) { }
+    }
     // Log audit
     await logAdminAction(db, adminId, 'create', 'question', data.id, null, questionData, `Création question: "${enonce.substring(0, 50)}..."`);
-    return c.json({ success: true, question: data, question_id: data.id });
+    return c.json({ success: true, question: data, question_id: data.id, serie_id: serieId });
 });
 // GET /api/admin-cms/questions/:id — Détail d'une question
 adminCms.get('/questions/:id', requireAdmin, async (c) => {

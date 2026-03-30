@@ -18,54 +18,59 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   final List<Map<String, dynamic>> _slides = [
     {
-      'emoji': '🎓',
+      'emoji': '🏆',
       'showLogo': false,
-      'title': 'La Plateforme N°1\nau Burkina Faso',
+      'title': 'EF-FORT.BF\nLa Réussite N°1',
       'subtitle':
-          'Préparez-vous aux concours de la Fonction Publique avec la méthode la plus efficace',
+          'La seule plateforme 100% Burkinabè pour réussir les concours de la Fonction Publique. Conçue par des Burkinabè, pour des Burkinabè.',
       'bgColor': const Color(0xFF1A5C38),
       'bgColor2': const Color(0xFF0F3D26),
       'accent': const Color(0xFFD4A017),
+      'badges': ['20 000+ QCM', '18 Matières', '100% Gratuit*'],
     },
     {
       'emoji': '📚',
       'showLogo': false,
-      'title': '250+ Questions\nRéelles de Concours',
+      'title': 'Maîtrisez TOUTES\nles Matières',
       'subtitle':
-          'QCM tirés des vrais sujets d\'examen 2019–2026 avec corrections détaillées',
+          'Droit · Économie · Informatique · Anglais · Mathématiques · SVT et bien plus. Chaque matière avec des séries progressives de QCM réels.',
       'bgColor': const Color(0xFFD4A017),
       'bgColor2': const Color(0xFFB8860B),
       'accent': AppColors.white,
+      'badges': ['Droit', 'Informatique', 'Anglais', '+15 matières'],
     },
     {
       'emoji': '⏱️',
       'showLogo': false,
-      'title': 'Simulation\nd\'Examen Officiel',
+      'title': 'Simulation Examen\nComme le VRAI Jour',
       'subtitle':
-          '50 questions · 1h30 · Barème officiel\nComme le vrai concours, rien de moins',
+          '50 questions · 1h30 · Barème officiel\nEntraînez-vous dans les conditions réelles du concours. Analysez vos forces et faiblesses.',
       'bgColor': const Color(0xFF1A5C38),
       'bgColor2': const Color(0xFF0F3D26),
       'accent': const Color(0xFFD4A017),
-    },
-    {
-      'emoji': '🤝',
-      'showLogo': false,
-      'title': 'Entraide\n& Communauté',
-      'subtitle':
-          'Échangez avec d\'autres candidats\nPartagez vos expériences et progressez ensemble',
-      'bgColor': const Color(0xFFD4A017),
-      'bgColor2': const Color(0xFFB8860B),
-      'accent': AppColors.white,
+      'badges': ['50 questions', '1h30 chrono', 'Barème officiel'],
     },
     {
       'emoji': '📄',
       'showLogo': false,
-      'title': 'Corrections\n& PDF Imprimables',
+      'title': '10 000+ Copies PDF\nImprimables',
       'subtitle':
-          'Recevez votre copie corrigée en PDF\nAnalysez chaque erreur, ne ratez plus rien',
+          'Imprimez vos corrections, révisez hors connexion. Partagez vos fiches. Construisez votre bibliothèque personnelle de révision.',
+      'bgColor': const Color(0xFFD4A017),
+      'bgColor2': const Color(0xFFB8860B),
+      'accent': AppColors.white,
+      'badges': ['Export PDF', 'Mode hors-ligne', 'Partage facile'],
+    },
+    {
+      'emoji': '🤝',
+      'showLogo': false,
+      'title': 'Une Communauté\nQui Vous Booste',
+      'subtitle':
+          'Échangez avec des candidats du Burkina. Posez vos questions. Recevez les infos en temps réel. Progressez ensemble vers la réussite.',
       'bgColor': const Color(0xFF1A5C38),
       'bgColor2': const Color(0xFF0F3D26),
       'accent': const Color(0xFFD4A017),
+      'badges': ['Communauté active', 'Actualités concours', 'Entraide 24h/24'],
     },
   ];
 
@@ -205,6 +210,32 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                             height: 1.6,
                           ),
                         ),
+                        const SizedBox(height: 20),
+                        // Badges
+                        if (slide['badges'] != null)
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            alignment: WrapAlignment.center,
+                            children: (slide['badges'] as List<String>).map((badge) =>
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: accent.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: accent.withValues(alpha: 0.5)),
+                                ),
+                                child: Text(
+                                  badge,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: isGold ? const Color(0xFF1A5C38) : accent,
+                                  ),
+                                ),
+                              ),
+                            ).toList(),
+                          ),
                       ],
                     ),
                   ),

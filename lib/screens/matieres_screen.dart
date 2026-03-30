@@ -1,54 +1,47 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
+import '../services/api_service.dart';
 import 'qcm_screen.dart';
 import 'serie_selection_screen.dart';
 
 // ══════════════════════════════════════════════════════════════
-// IDs Supabase des matières — v5.1 (2228 questions + AES + BF)
+// IDs Supabase des matières — v6.0 DYNAMIQUE (chargé depuis API)
 // ══════════════════════════════════════════════════════════════
-const Map<String, String> _matiereSupabaseIds = {
-  'hg':     '0a88b3ac-33b7-4d8c-bc19-fe68bb514aef',
-  'droit2': '9497ca2c-dc1b-43dd-8b7a-af11dde7039d',
-  'eco2':   '756e1ca6-7f7f-4f42-940a-b6d9952ffcdf',
-  'ang':    '37febc5e-8ab5-4875-b7ad-71b30a8253e7',
-  'sp':     '12e5b05a-6410-4b55-97b7-b8a838dcfb9a',
-  'psycho': 'cbd22275-d260-40d1-8ff3-d31545f3f1ab',
-  'histo':  '104f51e4-be6e-4ce8-961e-56e604818670',
-  'info':   'a72cc6f9-1282-4c2a-ae19-298933047694',
-  'comm':   'cc979206-e60d-4224-940d-943b8c68c8fa',
-  // Nouvelles matières v5.1
-  'aes':          'c7681b66-91af-423b-9ef6-becbe8f5bd85',
-  'burkina_faso': '7c2b0599-4971-4d31-87ce-aeeb5c5cb394',
-  'armee':        'b8df7f6e-587d-4871-856c-30dbaa6a52c3',
-  'actu':         '5f7ef458-9fd3-4f70-b498-d3391b5d5677',
+
+/// Matières officielles avec leurs métadonnées visuelles
+const Map<String, Map<String, dynamic>> _matieresMeta = {
+  'hg':           {'icone': '🗺️', 'couleur': Color(0xFFBD3B3B)},
+  'droit2':       {'icone': '⚖️', 'couleur': Color(0xFF1A5C38)},
+  'eco2':         {'icone': '💰', 'couleur': Color(0xFF27AE60)},
+  'ang':          {'icone': '🗣️', 'couleur': Color(0xFF2980B9)},
+  'sp':           {'icone': '⚛️', 'couleur': Color(0xFFE74C3C)},
+  'psycho':       {'icone': '🧩', 'couleur': Color(0xFF8E44AD)},
+  'histo':        {'icone': '👤', 'couleur': Color(0xFFC0392B)},
+  'info':         {'icone': '💻', 'couleur': Color(0xFF16A085)},
+  'comm':         {'icone': '📢', 'couleur': Color(0xFFE67E22)},
+  'aes':          {'icone': '🤝', 'couleur': Color(0xFF006B3F)},
+  'bf':           {'icone': '🇧🇫', 'couleur': Color(0xFFEF2B2D)},
+  'burkina_faso': {'icone': '🇧🇫', 'couleur': Color(0xFFEF2B2D)},
+  'armee':        {'icone': '🪖', 'couleur': Color(0xFF34495E)},
+  'actu':         {'icone': '📰', 'couleur': Color(0xFFF39C12)},
+  'maths':        {'icone': '🔢', 'couleur': Color(0xFF3498DB)},
+  'svt':          {'icone': '🧬', 'couleur': Color(0xFF1ABC9C)},
+  'cg':           {'icone': '🌍', 'couleur': Color(0xFF9B59B6)},
+  'pana':         {'icone': '🌍', 'couleur': Color(0xFFD35400)},
+  'fr':           {'icone': '📖', 'couleur': Color(0xFF1A5C38)},
+  'psy':          {'icone': '🧠', 'couleur': Color(0xFF8E44AD)},
+  'pc':           {'icone': '🔬', 'couleur': Color(0xFFE74C3C)},
+  'enaref':       {'icone': '🏛️', 'couleur': Color(0xFF1A5C38)},
+  'default':      {'icone': '📚', 'couleur': Color(0xFF1A5C38)},
 };
 
-const Map<String, int> _nbSeriesParMatiere = {
-  'hg':           13,
-  'droit2':       51,
-  'eco2':         52,
-  'ang':          51,
-  'sp':           0,
-  'psycho':       31,
-  'histo':        30,
-  'info':         20,
-  'comm':         2,
-  // Nouvelles matières v5.1
-  'aes':          8,
-  'burkina_faso': 1,
-  'armee':        10,
-  'actu':         3,
+const Set<String> _seriesMatieresIds = {
+  'hg', 'droit2', 'eco2', 'ang', 'psycho', 'histo', 'info', 'comm',
+  'aes', 'bf', 'burkina_faso', 'armee', 'actu', 'cg', 'fr', 'maths',
+  'svt', 'pana', 'sp', 'psy', 'pc', 'enaref',
 };
 
-const Set<String> _whatsappMatieres = {
-  'hg', 'droit2', 'eco2', 'ang',
-  'psycho', 'histo', 'info', 'comm',
-  // Nouvelles matières v5.1
-  'aes', 'burkina_faso', 'armee', 'actu',
-};
-
-/// v5.1 — Les 18 matières officielles EF-FORT.BF (+ AES + Burkina Faso)
-/// Design harmonisé : cartes toutes identiques, espacements uniformes
+/// v6.0 — Matières DYNAMIQUES (chargées depuis l'API Supabase en temps réel)
 class MatieresScreen extends StatefulWidget {
   const MatieresScreen({super.key});
 
@@ -57,152 +50,56 @@ class MatieresScreen extends StatefulWidget {
 }
 
 class _MatieresScreenState extends State<MatieresScreen> {
+  List<Map<String, dynamic>> _matieres = [];
+  bool _loading = true;
+  String? _error;
 
-  static const List<Map<String, dynamic>> _matieresList = [
-    // ── NOUVELLES MATIÈRES v5.1 en tête (mises en avant) ──────
-    {
-      'id': 'aes',
-      'nom': 'Alliance des États du Sahel',
-      'sous_titre': 'AES — Burkina, Mali, Niger',
-      'icone_type': 'IMAGE',
-      'icone': '🤝',
-      'icone_asset': 'assets/logo/aes_logo.png',
-      'couleur': Color(0xFF006B3F),
-      'badge': 'NEW',
-    },
-    {
-      'id': 'burkina_faso',
-      'nom': 'Burkina Faso',
-      'sous_titre': 'Pays des Hommes Intègres',
-      'icone_type': 'EMOJI',
-      'icone': '🇧🇫',
-      'couleur': Color(0xFFEF2B2D),
-      'badge': 'NEW',
-    },
-    // ── MATIÈRES ENRICHIES v5.1 ────────────────────────────────
-    {
-      'id': 'droit2',
-      'nom': 'Droit',
-      'icone_type': 'EMOJI',
-      'icone': '⚖️',
-      'couleur': Color(0xFF1A5C38),
-    },
-    {
-      'id': 'armee',
-      'nom': 'Force Armée Nationale',
-      'icone_type': 'EMOJI',
-      'icone': '🪖',
-      'couleur': Color(0xFF34495E),
-    },
-    {
-      'id': 'info',
-      'nom': 'Informatique',
-      'icone_type': 'EMOJI',
-      'icone': '💻',
-      'couleur': Color(0xFF16A085),
-    },
-    {
-      'id': 'hg',
-      'nom': 'Histoire-Géographie',
-      'icone_type': 'EMOJI',
-      'icone': '🗺️',
-      'couleur': Color(0xFFBD3B3B),
-    },
-    {
-      'id': 'actu',
-      'nom': 'Actualité Internationale',
-      'icone_type': 'EMOJI',
-      'icone': '📰',
-      'couleur': Color(0xFFF39C12),
-    },
-    // ── MATIÈRES CLASSIQUES ────────────────────────────────────
-    {
-      'id': 'psycho',
-      'nom': 'Psychotechnique',
-      'icone_type': 'EMOJI',
-      'icone': '🧩',
-      'couleur': Color(0xFF8E44AD),
-    },
-    {
-      'id': 'histo',
-      'nom': 'Figure Africaine',
-      'icone_type': 'EMOJI',
-      'icone': '👤',
-      'couleur': Color(0xFFC0392B),
-    },
-    {
-      'id': 'eco2',
-      'nom': 'Économie',
-      'icone_type': 'EMOJI',
-      'icone': '💰',
-      'couleur': Color(0xFF27AE60),
-    },
-    {
-      'id': 'ang',
-      'nom': 'Anglais',
-      'icone_type': 'EMOJI',
-      'icone': '🗣️',
-      'couleur': Color(0xFF2980B9),
-    },
-    {
-      'id': 'comm',
-      'nom': 'Communication',
-      'icone_type': 'EMOJI',
-      'icone': '📢',
-      'couleur': Color(0xFFE67E22),
-    },
-    {
-      'id': 'maths',
-      'nom': 'Mathématiques',
-      'icone_type': 'EMOJI',
-      'icone': '🔢',
-      'couleur': Color(0xFF3498DB),
-    },
-    {
-      'id': 'sp',
-      'nom': 'Sciences Physiques',
-      'icone_type': 'EMOJI',
-      'icone': '⚛️',
-      'couleur': Color(0xFFE74C3C),
-    },
-    {
-      'id': 'svt',
-      'nom': 'SVT',
-      'icone_type': 'EMOJI',
-      'icone': '🧬',
-      'couleur': Color(0xFF1ABC9C),
-    },
-    {
-      'id': 'cg',
-      'nom': 'Culture Générale',
-      'icone_type': 'EMOJI',
-      'icone': '🌍',
-      'couleur': Color(0xFF9B59B6),
-    },
-    {
-      'id': 'pana',
-      'nom': 'Guide Panafricain',
-      'icone_type': 'EMOJI',
-      'icone': '🌍',
-      'couleur': Color(0xFFD35400),
-    },
-    {
-      'id': 'fr',
-      'nom': 'Français',
-      'icone_type': 'EMOJI',
-      'icone': '📖',
-      'couleur': Color(0xFF1A5C38),
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadMatieres();
+  }
+
+  Future<void> _loadMatieres() async {
+    setState(() { _loading = true; _error = null; });
+    try {
+      final data = await ApiService.getMatieres();
+      if (mounted) {
+        setState(() {
+          _matieres = data.cast<Map<String, dynamic>>();
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = 'Erreur de chargement';
+          _loading = false;
+        });
+      }
+    }
+  }
+
+  Color _getColor(String code) {
+    final key = code.toLowerCase();
+    return (_matieresMeta[key]?['couleur'] as Color?) ??
+           (_matieresMeta['default']!['couleur'] as Color);
+  }
+
+  String _getIcone(Map<String, dynamic> m) {
+    final code = (m['id'] as String? ?? '').toLowerCase();
+    return (_matieresMeta[code]?['icone'] as String?) ??
+           (m['icone'] as String?) ?? '📚';
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text(
-          '📚 18 Matières QCM',
-          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+        title: Text(
+          '📚 ${_matieres.isEmpty ? "Matières QCM" : "${_matieres.length} Matières"}',
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
         ),
         automaticallyImplyLeading: false,
         flexibleSpace: Container(
@@ -214,54 +111,116 @@ class _MatieresScreenState extends State<MatieresScreen> {
         ),
         foregroundColor: AppColors.white,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            tooltip: 'Actualiser',
+            onPressed: _loadMatieres,
+          ),
+        ],
       ),
-      body: GridView.builder(
+      body: _loading
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          : _error != null
+              ? _buildError()
+              : _matieres.isEmpty
+                  ? _buildEmpty()
+                  : _buildGrid(),
+    );
+  }
+
+  Widget _buildError() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text('📡', style: TextStyle(fontSize: 48)),
+          const SizedBox(height: 16),
+          const Text('Impossible de charger les matières', style: TextStyle(fontSize: 15, color: AppColors.textLight)),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: _loadMatieres,
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('Réessayer'),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmpty() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text('📭', style: TextStyle(fontSize: 48)),
+          const SizedBox(height: 16),
+          const Text('Aucune matière disponible\npour le moment.', textAlign: TextAlign.center, style: TextStyle(fontSize: 15, color: AppColors.textLight)),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: _loadMatieres,
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('Actualiser'),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGrid() {
+    return RefreshIndicator(
+      onRefresh: _loadMatieres,
+      color: AppColors.primary,
+      child: GridView.builder(
         padding: const EdgeInsets.all(14),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
-          // Ratio fixe pour toutes les cartes — cartes uniformes garanties
           childAspectRatio: 1.0,
         ),
-        itemCount: _matieresList.length,
+        itemCount: _matieres.length,
         itemBuilder: (context, index) {
-          final matiere = _matieresList[index];
-          final color = matiere['couleur'] as Color;
-          return _buildMatiereCard(context, matiere, color);
+          final matiere = _matieres[index];
+          final matiereCode = (matiere['id'] as String? ?? '').toLowerCase();
+          final color = _getColor(matiereCode);
+          return _buildMatiereCard(matiere, matiereCode, color);
         },
       ),
     );
   }
 
-  Widget _buildMatiereCard(BuildContext context, Map<String, dynamic> matiere, Color color) {
-    final matiereId = matiere['id'] as String;
-    final isWhatsapp = _whatsappMatieres.contains(matiereId);
-    final supabaseId = _matiereSupabaseIds[matiereId];
-    final nbSeries = _nbSeriesParMatiere[matiereId] ?? 0;
+  Widget _buildMatiereCard(Map<String, dynamic> matiere, String matiereCode, Color color) {
+    final nom = matiere['nom'] as String? ?? matiereCode.toUpperCase();
+    final nbQuestions = matiere['nb_questions'] as int? ?? 0;
+    final matiereId = matiere['matiere_id'] as String? ?? '';
+    final icone = _getIcone(matiere);
 
-    // Badge label — NEW pour nouvelles matières, TOP pour les grandes
-    String? badgeLabel = matiere['badge'] as String?;
-    if (badgeLabel == null) {
-      if (isWhatsapp && nbSeries >= 20) badgeLabel = 'TOP';
-      if (isWhatsapp && nbSeries > 0 && nbSeries < 20) badgeLabel = 'NEW';
+    // Déterminer si on affiche en mode séries ou mode direct
+    final hasMatId = matiereId.isNotEmpty;
+    final isSeriesMode = _seriesMatieresIds.contains(matiereCode) && hasMatId;
+
+    // Badge
+    String? badgeLabel;
+    if (nbQuestions >= 100) {
+      badgeLabel = 'TOP';
+    } else if (nbQuestions > 0 && nbQuestions < 30) {
+      badgeLabel = 'NEW';
     }
-
-    // Type d'icône
-    final iconeType = (matiere['icone_type'] as String?) ?? 'EMOJI';
-    final iconeAsset = matiere['icone_asset'] as String?;
 
     return GestureDetector(
       onTap: () {
-        if (isWhatsapp && supabaseId != null) {
+        if (isSeriesMode) {
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (_) => SerieSelectionScreen(
-                matiereId: supabaseId,
-                matiereCode: matiereId,
-                matiereNom: matiere['nom'] as String,
-                icone: matiere['icone'] as String,
+                matiereId: matiereId,
+                matiereCode: matiereCode,
+                matiereNom: nom,
+                icone: icone,
                 couleur: color,
               ),
             ),
@@ -271,10 +230,10 @@ class _MatieresScreenState extends State<MatieresScreen> {
             context,
             MaterialPageRoute(
               builder: (_) => QcmScreen(
-                matiere: matiereId,
-                label: matiere['nom'] as String,
+                matiere: matiereCode,
+                label: nom,
                 couleur: color,
-                icone: matiere['icone'] as String,
+                icone: icone,
               ),
             ),
           );
@@ -283,11 +242,9 @@ class _MatieresScreenState extends State<MatieresScreen> {
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          // ── Rectangle vert en arrière-plan (ombre verte style consignes) ──
+          // Rectangle ombre
           Positioned(
-            bottom: -4,
-            left: 4,
-            right: -4,
+            bottom: -4, left: 4, right: -4,
             child: Container(
               height: double.infinity,
               decoration: BoxDecoration(
@@ -297,21 +254,14 @@ class _MatieresScreenState extends State<MatieresScreen> {
             ),
           ),
 
-          // ── Rectangle blanc principal ──
+          // Card principale
           Container(
             decoration: BoxDecoration(
               color: AppColors.white,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: color.withValues(alpha: 0.15),
-                width: 1,
-              ),
+              border: Border.all(color: color.withValues(alpha: 0.15), width: 1),
               boxShadow: [
-                BoxShadow(
-                  color: color.withValues(alpha: 0.14),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
-                ),
+                BoxShadow(color: color.withValues(alpha: 0.14), blurRadius: 6, offset: const Offset(0, 2)),
               ],
             ),
             child: Padding(
@@ -319,60 +269,38 @@ class _MatieresScreenState extends State<MatieresScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Icône dans un cercle coloré — IMAGE ou EMOJI
+                  // Icône
                   Container(
-                    width: 50,
-                    height: 50,
+                    width: 50, height: 50,
                     decoration: BoxDecoration(
-                      color: iconeType == 'IMAGE'
-                          ? Colors.white
-                          : color.withValues(alpha: 0.12),
+                      color: color.withValues(alpha: 0.12),
                       shape: BoxShape.circle,
-                      border: Border.all(
-                        color: color.withValues(alpha: 0.3),
-                        width: 1.5,
-                      ),
+                      border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
                     ),
                     child: Center(
-                      child: iconeType == 'IMAGE' && iconeAsset != null
-                          ? ClipOval(
-                              child: Image.asset(
-                                iconeAsset,
-                                width: 44,
-                                height: 44,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => Text(
-                                  matiere['icone'] as String,
-                                  style: const TextStyle(fontSize: 22),
-                                ),
-                              ),
-                            )
-                          : Text(
-                              matiere['icone'] as String,
-                              style: const TextStyle(fontSize: 22),
-                            ),
+                      child: Text(icone, style: const TextStyle(fontSize: 22)),
                     ),
                   ),
                   const SizedBox(height: 7),
-                  // Nom — hauteur fixe grâce à maxLines
+
+                  // Nom
                   SizedBox(
                     height: 34,
                     child: Text(
-                      matiere['nom'] as String,
+                      nom,
                       textAlign: TextAlign.center,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.textDark,
-                        height: 1.2,
+                        fontSize: 11, fontWeight: FontWeight.w800,
+                        color: AppColors.textDark, height: 1.2,
                       ),
                     ),
                   ),
                   const SizedBox(height: 5),
-                  // Badge info en bas
-                  if (isWhatsapp && nbSeries > 0)
+
+                  // Badge bas — questions/séries
+                  if (nbQuestions > 0)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
@@ -380,20 +308,18 @@ class _MatieresScreenState extends State<MatieresScreen> {
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        '📋 $nbSeries séries',
+                        isSeriesMode ? '📋 $nbQuestions QCM' : '✏️ $nbQuestions QCM',
                         style: const TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 9, fontWeight: FontWeight.w700,
                           color: Color(0xFF1A5C38),
                         ),
                       ),
                     )
                   else
                     Container(
-                      height: 3,
-                      width: 32,
+                      height: 3, width: 32,
                       decoration: BoxDecoration(
-                        color: color,
+                        color: color.withValues(alpha: 0.4),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -401,26 +327,20 @@ class _MatieresScreenState extends State<MatieresScreen> {
               ),
             ),
           ),
-          // Badge TOP / NEW en haut à droite
+
+          // Badge TOP/NEW
           if (badgeLabel != null)
             Positioned(
-              top: 6,
-              right: 6,
+              top: 6, right: 6,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                 decoration: BoxDecoration(
-                  color: badgeLabel == 'TOP'
-                      ? const Color(0xFF1A5C38)
-                      : const Color(0xFFF39C12),
+                  color: badgeLabel == 'TOP' ? const Color(0xFF1A5C38) : const Color(0xFFF39C12),
                   borderRadius: BorderRadius.circular(5),
                 ),
                 child: Text(
                   badgeLabel,
-                  style: const TextStyle(
-                    fontSize: 8,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                  ),
+                  style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.white),
                 ),
               ),
             ),

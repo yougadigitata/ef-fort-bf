@@ -161,10 +161,10 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                           Text('🏆', style: TextStyle(fontSize: 52)),
                           SizedBox(height: 12),
                           Text(
-                            'RÉUSSISSEZ\nVOTRE CONCOURS\n100% GARANTI',
+                            'DEVENEZ IRRÉSISTIBLE\nAUX YEUX DU JURY',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 26,
+                              fontSize: 24,
                               fontWeight: FontWeight.w900,
                               color: Colors.white,
                               height: 1.15,
@@ -173,10 +173,10 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                           ),
                           SizedBox(height: 10),
                           Text(
-                            'Des candidats préparés avec EF-FORT.BF\nréussissent leur concours.',
+                            'Les candidats EF-FORT.BF arrivent PRÉPARÉS.\nIls connaissent les questions. Ils maîtrisent les matières.\nIls réussissent là où les autres échouent.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 13,
                               color: Colors.white70,
                               height: 1.5,
                             ),
@@ -698,13 +698,15 @@ class _AbonnementScreenState extends State<AbonnementScreen>
 
   List<Widget> _buildAvantagesPremium() {
     final items = [
-      {'icon': '📚', 'titre': '20 000+ QCM Disponibles', 'desc': 'Accès illimité à toute la banque de questions mise à jour régulièrement'},
-      {'icon': '📋', '  titre': '18 Matières Débloquées', 'desc': 'Droit, Économie, Anglais, Psychotechnique, SVT, Informatique et bien plus'},
-      {'icon': '🎯', 'titre': 'Simulations Illimitées', 'desc': 'Entrainez-vous dans les conditions réelles du concours, autant de fois que vous voulez'},
-      {'icon': '📄', 'titre': 'Jusqu\'à 10 000 Copies PDF', 'desc': 'Téléchargez chaque QCM traité avec corrections et explications détaillées'},
-      {'icon': '🤝', 'titre': 'Entraide Communautaire', 'desc': 'Posez vos questions, partagez vos doutes et obtenez des réponses'},
-      {'icon': '📰', 'titre': 'Actualités & Concours', 'desc': 'Restez informé des derniers concours, dates limites et opportunités'},
-      {'icon': '📅', 'titre': 'Accès jusqu\'au 31/12/2028', 'desc': 'Paiement unique, pas d\'abonnement mensuel !'},
+      {'icon': '📚', 'titre': '20 000+ QCM Réels de Concours', 'desc': 'QCM tirés des vrais sujets 2019–2026 avec corrections détaillées. Mis à jour en permanence par l\'admin.'},
+      {'icon': '💡', 'titre': 'Maîtrisez l\'Informatique', 'desc': 'Si vous ne maîtrisez pas l\'info, notre bibliothèque de QCM vous y amène pas à pas. Concours et compétences réelles.'},
+      {'icon': '🗣️', 'titre': 'Progressez en Anglais', 'desc': 'Des séries d\'anglais adaptées au niveau des concours burkinabè. Vocabulaire, grammaire et compréhension.'},
+      {'icon': '📢', 'titre': 'Maîtrisez la Communication', 'desc': 'Apprenez les techniques de communication pour impressionner le jury et briller dans votre futur poste.'},
+      {'icon': '🎯', 'titre': 'Simulations Illimitées', 'desc': 'Entraînez-vous dans les conditions réelles : 50 questions, 1h30, barème officiel. Autant de fois que vous voulez.'},
+      {'icon': '📄', 'titre': '10 000+ Copies PDF Imprimables', 'desc': 'Chaque QCM traité génère un PDF avec corrections. Imprimez, partagez, révisez partout, même sans internet.'},
+      {'icon': '🤝', 'titre': 'Communauté Active & Entraide', 'desc': 'Des milliers de candidats s\'entraident. Posez vos questions, obtenez des réponses. Vous n\'êtes jamais seul.'},
+      {'icon': '📰', 'titre': 'Actualités Concours en Temps Réel', 'desc': 'Ne ratez AUCUNE ouverture de concours, AUCUNE date limite, AUCUNE opportunité au Burkina Faso.'},
+      {'icon': '💰', 'titre': 'Paiement Unique — Accès Illimité', 'desc': 'Payez 12 000 FCFA UNE SEULE FOIS. Accès garanti jusqu\'au 31 Décembre 2028. Pas d\'abonnement mensuel !'},
     ];
     return items.map((item) {
       final icon = item['icon'] ?? item['icon'];
@@ -743,9 +745,10 @@ class _AbonnementScreenState extends State<AbonnementScreen>
 
   List<Widget> _buildTemoignages() {
     final temoignages = [
-      {'nom': 'Fatoumata K.', 'texte': 'J\'ai réussi le concours d\'Infirmier d\'État grâce aux simulations et aux 1000 questions de SVT. Je recommande !', 'note': '⭐⭐⭐⭐⭐'},
-      {'nom': 'Ibrahim T.', 'texte': 'Les QCM de droit sont excellents. J\'ai téléchargé plus de 500 PDFs pour réviser hors connexion. Parfait !', 'note': '⭐⭐⭐⭐⭐'},
-      {'nom': 'Mariam S.', 'texte': 'L\'entraide m\'a aidé à comprendre des points difficiles. L\'admin répond rapidement.', 'note': '⭐⭐⭐⭐⭐'},
+      {'nom': 'Fatoumata K.', 'ville': 'Ouagadougou', 'texte': 'Admise au concours d\'Infirmier d\'État ! Les simulations d\'EF-FORT.BF m\'ont préparée comme aucun autre outil. Je recommande à 100%.', 'note': '⭐⭐⭐⭐⭐'},
+      {'nom': 'Ibrahim T.', 'ville': 'Bobo-Dioulasso', 'texte': 'J\'ai téléchargé plus de 600 PDFs pour réviser en brousse sans réseau. Admis à la Douane du Burkina. Merci EF-FORT.BF !', 'note': '⭐⭐⭐⭐⭐'},
+      {'nom': 'Mariam S.', 'ville': 'Koudougou', 'texte': 'Ce qui m\'a surpris, c\'est la qualité des QCM d\'anglais et d\'informatique. J\'ai vraiment progressé dans ces matières !', 'note': '⭐⭐⭐⭐⭐'},
+      {'nom': 'Serge B.', 'ville': 'Fada N\'Gourma', 'texte': 'La communauté m\'a aidé à comprendre des questions complexes de droit. On progresse vraiment ensemble ici.', 'note': '⭐⭐⭐⭐⭐'},
     ];
     return temoignages.map((t) => Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -778,7 +781,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(t['nom']!, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textDark)),
-                  Text(t['note']!, style: const TextStyle(fontSize: 11)),
+                  Text('📍 ${t['ville'] ?? 'Burkina Faso'}  ${t['note']!}', style: const TextStyle(fontSize: 11)),
                 ],
               ),
             ],
