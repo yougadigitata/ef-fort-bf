@@ -400,6 +400,39 @@ class ApiService {
     }
   }
 
+  // ══════════════════════════════════════════════════════════════
+  // SIMULATIONS D'EXAMEN — Créées par l'admin, disponibles pour tous
+  // ══════════════════════════════════════════════════════════════
+
+  /// Récupérer les simulations publiées par l'admin
+  static Future<List<dynamic>> getSimulationsAdmin() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$apiBase/simulations-admin'),
+        headers: _headers,
+      ).timeout(const Duration(seconds: 10));
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      return (data['simulations'] as List?) ?? [];
+    } catch (e) {
+      if (kDebugMode) debugPrint('getSimulationsAdmin error: $e');
+      return [];
+    }
+  }
+
+  /// Lancer une simulation admin avec ses questions
+  static Future<Map<String, dynamic>> demarrerSimulationAdmin(String simulationId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$apiBase/simulations-admin/$simulationId/demarrer'),
+        headers: _headers,
+      ).timeout(const Duration(seconds: 15));
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } catch (e) {
+      if (kDebugMode) debugPrint('demarrerSimulationAdmin error: $e');
+      return {'error': 'Erreur de connexion.'};
+    }
+  }
+
   // Compatibilité
   static Future<List<dynamic>> getEntraideMsgs() async => [];
 

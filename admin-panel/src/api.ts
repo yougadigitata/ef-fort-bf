@@ -59,16 +59,17 @@ export async function getDashboard() {
 
 // ── Questions ─────────────────────────────────────────────────
 export async function getQuestions(params: {
-  matiere?: string; serie_id?: string; difficulte?: string;
+  matiere?: string; matiere_id?: string; serie_id?: string; difficulte?: string;
   search?: string; page?: number; limit?: number;
 }) {
   const qs = new URLSearchParams();
   if (params.matiere) qs.set('matiere', params.matiere);
+  if (params.matiere_id) qs.set('matiere_id', params.matiere_id);
   if (params.serie_id) qs.set('serie_id', params.serie_id);
   if (params.difficulte && params.difficulte !== 'TOUS') qs.set('difficulte', params.difficulte);
   if (params.search) qs.set('search', params.search);
   if (params.page) qs.set('page', params.page.toString());
-  if (params.limit) qs.set('limit', params.limit.toString());
+  qs.set('limit', (params.limit ?? 500).toString());
   return apiCall(`${CMS_BASE}/questions?${qs}`);
 }
 

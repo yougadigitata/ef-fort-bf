@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getSimulations, createSimulation, deleteSimulation, updateSimulation, getMatieres } from '../api';
 import type { Page } from '../App';
 

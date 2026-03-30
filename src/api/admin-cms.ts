@@ -159,20 +159,26 @@ CREATE INDEX IF NOT EXISTS idx_simulations_published ON simulations_examens(publ
 adminCms.get('/questions', requireAdmin, async (c) => {
   const db = getDB(c.env);
   const matiereCode = c.req.query('matiere');
+  const matiereIdDirect = c.req.query('matiere_id');  // Filtre direct par ID
   const serieId = c.req.query('serie_id');
   const difficulte = c.req.query('difficulte');
   const search = c.req.query('search');
   const page = Math.max(1, parseInt(c.req.query('page') ?? '1'));
-  const limit = Math.min(parseInt(c.req.query('limit') ?? '20'), 100);
+  const limit = Math.min(parseInt(c.req.query('limit') ?? '20'), 500);
   const offset = (page - 1) * limit;
 
   let query = db.from('questions')
     .select('id, enonce, option_a, option_b, option_c, option_d, option_e, bonne_reponse, explication, difficulte, matiere_id, serie_id, numero, numero_serie, pieges, sources, published, version, created_at, updated_at');
 
-  // Filtre par matière
-  if (matiereCode) {
+  // Résoudre l'ID de matière (par code OU directement par ID)
+  let resolvedMatiereId: string | undefined = matiereIdDirect;
+  if (!resolvedMatiereId && matiereCode) {
     const { data: mat } = await db.from('matieres').select('id').ilike('code', matiereCode).maybeSingle();
-    if (mat) query = query.eq('matiere_id', mat.id) as typeof query;
+    resolvedMatiereId = mat?.id;
+  }
+
+  if (resolvedMatiereId) {
+    query = query.eq('matiere_id', resolvedMatiereId) as typeof query;
   }
 
   // Filtre par série
@@ -194,10 +200,7 @@ adminCms.get('/questions', requireAdmin, async (c) => {
   let total = 0;
   try {
     let countQ = db.from('questions').select('*', { count: 'exact', head: true });
-    if (matiereCode) {
-      const { data: mat } = await db.from('matieres').select('id').ilike('code', matiereCode).maybeSingle();
-      if (mat) countQ = countQ.eq('matiere_id', mat.id) as typeof countQ;
-    }
+    if (resolvedMatiereId) countQ = countQ.eq('matiere_id', resolvedMatiereId) as typeof countQ;
     if (serieId) countQ = countQ.eq('serie_id', serieId) as typeof countQ;
     if (difficulte && difficulte !== 'TOUS') countQ = countQ.eq('difficulte', difficulte) as typeof countQ;
     if (search) countQ = countQ.ilike('enonce', `%${search}%`) as typeof countQ;

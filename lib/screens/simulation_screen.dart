@@ -368,11 +368,13 @@ class _SimulationLaunchScreenState extends State<SimulationLaunchScreen> {
 class ExamWelcomeSlide extends StatefulWidget {
   final String candidatName;
   final String examenNom;
+  final String? simulationAdminId;
 
   const ExamWelcomeSlide({
     super.key,
     required this.candidatName,
     this.examenNom = '',
+    this.simulationAdminId,
   });
 
   @override
@@ -517,7 +519,9 @@ class _ExamWelcomeSlideState extends State<ExamWelcomeSlide>
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const ExamRulesSlide(),
+                          builder: (_) => ExamRulesSlide(
+                            simulationAdminId: widget.simulationAdminId,
+                          ),
                         ),
                       );
                     },
@@ -552,7 +556,8 @@ class _ExamWelcomeSlideState extends State<ExamWelcomeSlide>
 // SLIDE 2 : RÈGLES ET CONSIGNES (MEGA PROMPT v3.0 - PHASE 1.2)
 // ══════════════════════════════════════════════════════════════
 class ExamRulesSlide extends StatelessWidget {
-  const ExamRulesSlide({super.key});
+  final String? simulationAdminId;
+  const ExamRulesSlide({super.key, this.simulationAdminId});
 
   @override
   Widget build(BuildContext context) {
@@ -649,7 +654,9 @@ class ExamRulesSlide extends StatelessWidget {
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const SimulationExamScreen(),
+                      builder: (_) => SimulationExamScreen(
+                        simulationAdminId: simulationAdminId,
+                      ),
                     ),
                     (route) => route.isFirst,
                   );
@@ -729,8 +736,8 @@ class ExamRulesSlide extends StatelessWidget {
 // ÉCRAN EXAMEN — INTERFACE 2 COLONNES (TÂCHE 7)
 // ══════════════════════════════════════════════════════════════
 class SimulationExamScreen extends StatefulWidget {
-  const SimulationExamScreen({super.key});
-
+  final String? simulationAdminId;
+  const SimulationExamScreen({super.key, this.simulationAdminId});
   @override
   State<SimulationExamScreen> createState() => _SimulationExamScreenState();
 }
@@ -773,14 +780,38 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
   }
 
   Future<void> _startSimulation() async {
-    // Tentative via API
+    // Si simulation admin désignée, la charger directement
+    if (widget.simulationAdminId != null) {
+      final result = await ApiService.demarrerSimulationAdmin(widget.simulationAdminId!);
+      if (!mounted) return;
+      if (result['error'] != null) {
+        setState(() { _error = result['error']?.toString() ?? 'Erreur.'; _loading = false; });
+        return;
+      }
+      final questions = (result['questions'] as List?) ?? [];
+      if (questions.isEmpty) {
+        setState(() { _error = 'Simulation vide. Contactez l\'administrateur.'; _loading = false; });
+        return;
+      }
+      setState(() {
+        _sessionId = result['session_id'] as String?;
+        _questions = questions;
+        final dureeMin = (result['duree_minutes'] ?? 90) as int;
+        _remainingSeconds = dureeMin * 60;
+        _loading = false;
+      });
+      if (mounted && !_consignesAccepted) {
+        _showConsignesDialog();
+      } else {
+        _startTimerAndBell();
+      }
+      return;
+    }
+
+    // Simulation classique via API
     final result = await ApiService.demarrerSimulation();
     if (!mounted) return;
-
     List<dynamic> questions = (result['questions'] as List?) ?? [];
-
-    // Si l'API retourne une erreur OU quota atteint → charger directement depuis Supabase
-    // Aucun blocage premium : tous les utilisateurs connectés ont accès
     if (result['error'] != null || questions.isEmpty) {
       final sbQuestions = await SupabaseService.getExamenBlanc50Questions();
       if (!mounted) return;
@@ -798,16 +829,11 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
         }
         return;
       }
-      // Si vraiment aucune question disponible
       if (result['error'] != null && questions.isEmpty) {
-        setState(() {
-          _error = 'Aucune question disponible. Vérifiez votre connexion.';
-          _loading = false;
-        });
+        setState(() { _error = 'Aucune question disponible. Vérifiez votre connexion.'; _loading = false; });
         return;
       }
     }
-
     if (!mounted) return;
     setState(() {
       _sessionId = result['session_id'] as String?;
@@ -816,7 +842,6 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
       _remainingSeconds = dureeMin * 60;
       _loading = false;
     });
-
     if (mounted && !_consignesAccepted) {
       _showConsignesDialog();
     } else {

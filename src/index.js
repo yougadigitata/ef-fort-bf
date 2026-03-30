@@ -71,7 +71,7 @@ app.get('/api/statuts', async (c) => {
     }
     return c.json({ success: true, statuts });
 });
-// ── POST /api/statuts — Publier un statut (1/jour max) ──
+// ── POST /api/statuts — Publier un statut (1/jour max, sans limite pour admin) ──
 // Utilise messages_entraide: contenu=texte, telephone_partage=type, partage_whatsapp=is_admin
 app.post('/api/statuts', async (c) => {
     const h = c.req.header('Authorization');
@@ -83,17 +83,26 @@ app.post('/api/statuts', async (c) => {
         return c.json({ error: 'Token invalide.' }, 401);
     const userId = payload.id;
     const db = getDB(c.env);
-    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    // Vérifier si l'utilisateur a déjà posté dans les 24h via messages_entraide
-    const { data: existing } = await db
-        .from('messages_entraide')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('actif', true)
-        .gte('created_at', cutoff)
-        .limit(1);
-    if (existing && existing.length > 0) {
-        return c.json({ error: 'Vous avez déjà posté votre statut aujourd\'hui. Revenez demain !', already_posted: true }, 429);
+    // Vérifier si l'utilisateur est admin dans profiles
+    const { data: profile } = await db
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', userId)
+        .single();
+    const userIsAdmin = payload.is_admin === true || profile?.is_admin === true;
+    // Limite 1 statut/24h UNIQUEMENT pour les non-admins
+    if (!userIsAdmin) {
+        const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const { data: existing } = await db
+            .from('messages_entraide')
+            .select('id')
+            .eq('user_id', userId)
+            .eq('actif', true)
+            .gte('created_at', cutoff)
+            .limit(1);
+        if (existing && existing.length > 0) {
+            return c.json({ error: 'Vous avez déjà posté votre statut aujourd\'hui. Revenez demain !', already_posted: true }, 429);
+        }
     }
     const body = await c.req.json().catch(() => ({}));
     const { texte, type } = body;
@@ -394,10 +403,104 @@ app.post('/api/exam-resultats', async (c) => {
 app.get('/api/health', (c) => c.json({
     status: 'ok',
     app: 'EF-FORT.BF API',
-    version: '4.1.0',
+    version: '5.0.0',
     timestamp: new Date().toISOString(),
-    features: ['16-matieres', '10-examens', 'simulation-v3', 'examens-blancs', 'pdf-export', 'entraide'],
+    features: ['16-matieres', '10-examens', 'simulation-v3', 'examens-blancs', 'pdf-export', 'entraide', 'simulations-admin'],
 }));
+// ── GET /api/simulations-admin — Simulations publiées par l'admin (pour les utilisateurs) ──
+app.get('/api/simulations-admin', async (c) => {
+    const db = getDB(c.env);
+    try {
+        const { data, error } = await db.from('simulations_examens')
+            .select('id, titre, description, duree_minutes, score_max, created_at, updated_at')
+            .eq('published', true)
+            .order('created_at', { ascending: false })
+            .limit(50);
+        if (!error && data && data.length > 0) {
+            // Calculer le nombre de questions pour chaque simulation
+            const simulationsWithCount = await Promise.all(data.map(async (sim) => {
+                let totalQ = 0;
+                try {
+                    const qIds = JSON.parse(sim.question_ids ?? '[]');
+                    totalQ = Array.isArray(qIds) ? qIds.length : 0;
+                }
+                catch (_) { }
+                return { ...sim, total_questions: totalQ };
+            }));
+            return c.json({ success: true, simulations: simulationsWithCount });
+        }
+        return c.json({ success: true, simulations: [] });
+    }
+    catch (e) {
+        return c.json({ success: true, simulations: [], error: e.message });
+    }
+});
+// ── POST /api/simulations-admin/:id/demarrer — Démarrer une simulation admin ──
+app.post('/api/simulations-admin/:id/demarrer', async (c) => {
+    const h = c.req.header('Authorization');
+    if (!h?.startsWith('Bearer '))
+        return c.json({ error: 'Auth requise.' }, 401);
+    const payload = await verifyJWT(h.slice(7));
+    if (!payload)
+        return c.json({ error: 'Token invalide.' }, 401);
+    const userId = payload['id'];
+    const simulationId = c.req.param('id');
+    const db = getDB(c.env);
+    // Récupérer la simulation
+    const { data: sim, error: simErr } = await db.from('simulations_examens')
+        .select('*').eq('id', simulationId).eq('published', true).single();
+    if (simErr || !sim)
+        return c.json({ error: 'Simulation introuvable ou non publiée.' }, 404);
+    // Récupérer les IDs de questions
+    let questionIds = [];
+    try {
+        questionIds = JSON.parse(sim.question_ids ?? '[]');
+    }
+    catch (_) { }
+    if (questionIds.length === 0)
+        return c.json({ error: 'Cette simulation ne contient aucune question.' }, 400);
+    // Récupérer les questions (sans les réponses)
+    const { data: questionsData } = await db.from('questions')
+        .select('id, enonce, option_a, option_b, option_c, option_d, option_e, difficulte, matiere_id')
+        .in('id', questionIds)
+        .limit(500);
+    if (!questionsData || questionsData.length === 0) {
+        return c.json({ error: 'Questions introuvables pour cette simulation.' }, 400);
+    }
+    // Mélanger si nécessaire
+    let questions = [...questionsData];
+    if (sim.ordre_questions === 'random') {
+        questions = questions.sort(() => Math.random() - 0.5);
+    }
+    // Créer la session
+    const { data: session, error: sErr } = await db.from('sessions_examen').insert({
+        user_id: userId,
+        type_session: 'SIMULATION_ADMIN',
+        total_questions: questions.length,
+        termine: false,
+        simulation_id: simulationId,
+    }).select().single();
+    if (sErr)
+        return c.json({ error: sErr.message }, 500);
+    return c.json({
+        success: true,
+        session_id: session.id,
+        simulation_titre: sim.titre,
+        duree_minutes: sim.duree_minutes ?? 90,
+        questions: questions.map(q => ({
+            id: q.id,
+            question: q.enonce,
+            option_a: q.option_a,
+            option_b: q.option_b,
+            option_c: q.option_c,
+            option_d: q.option_d,
+            option_e: q.option_e ?? null,
+            difficulte: q.difficulte,
+        })),
+        total: questions.length,
+        show_corrections: sim.show_corrections !== false,
+    });
+});
 // 404
 app.notFound((c) => c.json({ error: 'Route introuvable.' }, 404));
 export default app;
