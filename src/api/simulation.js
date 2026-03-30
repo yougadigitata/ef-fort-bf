@@ -22,7 +22,7 @@ simulation.post('/demarrer', requireAuth, async (c) => {
     const userId = context.userId;
     const db = getDB(c.env);
     // Vérifier abonnement et quota freemium
-    const { data: userRow } = await db.from('users').select('abonnement_actif, is_admin').eq('id', userId).single();
+    const { data: userRow } = await db.from('profiles').select('abonnement_actif, is_admin').eq('id', userId).single();
     const isAbonne = userRow?.abonnement_actif === true;
     const isAdmin = userRow?.is_admin === true;
     if (!isAbonne && !isAdmin) {
