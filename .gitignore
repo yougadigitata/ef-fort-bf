@@ -57,3 +57,6 @@ build/
 # Admin Panel (node_modules seulement, garder admin-dist)
 admin-panel/node_modules/
 admin-panel/dist/
+
+# Compiled JS from tsc (keep .ts sources only)
+admin-panel/src/**/*.js

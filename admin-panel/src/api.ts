@@ -1,8 +1,12 @@
 // API Client — EF-FORT.BF CMS Admin v6.0
 
 const BASE_URL = typeof window !== 'undefined' 
-  ? (window.location.hostname === 'localhost' ? 'http://localhost:8787' : 'https://ef-fort-bf.pages.dev')
-  : 'https://ef-fort-bf.pages.dev';
+  ? (window.location.hostname === 'localhost' 
+      ? 'http://localhost:8787' 
+      : (window.location.hostname.includes('workers.dev') 
+          ? '' 
+          : 'https://ef-fort-bf.yembuaro29.workers.dev'))
+  : 'https://ef-fort-bf.yembuaro29.workers.dev';
 
 const CMS_BASE = `${BASE_URL}/api/admin-cms`;
 
