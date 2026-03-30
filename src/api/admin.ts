@@ -169,10 +169,33 @@ admin.post('/questions', requireAdmin, async (c) => {
 admin.post('/actualites', requireAdmin, async (c) => {
   const body = await c.req.json().catch(() => null) as Record<string, unknown> | null;
   if (!body) return c.json({ error: 'Corps invalide.' }, 400);
+
+  // Valider les champs requis
+  if (!body['titre'] || !body['contenu']) {
+    return c.json({ error: 'Titre et contenu requis.' }, 400);
+  }
+
   const db = getDB(c.env);
-  const { error } = await db.from('actualites').insert({ ...body, actif: true });
-  if (error) return c.json({ error: error.message }, 500);
-  return c.json({ success: true, message: 'Actualité publiée.' });
+
+  // Construire l'objet avec uniquement les colonnes existantes de la table actualites
+  // (id, titre, contenu, categorie, actif, created_at)
+  const actualiteData: Record<string, unknown> = {
+    titre: String(body['titre']).trim(),
+    contenu: String(body['contenu']).trim(),
+    categorie: (body['categorie'] as string) || 'ACTUALITE',
+    actif: true,
+  };
+
+  // Si la colonne couleur_fond existe, l'ajouter (migration future)
+  // Pour l'instant on l'ignore pour éviter l'erreur 42703
+
+  const { error } = await db.from('actualites').insert(actualiteData);
+  if (error) {
+    // Log l'erreur pour debug
+    console.error('Erreur insert actualite:', error.message);
+    return c.json({ error: `Erreur base de données: ${error.message}` }, 500);
+  }
+  return c.json({ success: true, message: 'Actualité publiée avec succès.' });
 });
 
 // ── POST /api/admin/migrate — Créer les tables manquantes ────

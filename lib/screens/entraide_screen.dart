@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
-import '../services/supabase_service.dart';
 
 // ══════════════════════════════════════════════════════════════
 // ENTRAIDE v3.0 — Système de Statuts (1 statut/jour, 24h)
@@ -42,16 +41,7 @@ class _EntraideScreenState extends State<EntraideScreen> {
   @override
   void initState() {
     super.initState();
-    _syncUserAuth();
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadStatuts());
-  }
-
-  void _syncUserAuth() {
-    final user = ApiService.currentUser;
-    if (user != null) {
-      final userId = user['id']?.toString();
-      SupabaseService.setUserAuth(null, userId);
-    }
   }
 
   @override
@@ -65,8 +55,8 @@ class _EntraideScreenState extends State<EntraideScreen> {
     setState(() => _loading = true);
 
     try {
-      // Charger tous les statuts actifs (moins de 24h)
-      final data = await SupabaseService.fetchStatuts();
+      // Charger tous les statuts actifs via l'API Cloudflare Workers
+      final data = await ApiService.getStatuts();
 
       // Vérifier si l'utilisateur actuel a déjà posté aujourd'hui
       final user = ApiService.currentUser;
@@ -80,7 +70,6 @@ class _EntraideScreenState extends State<EntraideScreen> {
           if (s['user_id']?.toString() == userId) {
             dejaPoste = true;
             monId = s['id']?.toString();
-            // Calculer quand il peut reposer (24h après le post)
             try {
               final createdAt = DateTime.parse(s['created_at'].toString()).toLocal();
               prochain = createdAt.add(const Duration(hours: 24));
@@ -102,6 +91,7 @@ class _EntraideScreenState extends State<EntraideScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _loading = false);
+        _showSnack('Impossible de charger les statuts. Vérifiez votre connexion.', isError: true);
       }
     }
   }
@@ -130,10 +120,8 @@ class _EntraideScreenState extends State<EntraideScreen> {
 
     setState(() => _sending = true);
 
-    final result = await SupabaseService.publierStatut(
-      userId: user['id'].toString(),
-      prenom: user['prenom']?.toString() ?? 'Anonyme',
-      nom: user['nom']?.toString() ?? '',
+    // Utiliser l'API Cloudflare Workers (qui gère messages_entraide)
+    final result = await ApiService.publierStatutAPI(
       texte: texte,
       type: _typeSelectionne,
     );
@@ -158,17 +146,16 @@ class _EntraideScreenState extends State<EntraideScreen> {
 
   Future<void> _supprimerMonStatut() async {
     if (_monStatutId == null) return;
-    final user = ApiService.currentUser;
-    if (user == null) return;
 
-    final ok = await SupabaseService.supprimerStatut(
-      statutId: _monStatutId!,
-      userId: user['id'].toString(),
-    );
+    final ok = await ApiService.supprimerStatutAPI(_monStatutId!);
 
-    if (ok && mounted) {
-      _showSnack('Statut supprimé.');
-      await _loadStatuts();
+    if (mounted) {
+      if (ok) {
+        _showSnack('Statut supprimé.');
+        await _loadStatuts();
+      } else {
+        _showSnack('Impossible de supprimer le statut.', isError: true);
+      }
     }
   }
 

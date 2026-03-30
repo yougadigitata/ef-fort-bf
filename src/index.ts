@@ -28,20 +28,60 @@ app.route('/api/admin',        admin);
 app.route('/api/entraide',     entraide);
 
 // ── GET /api/statuts — Statuts Entraide v3 (actifs < 24h) ──
+// Utilise la table messages_entraide (champ telephone_partage = type)
 app.get('/api/statuts', async (c) => {
   const db = getDB(c.env);
   const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-  const { data, error } = await db
-    .from('statuts_entraide')
-    .select('id,user_id,prenom,nom,texte,type,is_admin,created_at')
+  
+  // Récupérer les messages récents sans jointure complexe
+  const { data: msgs, error } = await db
+    .from('messages_entraide')
+    .select('id,user_id,contenu,telephone_partage,created_at')
+    .eq('actif', true)
     .gte('created_at', cutoff)
     .order('created_at', { ascending: false })
     .limit(50);
+  
   if (error) return c.json({ error: error.message }, 500);
-  return c.json({ success: true, statuts: data ?? [] });
+  
+  // Pour chaque message, récupérer le profil utilisateur séparément
+  const statuts: any[] = [];
+  for (const m of (msgs ?? [])) {
+    let prenom = 'Utilisateur';
+    let nom = '';
+    let is_admin = false;
+    
+    try {
+      const { data: profile } = await db
+        .from('profiles')
+        .select('prenom,nom,is_admin')
+        .eq('id', m.user_id)
+        .single();
+      
+      if (profile) {
+        prenom = profile.prenom ?? 'Utilisateur';
+        nom = profile.nom ?? '';
+        is_admin = profile.is_admin === true;
+      }
+    } catch (_) {}
+    
+    statuts.push({
+      id: m.id,
+      user_id: m.user_id,
+      prenom,
+      nom,
+      texte: m.contenu ?? '',
+      type: m.telephone_partage ?? 'info',
+      is_admin,
+      created_at: m.created_at,
+    });
+  }
+  
+  return c.json({ success: true, statuts });
 });
 
 // ── POST /api/statuts — Publier un statut (1/jour max) ──
+// Utilise messages_entraide: contenu=texte, telephone_partage=type, partage_whatsapp=is_admin
 app.post('/api/statuts', async (c) => {
   const h = c.req.header('Authorization');
   if (!h?.startsWith('Bearer ')) return c.json({ error: 'Auth requise.' }, 401);
@@ -53,11 +93,12 @@ app.post('/api/statuts', async (c) => {
   const db = getDB(c.env);
   const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   
-  // Vérifier si l'utilisateur a déjà posté dans les 24h
+  // Vérifier si l'utilisateur a déjà posté dans les 24h via messages_entraide
   const { data: existing } = await db
-    .from('statuts_entraide')
+    .from('messages_entraide')
     .select('id')
     .eq('user_id', userId)
+    .eq('actif', true)
     .gte('created_at', cutoff)
     .limit(1);
 
@@ -66,19 +107,20 @@ app.post('/api/statuts', async (c) => {
   }
 
   const body = await c.req.json().catch(() => ({})) as any;
-  const { texte, type, prenom, nom } = body;
+  const { texte, type } = body;
   
   if (!texte || String(texte).trim().length < 5) {
     return c.json({ error: 'Message trop court (minimum 5 caractères).' }, 400);
   }
 
-  const { error } = await db.from('statuts_entraide').insert({
+  const validType = ['signaler','aide','info','revision','succes'].includes(type) ? type : 'info';
+  
+  const { error } = await db.from('messages_entraide').insert({
     user_id: userId,
-    prenom: String(prenom || 'Anonyme').trim().substring(0, 50),
-    nom: String(nom || '').trim().substring(0, 50),
-    texte: String(texte).trim().substring(0, 280),
-    type: ['signaler','aide','info','revision','succes'].includes(type) ? type : 'info',
-    is_admin: false,
+    contenu: String(texte).trim().substring(0, 280),
+    telephone_partage: validType,  // stocker le type dans telephone_partage
+    partage_whatsapp: false,       // pas de partage WhatsApp pour les statuts
+    actif: true,
     created_at: new Date().toISOString(),
   });
   
@@ -87,6 +129,7 @@ app.post('/api/statuts', async (c) => {
 });
 
 // ── DELETE /api/statuts/:id — Supprimer son statut ──
+// Utilise messages_entraide (désactiver via actif=false)
 app.delete('/api/statuts/:id', async (c) => {
   const h = c.req.header('Authorization');
   if (!h?.startsWith('Bearer ')) return c.json({ error: 'Auth requise.' }, 401);
@@ -98,8 +141,8 @@ app.delete('/api/statuts/:id', async (c) => {
 
   const db = getDB(c.env);
   const { error } = await db
-    .from('statuts_entraide')
-    .delete()
+    .from('messages_entraide')
+    .update({ actif: false })
     .eq('id', id)
     .eq('user_id', userId);
   

@@ -1343,12 +1343,19 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
       final pdf = pw.Document();
       final primaryColor = PdfColor.fromHex('1A5C38');
       final greyColor = PdfColor.fromHex('6C757D');
-      final accentColor = PdfColor.fromHex('D4A017');
-      final successColor = PdfColor.fromHex('22C55E');
-      final errorColor = PdfColor.fromHex('EF4444');
+      final successColor = PdfColor.fromHex('2E7D32');
+      final errorColor = PdfColor.fromHex('C62828');
       final lightGreen = PdfColor.fromHex('E8F5E9');
+      final lightRed = PdfColor.fromHex('FFEBEE');
+      final lightGrey = PdfColor.fromHex('F5F5F5');
 
-      // Charger le vrai logo de l'application
+      // Charger une police supportant les accents français (Helvetica intégrée)
+      // Les polices intégrées au format PDF supportent les caractères Latin-1
+      final fontRegular = pw.Font.helvetica();
+      final fontBold = pw.Font.helveticaBold();
+      final fontItalic = pw.Font.helveticaOblique();
+
+      // Charger le logo
       pw.MemoryImage? logoImage;
       try {
         final ByteData logoData = await rootBundle.load('assets/images/logo_effort.png');
@@ -1362,68 +1369,96 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
         }
       }
 
+      // Nettoyer le texte : supprimer emojis et caractères non supportés par PDF
+      // Garder uniquement ASCII + Latin étendu (accents français inclus)
+      String cleanText(String text) {
+        if (text.isEmpty) return text;
+        // Remplacer les emojis et caractères hors Latin par des espaces
+        String cleaned = text
+            .replaceAll(RegExp(r'[\u{1F000}-\u{1FFFF}]', unicode: true), '')
+            .replaceAll(RegExp(r'[\u{2600}-\u{27BF}]', unicode: true), '')
+            .replaceAll(RegExp(r'[\u{1F300}-\u{1F9FF}]', unicode: true), '')
+            .replaceAll(RegExp(r'[^\x20-\x7E\u00A0-\u024F]'), ' ')
+            .replaceAll(RegExp(r' {2,}'), ' ')
+            .trim();
+        return cleaned;
+      }
+
+      // Thème global PDF avec polices Helvetica (support accents latins)
+      final theme = pw.ThemeData.withFont(
+        base: fontRegular,
+        bold: fontBold,
+        italic: fontItalic,
+        boldItalic: pw.Font.helveticaBoldOblique(),
+      );
+
       pdf.addPage(
         pw.MultiPage(
           pageFormat: PdfPageFormat.a4,
-          margin: const pw.EdgeInsets.all(28),
+          margin: const pw.EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+          theme: theme,
           header: (ctx) => pw.Container(
-            padding: const pw.EdgeInsets.only(bottom: 12),
+            padding: const pw.EdgeInsets.only(bottom: 10),
             decoration: pw.BoxDecoration(
               border: pw.Border(bottom: pw.BorderSide(color: primaryColor, width: 2)),
             ),
-            child: pw.Column(
+            child: pw.Row(
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
               children: [
-                pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.center,
-                  children: [
-                    // Logo RÉEL de l'application
-                    pw.Container(
-                      width: 60,
-                      height: 60,
-                      decoration: pw.BoxDecoration(
-                        color: PdfColors.white,
-                        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(10)),
-                        border: pw.Border.all(color: primaryColor, width: 1.5),
-                      ),
-                      padding: const pw.EdgeInsets.all(4),
-                      child: logoImage != null
-                          ? pw.Image(logoImage, fit: pw.BoxFit.contain)
-                          : pw.Center(
-                              child: pw.Text('EF-FORT',
-                                  style: pw.TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: pw.FontWeight.bold,
-                                    color: primaryColor,
-                                  )),
-                            ),
-                    ),
-                    pw.SizedBox(width: 12),
-                    pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: [
-                        pw.Text('EF-FORT.BF',
-                            style: pw.TextStyle(
-                              fontSize: 20,
-                              fontWeight: pw.FontWeight.bold,
-                              color: primaryColor,
-                            )),
-                        pw.Text('Plateforme N°1 — Concours Burkina Faso',
-                            style: pw.TextStyle(fontSize: 9, color: greyColor)),
-                        pw.Text('"Chaque effort te rapproche de ton admission finale"',
-                            style: pw.TextStyle(fontSize: 9, color: accentColor, fontStyle: pw.FontStyle.italic)),
-                      ],
-                    ),
-                  ],
-                ),
-                pw.SizedBox(height: 6),
+                // Logo ou texte de remplacement
                 pw.Container(
-                  width: double.infinity,
-                  padding: const pw.EdgeInsets.symmetric(vertical: 4),
-                  color: lightGreen,
-                  child: pw.Text(
-                    'Résultats Série — ${widget.label}  ·  ef-fort-bf.pages.dev',
-                    textAlign: pw.TextAlign.center,
-                    style: pw.TextStyle(fontSize: 10, color: primaryColor, fontWeight: pw.FontWeight.bold),
+                  width: 52,
+                  height: 52,
+                  decoration: pw.BoxDecoration(
+                    color: primaryColor,
+                    borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+                  ),
+                  padding: const pw.EdgeInsets.all(3),
+                  child: logoImage != null
+                      ? pw.Image(logoImage, fit: pw.BoxFit.contain)
+                      : pw.Center(
+                          child: pw.Text('EF',
+                              style: pw.TextStyle(
+                                fontSize: 18,
+                                fontWeight: pw.FontWeight.bold,
+                                color: PdfColors.white,
+                              )),
+                        ),
+                ),
+                pw.SizedBox(width: 14),
+                pw.Expanded(
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text('EF-FORT.BF',
+                          style: pw.TextStyle(
+                            fontSize: 18,
+                            fontWeight: pw.FontWeight.bold,
+                            color: primaryColor,
+                          )),
+                      pw.Text('Plateforme N.1 - Concours Burkina Faso',
+                          style: pw.TextStyle(fontSize: 9, color: greyColor)),
+                      pw.Text('ef-fort-bf.pages.dev',
+                          style: pw.TextStyle(fontSize: 8, color: greyColor)),
+                    ],
+                  ),
+                ),
+                pw.Container(
+                  padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: pw.BoxDecoration(
+                    color: lightGreen,
+                    borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+                  ),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.end,
+                    children: [
+                      pw.Text('RESULTATS',
+                          style: pw.TextStyle(fontSize: 8, color: primaryColor, fontWeight: pw.FontWeight.bold)),
+                      pw.Text('$score / $total  ($pct%)',
+                          style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, color: primaryColor)),
+                      pw.Text('Note: $sur20 / 20',
+                          style: pw.TextStyle(fontSize: 9, color: greyColor)),
+                    ],
                   ),
                 ),
               ],
@@ -1431,47 +1466,71 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
           ),
           footer: (ctx) => pw.Container(
             alignment: pw.Alignment.center,
-            padding: const pw.EdgeInsets.only(top: 6),
+            padding: const pw.EdgeInsets.only(top: 5),
             decoration: pw.BoxDecoration(
-              border: pw.Border(top: pw.BorderSide(color: PdfColors.grey300)),
+              border: pw.Border(top: pw.BorderSide(color: PdfColors.grey300, width: 0.5)),
             ),
-            child: pw.Column(
+            child: pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
-                pw.Text(
-                  'EF-FORT.BF  ·  Chaque effort te rapproche de ton admission',
-                  style: pw.TextStyle(fontSize: 9, color: primaryColor, fontStyle: pw.FontStyle.italic),
-                ),
-                pw.SizedBox(height: 2),
-                pw.Text(
-                  'ef-fort-bf.pages.dev  |  Page ${ctx.pageNumber}/${ctx.pagesCount}',
-                  style: pw.TextStyle(fontSize: 8, color: greyColor),
-                ),
+                pw.Text('EF-FORT.BF - Chaque effort te rapproche de ton admission',
+                    style: pw.TextStyle(fontSize: 8, color: greyColor)),
+                pw.Text('Page ${ctx.pageNumber} / ${ctx.pagesCount}',
+                    style: pw.TextStyle(fontSize: 8, color: greyColor)),
               ],
             ),
           ),
           build: (ctx) => [
+            // Fiche candidat
             pw.Container(
-              padding: const pw.EdgeInsets.all(14),
+              padding: const pw.EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: pw.BoxDecoration(
-                color: PdfColor.fromHex('F8F9FA'),
-                border: pw.Border.all(color: PdfColor.fromHex('E9ECEF')),
+                color: lightGreen,
                 borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
               ),
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
+              child: pw.Row(
                 children: [
-                  pw.Text('Candidat : ${nom.isEmpty ? "Candidat" : nom}', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
-                  pw.SizedBox(height: 4),
-                  pw.Text('Matière : ${widget.label}', style: pw.TextStyle(fontSize: 12)),
-                  pw.Text('Date : $dateStr', style: pw.TextStyle(fontSize: 12)),
-                  pw.Text('Score : $score/$total ($pct%) — Note /20 : $sur20',
-                      style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, color: primaryColor)),
+                  pw.Expanded(
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text('Candidat : ${cleanText(nom.isEmpty ? "Candidat" : nom)}',
+                            style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, color: primaryColor)),
+                        pw.SizedBox(height: 2),
+                        pw.Text('Matiere  : ${cleanText(widget.label)}',
+                            style: pw.TextStyle(fontSize: 10, color: greyColor)),
+                        pw.Text('Date     : $dateStr',
+                            style: pw.TextStyle(fontSize: 10, color: greyColor)),
+                      ],
+                    ),
+                  ),
+                  pw.Container(
+                    padding: const pw.EdgeInsets.all(8),
+                    decoration: pw.BoxDecoration(
+                      color: pct >= 50 ? PdfColor.fromHex('2E7D32') : PdfColor.fromHex('C62828'),
+                      borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+                    ),
+                    child: pw.Text(
+                      '$pct%',
+                      style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+                    ),
+                  ),
                 ],
               ),
             ),
-            pw.SizedBox(height: 16),
-            pw.Text('CORRIGÉ DÉTAILLÉ', style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, color: primaryColor)),
-            pw.SizedBox(height: 10),
+            pw.SizedBox(height: 14),
+            // Titre section corrigé
+            pw.Container(
+              padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: pw.BoxDecoration(
+                color: primaryColor,
+                borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+              ),
+              child: pw.Text('CORRIGE DETAILLE',
+                  style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
+            ),
+            pw.SizedBox(height: 8),
+            // Questions
             ...List.generate(_questions.length, (i) {
               final q = _questions[i] as Map<String, dynamic>;
               final bonnes = _getBonnesReponses(q);
@@ -1479,39 +1538,77 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
               final skipped = _skipped.contains(i);
               final correct = !skipped && choisies.isNotEmpty && choisies.containsAll(bonnes) && bonnes.containsAll(choisies);
               final noAns = choisies.isEmpty || skipped;
-              final statusColor = noAns ? greyColor : (correct ? successColor : errorColor);
-              final statusText = noAns ? 'Non répondu' : (correct ? 'CORRECT' : 'INCORRECT');
+
+              final bgColor = noAns ? lightGrey : (correct ? lightGreen : lightRed);
+              final labelColor = noAns ? greyColor : (correct ? successColor : errorColor);
+              final statusText = noAns ? 'Non repondu' : (correct ? 'CORRECT' : 'INCORRECT');
+
+              final enonce = cleanText((q['enonce'] ?? q['question'] ?? '').toString());
+              final explication = cleanText((q['explication'] ?? '').toString());
 
               return pw.Container(
-                margin: const pw.EdgeInsets.only(bottom: 8),
-                padding: const pw.EdgeInsets.all(10),
+                margin: const pw.EdgeInsets.only(bottom: 6),
+                padding: const pw.EdgeInsets.fromLTRB(10, 8, 10, 8),
                 decoration: pw.BoxDecoration(
-                  color: noAns ? PdfColors.grey100 : (correct ? PdfColor.fromHex('F0FDF4') : PdfColor.fromHex('FEF2F2')),
-                  borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
-                  border: pw.Border.all(color: statusColor, width: 1),
+                  color: bgColor,
+                  borderRadius: const pw.BorderRadius.all(pw.Radius.circular(5)),
                 ),
                 child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
                     pw.Row(
-                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                       children: [
-                        pw.Text('Q${i + 1}.', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11, color: primaryColor)),
-                        pw.Text(statusText, style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, color: statusColor)),
+                        pw.Container(
+                          width: 22,
+                          height: 22,
+                          decoration: pw.BoxDecoration(
+                            color: labelColor,
+                            shape: pw.BoxShape.circle,
+                          ),
+                          child: pw.Center(
+                            child: pw.Text('${i + 1}',
+                                style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
+                          ),
+                        ),
+                        pw.SizedBox(width: 6),
+                        pw.Expanded(
+                          child: pw.Text(statusText,
+                              style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: labelColor)),
+                        ),
                       ],
                     ),
                     pw.SizedBox(height: 4),
-                    pw.Text((q['enonce'] ?? q['question'] ?? '').toString(), style: const pw.TextStyle(fontSize: 11)),
-                    pw.SizedBox(height: 4),
-                    pw.Text('Votre réponse : ${choisies.isEmpty ? "-" : choisies.join(", ")} | Bonne(s) : ${bonnes.isEmpty ? "?" : bonnes.join(", ")}',
-                        style: pw.TextStyle(fontSize: 10, color: greyColor)),
-                    if ((q['explication'] ?? '').toString().isNotEmpty)
-                      pw.Text('Explication : ${q['explication']}',
-                          style: pw.TextStyle(fontSize: 10, color: greyColor, fontStyle: pw.FontStyle.italic)),
+                    if (enonce.isNotEmpty)
+                      pw.Text(enonce,
+                          style: pw.TextStyle(fontSize: 10, color: PdfColors.black)),
+                    pw.SizedBox(height: 3),
+                    pw.Text(
+                      'Votre reponse : ${choisies.isEmpty ? "-" : choisies.join(", ")}   |   Bonne(s) reponse(s) : ${bonnes.isEmpty ? "?" : bonnes.join(", ")}',
+                      style: pw.TextStyle(fontSize: 9, color: greyColor),
+                    ),
+                    if (explication.isNotEmpty) ...[
+                      pw.SizedBox(height: 2),
+                      pw.Text('Explication : $explication',
+                          style: pw.TextStyle(fontSize: 9, color: greyColor, fontStyle: pw.FontStyle.italic)),
+                    ],
                   ],
                 ),
               );
             }),
+            pw.SizedBox(height: 12),
+            // Pied de page document
+            pw.Container(
+              padding: const pw.EdgeInsets.all(8),
+              decoration: pw.BoxDecoration(
+                color: lightGreen,
+                borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+              ),
+              child: pw.Text(
+                'EF-FORT.BF - Transformer l\'effort en reussite ! Bonne preparation.',
+                textAlign: pw.TextAlign.center,
+                style: pw.TextStyle(fontSize: 9, color: primaryColor, fontStyle: pw.FontStyle.italic),
+              ),
+            ),
           ],
         ),
       );

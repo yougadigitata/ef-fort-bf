@@ -195,7 +195,7 @@ class _SerieSelectionScreenState extends State<SerieSelectionScreen> {
         // Liste des séries
         Expanded(
           child: ListView.builder(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 100),
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
             itemCount: _series.length,
             itemBuilder: (context, index) {
               final serie = _series[index] as Map<String, dynamic>;
@@ -204,116 +204,29 @@ class _SerieSelectionScreenState extends State<SerieSelectionScreen> {
           ),
         ),
 
-        // Bouton Export PDF (en bas, toujours visible)
+        // Barre de bas de page : indication du nombre de séries uniquement
         Container(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
           decoration: BoxDecoration(
             color: Colors.white,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
-                blurRadius: 10,
-                offset: const Offset(0, -3),
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 8,
+                offset: const Offset(0, -2),
               ),
             ],
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () => _exportResultatsPDF(),
-                  icon: const Icon(Icons.picture_as_pdf, size: 20),
-                  label: const Text(
-                    'Exporter mes résultats en PDF',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFC1672B),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                '${_series.length} séries disponibles dans ${widget.matiereNom}',
-                style: const TextStyle(color: Colors.grey, fontSize: 11),
-              ),
-            ],
+          child: Text(
+            '${_series.length} séries disponibles dans ${widget.matiereNom}',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.grey, fontSize: 12),
           ),
         ),
       ],
     );
   }
 
-  void _exportResultatsPDF() {
-    // Afficher un message informatif sur l'export PDF
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
-          children: [
-            Text('📄', style: TextStyle(fontSize: 24)),
-            SizedBox(width: 8),
-            Text('Export PDF', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Matière : ${widget.matiereNom}',
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Le PDF contiendra :\n• Votre progression globale\n• Score par série complétée\n• Corrections détaillées\n• Date d\'exportation',
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade700, height: 1.6),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: _waGreen.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: _waGreen.withValues(alpha: 0.3)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.check_circle_outline, color: _waDarkGreen, size: 18),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Fonctionnalité disponible pour les abonnés Premium',
-                      style: const TextStyle(fontSize: 12, color: _waDarkGreen, fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Fermer', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx),
-            style: ElevatedButton.styleFrom(backgroundColor: _waGreen),
-            child: const Text('OK', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildSerieCard(Map<String, dynamic> serie, int index) {
     final num = serie['numero'] ?? (index + 1);

@@ -22,6 +22,117 @@ app.route('/api/simulation', simulation);
 app.route('/api/abonnements', abonnements);
 app.route('/api/admin', admin);
 app.route('/api/entraide', entraide);
+// ── GET /api/statuts — Statuts Entraide v3 (actifs < 24h) ──
+// Utilise la table messages_entraide (champ telephone_partage = type)
+app.get('/api/statuts', async (c) => {
+    const db = getDB(c.env);
+    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    // Récupérer les messages récents sans jointure complexe
+    const { data: msgs, error } = await db
+        .from('messages_entraide')
+        .select('id,user_id,contenu,telephone_partage,created_at')
+        .eq('actif', true)
+        .gte('created_at', cutoff)
+        .order('created_at', { ascending: false })
+        .limit(50);
+    if (error)
+        return c.json({ error: error.message }, 500);
+    // Pour chaque message, récupérer le profil utilisateur séparément
+    const statuts = [];
+    for (const m of (msgs ?? [])) {
+        let prenom = 'Utilisateur';
+        let nom = '';
+        let is_admin = false;
+        try {
+            const { data: profile } = await db
+                .from('profiles')
+                .select('prenom,nom,is_admin')
+                .eq('id', m.user_id)
+                .single();
+            if (profile) {
+                prenom = profile.prenom ?? 'Utilisateur';
+                nom = profile.nom ?? '';
+                is_admin = profile.is_admin === true;
+            }
+        }
+        catch (_) { }
+        statuts.push({
+            id: m.id,
+            user_id: m.user_id,
+            prenom,
+            nom,
+            texte: m.contenu ?? '',
+            type: m.telephone_partage ?? 'info',
+            is_admin,
+            created_at: m.created_at,
+        });
+    }
+    return c.json({ success: true, statuts });
+});
+// ── POST /api/statuts — Publier un statut (1/jour max) ──
+// Utilise messages_entraide: contenu=texte, telephone_partage=type, partage_whatsapp=is_admin
+app.post('/api/statuts', async (c) => {
+    const h = c.req.header('Authorization');
+    if (!h?.startsWith('Bearer '))
+        return c.json({ error: 'Auth requise.' }, 401);
+    const { verifyJWT } = await import('./lib/auth');
+    const payload = await verifyJWT(h.slice(7));
+    if (!payload)
+        return c.json({ error: 'Token invalide.' }, 401);
+    const userId = payload.id;
+    const db = getDB(c.env);
+    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    // Vérifier si l'utilisateur a déjà posté dans les 24h via messages_entraide
+    const { data: existing } = await db
+        .from('messages_entraide')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('actif', true)
+        .gte('created_at', cutoff)
+        .limit(1);
+    if (existing && existing.length > 0) {
+        return c.json({ error: 'Vous avez déjà posté votre statut aujourd\'hui. Revenez demain !', already_posted: true }, 429);
+    }
+    const body = await c.req.json().catch(() => ({}));
+    const { texte, type } = body;
+    if (!texte || String(texte).trim().length < 5) {
+        return c.json({ error: 'Message trop court (minimum 5 caractères).' }, 400);
+    }
+    const validType = ['signaler', 'aide', 'info', 'revision', 'succes'].includes(type) ? type : 'info';
+    const { error } = await db.from('messages_entraide').insert({
+        user_id: userId,
+        contenu: String(texte).trim().substring(0, 280),
+        telephone_partage: validType, // stocker le type dans telephone_partage
+        partage_whatsapp: false, // pas de partage WhatsApp pour les statuts
+        actif: true,
+        created_at: new Date().toISOString(),
+    });
+    if (error)
+        return c.json({ error: error.message }, 500);
+    return c.json({ success: true, message: 'Statut publié !' });
+});
+// ── DELETE /api/statuts/:id — Supprimer son statut ──
+// Utilise messages_entraide (désactiver via actif=false)
+app.delete('/api/statuts/:id', async (c) => {
+    const h = c.req.header('Authorization');
+    if (!h?.startsWith('Bearer '))
+        return c.json({ error: 'Auth requise.' }, 401);
+    const { verifyJWT } = await import('./lib/auth');
+    const payload = await verifyJWT(h.slice(7));
+    if (!payload)
+        return c.json({ error: 'Token invalide.' }, 401);
+    const userId = payload.id;
+    const id = c.req.param('id');
+    const db = getDB(c.env);
+    const { error } = await db
+        .from('messages_entraide')
+        .update({ actif: false })
+        .eq('id', id)
+        .eq('user_id', userId);
+    if (error)
+        return c.json({ error: error.message }, 500);
+    return c.json({ success: true });
+});
 // ── GET /api/actualites ──
 app.get('/api/actualites', async (c) => {
     const db = getDB(c.env);
@@ -62,22 +173,53 @@ app.get('/api/examens', async (c) => {
     return c.json({ success: true, examens });
 });
 // ── GET /api/examens/:id/questions — Questions pour un examen ──
+// Phase 3 : Puise dans les 3736 questions de la banque complète
+// Répartition par matière pour un examen équilibré
 app.get('/api/examens/:id/questions', async (c) => {
     const examenId = c.req.param('id');
     const db = getDB(c.env);
-    // Récupérer 50 questions aléatoires toutes matières confondues
-    const { data, error } = await db
-        .from('questions')
-        .select('id, matiere_id, enonce, option_a, option_b, option_c, option_d, option_e, bonne_reponse, explication, difficulte')
-        .limit(200);
-    if (error)
-        return c.json({ error: error.message }, 500);
-    const shuffled = (data ?? [])
+    // IDs des matières principales importées (Phase 3)
+    const MATIERES_EXAMEN = [
+        { id: 'cbd22275-d260-40d1-8ff3-d31545f3f1ab', nom: 'Psychotechnique', quota: 10 },
+        { id: '104f51e4-be6e-4ce8-961e-56e604818670', nom: 'Figure Africaine', quota: 10 },
+        { id: '756e1ca6-7f7f-4f42-940a-b6d9952ffcdf', nom: 'Économie', quota: 10 },
+        { id: '37febc5e-8ab5-4875-b7ad-71b30a8253e7', nom: 'Anglais', quota: 10 },
+        { id: '9497ca2c-dc1b-43dd-8b7a-af11dde7039d', nom: 'Droit', quota: 10 },
+    ];
+    const allSelected = [];
+    for (const mat of MATIERES_EXAMEN) {
+        // Récupérer un échantillon aléatoire par matière
+        const { data: matData, error: matErr } = await db
+            .from('questions')
+            .select('id, matiere_id, enonce, option_a, option_b, option_c, option_d, option_e, bonne_reponse, explication, difficulte')
+            .eq('matiere_id', mat.id)
+            .limit(200); // Large pool pour le shuffle
+        if (!matErr && matData && matData.length > 0) {
+            const shuffledMat = matData.sort(() => Math.random() - 0.5).slice(0, mat.quota);
+            allSelected.push(...shuffledMat);
+        }
+    }
+    // Si pas assez de questions des matières cibles, compléter avec d'autres matières
+    if (allSelected.length < 50) {
+        const { data: extra } = await db
+            .from('questions')
+            .select('id, matiere_id, enonce, option_a, option_b, option_c, option_d, option_e, bonne_reponse, explication, difficulte')
+            .not('matiere_id', 'in', `(${MATIERES_EXAMEN.map(m => m.id).join(',')})`)
+            .limit(100);
+        if (extra && extra.length > 0) {
+            const needed = 50 - allSelected.length;
+            const shuffledExtra = extra.sort(() => Math.random() - 0.5).slice(0, needed);
+            allSelected.push(...shuffledExtra);
+        }
+    }
+    // Mélanger l'ensemble final
+    const finalQuestions = allSelected
         .sort(() => Math.random() - 0.5)
         .slice(0, 50)
-        .map(q => ({
+        .map((q, idx) => ({
         id: q.id,
         examen_id: examenId,
+        numero: idx + 1,
         enonce: q.enonce,
         option_a: q.option_a,
         option_b: q.option_b,
@@ -88,7 +230,7 @@ app.get('/api/examens/:id/questions', async (c) => {
         explication: q.explication,
         difficulte: q.difficulte ?? 'moyen',
     }));
-    return c.json({ success: true, questions: shuffled });
+    return c.json({ success: true, questions: finalQuestions });
 });
 // ── TÂCHE 4 : GET /api/user/stats — Stats dashboard utilisateur ──
 app.get('/api/user/stats', async (c) => {

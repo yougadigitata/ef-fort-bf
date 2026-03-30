@@ -320,29 +320,94 @@ class ApiService {
         Uri.parse('$apiBase/admin/actualites'),
         headers: _headers,
         body: jsonEncode(actu),
-      );
-      return jsonDecode(response.body) as Map<String, dynamic>;
+      ).timeout(const Duration(seconds: 15));
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return {'success': true, ...data};
+      }
+      return {'error': data['error'] ?? 'Erreur lors de la publication (code ${response.statusCode})'};
     } catch (e) {
-      return {'error': 'Erreur de connexion.'};
+      if (kDebugMode) debugPrint('addActualite error: $e');
+      return {'error': 'Erreur de connexion. Vérifiez votre internet.'};
     }
   }
 
   // ══════════════════════════════════════════════════════════════
-  // ENTRAIDE v2.0 — Questions-Réponses (voir supabase_service.dart)
-  // Les méthodes suivantes sont conservées pour compatibilité
+  // ENTRAIDE v3.0 — Statuts via API Cloudflare Workers
+  // Utilise /api/statuts (GET/POST/DELETE)
   // ══════════════════════════════════════════════════════════════
-  static Future<List<dynamic>> getEntraideMsgs() async {
-    // Compatibilité — maintenant géré par SupabaseService
-    return [];
+
+  /// Récupérer les statuts actifs (moins de 24h) via API
+  static Future<List<Map<String, dynamic>>> getStatuts() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$apiBase/statuts'),
+        headers: _headers,
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final list = data['statuts'] as List? ?? [];
+        return list.map((e) => e as Map<String, dynamic>).toList();
+      }
+      if (kDebugMode) debugPrint('getStatuts HTTP ${response.statusCode}: ${response.body}');
+      return [];
+    } catch (e) {
+      if (kDebugMode) debugPrint('getStatuts error: $e');
+      return [];
+    }
   }
+
+  /// Publier un statut via API (1 par jour par utilisateur)
+  static Future<Map<String, dynamic>> publierStatutAPI({
+    required String texte,
+    required String type,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$apiBase/statuts'),
+        headers: _headers,
+        body: jsonEncode({'texte': texte, 'type': type}),
+      ).timeout(const Duration(seconds: 10));
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return {'success': true};
+      }
+      if (response.statusCode == 429) {
+        return {'error': data['error'] ?? 'Vous avez déjà posté votre statut aujourd\'hui.', 'already_posted': true};
+      }
+      return {'error': data['error'] ?? 'Erreur lors de la publication'};
+    } catch (e) {
+      if (kDebugMode) debugPrint('publierStatutAPI error: $e');
+      return {'error': 'Erreur de connexion. Vérifiez votre internet.'};
+    }
+  }
+
+  /// Supprimer son propre statut via API
+  static Future<bool> supprimerStatutAPI(String statutId) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$apiBase/statuts/$statutId'),
+        headers: _headers,
+      ).timeout(const Duration(seconds: 10));
+      return response.statusCode == 200 || response.statusCode == 204;
+    } catch (e) {
+      if (kDebugMode) debugPrint('supprimerStatutAPI error: $e');
+      return false;
+    }
+  }
+
+  // Compatibilité
+  static Future<List<dynamic>> getEntraideMsgs() async => [];
 
   static Future<Map<String, dynamic>> sendEntraideMsgAPI({
     required String contenu,
     bool partagerWhatsApp = false,
     String? telephone,
   }) async {
-    // Compatibilité — maintenant géré par SupabaseService
-    return {'error': 'Utilisez SupabaseService.publierQuestion'};
+    return {'error': 'Utilisez ApiService.publierStatutAPI'};
   }
 
   // ══════════════════════════════════════════════════════════════
