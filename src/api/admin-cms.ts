@@ -1183,7 +1183,8 @@ adminCms.get('/flags', requireAdmin, async (c) => {
   const limit = 20;
   const offset = (page - 1) * limit;
 
-  let query = db.from('question_flags').select('*, questions(enonce, matiere_id)');
+  // Requête sans join (pas de FK déclarée) — on enrichit manuellement
+  let query = db.from('question_flags').select('*');
 
   if (status !== 'all') {
     query = query.eq('status', status) as typeof query;
@@ -1194,7 +1195,23 @@ adminCms.get('/flags', requireAdmin, async (c) => {
     .range(offset, offset + limit - 1);
 
   if (error) return c.json({ error: error.message }, 500);
-  return c.json({ success: true, flags: data ?? [] });
+
+  // Enrichir avec les données de questions (si question_id présent)
+  const flags = data ?? [];
+  const enriched = await Promise.all(flags.map(async (flag: any) => {
+    if (!flag.question_id) return flag;
+    try {
+      const { data: q } = await db.from('questions')
+        .select('enonce, matiere_id')
+        .eq('id', flag.question_id)
+        .single();
+      return { ...flag, question: q ?? null };
+    } catch (_) {
+      return { ...flag, question: null };
+    }
+  }));
+
+  return c.json({ success: true, flags: enriched });
 });
 
 // PUT /api/admin-cms/flags/:id — Résoudre un signalement
