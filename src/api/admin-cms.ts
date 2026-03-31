@@ -155,6 +155,45 @@ CREATE INDEX IF NOT EXISTS idx_simulations_published ON simulations_examens(publ
   });
 });
 
+// POST /api/admin-cms/migrate-type-column — Ajouter colonne type dans simulations_examens
+// Utilise l'API Supabase pour ALTER TABLE via une RPC ou un INSERT factice
+adminCms.post('/migrate-type-column', async (c) => {
+  const body = await c.req.json().catch(() => ({})) as Record<string, unknown>;
+  if (body['secret'] !== 'EfFortCMS2026!Migration') {
+    return c.json({ error: 'Secret invalide.' }, 403);
+  }
+
+  const db = getDB(c.env);
+  
+  // Tester si la colonne type existe
+  const { error: testError } = await db.from('simulations_examens')
+    .select('id, type')
+    .limit(1);
+  
+  if (!testError) {
+    return c.json({
+      success: true,
+      message: '✅ La colonne "type" existe déjà dans simulations_examens.',
+      status: 'already_exists'
+    });
+  }
+  
+  if (testError.message?.includes('type does not exist')) {
+    // La colonne n'existe pas - retourner le SQL à exécuter manuellement
+    return c.json({
+      success: false,
+      status: 'column_missing',
+      message: '❌ La colonne "type" n\'existe pas. Exécutez ce SQL dans Supabase SQL Editor.',
+      sql: `ALTER TABLE simulations_examens ADD COLUMN IF NOT EXISTS type VARCHAR(50) DEFAULT 'simulation';
+CREATE INDEX IF NOT EXISTS idx_simulations_type ON simulations_examens(type);
+UPDATE simulations_examens SET type = 'simulation' WHERE type IS NULL;`,
+      url: 'https://supabase.com/dashboard/project/xqifdbgqxyrlhrkwlyir/sql/new'
+    }, 422);
+  }
+
+  return c.json({ success: false, error: testError.message }, 500);
+});
+
 // ═══════════════════════════════════════════════════════════════
 // GESTION QUESTIONS — CRUD COMPLET
 // ═══════════════════════════════════════════════════════════════
