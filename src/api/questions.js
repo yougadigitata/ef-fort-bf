@@ -12,11 +12,11 @@ questions.get('/matieres', async (c) => {
         .limit(50);
     if (mErr)
         return c.json({ error: mErr.message }, 500);
-    // Les 18 codes officiels v5.1 (+ AES + BF)
+    // Les 18 codes officiels v5.1 (+ AES + BF + PSY)
     const CODES_OFFICIELS = [
         'DROIT2', 'ECO2', 'MATHS', 'SP', 'SVT', 'CG', 'ACTU', 'PANA',
-        'HISTO', 'ARMEE', 'PSYCHO', 'FR', 'ANG', 'INFO', 'COMM', 'HG',
-        'AES', 'BF' // Nouvelles matières v5.1
+        'HISTO', 'ARMEE', 'PSYCHO', 'PSY', 'FR', 'ANG', 'INFO', 'COMM', 'HG',
+        'AES', 'BF' // Nouvelles matières v5.1 — PSY = code canonique Psychotechnique
     ];
     // Filtrer uniquement les matières officielles
     const matieresFiltrees = (matieres ?? []).filter(m => CODES_OFFICIELS.includes(m.code));
