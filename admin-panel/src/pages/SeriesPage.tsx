@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getSeries, getMatieres, createSerie, updateSerie, deleteSerie, autoGenerateSerie, getQuestions } from '../api';
+import { getSeries, getMatieres, createSerie, updateSerie, deleteSerie, autoGenerateSerie, harmonizeSeries, getQuestions } from '../api';
 import type { Page } from '../App';
 
 // ════════════════════════════════════════════════════════════════
@@ -125,6 +125,17 @@ export default function SeriesPage({ onNavigate }: { onNavigate: (page: Page) =>
     } catch (err: any) { showToast('❌ ' + err.message, 'error'); }
   }
 
+  async function handleHarmonize() {
+    if (!selectedMatiere) { showToast('⚠️ Sélectionner une matière d\'abord', 'error'); return; }
+    const mat = matieres.find(m => m.id === selectedMatiere);
+    if (!confirm(`⚠️ HARMONISER les séries de "${mat?.nom ?? 'cette matière'}" ?\n\nCeci va :\n✅ Redistribuer TOUTES les questions en séries de 20 exactement\n✅ Supprimer les séries vides ou incomplètes\n✅ Renuméroter les séries de 01 à N\n\n⚠️ Cette opération est irréversible. Continuer ?`)) return;
+    try {
+      const data = await harmonizeSeries(selectedMatiere);
+      showToast(`✅ ${data.series_created} séries harmonisées — ${data.total_questions} questions redistribuées`);
+      loadSeries();
+    } catch (err: any) { showToast('❌ ' + err.message, 'error'); }
+  }
+
   async function handleDelete(id: string) {
     if (!confirm('Supprimer cette série ? (les questions seront libérées mais pas supprimées)')) return;
     try {
@@ -178,6 +189,19 @@ export default function SeriesPage({ onNavigate }: { onNavigate: (page: Page) =>
             }}
           >
             🤖 Série auto (20Q)
+          </button>
+          <button
+            onClick={handleHarmonize}
+            disabled={!selectedMatiere}
+            title="Redistribuer toutes les questions en séries de 20 exactement (supprime doublons/séries incomplètes)"
+            style={{
+              padding: '8px 14px',
+              background: selectedMatiere ? 'linear-gradient(135deg, #d97706, #f59e0b)' : '#334155',
+              border: 'none', borderRadius: 8, color: 'white',
+              cursor: selectedMatiere ? 'pointer' : 'not-allowed', fontSize: 13, fontWeight: 600,
+            }}
+          >
+            ⚡ Harmoniser séries
           </button>
           <button
             onClick={() => { setShowCreate(true); setShowQuestionPicker(false); setSelectedQuestionIds(new Set()); }}

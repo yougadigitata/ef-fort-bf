@@ -7,12 +7,10 @@ import CreateQuestionPage from './pages/CreateQuestionPage';
 import BulkImportPage from './pages/BulkImportPage';
 import SeriesPage from './pages/SeriesPage';
 import SimulationsPage from './pages/SimulationsPage';
-import ExamensImportPage from './pages/ExamensImportPage';
 import FlagsPage from './pages/FlagsPage';
 import AuditLogPage from './pages/AuditLogPage';
 import AnnoncesPage from './pages/AnnoncesPage';
-import Sidebar from './components/Sidebar';
-import { LayoutDashboard, FileQuestion, Upload, BookOpen, Target, Flag, History, LogOut, Menu, X, FileText, Newspaper } from 'lucide-react';
+import { LayoutDashboard, FileQuestion, Upload, BookOpen, Target, Flag, History, LogOut, Menu, X, Newspaper } from 'lucide-react';
 
 // ── Context Auth ─────────────────────────────────────────────
 interface AuthContextType {
@@ -24,7 +22,9 @@ const AuthContext = createContext<AuthContextType>({ user: null, setUser: () => 
 export const useAuth = () => useContext(AuthContext);
 
 // ── Types ─────────────────────────────────────────────────────
-export type Page = 'dashboard' | 'questions' | 'create-question' | 'edit-question' | 'bulk-import' | 'series' | 'simulations' | 'examens-import' | 'flags' | 'audit-log' | 'annonces';
+// Note: 'create-question' et 'edit-question' conservés pour l'édition depuis QuestionsPage
+// 'examens-import' supprimé (fusionné dans bulk-import)
+export type Page = 'dashboard' | 'questions' | 'create-question' | 'edit-question' | 'bulk-import' | 'series' | 'simulations' | 'flags' | 'audit-log' | 'annonces';
 
 export default function App() {
   const [user, setUser] = useState<any>(() => {
@@ -90,7 +90,7 @@ export default function App() {
               }}>EF</div>
               <div>
                 <div style={{ fontWeight: 700, color: '#f1f5f9', fontSize: 14 }}>EF-FORT.BF</div>
-                <div style={{ color: '#64748b', fontSize: 11 }}>Administration CMS v6.0</div>
+                <div style={{ color: '#64748b', fontSize: 11 }}>Administration CMS v7.0</div>
               </div>
             </div>
           </div>
@@ -98,19 +98,21 @@ export default function App() {
           {/* Navigation */}
           <nav style={{ flex: 1, overflowY: 'auto', padding: '12px 8px' }}>
             <NavItem icon={<LayoutDashboard size={18} />} label="Tableau de bord" active={currentPage === 'dashboard'} onClick={() => navigate('dashboard')} />
-            <div style={{ color: '#475569', fontSize: 11, fontWeight: 600, padding: '12px 8px 4px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Questions</div>
-            <NavItem icon={<FileQuestion size={18} />} label="Gérer Questions" active={currentPage === 'questions'} onClick={() => navigate('questions')} />
-            <NavItem icon={<span style={{ fontSize: 18 }}>✚</span>} label="Créer Question" active={currentPage === 'create-question'} onClick={() => navigate('create-question')} />
-            <NavItem icon={<Upload size={18} />} label="Import en Masse" active={currentPage === 'bulk-import'} onClick={() => navigate('bulk-import')} />
+
+            <div style={{ color: '#475569', fontSize: 11, fontWeight: 600, padding: '12px 8px 4px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Questions QCM</div>
+            <NavItem icon={<FileQuestion size={18} />} label="Gérer les Questions" active={currentPage === 'questions'} onClick={() => navigate('questions')} />
+            <NavItem icon={<Upload size={18} />} label="Import en Masse (CMS QCM)" active={currentPage === 'bulk-import'} onClick={() => navigate('bulk-import')} />
+
             <div style={{ color: '#475569', fontSize: 11, fontWeight: 600, padding: '12px 8px 4px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Contenu</div>
             <NavItem icon={<BookOpen size={18} />} label="Séries" active={currentPage === 'series'} onClick={() => navigate('series')} />
-            <NavItem icon={<Target size={18} />} label="Simulations" active={currentPage === 'simulations'} onClick={() => navigate('simulations')} />
-            <NavItem icon={<FileText size={18} />} label="Import Examens" active={currentPage === 'examens-import'} onClick={() => navigate('examens-import')} />
+            <NavItem icon={<Target size={18} />} label="Simulations & Examens" active={currentPage === 'simulations'} onClick={() => navigate('simulations')} />
+
             <div style={{ color: '#475569', fontSize: 11, fontWeight: 600, padding: '12px 8px 4px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Modération</div>
             <NavItem icon={<Flag size={18} />} label="Signalements" active={currentPage === 'flags'} onClick={() => navigate('flags')} />
             <NavItem icon={<History size={18} />} label="Audit Log" active={currentPage === 'audit-log'} onClick={() => navigate('audit-log')} />
+
             <div style={{ color: '#475569', fontSize: 11, fontWeight: 600, padding: '12px 8px 4px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Communication</div>
-            <NavItem icon={<Newspaper size={18} />} label="Annonces" active={currentPage === 'annonces'} onClick={() => navigate('annonces')} />
+            <NavItem icon={<Newspaper size={18} />} label="Publier une Annonce" active={currentPage === 'annonces'} onClick={() => navigate('annonces')} />
           </nav>
 
           {/* User */}
@@ -167,7 +169,6 @@ export default function App() {
             {currentPage === 'bulk-import' && <BulkImportPage onNavigate={navigate} />}
             {currentPage === 'series' && <SeriesPage onNavigate={navigate} />}
             {currentPage === 'simulations' && <SimulationsPage onNavigate={navigate} />}
-            {currentPage === 'examens-import' && <ExamensImportPage onNavigate={navigate} />}
             {currentPage === 'flags' && <FlagsPage onNavigate={navigate} />}
             {currentPage === 'audit-log' && <AuditLogPage onNavigate={navigate} />}
             {currentPage === 'annonces' && <AnnoncesPage onNavigate={navigate} />}
@@ -204,13 +205,12 @@ function getPageTitle(page: Page): string {
     'questions': '❓ Gestion des questions',
     'create-question': '✚ Créer une question',
     'edit-question': '✏️ Modifier la question',
-    'bulk-import': '📤 Import en masse',
+    'bulk-import': '📤 CMS QCM — Import en masse',
     'series': '📚 Gestion des séries',
-    'simulations': '🎯 Simulations d\'examen',
-    'examens-import': '📝 Import Examens',
+    'simulations': '🎯 Simulations & Examens Types',
     'flags': '🚨 Signalements',
     'audit-log': '📜 Audit & Historique',
-    'annonces': '📢 Gestion des annonces',
+    'annonces': '📢 Publier une annonce',
   };
   return titles[page] ?? 'Admin CMS';
 }

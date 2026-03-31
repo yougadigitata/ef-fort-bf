@@ -211,6 +211,22 @@ export async function runMigration() {
   });
 }
 
+// ── Harmonisation Séries ──────────────────────────────────────
+export async function harmonizeSeries(matiereId?: string, dryRun = false) {
+  return apiCall(`${CMS_BASE}/series/harmonize`, {
+    method: 'POST',
+    body: JSON.stringify({
+      matiere_id: matiereId ?? null,
+      questions_per_serie: 20,
+      dry_run: dryRun,
+    }),
+  });
+}
+
+export async function getMigrationTypeSql() {
+  return apiCall(`${CMS_BASE}/series/migrate-type`, { method: 'POST' });
+}
+
 // ── Admin Stats ──────────────────────────────────────────────
 export async function getAdminStats() {
   return apiCall(`${BASE_URL}/api/admin/stats`);

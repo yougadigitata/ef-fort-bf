@@ -114,11 +114,15 @@ CREATE TABLE IF NOT EXISTS bulk_import_logs (
 CREATE TABLE IF NOT EXISTS simulations_examens (
   id BIGSERIAL PRIMARY KEY, titre VARCHAR(255) NOT NULL, description TEXT,
   duree_minutes INTEGER DEFAULT 90, score_max INTEGER DEFAULT 50,
-  question_ids JSONB DEFAULT '[]', created_by TEXT NOT NULL,
+  question_ids JSONB DEFAULT '[]', created_by TEXT,
   created_at TIMESTAMPTZ DEFAULT now(), updated_at TIMESTAMPTZ DEFAULT now(),
-  published BOOLEAN DEFAULT true, ordre_questions VARCHAR(50) DEFAULT 'random',
-  show_corrections BOOLEAN DEFAULT true, show_score_after BOOLEAN DEFAULT true
+  published BOOLEAN DEFAULT false, ordre_questions VARCHAR(50) DEFAULT 'sequential',
+  show_corrections BOOLEAN DEFAULT true, show_score_after BOOLEAN DEFAULT true,
+  type VARCHAR(50) DEFAULT 'simulation'
 );
+-- Ajouter colonne type si elle n'existe pas
+ALTER TABLE simulations_examens ADD COLUMN IF NOT EXISTS type VARCHAR(50) DEFAULT 'simulation';
+ALTER TABLE simulations_examens ADD COLUMN IF NOT EXISTS questions JSONB DEFAULT '[]';
 
 -- 9. Résultats simulations
 CREATE TABLE IF NOT EXISTS simulation_results (
@@ -1060,13 +1064,13 @@ adminCms.get('/simulations', requireAdmin, async (c) => {
         return c.json({ error: error.message }, 500);
     return c.json({ success: true, simulations: data ?? [] });
 });
-// POST /api/admin-cms/simulations — Créer une simulation
+// POST /api/admin-cms/simulations — Créer une simulation ou examen type
 adminCms.post('/simulations', requireAdmin, async (c) => {
     const adminId = c.get('adminId');
     const body = await c.req.json().catch(() => null);
     if (!body)
         return c.json({ error: 'Corps invalide.' }, 400);
-    const { titre, description, duree_minutes, score_max, questions: questionConfig, ordre_questions, show_corrections, show_score_after } = body;
+    const { titre, description, duree_minutes, score_max, questions: questionConfig, ordre_questions, show_corrections, show_score_after, type: simType, } = body;
     if (!titre)
         return c.json({ error: 'Titre requis.' }, 400);
     const db = getDB(c.env);
@@ -1077,7 +1081,7 @@ adminCms.post('/simulations', requireAdmin, async (c) => {
             if (config.matiere_id && config.count > 0) {
                 const { data: qs } = await db.from('questions')
                     .select('id').eq('matiere_id', config.matiere_id)
-                    .eq('published', true).limit(config.count * 3); // Prendre 3x pour shuffle
+                    .eq('published', true).limit(config.count * 3);
                 const available = qs ?? [];
                 const shuffled = available.sort(() => Math.random() - 0.5).slice(0, config.count);
                 questionIds.push(...shuffled.map((q) => q.id));
@@ -1090,26 +1094,30 @@ adminCms.post('/simulations', requireAdmin, async (c) => {
     else if (Array.isArray(body.question_ids)) {
         questionIds = body.question_ids;
     }
+    // Normaliser le type : 'simulation' (examen blanc) ou 'examen_type' (vrai sujet)
+    const typeNorm = simType === 'examen_type' ? 'examen_type' : 'simulation';
     const { data, error } = await db.from('simulations_examens').insert({
         titre: titre.trim(),
         description: description?.trim() ?? null,
         duree_minutes: duree_minutes ?? 90,
-        score_max: score_max ?? 50,
+        score_max: score_max ?? questionIds.length ?? 50,
         question_ids: JSON.stringify(questionIds),
         created_by: adminId,
-        published: true,
-        ordre_questions: ordre_questions ?? 'random',
+        published: false, // Toujours créer en brouillon, l'admin publie manuellement
+        ordre_questions: ordre_questions ?? (typeNorm === 'simulation' ? 'sequential' : 'sequential'),
         show_corrections: show_corrections !== false,
         show_score_after: show_score_after !== false,
+        type: typeNorm,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
     }).select().single();
     if (error)
         return c.json({ error: error.message }, 500);
-    await logAdminAction(db, adminId, 'create', 'simulation', data.id.toString(), null, { titre, total_questions: questionIds.length }, `Simulation créée: "${titre}"`);
+    await logAdminAction(db, adminId, 'create', 'simulation', data.id.toString(), null, { titre, total_questions: questionIds.length, type: typeNorm }, `${typeNorm === 'examen_type' ? 'Examen Type' : 'Simulation'} créé(e): "${titre}"`);
     return c.json({
         success: true, simulation: data, simulation_id: data.id,
         total_questions: questionIds.length, question_ids: questionIds,
+        type: typeNorm,
     });
 });
 // PUT /api/admin-cms/simulations/:id — Modifier
@@ -1522,7 +1530,7 @@ function parseMdOrTxt(text) {
 // ═══════════════════════════════════════════════════════════════
 // IMPORT EXAMENS — Routes dédiées
 // ═══════════════════════════════════════════════════════════════
-// POST /api/admin-cms/examens/bulk-import — Importer des questions d'examen
+// POST /api/admin-cms/examens/bulk-import — Importer des questions d'examen (simulation ou examen_type)
 adminCms.post('/examens/bulk-import', requireAdmin, async (c) => {
     const adminId = c.get('adminId');
     const db = getDB(c.env);
@@ -1531,6 +1539,7 @@ adminCms.post('/examens/bulk-import', requireAdmin, async (c) => {
     let simulationId = null;
     let titre = '';
     let filename = 'upload';
+    let simType = 'simulation'; // 'simulation' ou 'examen_type'
     try {
         const contentType = c.req.header('content-type') ?? '';
         if (contentType.includes('application/json')) {
@@ -1555,6 +1564,7 @@ adminCms.post('/examens/bulk-import', requireAdmin, async (c) => {
             }
             simulationId = !Array.isArray(body) ? body.simulation_id ?? null : null;
             titre = !Array.isArray(body) ? body.titre ?? '' : '';
+            simType = !Array.isArray(body) ? (body.type ?? 'simulation') : 'simulation';
             filename = 'data.json';
         }
         else if (contentType.includes('multipart/form-data')) {
@@ -1562,6 +1572,7 @@ adminCms.post('/examens/bulk-import', requireAdmin, async (c) => {
             const file = formData.get('file');
             simulationId = formData.get('simulation_id');
             titre = formData.get('titre') ?? '';
+            simType = formData.get('type') ?? 'simulation';
             if (!file)
                 return c.json({ error: 'Fichier requis.' }, 400);
             filename = file.name;
@@ -1570,7 +1581,7 @@ adminCms.post('/examens/bulk-import', requireAdmin, async (c) => {
                 const parsed = JSON.parse(text);
                 questions = Array.isArray(parsed) ? parsed : parsed.questions ?? [];
             }
-            else if (file.name.endsWith('.md') || file.name.endsWith('.txt')) {
+            else if (file.name.endsWith('.md') || file.name.endsWith('.txt') || file.name.endsWith('.markdown')) {
                 questions = parseMdOrTxt(text);
             }
             else {
@@ -1593,20 +1604,26 @@ adminCms.post('/examens/bulk-import', requireAdmin, async (c) => {
     }
     if (!questions.length)
         return c.json({ error: 'Aucune question trouvée.' }, 400);
-    // Créer ou récupérer la simulation
+    // Normaliser le type
+    const typeNorm = simType === 'examen_type' ? 'examen_type' : 'simulation';
+    const typeLabel = typeNorm === 'examen_type' ? 'Examen Type' : 'Simulation';
+    // Créer ou récupérer la simulation/examen_type
     let simId = simulationId;
     if (!simId) {
-        const simTitre = titre || `Examen Import ${new Date().toLocaleDateString('fr-FR')}`;
+        const simTitre = titre || `${typeLabel} — Import ${new Date().toLocaleDateString('fr-FR')} — ${questions.length} questions`;
         const { data: newSim } = await db.from('simulations_examens').insert({
             titre: simTitre,
-            description: `Import automatique de ${questions.length} questions`,
-            duree_minutes: 90,
+            description: `Import automatique · ${typeLabel} · ${questions.length} questions`,
+            duree_minutes: typeNorm === 'simulation' ? 90 : 90,
             score_max: questions.length,
-            published: false, // Publier manuellement après vérification
-            ordre_questions: 'random',
+            published: false, // Brouillon — publier manuellement
+            ordre_questions: 'sequential', // Pour les examens : ordre original des questions
             show_corrections: true,
             show_score_after: true,
+            type: typeNorm,
+            created_by: adminId,
             created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
         }).select('id').single();
         simId = newSim?.id?.toString() ?? null;
     }
@@ -1698,5 +1715,152 @@ adminCms.get('/examens', requireAdmin, async (c) => {
         return { ...sim, nb_questions_examen: count ?? 0 };
     }));
     return c.json({ success: true, examens: enriched });
+});
+// ═══════════════════════════════════════════════════════════════
+// HARMONISATION DES SÉRIES
+// Restructure les séries pour avoir exactement 20 questions
+// (ou 50 pour les simulations). Évite les séries partielles.
+// ═══════════════════════════════════════════════════════════════
+// POST /api/admin-cms/series/harmonize — Harmoniser les séries d'une matière
+adminCms.post('/series/harmonize', requireAdmin, async (c) => {
+    const adminId = c.get('adminId');
+    const body = await c.req.json().catch(() => ({}));
+    const { matiere_id, questions_per_serie = 20, dry_run = false } = body;
+    const db = getDB(c.env);
+    const results = [];
+    // Récupérer les matières à traiter
+    let matiereIds = [];
+    if (matiere_id) {
+        matiereIds = [matiere_id];
+    }
+    else {
+        const { data: mats } = await db.from('matieres').select('id, nom').order('ordre');
+        matiereIds = (mats ?? []).map((m) => m.id);
+    }
+    for (const mid of matiereIds) {
+        // Récupérer toutes les questions de cette matière (dans l'ordre de création)
+        const { data: allQuestions } = await db.from('questions')
+            .select('id, serie_id, numero')
+            .eq('matiere_id', mid)
+            .eq('published', true)
+            .order('numero', { ascending: true });
+        if (!allQuestions || allQuestions.length === 0)
+            continue;
+        const { data: matInfo } = await db.from('matieres').select('nom').eq('id', mid).single();
+        const matNom = matInfo?.nom ?? 'Matière';
+        // Récupérer les séries existantes de cette matière
+        const { data: existingSeries } = await db.from('series_qcm')
+            .select('id, numero, nb_questions')
+            .eq('matiere_id', mid)
+            .eq('actif', true)
+            .order('numero', { ascending: true });
+        const totalQ = allQuestions.length;
+        const nbSeriesNeeded = Math.ceil(totalQ / questions_per_serie);
+        // Calculer combien de séries existent déjà et lesquelles sont complètes
+        const seriesExist = existingSeries ?? [];
+        const seriesCompletes = seriesExist.filter((s) => s.nb_questions >= questions_per_serie);
+        const seriesIncompletes = seriesExist.filter((s) => s.nb_questions < questions_per_serie);
+        results.push({
+            matiere_id: mid,
+            matiere: matNom,
+            total_questions: totalQ,
+            series_actuelles: seriesExist.length,
+            series_completes: seriesCompletes.length,
+            series_incompletes: seriesIncompletes.length,
+            series_necessaires: nbSeriesNeeded,
+        });
+        if (dry_run)
+            continue;
+        // Réorganiser : assigner les questions aux séries dans l'ordre
+        // Étape 1 : désassigner toutes les questions (series_id = null)
+        const questionIds = allQuestions.map((q) => q.id);
+        // Traiter par batch de 500
+        for (let i = 0; i < questionIds.length; i += 500) {
+            await db.from('questions')
+                .update({ serie_id: null })
+                .in('id', questionIds.slice(i, i + 500));
+        }
+        // Étape 2 : supprimer les séries incomplètes (on va les recréer proprement)
+        if (seriesIncompletes.length > 0) {
+            const incompleteIds = seriesIncompletes.map((s) => s.id);
+            await db.from('series_qcm').delete().in('id', incompleteIds);
+        }
+        // Étape 3 : réassigner les questions aux séries en paquets de 20
+        let serieIndex = 0;
+        const seriesIds = seriesCompletes.map((s) => s.id);
+        for (let i = 0; i < allQuestions.length; i += questions_per_serie) {
+            const chunk = allQuestions.slice(i, i + questions_per_serie);
+            let serieId;
+            if (serieIndex < seriesIds.length) {
+                // Réutiliser une série existante complète
+                serieId = seriesIds[serieIndex];
+            }
+            else {
+                // Créer une nouvelle série
+                const newNum = (seriesCompletes[seriesCompletes.length - 1]?.numero ?? 0) + (serieIndex - seriesCompletes.length + 1);
+                const { data: newSerie } = await db.from('series_qcm').insert({
+                    titre: `Série ${String(newNum).padStart(2, '0')} — ${matNom}`,
+                    matiere_id: mid,
+                    numero: newNum,
+                    nb_questions: 0,
+                    niveau: 'INTERMEDIAIRE',
+                    duree_minutes: 20,
+                    actif: true,
+                    published: true,
+                    est_demo: false,
+                    created_by: adminId,
+                    created_at: new Date().toISOString(),
+                }).select('id').single();
+                serieId = newSerie?.id ?? '';
+                seriesIds.push(serieId);
+            }
+            if (!serieId) {
+                serieIndex++;
+                continue;
+            }
+            // Assigner les questions à cette série
+            const chunkIds = chunk.map((q) => q.id);
+            for (let j = 0; j < chunkIds.length; j += 200) {
+                await db.from('questions')
+                    .update({ serie_id: serieId })
+                    .in('id', chunkIds.slice(j, j + 200));
+            }
+            // Mettre à jour nb_questions
+            await db.from('series_qcm')
+                .update({ nb_questions: chunk.length, updated_at: new Date().toISOString() })
+                .eq('id', serieId);
+            serieIndex++;
+        }
+    }
+    await logAdminAction(db, adminId, 'harmonize_series', 'serie', 'all', null, { matieres_traitees: matiereIds.length, dry_run }, `Harmonisation séries: ${matiereIds.length} matière(s) traitée(s)`);
+    return c.json({
+        success: true,
+        dry_run,
+        matieres_traitees: matiereIds.length,
+        details: results,
+        message: dry_run
+            ? `Simulation : ${results.length} matières analysées`
+            : `✅ Séries harmonisées pour ${matiereIds.length} matière(s)`,
+    });
+});
+// POST /api/admin-cms/series/migrate-type — SQL migration pour ajouter colonne type
+adminCms.post('/series/migrate-type', requireAdmin, async (c) => {
+    const sql = `
+-- Ajouter colonne type dans simulations_examens (si manquante)
+ALTER TABLE simulations_examens
+  ADD COLUMN IF NOT EXISTS type VARCHAR(50) DEFAULT 'simulation';
+
+-- Indexer pour filtrage rapide
+CREATE INDEX IF NOT EXISTS idx_simulations_type ON simulations_examens(type);
+
+-- Mettre à jour les existantes (sans type = simulation par défaut)
+UPDATE simulations_examens SET type = 'simulation' WHERE type IS NULL;
+  `;
+    return c.json({
+        success: true,
+        message: '📋 Exécutez ce SQL dans Supabase pour ajouter la colonne type :',
+        sql,
+        url: 'https://supabase.com/dashboard/project/xqifdbgqxyrlhrkwlyir/sql/new',
+    });
 });
 export default adminCms;
