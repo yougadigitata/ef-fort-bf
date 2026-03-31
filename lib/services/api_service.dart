@@ -400,6 +400,70 @@ class ApiService {
     }
   }
 
+  /// Supprimer N'IMPORTE QUEL statut (admin seulement)
+  static Future<bool> adminSupprimerStatut(String statutId) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$apiBase/statuts/$statutId/admin'),
+        headers: _headers,
+      ).timeout(const Duration(seconds: 10));
+      return response.statusCode == 200 || response.statusCode == 204;
+    } catch (e) {
+      if (kDebugMode) debugPrint('adminSupprimerStatut error: $e');
+      return false;
+    }
+  }
+
+  /// Récupérer TOUTES les actualités (y compris inactives) pour l'admin
+  static Future<List<Map<String, dynamic>>> getActualitesAdmin() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$apiBase/actualites'),
+        headers: _headers,
+      ).timeout(const Duration(seconds: 10));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final list = data['actualites'] as List? ?? [];
+        return list.map((e) => e as Map<String, dynamic>).toList();
+      }
+      return [];
+    } catch (e) {
+      if (kDebugMode) debugPrint('getActualitesAdmin error: $e');
+      return [];
+    }
+  }
+
+  /// Supprimer une actualité (admin seulement)
+  static Future<bool> supprimerActualite(String id) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$apiBase/actualites/$id'),
+        headers: _headers,
+      ).timeout(const Duration(seconds: 10));
+      return response.statusCode == 200 || response.statusCode == 204;
+    } catch (e) {
+      if (kDebugMode) debugPrint('supprimerActualite error: $e');
+      return false;
+    }
+  }
+
+  /// Modifier une actualité (admin seulement)
+  static Future<Map<String, dynamic>> modifierActualite(String id, Map<String, dynamic> data) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$apiBase/actualites/$id'),
+        headers: _headers,
+        body: jsonEncode(data),
+      ).timeout(const Duration(seconds: 10));
+      final resp = jsonDecode(response.body) as Map<String, dynamic>;
+      if (response.statusCode == 200) return {'success': true, ...resp};
+      return {'error': resp['error'] ?? 'Erreur'};
+    } catch (e) {
+      if (kDebugMode) debugPrint('modifierActualite error: $e');
+      return {'error': 'Erreur de connexion.'};
+    }
+  }
+
   // ══════════════════════════════════════════════════════════════
   // SIMULATIONS D'EXAMEN — Créées par l'admin, disponibles pour tous
   // ══════════════════════════════════════════════════════════════

@@ -234,10 +234,13 @@ class _SerieSelectionScreenState extends State<SerieSelectionScreen> {
     final nbQ = serie['nb_questions'] ?? 20;
     final duree = serie['duree_minutes'] ?? 45;
     final isDemo = serie['est_demo'] == true;
+    // Freemium : seule la 1ère série (index 0) est gratuite pour tous
+    final isFreeAllowed = index == 0;
+    final isLocked = !ApiService.isAbonne && !isDemo && !isFreeAllowed;
 
     return GestureDetector(
       onTap: () {
-        if (!ApiService.isAbonne && !isDemo) {
+        if (isLocked) {
           // Montrer bannière premium
           _showPremiumDialog();
           return;
@@ -352,8 +355,10 @@ class _SerieSelectionScreenState extends State<SerieSelectionScreen> {
                       const SizedBox(width: 8),
                       _infoChip(Icons.timer_outlined, '$duree min'),
                       const SizedBox(width: 8),
-                      if (!ApiService.isAbonne && !isDemo)
+                      if (isLocked)
                         _infoChip(Icons.lock_outline, 'Premium', color: Colors.orange),
+                      if (isFreeAllowed && !ApiService.isAbonne && !isDemo)
+                        _infoChip(Icons.lock_open_outlined, 'Gratuit', color: _waGreen),
                     ],
                   ),
                 ],
@@ -363,7 +368,7 @@ class _SerieSelectionScreenState extends State<SerieSelectionScreen> {
             // Flèche
             Icon(
               Icons.chevron_right_rounded,
-              color: (!ApiService.isAbonne && !isDemo)
+              color: isLocked
                   ? Colors.orange
                   : _waGreen,
               size: 24,

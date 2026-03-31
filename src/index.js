@@ -148,10 +148,68 @@ app.delete('/api/statuts/:id', async (c) => {
 app.get('/api/actualites', async (c) => {
     const db = getDB(c.env);
     const { data, error } = await db.from('actualites')
-        .select('*').eq('actif', true).order('created_at', { ascending: false }).limit(20);
+        .select('*').eq('actif', true).order('created_at', { ascending: false }).limit(50);
     if (error)
         return c.json({ error: error.message }, 500);
     return c.json({ success: true, actualites: data });
+});
+// ── PUT /api/actualites/:id — Modifier une actualité (admin seulement) ──
+app.put('/api/actualites/:id', async (c) => {
+    const h = c.req.header('Authorization');
+    if (!h?.startsWith('Bearer '))
+        return c.json({ error: 'Auth requise.' }, 401);
+    const payload = await verifyJWT(h.slice(7));
+    if (!payload || !payload['is_admin'])
+        return c.json({ error: 'Admin requis.' }, 403);
+    const id = c.req.param('id');
+    const body = await c.req.json().catch(() => null);
+    if (!body)
+        return c.json({ error: 'Corps invalide.' }, 400);
+    const db = getDB(c.env);
+    const updateData = {};
+    if (body['titre'])
+        updateData['titre'] = String(body['titre']).trim();
+    if (body['contenu'])
+        updateData['contenu'] = String(body['contenu']).trim();
+    if (body['categorie'])
+        updateData['categorie'] = body['categorie'];
+    if ('actif' in body)
+        updateData['actif'] = Boolean(body['actif']);
+    const { error } = await db.from('actualites').update(updateData).eq('id', id);
+    if (error)
+        return c.json({ error: error.message }, 500);
+    return c.json({ success: true, message: 'Actualité mise à jour.' });
+});
+// ── DELETE /api/actualites/:id — Supprimer une actualité (admin seulement) ──
+app.delete('/api/actualites/:id', async (c) => {
+    const h = c.req.header('Authorization');
+    if (!h?.startsWith('Bearer '))
+        return c.json({ error: 'Auth requise.' }, 401);
+    const payload = await verifyJWT(h.slice(7));
+    if (!payload || !payload['is_admin'])
+        return c.json({ error: 'Admin requis.' }, 403);
+    const id = c.req.param('id');
+    const db = getDB(c.env);
+    // Soft delete (marquer inactif au lieu de supprimer)
+    const { error } = await db.from('actualites').update({ actif: false }).eq('id', id);
+    if (error)
+        return c.json({ error: error.message }, 500);
+    return c.json({ success: true, message: 'Actualité supprimée.' });
+});
+// ── DELETE /api/statuts/:id/admin — Supprimer TOUT statut (admin seulement) ──
+app.delete('/api/statuts/:id/admin', async (c) => {
+    const h = c.req.header('Authorization');
+    if (!h?.startsWith('Bearer '))
+        return c.json({ error: 'Auth requise.' }, 401);
+    const payload = await verifyJWT(h.slice(7));
+    if (!payload || !payload['is_admin'])
+        return c.json({ error: 'Admin requis.' }, 403);
+    const id = c.req.param('id');
+    const db = getDB(c.env);
+    const { error } = await db.from('messages_entraide').update({ actif: false }).eq('id', id);
+    if (error)
+        return c.json({ error: error.message }, 500);
+    return c.json({ success: true });
 });
 // ── GET /api/examens — Les 10 examens professionnels ──
 app.get('/api/examens', async (c) => {
@@ -403,9 +461,9 @@ app.post('/api/exam-resultats', async (c) => {
 app.get('/api/health', (c) => c.json({
     status: 'ok',
     app: 'EF-FORT.BF API',
-    version: '5.0.0',
+    version: '7.0.0',
     timestamp: new Date().toISOString(),
-    features: ['16-matieres', '10-examens', 'simulation-v3', 'examens-blancs', 'pdf-export', 'entraide', 'simulations-admin'],
+    features: ['18-matieres', '1629-questions', 'simulation-v3', 'examens-blancs', 'pdf-export', 'entraide', 'simulations-admin', 'freemium-v2', 'annonces-crud', 'admin-delete'],
 }));
 // ── GET /api/simulations-admin — Simulations publiées par l'admin (pour les utilisateurs) ──
 app.get('/api/simulations-admin', async (c) => {

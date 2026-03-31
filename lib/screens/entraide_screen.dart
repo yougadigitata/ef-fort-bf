@@ -506,6 +506,7 @@ class _EntraideScreenState extends State<EntraideScreen> {
     final isAdminPost = s['is_admin'] == true || s['is_admin'] == 1;
     final currentUserId = ApiService.currentUser?['id']?.toString() ?? '';
     final isMyPost = userId == currentUserId;
+    final iAmAdmin = ApiService.isAdmin; // L'admin peut supprimer n'importe quel statut
 
     // Calculer l'expiration
     DateTime? expiration;
@@ -666,6 +667,41 @@ class _EntraideScreenState extends State<EntraideScreen> {
                     _formatDateRestant(expiration),
                     style: TextStyle(fontSize: 10, color: Colors.grey[400]),
                   ),
+                  const Spacer(),
+                  // Bouton supprimer pour l'admin (tous les statuts)
+                  if (iAmAdmin && !isMyPost) ...[
+                    GestureDetector(
+                      onTap: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Supprimer ce statut ?'),
+                            content: const Text('Ce statut sera supprimé définitivement.'),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annuler')),
+                              ElevatedButton(onPressed: () => Navigator.pop(ctx, true), style: ElevatedButton.styleFrom(backgroundColor: Colors.red), child: const Text('Supprimer', style: TextStyle(color: Colors.white))),
+                            ],
+                          ),
+                        );
+                        if (confirm == true) {
+                          final ok = await ApiService.adminSupprimerStatut(s['id']?.toString() ?? '');
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(ok ? 'Statut supprimé' : 'Erreur'), backgroundColor: ok ? Colors.green : Colors.red));
+                            if (ok) setState(() => _statuts.removeWhere((st) => st['id'] == s['id']));
+                          }
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
+                        child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                          Icon(Icons.delete_outline_rounded, size: 12, color: Colors.red),
+                          SizedBox(width: 3),
+                          Text('Suppr.', style: TextStyle(fontSize: 10, color: Colors.red, fontWeight: FontWeight.w700)),
+                        ]),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ],

@@ -28,7 +28,7 @@ class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStat
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
     _loadData();
   }
 
@@ -80,6 +80,7 @@ class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStat
             Tab(text: 'Stats', icon: Icon(Icons.bar_chart_rounded, size: 18)),
             Tab(text: 'Demandes', icon: Icon(Icons.pending_actions_rounded, size: 18)),
             Tab(text: 'Publier', icon: Icon(Icons.add_circle_outline_rounded, size: 18)),
+            Tab(text: 'Annonces', icon: Icon(Icons.newspaper_rounded, size: 18)),
             Tab(text: 'CMS QCM', icon: Icon(Icons.quiz_rounded, size: 18)),
           ],
         ),
@@ -90,6 +91,7 @@ class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStat
           _buildStatsTab(),
           _buildDemandesTab(),
           _buildAddTab(),
+          _buildAnnoncesTab(),
           const CmsQcmTab(),
         ],
       ),
@@ -235,6 +237,8 @@ class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStat
       ]),
     );
   }
+
+  Widget _buildAnnoncesTab() => const _AnnoncesTab();
 
   Widget _buildAddCard(String title, IconData icon, Color color, VoidCallback onTap) {
     return GestureDetector(
@@ -463,6 +467,113 @@ class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStat
       ),
     );
   }
+}
+
+// ══════════════════════════════════════════════════════════════
+// ONGLET ANNONCES — Gestion CRUD des actualités admin
+// ══════════════════════════════════════════════════════════════
+class _AnnoncesTabState extends State<_AnnoncesTab> {
+  List<Map<String, dynamic>> _annonces = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAnnonces();
+  }
+
+  Future<void> _loadAnnonces() async {
+    setState(() => _loading = true);
+    final list = await ApiService.getActualitesAdmin();
+    if (mounted) setState(() { _annonces = list; _loading = false; });
+  }
+
+  Future<void> _deleteAnnonce(String id) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Supprimer ?'),
+        content: const Text('Cette actualité sera masquée pour tous les utilisateurs.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annuler')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Supprimer', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+    final ok = await ApiService.supprimerActualite(id);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(ok ? '✅ Actualité supprimée' : '❌ Erreur lors de la suppression'), backgroundColor: ok ? Colors.green : Colors.red),
+      );
+      if (ok) _loadAnnonces();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) return const Center(child: CircularProgressIndicator());
+    return RefreshIndicator(
+      onRefresh: _loadAnnonces,
+      child: _annonces.isEmpty
+        ? Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            const Icon(Icons.newspaper_outlined, size: 48, color: Colors.grey),
+            const SizedBox(height: 12),
+            const Text('Aucune actualité publiée', style: TextStyle(color: Colors.grey)),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(onPressed: _loadAnnonces, icon: const Icon(Icons.refresh), label: const Text('Recharger')),
+          ]))
+        : ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: _annonces.length,
+            itemBuilder: (_, i) {
+              final a = _annonces[i];
+              final titre = a['titre']?.toString() ?? 'Sans titre';
+              final contenu = a['contenu']?.toString() ?? '';
+              final date = a['created_at']?.toString() ?? '';
+              return Card(
+                margin: const EdgeInsets.only(bottom: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+                  leading: Container(
+                    width: 42, height: 42,
+                    decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), shape: BoxShape.circle),
+                    child: const Icon(Icons.newspaper_rounded, color: AppColors.primary, size: 20),
+                  ),
+                  title: Text(titre, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(contenu, style: const TextStyle(fontSize: 12, color: Colors.grey), maxLines: 2, overflow: TextOverflow.ellipsis),
+                    if (date.isNotEmpty) Text(_formatDate(date), style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                  ]),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete_rounded, color: Colors.red, size: 22),
+                    onPressed: () => _deleteAnnonce(a['id']?.toString() ?? ''),
+                    tooltip: 'Supprimer',
+                  ),
+                ),
+              );
+            },
+          ),
+    );
+  }
+
+  String _formatDate(String dateStr) {
+    try {
+      final dt = DateTime.parse(dateStr).toLocal();
+      return '${dt.day.toString().padLeft(2,'0')}/${dt.month.toString().padLeft(2,'0')}/${dt.year} à ${dt.hour.toString().padLeft(2,'0')}h${dt.minute.toString().padLeft(2,'0')}';
+    } catch (_) { return dateStr.substring(0, 10); }
+  }
+}
+
+class _AnnoncesTab extends StatefulWidget {
+  const _AnnoncesTab();
+  @override
+  State<_AnnoncesTab> createState() => _AnnoncesTabState();
 }
 
 // ══════════════════════════════════════════════════════════════

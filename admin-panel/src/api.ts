@@ -215,3 +215,26 @@ export async function runMigration() {
 export async function getAdminStats() {
   return apiCall(`${BASE_URL}/api/admin/stats`);
 }
+
+// ── Actualités / Annonces ──────────────────────────────────────
+export async function getActualites() {
+  return apiCall(`${BASE_URL}/api/actualites`);
+}
+
+export async function deleteActualite(id: string) {
+  return apiCall(`${BASE_URL}/api/actualites/${id}`, { method: 'DELETE' });
+}
+
+export async function updateActualite(id: string, data: Record<string, unknown>) {
+  return apiCall(`${BASE_URL}/api/actualites/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function createActualite(data: { titre: string; contenu: string; categorie?: string }) {
+  return apiCall(`${BASE_URL}/api/admin/actualites`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}

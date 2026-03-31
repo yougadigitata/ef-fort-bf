@@ -134,6 +134,25 @@ questions.get('/questions', async (c) => {
 questions.get('/series', async (c) => {
     const matiereId = c.req.query('matiere_id');
     const db = getDB(c.env);
+    // Vérification abonnement pour restreindre côté serveur (anti-bypass)
+    let isAbonne = false;
+    let isAdmin = false;
+    const authHeader = c.req.header('Authorization');
+    if (authHeader?.startsWith('Bearer ')) {
+        try {
+            const { verifyJWT } = await import('../lib/auth');
+            const payload = await verifyJWT(authHeader.slice(7));
+            if (payload) {
+                const { data: profile } = await db.from('profiles')
+                    .select('abonnement_actif, is_admin')
+                    .eq('id', payload['id'])
+                    .single();
+                isAbonne = profile?.abonnement_actif === true;
+                isAdmin = profile?.is_admin === true || payload['is_admin'] === true;
+            }
+        }
+        catch (_) { }
+    }
     let query = db.from('series_qcm')
         .select('id, matiere_id, titre, numero, niveau, duree_minutes, nb_questions, est_demo, actif')
         .eq('actif', true)
@@ -145,9 +164,15 @@ questions.get('/series', async (c) => {
     const { data, error } = await query.limit(2000);
     if (error)
         return c.json({ error: error.message }, 500);
+    // Marquer les séries verrouillées pour les non-abonnés (la 1ère est toujours gratuite)
+    const series = (data ?? []).map((s, index) => ({
+        ...s,
+        locked: !isAbonne && !isAdmin && !s.est_demo && index > 0,
+        is_free: index === 0 || s.est_demo,
+    }));
     // Pas de cache sur les séries
     c.header('Cache-Control', 'no-store, no-cache, must-revalidate');
-    return c.json({ success: true, series: data ?? [] });
+    return c.json({ success: true, series });
 });
 // ── GET /api/questions/count — Compter les questions par matière ─
 questions.get('/questions/count', async (c) => {
