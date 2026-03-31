@@ -1,12 +1,29 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
   <base href="/">
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="EF-FORT.BF - Preparation aux concours directs de la Fonction Publique du Burkina Faso">
+  <meta name="description" content="EF-FORT.BF — La plateforme N°1 d'apprentissage et d'éducation au Burkina Faso. Préparez vos concours de la Fonction Publique.">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#1A5C38">
+  <meta name="keywords" content="concours Burkina Faso, fonction publique, EF-FORT, éducation, apprentissage, QCM, préparation concours">
+  <meta name="author" content="EF-FORT.BF">
+  <meta name="robots" content="index, follow">
+
+  <!-- Open Graph / Social Media -->
+  <meta property="og:title" content="EF-FORT.BF — La plateforme N°1 d'apprentissage au Burkina Faso">
+  <meta property="og:description" content="Préparez vos concours de la Fonction Publique du Burkina Faso avec EF-FORT : QCM, simulations, entraide et bien plus.">
+  <meta property="og:image" content="icons/Icon-512.png">
+  <meta property="og:url" content="https://ef-fort-bf.pages.dev">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="fr_BF">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="EF-FORT.BF — N°1 de l'éducation au Burkina Faso">
+  <meta name="twitter:description" content="Préparez vos concours avec la plateforme N°1 d'apprentissage au Burkina Faso">
+  <meta name="twitter:image" content="icons/Icon-512.png">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
@@ -14,74 +31,327 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="EF-FORT">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="icons/Icon-192.png">
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <!-- Favicon avec le LOGO de l'app bien visible -->
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/Icon-512.png"/>
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/Icon-192.png"/>
+  <link rel="icon" type="image/png" href="icons/Icon-192.png"/>
+  <link rel="shortcut icon" href="icons/Icon-192.png"/>
 
-  <title>EF-FORT.BF - Concours Burkina Faso</title>
+  <title>EF-FORT.BF — La plateforme N°1 d'apprentissage au Burkina Faso</title>
   <link rel="manifest" href="manifest.json">
 
   <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      margin: 0;
-      padding: 0;
       background-color: #1A5C38;
       overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
+
+    /* ── Écran de chargement ── */
     .loading {
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      background: linear-gradient(180deg, #1A5C38 0%, #0E3D24 100%);
+      background: linear-gradient(160deg, #1A5C38 0%, #0E3D24 50%, #071F12 100%);
+      position: relative;
+      overflow: hidden;
     }
-    .loading img {
+
+    /* Effet de particules animées (style éducatif/gamifié) */
+    .particles {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .particle {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(212,160,23,0.4);
+      animation: float-up linear infinite;
+    }
+    .particle:nth-child(1) { left: 10%; animation-duration: 8s; animation-delay: 0s; }
+    .particle:nth-child(2) { left: 25%; animation-duration: 10s; animation-delay: 1s; width:4px; height:4px; }
+    .particle:nth-child(3) { left: 40%; animation-duration: 7s; animation-delay: 2s; }
+    .particle:nth-child(4) { left: 60%; animation-duration: 9s; animation-delay: 0.5s; width:8px; height:8px; }
+    .particle:nth-child(5) { left: 75%; animation-duration: 6s; animation-delay: 1.5s; }
+    .particle:nth-child(6) { left: 88%; animation-duration: 11s; animation-delay: 3s; width:5px; height:5px; }
+
+    @keyframes float-up {
+      0% { bottom: -10px; opacity: 0; transform: translateX(0) rotate(0deg); }
+      10% { opacity: 0.7; }
+      90% { opacity: 0.4; }
+      100% { bottom: 110%; opacity: 0; transform: translateX(20px) rotate(360deg); }
+    }
+
+    .loading-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 10;
+      padding: 20px;
+      text-align: center;
+    }
+
+    /* Logo principal */
+    .logo-container {
       width: 120px;
       height: 120px;
-      border-radius: 20px;
+      border-radius: 28px;
       background: white;
       padding: 8px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 0 3px rgba(212,160,23,0.3);
+      margin-bottom: 20px;
+      animation: logo-pulse 2s ease-in-out infinite;
+      overflow: hidden;
     }
-    .loading p {
+
+    .logo-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 20px;
+    }
+
+    @keyframes logo-pulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 0 3px rgba(212,160,23,0.3); }
+      50% { transform: scale(1.03); box-shadow: 0 12px 40px rgba(0,0,0,0.35), 0 0 0 6px rgba(212,160,23,0.2); }
+    }
+
+    .app-name {
+      color: #FFFFFF;
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      margin-bottom: 8px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+
+    .app-slogan {
       color: #D4A017;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      font-size: 14px;
-      margin-top: 20px;
-      letter-spacing: 1px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+      background: rgba(212,160,23,0.15);
+      padding: 6px 16px;
+      border-radius: 20px;
+      border: 1px solid rgba(212,160,23,0.3);
     }
+
+    .app-tagline {
+      color: rgba(255,255,255,0.65);
+      font-size: 12px;
+      margin-bottom: 30px;
+      font-style: italic;
+    }
+
+    .spinner-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
     .spinner {
-      width: 28px;
-      height: 28px;
-      margin-top: 16px;
-      border: 3px solid rgba(212,160,23,0.3);
+      width: 36px;
+      height: 36px;
+      border: 3px solid rgba(212,160,23,0.2);
       border-top: 3px solid #D4A017;
       border-radius: 50%;
-      animation: spin 1s linear infinite;
+      animation: spin 0.9s linear infinite;
     }
+
     @keyframes spin {
       to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      color: rgba(255,255,255,0.55);
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* ── Bannière d'installation PWA ── */
+    #pwa-install-banner {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(135deg, #1A5C38, #0E3D24);
+      color: white;
+      padding: 16px 20px;
+      z-index: 99999;
+      border-top: 2px solid #D4A017;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+      animation: slide-up 0.4s ease-out;
+    }
+
+    @keyframes slide-up {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .pwa-banner-inner {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .pwa-banner-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      background: white;
+      padding: 4px;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .pwa-banner-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .pwa-banner-text {
+      flex: 1;
+    }
+
+    .pwa-banner-title {
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 2px;
+    }
+
+    .pwa-banner-subtitle {
+      font-size: 11px;
+      color: rgba(255,255,255,0.75);
+    }
+
+    .pwa-banner-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .pwa-btn-install {
+      background: #D4A017;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .pwa-btn-dismiss {
+      background: transparent;
+      color: rgba(255,255,255,0.6);
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    /* Bouton flottant install (iOS / desktop) */
+    #pwa-float-btn {
+      display: none;
+      position: fixed;
+      bottom: 24px;
+      right: 20px;
+      background: linear-gradient(135deg, #1A5C38, #0E3D24);
+      color: white;
+      border: 2px solid #D4A017;
+      border-radius: 50px;
+      padding: 12px 20px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      z-index: 99999;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      animation: bounce-in 0.5s ease-out 3s both;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    @keyframes bounce-in {
+      0% { transform: scale(0); opacity: 0; }
+      60% { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
     }
   </style>
 </head>
 <body>
+
+  <!-- Écran de chargement stylisé -->
   <div class="loading" id="loading">
-    <img src="icons/Icon-192.png" alt="EF-FORT.BF">
-    <p>Chargement...</p>
-    <div class="spinner"></div>
+    <div class="particles">
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+      <div class="particle"></div>
+    </div>
+
+    <div class="loading-content">
+      <div class="logo-container">
+        <img src="icons/Icon-512.png" alt="EF-FORT.BF" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1A5C38,#0E3D24);border-radius:20px\'><div style=\'text-align:center\'><div style=\'font-size:36px\'>🎓</div><div style=\'color:white;font-size:12px;font-weight:900\'>EF-FORT</div></div></div>'">
+      </div>
+      <div class="app-name">EF-FORT.BF</div>
+      <div class="app-slogan">🏆 Plateforme N°1 d'apprentissage et d'éducation au Burkina Faso</div>
+      <div class="app-tagline">Transformer l'effort en réussite</div>
+      <div class="spinner-container">
+        <div class="spinner"></div>
+        <div class="loading-text">Chargement en cours...</div>
+      </div>
+    </div>
   </div>
-  <!-- ════════════════════════════════════════════════════
-       EF-FORT.BF — Web Audio API : Cloche sonore examen
-       Fonctions appelées depuis Flutter via js_interop
-       ════════════════════════════════════════════════════ -->
+
+  <!-- Bannière d'installation PWA (Android Chrome) -->
+  <div id="pwa-install-banner">
+    <div class="pwa-banner-inner">
+      <div class="pwa-banner-icon">
+        <img src="icons/Icon-192.png" alt="EF-FORT">
+      </div>
+      <div class="pwa-banner-text">
+        <div class="pwa-banner-title">📲 Installer EF-FORT.BF</div>
+        <div class="pwa-banner-subtitle">Accès rapide depuis votre écran d'accueil</div>
+      </div>
+      <div class="pwa-banner-actions">
+        <button class="pwa-btn-install" id="pwa-install-btn">Installer</button>
+        <button class="pwa-btn-dismiss" id="pwa-dismiss-btn">✕</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script Web Audio API (cloches d'examen) -->
   <script>
     // ── Cloche sonore via Web Audio API ──
     window.effortPlayBell = function(frequency, durationSec) {
       try {
         var ctx = new (window.AudioContext || window.webkitAudioContext)();
-        
-        // Oscillateur principal (fondamentale)
+
         var osc1 = ctx.createOscillator();
         var gainNode1 = ctx.createGain();
         osc1.type = 'sine';
@@ -90,8 +360,7 @@
         gainNode1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + durationSec);
         osc1.connect(gainNode1);
         gainNode1.connect(ctx.destination);
-        
-        // Harmonique (octave supérieure pour la brillance)
+
         var osc2 = ctx.createOscillator();
         var gainNode2 = ctx.createGain();
         osc2.type = 'sine';
@@ -100,33 +369,86 @@
         gainNode2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + durationSec * 0.7);
         osc2.connect(gainNode2);
         gainNode2.connect(ctx.destination);
-        
+
         osc1.start(ctx.currentTime);
         osc1.stop(ctx.currentTime + durationSec);
         osc2.start(ctx.currentTime);
         osc2.stop(ctx.currentTime + durationSec * 0.7);
-        
-        // Libérer le contexte après la fin
-        setTimeout(function() { 
-          try { ctx.close(); } catch(e) {} 
+
+        setTimeout(function() {
+          try { ctx.close(); } catch(e) {}
         }, (durationSec + 0.5) * 1000);
-        
+
       } catch(e) {
-        console.warn('EF-FORT Bell error:', e);
+        console.warn('EF-FORT Bell:', e);
       }
     };
 
-    // ── Double cloche (fin d'examen) ──
     window.effortPlayDoubleBell = function() {
       window.effortPlayBell(880, 1.5);
       setTimeout(function() { window.effortPlayBell(660, 2.0); }, 800);
     };
 
+    // ── Masquer le chargement quand Flutter est prêt ──
     window.addEventListener('flutter-first-frame', function () {
       var loading = document.getElementById('loading');
-      if (loading) loading.remove();
+      if (loading) {
+        loading.style.transition = 'opacity 0.5s ease';
+        loading.style.opacity = '0';
+        setTimeout(function() { loading.remove(); }, 500);
+      }
+    });
+
+    // ── PWA Install Logic ──
+    var deferredPrompt = null;
+    var installBanner = document.getElementById('pwa-install-banner');
+    var installBtn = document.getElementById('pwa-install-btn');
+    var dismissBtn = document.getElementById('pwa-dismiss-btn');
+
+    // Vérifier si déjà installée ou déjà refusée
+    var pwaStatus = localStorage.getItem('pwa_install_dismissed');
+
+    window.addEventListener('beforeinstallprompt', function(e) {
+      e.preventDefault();
+      deferredPrompt = e;
+
+      // Afficher la bannière seulement si pas encore refusée
+      if (!pwaStatus && installBanner) {
+        setTimeout(function() {
+          installBanner.style.display = 'block';
+        }, 3000); // Attendre 3s après le chargement de l'app
+      }
+    });
+
+    if (installBtn) {
+      installBtn.addEventListener('click', function() {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then(function(choiceResult) {
+            if (choiceResult.outcome === 'accepted') {
+              localStorage.setItem('pwa_install_dismissed', 'installed');
+            }
+            deferredPrompt = null;
+            if (installBanner) installBanner.style.display = 'none';
+          });
+        }
+      });
+    }
+
+    if (dismissBtn) {
+      dismissBtn.addEventListener('click', function() {
+        if (installBanner) installBanner.style.display = 'none';
+        localStorage.setItem('pwa_install_dismissed', 'dismissed');
+      });
+    }
+
+    // Détecter si déjà installée en PWA
+    window.addEventListener('appinstalled', function() {
+      if (installBanner) installBanner.style.display = 'none';
+      localStorage.setItem('pwa_install_dismissed', 'installed');
     });
   </script>
+
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
