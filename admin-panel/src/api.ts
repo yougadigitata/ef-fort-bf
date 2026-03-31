@@ -163,6 +163,25 @@ export async function deleteSimulation(id: string) {
   return apiCall(`${CMS_BASE}/simulations/${id}`, { method: 'DELETE' });
 }
 
+// ── Examens (Import en masse pour examens) ────────────────────
+export async function getExamens() {
+  return apiCall(`${CMS_BASE}/examens`);
+}
+
+export async function bulkImportExamen(data: any[], titre?: string, simulationId?: string) {
+  return apiCall(`${CMS_BASE}/examens/bulk-import`, {
+    method: 'POST',
+    body: JSON.stringify({ questions: data, titre: titre ?? '', simulation_id: simulationId }),
+  });
+}
+
+export async function publishExamen(id: string, published: boolean) {
+  return apiCall(`${CMS_BASE}/simulations/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ published }),
+  });
+}
+
 // ── Analytics ─────────────────────────────────────────────────
 export async function getFlags(status = 'new', page = 1) {
   return apiCall(`${CMS_BASE}/flags?status=${status}&page=${page}`);

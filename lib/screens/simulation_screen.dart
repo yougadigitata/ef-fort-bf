@@ -1745,13 +1745,53 @@ class SimulationResultScreen extends StatelessWidget {
                 children: [
                   Text(
                     '$score / $total',
-                    style: const TextStyle(fontSize: 52, fontWeight: FontWeight.w900, color: AppColors.white, fontFamily: 'Poppins'),
+                    style: const TextStyle(fontSize: 42, fontWeight: FontWeight.w900, color: AppColors.white, fontFamily: 'Poppins'),
                   ),
                   Text(
                     '$pct%  —  $_mention',
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.white),
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.white),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 16),
+                  // Note sur 20 — CERCLE ROUGE
+                  Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.red.shade700,
+                      border: Border.all(color: Colors.red.shade900, width: 3),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.red.withValues(alpha: 0.4),
+                          blurRadius: 16,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          total > 0 ? (score / total * 20).toStringAsFixed(1) : '0',
+                          style: const TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                            height: 1.0,
+                          ),
+                        ),
+                        Text(
+                          '/ 20',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white.withValues(alpha: 0.9),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   Text(
                     'Durée : $_tempsFormate',
                     style: TextStyle(fontSize: 14, color: AppColors.white.withValues(alpha: 0.8)),
@@ -2198,18 +2238,36 @@ class SimulationResultScreen extends StatelessWidget {
                         style: const pw.TextStyle(fontSize: 11)),
                   ],
                 ),
+                // Cercle rouge — Note sur 20
                 pw.Container(
-                  padding: const pw.EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  width: 90,
+                  height: 90,
                   decoration: pw.BoxDecoration(
-                    color: pct >= 50 ? successColor : errorColor,
-                    borderRadius: pw.BorderRadius.circular(8),
+                    shape: pw.BoxShape.circle,
+                    color: PdfColor.fromHex('C62828'),
+                    border: pw.Border.all(color: PdfColor.fromHex('8B0000'), width: 2.5),
                   ),
-                  child: pw.Text(
-                    '$bonnes / $total   ($pct%)',
-                    style: pw.TextStyle(
-                      color: PdfColors.white,
-                      fontWeight: pw.FontWeight.bold,
-                      fontSize: 16,
+                  child: pw.Center(
+                    child: pw.Column(
+                      mainAxisAlignment: pw.MainAxisAlignment.center,
+                      children: [
+                        pw.Text(
+                          total > 0 ? (bonnes / total * 20).toStringAsFixed(1) : '0.0',
+                          style: pw.TextStyle(
+                            color: PdfColors.white,
+                            fontWeight: pw.FontWeight.bold,
+                            fontSize: 22,
+                          ),
+                        ),
+                        pw.Text(
+                          '/ 20',
+                          style: pw.TextStyle(
+                            color: PdfColors.white,
+                            fontSize: 11,
+                            fontWeight: pw.FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -2291,8 +2349,8 @@ class SimulationResultScreen extends StatelessWidget {
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
                       pw.Text(
-                        'Q${c['num']}.  ${(c['enonce'] as String).length > 80 ? '${(c['enonce'] as String).substring(0, 80)}...' : c['enonce']}',
-                        style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+                        'Q${c['num']}.  ${(c['enonce'] as String).length > 100 ? '${(c['enonce'] as String).substring(0, 100)}...' : c['enonce']}',
+                        style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold),
                       ),
                       pw.Container(
                         padding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -2302,7 +2360,7 @@ class SimulationResultScreen extends StatelessWidget {
                         ),
                         child: pw.Text(
                           statusIcon,
-                          style: pw.TextStyle(color: PdfColors.white, fontSize: 10, fontWeight: pw.FontWeight.bold),
+                          style: pw.TextStyle(color: PdfColors.white, fontSize: 12, fontWeight: pw.FontWeight.bold),
                         ),
                       ),
                     ],
@@ -2310,28 +2368,28 @@ class SimulationResultScreen extends StatelessWidget {
                   pw.SizedBox(height: 4),
                   pw.Row(
                     children: [
-                      pw.Text('Votre réponse: ', style: const pw.TextStyle(fontSize: 9)),
+                      pw.Text('Votre réponse: ', style: const pw.TextStyle(fontSize: 12)),
                       pw.Text(
                         c['choisies'].toString().isEmpty ? 'Aucune' : c['choisies'].toString(),
                         style: pw.TextStyle(
-                          fontSize: 9,
+                          fontSize: 12,
                           fontWeight: pw.FontWeight.bold,
                           color: correct ? successColor : errorColor,
                         ),
                       ),
                       pw.SizedBox(width: 12),
-                      pw.Text('Bonne réponse: ', style: const pw.TextStyle(fontSize: 9)),
+                      pw.Text('Bonne réponse: ', style: const pw.TextStyle(fontSize: 12)),
                       pw.Text(
                         c['bonne'].toString(),
-                        style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, color: successColor),
+                        style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold, color: successColor),
                       ),
                     ],
                   ),
                   if ((c['explication'] as String).isNotEmpty) ...[
                     pw.SizedBox(height: 3),
                     pw.Text(
-                      '📖 ${c['explication']}',
-                      style: pw.TextStyle(fontSize: 8, color: greyColor, fontStyle: pw.FontStyle.italic),
+                      'Explication: ${c[\'explication\']}',
+                      style: pw.TextStyle(fontSize: 12, color: greyColor, fontStyle: pw.FontStyle.italic),
                     ),
                   ],
                 ],
@@ -2355,8 +2413,8 @@ class SimulationResultScreen extends StatelessWidget {
         ),
         child: pw.Column(
           children: [
-            pw.Text(value, style: pw.TextStyle(color: PdfColors.white, fontWeight: pw.FontWeight.bold, fontSize: 16)),
-            pw.Text(label, style: const pw.TextStyle(color: PdfColors.white, fontSize: 8)),
+            pw.Text(value, style: pw.TextStyle(color: PdfColors.white, fontWeight: pw.FontWeight.bold, fontSize: 18)),
+            pw.Text(label, style: const pw.TextStyle(color: PdfColors.white, fontSize: 10)),
           ],
         ),
       ),

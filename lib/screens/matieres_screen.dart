@@ -83,14 +83,25 @@ class _MatieresScreenState extends State<MatieresScreen> {
 
   Color _getColor(String code) {
     final key = code.toLowerCase();
+    // Chercher par code Supabase (ex: 'AES' → 'aes')
     return (_matieresMeta[key]?['couleur'] as Color?) ??
            (_matieresMeta['default']!['couleur'] as Color);
   }
 
   String _getIcone(Map<String, dynamic> m) {
-    final code = (m['id'] as String? ?? '').toLowerCase();
-    return (_matieresMeta[code]?['icone'] as String?) ??
-           (m['icone'] as String?) ?? '📚';
+    // Utiliser d'abord le code (ex: 'AES', 'HG') puis l'id pour la recherche
+    final code = (m['code'] as String? ?? m['id'] as String? ?? '').toLowerCase();
+    // Chercher d'abord par code, puis par icone en base
+    final metaIcone = _matieresMeta[code]?['icone'] as String?;
+    if (metaIcone != null) return metaIcone;
+    // Chercher aussi dans les variantes possibles (ex: 'aes' peut venir comme 'AES')
+    for (final key in _matieresMeta.keys) {
+      if (key.toLowerCase() == code) {
+        final val = _matieresMeta[key]?['icone'] as String?;
+        if (val != null) return val;
+      }
+    }
+    return (m['icone'] as String?) ?? '📚';
   }
 
   @override
@@ -185,7 +196,8 @@ class _MatieresScreenState extends State<MatieresScreen> {
         itemCount: _matieres.length,
         itemBuilder: (context, index) {
           final matiere = _matieres[index];
-          final matiereCode = (matiere['id'] as String? ?? '').toLowerCase();
+          // Utiliser 'code' (ex: 'AES', 'HG') en priorité, puis fallback sur 'id'
+          final matiereCode = ((matiere['code'] as String?) ?? (matiere['id'] as String? ?? '')).toLowerCase();
           final color = _getColor(matiereCode);
           return _buildMatiereCard(matiere, matiereCode, color);
         },

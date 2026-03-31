@@ -514,6 +514,9 @@ adminCms.post('/questions/validate-bulk', requireAdmin, async (c) => {
         fileFormat = 'json';
         const parsed = JSON.parse(text);
         questions = Array.isArray(parsed) ? parsed : parsed.questions ?? [];
+      } else if (file.name.endsWith('.md') || file.name.endsWith('.txt') || file.name.endsWith('.markdown')) {
+        fileFormat = 'md';
+        questions = parseMdOrTxt(text);
       } else {
         // CSV parsing
         fileFormat = 'csv';
@@ -527,8 +530,15 @@ adminCms.post('/questions/validate-bulk', requireAdmin, async (c) => {
         questions = Array.isArray(parsed) ? parsed : parsed.questions ?? [];
         fileFormat = 'json';
       } catch {
-        questions = parseCSV(text);
-        fileFormat = 'csv';
+        // Essayer MD/TXT puis CSV
+        const mdResult = parseMdOrTxt(text);
+        if (mdResult.length > 0) {
+          questions = mdResult;
+          fileFormat = 'md';
+        } else {
+          questions = parseCSV(text);
+          fileFormat = 'csv';
+        }
       }
     }
   } catch (e: any) {
@@ -623,6 +633,9 @@ adminCms.post('/questions/bulk-import', requireAdmin, async (c) => {
         fileFormat = 'json';
         const parsed = JSON.parse(text);
         questions = Array.isArray(parsed) ? parsed : parsed.questions ?? [];
+      } else if (file.name.endsWith('.md') || file.name.endsWith('.txt') || file.name.endsWith('.markdown')) {
+        fileFormat = 'md';
+        questions = parseMdOrTxt(text);
       } else {
         fileFormat = 'csv';
         questions = parseCSV(text);
@@ -634,8 +647,14 @@ adminCms.post('/questions/bulk-import', requireAdmin, async (c) => {
         questions = Array.isArray(parsed) ? parsed : parsed.questions ?? [];
         fileFormat = 'json';
       } catch {
-        questions = parseCSV(text);
-        fileFormat = 'csv';
+        const mdResult = parseMdOrTxt(text);
+        if (mdResult.length > 0) {
+          questions = mdResult;
+          fileFormat = 'md';
+        } else {
+          questions = parseCSV(text);
+          fileFormat = 'csv';
+        }
       }
     }
   } catch (e: any) {
@@ -1511,5 +1530,314 @@ function parseCSV(text: string): any[] {
 
   return results;
 }
+
+// ═══════════════════════════════════════════════════════════════
+// FONCTION UTILITAIRE : Parser Markdown / TXT
+// Formats supportés :
+//   ## Question : Quelle est la capitale ?
+//   A) Bobo-Dioulasso
+//   B) Ouagadougou  ✓ ou * ou (bonne) ou (B)
+//   C) Koudougou
+//   D) Banfora
+//   Explication: ...
+// OU format numéroté:
+//   1. Quelle est la capitale ?
+//   a) Bobo   b) Ouaga*  c) Koudo  d) Banfora
+// ═══════════════════════════════════════════════════════════════
+function parseMdOrTxt(text: string): any[] {
+  const results: any[] = [];
+  // Normaliser les fins de ligne
+  const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const lines = normalized.split('\n');
+
+  let currentQ: any = null;
+  let currentOptions: Record<string, string> = {};
+  let currentBonne = '';
+  let currentExplication = '';
+  let optionLetters = ['A', 'B', 'C', 'D', 'E'];
+
+  function saveQuestion() {
+    if (currentQ && currentOptions['A'] && currentOptions['B'] && currentBonne) {
+      results.push({
+        enonce: currentQ.trim(),
+        option_a: currentOptions['A'] || '',
+        option_b: currentOptions['B'] || '',
+        option_c: currentOptions['C'] || null,
+        option_d: currentOptions['D'] || null,
+        option_e: currentOptions['E'] || null,
+        bonne_reponse: currentBonne.toUpperCase(),
+        explication: currentExplication.trim(),
+        difficulte: 'MOYEN',
+      });
+    }
+    currentQ = null;
+    currentOptions = {};
+    currentBonne = '';
+    currentExplication = '';
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+
+    // Détection d'une nouvelle question (## ou Q1. ou 1. ou Question :)
+    const questionMatch =
+      line.match(/^#{1,3}\s*(?:Question\s*\d*\s*:?\s*)?(.+)$/) ||
+      line.match(/^(?:Q|Question)\s*\d+[\.\:\)]\s*(.+)$/) ||
+      line.match(/^\d+[\.\)]\s{1,4}(.{10,})$/) ||
+      line.match(/^[A-Z].{15,}\?$/);
+
+    if (questionMatch && !line.match(/^[A-Ea-e][\.\)\-]\s/)) {
+      // Sauvegarder la question précédente
+      if (currentQ) saveQuestion();
+
+      const qText = questionMatch[1] || line;
+      // Ne pas traiter comme question si c'est une option
+      if (!qText.match(/^[A-Ea-e][\.\)\-\s]/)) {
+        currentQ = qText.replace(/\?$/, '?').trim();
+      }
+      continue;
+    }
+
+    // Détection d'une option (A) texte, a) texte, A. texte, A- texte)
+    // avec marqueur de bonne réponse : *, ✓, ✔, (bonne), (correct)
+    const optionMatch = line.match(/^([A-Ea-e])[\.\)\-\s]\s*(.+)$/);
+    if (optionMatch && currentQ) {
+      const letter = optionMatch[1].toUpperCase();
+      let optText = optionMatch[2].trim();
+
+      // Vérifier si c'est la bonne réponse
+      const isBonne =
+        optText.endsWith('*') ||
+        optText.endsWith('✓') ||
+        optText.endsWith('✔') ||
+        optText.toLowerCase().includes('(bonne)') ||
+        optText.toLowerCase().includes('(correct)') ||
+        optText.toLowerCase().includes('(réponse)') ||
+        optText.toLowerCase().includes('(answer)');
+
+      // Nettoyer les marqueurs
+      optText = optText
+        .replace(/\*$/, '')
+        .replace(/✓$/, '')
+        .replace(/✔$/, '')
+        .replace(/\(bonne\)/i, '')
+        .replace(/\(correct\)/i, '')
+        .replace(/\(réponse\)/i, '')
+        .replace(/\(answer\)/i, '')
+        .trim();
+
+      currentOptions[letter] = optText;
+      if (isBonne) currentBonne = letter;
+      continue;
+    }
+
+    // Détection de la bonne réponse explicite
+    const bonneMatch = line.match(/^(?:Bonne\s*[Rr]éponse|[Rr]éponse\s*[Cc]orrecte|[Cc]orrect|[Rr]éponse|Answer)\s*:?\s*([A-Ea-e])/i);
+    if (bonneMatch && currentQ) {
+      currentBonne = bonneMatch[1].toUpperCase();
+      continue;
+    }
+
+    // Détection de l'explication
+    const explMatch = line.match(/^(?:Explication|Explanation|Note|Commentaire)\s*:?\s*(.+)$/i);
+    if (explMatch && currentQ) {
+      currentExplication = explMatch[1].trim();
+      continue;
+    }
+  }
+
+  // Sauvegarder la dernière question
+  if (currentQ) saveQuestion();
+
+  return results;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// IMPORT EXAMENS — Routes dédiées
+// ═══════════════════════════════════════════════════════════════
+
+// POST /api/admin-cms/examens/bulk-import — Importer des questions d'examen
+adminCms.post('/examens/bulk-import', requireAdmin, async (c) => {
+  const adminId = (c as any).get('adminId') as string;
+  const db = getDB(c.env);
+  const startTime = Date.now();
+
+  let questions: any[] = [];
+  let simulationId: string | null = null;
+  let titre = '';
+  let filename = 'upload';
+
+  try {
+    const contentType = c.req.header('content-type') ?? '';
+
+    if (contentType.includes('application/json')) {
+      const body = await c.req.json();
+      // Support pour questions_text (MD/TXT envoyé en JSON)
+      if (body.questions_text && typeof body.questions_text === 'string') {
+        const fmt = body.format ?? 'md';
+        if (fmt === 'md' || fmt === 'txt') {
+          questions = parseMdOrTxt(body.questions_text);
+        } else {
+          try { questions = JSON.parse(body.questions_text); } catch { questions = parseCSV(body.questions_text); }
+        }
+      } else {
+        questions = Array.isArray(body) ? body : body.questions ?? [];
+      }
+      simulationId = !Array.isArray(body) ? body.simulation_id ?? null : null;
+      titre = !Array.isArray(body) ? body.titre ?? '' : '';
+      filename = 'data.json';
+    } else if (contentType.includes('multipart/form-data')) {
+      const formData = await c.req.formData();
+      const file = formData.get('file') as File | null;
+      simulationId = formData.get('simulation_id') as string | null;
+      titre = formData.get('titre') as string ?? '';
+      if (!file) return c.json({ error: 'Fichier requis.' }, 400);
+      filename = file.name;
+      const text = await file.text();
+      if (file.name.endsWith('.json')) {
+        const parsed = JSON.parse(text);
+        questions = Array.isArray(parsed) ? parsed : parsed.questions ?? [];
+      } else if (file.name.endsWith('.md') || file.name.endsWith('.txt')) {
+        questions = parseMdOrTxt(text);
+      } else {
+        questions = parseCSV(text);
+      }
+    } else {
+      const text = await c.req.text();
+      try {
+        const parsed = JSON.parse(text);
+        questions = Array.isArray(parsed) ? parsed : parsed.questions ?? [];
+      } catch {
+        questions = parseMdOrTxt(text);
+      }
+    }
+  } catch (e: any) {
+    return c.json({ error: `Erreur parsing: ${e.message}` }, 400);
+  }
+
+  if (!questions.length) return c.json({ error: 'Aucune question trouvée.' }, 400);
+
+  // Créer ou récupérer la simulation
+  let simId = simulationId;
+  if (!simId) {
+    const simTitre = titre || `Examen Import ${new Date().toLocaleDateString('fr-FR')}`;
+    const { data: newSim } = await db.from('simulations_examens').insert({
+      titre: simTitre,
+      description: `Import automatique de ${questions.length} questions`,
+      duree_minutes: 90,
+      score_max: questions.length,
+      published: false, // Publier manuellement après vérification
+      ordre_questions: 'random',
+      show_corrections: true,
+      show_score_after: true,
+      created_at: new Date().toISOString(),
+    }).select('id').single();
+    simId = newSim?.id?.toString() ?? null;
+  }
+
+  // Importer les questions liées à la simulation
+  let importedCount = 0;
+  let failedCount = 0;
+  const BATCH_SIZE = 50;
+
+  const { data: lastQ } = await db.from('questions').select('numero').order('numero', { ascending: false }).limit(1);
+  let currentNumero = lastQ?.[0]?.numero ?? 0;
+
+  for (let i = 0; i < questions.length; i += BATCH_SIZE) {
+    const batch = questions.slice(i, i + BATCH_SIZE);
+    const batchData: any[] = [];
+
+    for (const q of batch) {
+      const enonce = q.enonce ?? q.question ?? q.Question ?? '';
+      const optA = q.option_a ?? q.A ?? q.a ?? '';
+      const optB = q.option_b ?? q.B ?? q.b ?? '';
+      const optC = q.option_c ?? q.C ?? q.c ?? null;
+      const optD = q.option_d ?? q.D ?? q.d ?? null;
+      const optE = q.option_e ?? q.E ?? q.e ?? null;
+      const bonneRep = (q.bonne_reponse ?? q.reponse ?? q.correct ?? 'A').toUpperCase();
+      const explication = q.explication ?? q.explanation ?? '';
+
+      if (!enonce?.trim() || !optA?.trim() || !optB?.trim()) {
+        failedCount++;
+        continue;
+      }
+
+      currentNumero++;
+      batchData.push({
+        enonce: enonce.trim(),
+        option_a: optA.trim(),
+        option_b: optB.trim(),
+        option_c: optC?.trim() ?? null,
+        option_d: optD?.trim() ?? null,
+        option_e: optE?.trim() ?? null,
+        bonne_reponse: bonneRep,
+        explication: explication.trim(),
+        difficulte: 'MOYEN',
+        type: 'EXAMEN',
+        simulation_id: simId,
+        published: true,
+        version: 1,
+        numero: currentNumero,
+        created_by: adminId,
+      });
+    }
+
+    if (batchData.length > 0) {
+      const { data: inserted, error } = await db.from('questions').insert(batchData).select('id');
+      if (error) {
+        failedCount += batchData.length;
+      } else {
+        importedCount += inserted?.length ?? 0;
+        // Lier les questions à la simulation
+        if (simId && inserted && inserted.length > 0) {
+          const questionIds = inserted.map((q: any) => q.id);
+          // Mettre à jour la simulation avec les IDs des questions
+          await db.from('simulations_examens')
+            .update({ questions: JSON.stringify(questionIds), score_max: importedCount })
+            .eq('id', simId);
+        }
+      }
+    }
+  }
+
+  const duration = Math.round((Date.now() - startTime) / 1000);
+
+  await logAdminAction(
+    db, adminId, 'bulk_import_examen', 'simulation', simId ?? '0',
+    null, { imported: importedCount, simulation_id: simId },
+    `Import examen: ${importedCount} questions`
+  );
+
+  return c.json({
+    success: importedCount > 0,
+    imported: importedCount,
+    failed: failedCount,
+    total: questions.length,
+    simulation_id: simId,
+    duration_seconds: duration,
+    message: `${importedCount} questions d'examen importées. Simulation ID: ${simId}`,
+  });
+});
+
+// GET /api/admin-cms/examens — Lister les examens/simulations avec stats questions
+adminCms.get('/examens', requireAdmin, async (c) => {
+  const db = getDB(c.env);
+  const { data, error } = await db.from('simulations_examens')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) return c.json({ error: error.message }, 500);
+
+  // Compter les questions d'examen pour chaque simulation
+  const enriched = await Promise.all((data ?? []).map(async (sim: any) => {
+    const { count } = await db.from('questions')
+      .select('*', { count: 'exact', head: true })
+      .eq('simulation_id', sim.id)
+      .eq('type', 'EXAMEN');
+    return { ...sim, nb_questions_examen: count ?? 0 };
+  }));
+
+  return c.json({ success: true, examens: enriched });
+});
 
 export default adminCms;

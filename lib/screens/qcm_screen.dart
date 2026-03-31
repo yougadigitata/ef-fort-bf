@@ -439,7 +439,7 @@ class _QcmScreenState extends State<QcmScreen> {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          // Score central
+          // Score central avec NOTE SUR 20 en cercle rouge
           Container(
             margin: const EdgeInsets.only(bottom: 20),
             padding: const EdgeInsets.all(24),
@@ -451,23 +451,54 @@ class _QcmScreenState extends State<QcmScreen> {
             ),
             child: Column(
               children: [
-                Text(
-                  '$score / $total',
-                  style: const TextStyle(
-                    fontSize: 48,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                    height: 1,
+                // Cercle rouge avec note sur 20
+                Container(
+                  width: 130,
+                  height: 130,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.red.shade700,
+                    border: Border.all(color: Colors.red.shade900, width: 3),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.red.withValues(alpha: 0.4),
+                        blurRadius: 16,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        total > 0 ? (score / total * 20).toStringAsFixed(1) : '0',
+                        style: const TextStyle(
+                          fontSize: 36,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          height: 1.0,
+                        ),
+                      ),
+                      Text(
+                        '/ 20',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white.withValues(alpha: 0.9),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 12),
                 Text(
-                  '$pct%  —  $mention',
+                  '$score bonne(s) sur $total  •  $pct%  —  $mention',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: Colors.white.withValues(alpha: 0.95),
                   ),
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 4),
                 Text(

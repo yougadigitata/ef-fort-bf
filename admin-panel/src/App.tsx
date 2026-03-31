@@ -7,10 +7,11 @@ import CreateQuestionPage from './pages/CreateQuestionPage';
 import BulkImportPage from './pages/BulkImportPage';
 import SeriesPage from './pages/SeriesPage';
 import SimulationsPage from './pages/SimulationsPage';
+import ExamensImportPage from './pages/ExamensImportPage';
 import FlagsPage from './pages/FlagsPage';
 import AuditLogPage from './pages/AuditLogPage';
 import Sidebar from './components/Sidebar';
-import { LayoutDashboard, FileQuestion, Upload, BookOpen, Target, Flag, History, LogOut, Menu, X, ChevronDown } from 'lucide-react';
+import { LayoutDashboard, FileQuestion, Upload, BookOpen, Target, Flag, History, LogOut, Menu, X, FileText } from 'lucide-react';
 
 // ── Context Auth ─────────────────────────────────────────────
 interface AuthContextType {
@@ -22,7 +23,7 @@ const AuthContext = createContext<AuthContextType>({ user: null, setUser: () => 
 export const useAuth = () => useContext(AuthContext);
 
 // ── Types ─────────────────────────────────────────────────────
-export type Page = 'dashboard' | 'questions' | 'create-question' | 'edit-question' | 'bulk-import' | 'series' | 'simulations' | 'flags' | 'audit-log';
+export type Page = 'dashboard' | 'questions' | 'create-question' | 'edit-question' | 'bulk-import' | 'series' | 'simulations' | 'examens-import' | 'flags' | 'audit-log';
 
 export default function App() {
   const [user, setUser] = useState<any>(() => {
@@ -103,6 +104,7 @@ export default function App() {
             <div style={{ color: '#475569', fontSize: 11, fontWeight: 600, padding: '12px 8px 4px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Contenu</div>
             <NavItem icon={<BookOpen size={18} />} label="Séries" active={currentPage === 'series'} onClick={() => navigate('series')} />
             <NavItem icon={<Target size={18} />} label="Simulations" active={currentPage === 'simulations'} onClick={() => navigate('simulations')} />
+            <NavItem icon={<FileText size={18} />} label="Import Examens" active={currentPage === 'examens-import'} onClick={() => navigate('examens-import')} />
             <div style={{ color: '#475569', fontSize: 11, fontWeight: 600, padding: '12px 8px 4px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Modération</div>
             <NavItem icon={<Flag size={18} />} label="Signalements" active={currentPage === 'flags'} onClick={() => navigate('flags')} />
             <NavItem icon={<History size={18} />} label="Audit Log" active={currentPage === 'audit-log'} onClick={() => navigate('audit-log')} />
@@ -162,6 +164,7 @@ export default function App() {
             {currentPage === 'bulk-import' && <BulkImportPage onNavigate={navigate} />}
             {currentPage === 'series' && <SeriesPage onNavigate={navigate} />}
             {currentPage === 'simulations' && <SimulationsPage onNavigate={navigate} />}
+            {currentPage === 'examens-import' && <ExamensImportPage onNavigate={navigate} />}
             {currentPage === 'flags' && <FlagsPage onNavigate={navigate} />}
             {currentPage === 'audit-log' && <AuditLogPage onNavigate={navigate} />}
           </div>
@@ -200,6 +203,7 @@ function getPageTitle(page: Page): string {
     'bulk-import': '📤 Import en masse',
     'series': '📚 Gestion des séries',
     'simulations': '🎯 Simulations d\'examen',
+    'examens-import': '📝 Import Examens',
     'flags': '🚨 Signalements',
     'audit-log': '📜 Audit & Historique',
   };

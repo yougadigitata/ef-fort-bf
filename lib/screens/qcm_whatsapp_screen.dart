@@ -926,22 +926,43 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
                     ),
                   ),
                   const SizedBox(height: 12),
-                  // Score sur 20
+                  // Note sur 20 — CERCLE ROUGE
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 12),
+                    width: 120,
+                    height: 120,
                     decoration: BoxDecoration(
-                      color: _waDarkGreen,
-                      borderRadius: BorderRadius.circular(14),
+                      shape: BoxShape.circle,
+                      color: Colors.red.shade700,
+                      border: Border.all(color: Colors.red.shade900, width: 3),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.red.withValues(alpha: 0.35),
+                          blurRadius: 16,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                    child: Text(
-                      '$sur20 / 20',
-                      style: const TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                        letterSpacing: 2,
-                      ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          sur20,
+                          style: const TextStyle(
+                            fontSize: 34,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                            height: 1.0,
+                          ),
+                        ),
+                        Text(
+                          '/ 20',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white.withValues(alpha: 0.9),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -1437,9 +1458,9 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
                             color: primaryColor,
                           )),
                       pw.Text('Plateforme N.1 - Concours Burkina Faso',
-                          style: pw.TextStyle(fontSize: 9, color: greyColor)),
+                          style: pw.TextStyle(fontSize: 11, color: greyColor)),
                       pw.Text('ef-fort-bf.pages.dev',
-                          style: pw.TextStyle(fontSize: 8, color: greyColor)),
+                          style: pw.TextStyle(fontSize: 10, color: greyColor)),
                     ],
                   ),
                 ),
@@ -1453,11 +1474,11 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
                     crossAxisAlignment: pw.CrossAxisAlignment.end,
                     children: [
                       pw.Text('RESULTATS',
-                          style: pw.TextStyle(fontSize: 8, color: primaryColor, fontWeight: pw.FontWeight.bold)),
+                          style: pw.TextStyle(fontSize: 10, color: primaryColor, fontWeight: pw.FontWeight.bold)),
                       pw.Text('$score / $total  ($pct%)',
-                          style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, color: primaryColor)),
+                          style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: primaryColor)),
                       pw.Text('Note: $sur20 / 20',
-                          style: pw.TextStyle(fontSize: 9, color: greyColor)),
+                          style: pw.TextStyle(fontSize: 11, color: greyColor)),
                     ],
                   ),
                 ),
@@ -1495,24 +1516,38 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
                         pw.Text('Candidat : ${cleanText(nom.isEmpty ? "Candidat" : nom)}',
-                            style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, color: primaryColor)),
+                            style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, color: primaryColor)),
                         pw.SizedBox(height: 2),
                         pw.Text('Matiere  : ${cleanText(widget.label)}',
-                            style: pw.TextStyle(fontSize: 10, color: greyColor)),
+                            style: pw.TextStyle(fontSize: 12, color: greyColor)),
                         pw.Text('Date     : $dateStr',
-                            style: pw.TextStyle(fontSize: 10, color: greyColor)),
+                            style: pw.TextStyle(fontSize: 12, color: greyColor)),
                       ],
                     ),
                   ),
+                  // Cercle rouge avec note sur 20
                   pw.Container(
-                    padding: const pw.EdgeInsets.all(8),
+                    width: 70,
+                    height: 70,
                     decoration: pw.BoxDecoration(
-                      color: pct >= 50 ? PdfColor.fromHex('2E7D32') : PdfColor.fromHex('C62828'),
-                      borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+                      color: PdfColor.fromHex('C62828'),
+                      shape: pw.BoxShape.circle,
+                      border: pw.Border.all(color: PdfColor.fromHex('8B0000'), width: 2),
                     ),
-                    child: pw.Text(
-                      '$pct%',
-                      style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+                    child: pw.Center(
+                      child: pw.Column(
+                        mainAxisAlignment: pw.MainAxisAlignment.center,
+                        children: [
+                          pw.Text(
+                            '${(score / total * 20).toStringAsFixed(1)}',
+                            style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+                          ),
+                          pw.Text(
+                            '/ 20',
+                            style: pw.TextStyle(fontSize: 10, color: PdfColors.white),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -1527,7 +1562,7 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
                 borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
               ),
               child: pw.Text('CORRIGE DETAILLE',
-                  style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
+                  style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
             ),
             pw.SizedBox(height: 8),
             // Questions
@@ -1567,29 +1602,29 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
                           ),
                           child: pw.Center(
                             child: pw.Text('${i + 1}',
-                                style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
+                            style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
                           ),
                         ),
                         pw.SizedBox(width: 6),
                         pw.Expanded(
                           child: pw.Text(statusText,
-                              style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: labelColor)),
+                              style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold, color: labelColor)),
                         ),
                       ],
                     ),
                     pw.SizedBox(height: 4),
                     if (enonce.isNotEmpty)
                       pw.Text(enonce,
-                          style: pw.TextStyle(fontSize: 10, color: PdfColors.black)),
+                          style: pw.TextStyle(fontSize: 13, color: PdfColors.black)),
                     pw.SizedBox(height: 3),
                     pw.Text(
                       'Votre reponse : ${choisies.isEmpty ? "-" : choisies.join(", ")}   |   Bonne(s) reponse(s) : ${bonnes.isEmpty ? "?" : bonnes.join(", ")}',
-                      style: pw.TextStyle(fontSize: 9, color: greyColor),
+                      style: pw.TextStyle(fontSize: 12, color: greyColor),
                     ),
                     if (explication.isNotEmpty) ...[
                       pw.SizedBox(height: 2),
                       pw.Text('Explication : $explication',
-                          style: pw.TextStyle(fontSize: 9, color: greyColor, fontStyle: pw.FontStyle.italic)),
+                          style: pw.TextStyle(fontSize: 11, color: greyColor, fontStyle: pw.FontStyle.italic)),
                     ],
                   ],
                 ),
@@ -1606,7 +1641,7 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
               child: pw.Text(
                 'EF-FORT.BF - Transformer l\'effort en reussite ! Bonne preparation.',
                 textAlign: pw.TextAlign.center,
-                style: pw.TextStyle(fontSize: 9, color: primaryColor, fontStyle: pw.FontStyle.italic),
+                style: pw.TextStyle(fontSize: 11, color: primaryColor, fontStyle: pw.FontStyle.italic),
               ),
             ),
           ],
