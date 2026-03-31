@@ -2232,20 +2232,20 @@ class SimulationResultScreen extends StatelessWidget {
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
                     pw.Text('Candidat : $nomCandidat',
-                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 13)),
+                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 15)),
                     pw.SizedBox(height: 4),
                     pw.Text('Date : $dateStr',
-                        style: const pw.TextStyle(fontSize: 11)),
+                        style: const pw.TextStyle(fontSize: 13)),
                   ],
                 ),
-                // Cercle rouge — Note sur 20
+                // Cercle rouge — Note sur 20 (agrandi)
                 pw.Container(
-                  width: 90,
-                  height: 90,
+                  width: 110,
+                  height: 110,
                   decoration: pw.BoxDecoration(
                     shape: pw.BoxShape.circle,
                     color: PdfColor.fromHex('C62828'),
-                    border: pw.Border.all(color: PdfColor.fromHex('8B0000'), width: 2.5),
+                    border: pw.Border.all(color: PdfColor.fromHex('8B0000'), width: 3.5),
                   ),
                   child: pw.Center(
                     child: pw.Column(
@@ -2256,14 +2256,14 @@ class SimulationResultScreen extends StatelessWidget {
                           style: pw.TextStyle(
                             color: PdfColors.white,
                             fontWeight: pw.FontWeight.bold,
-                            fontSize: 22,
+                            fontSize: 28,
                           ),
                         ),
                         pw.Text(
                           '/ 20',
                           style: pw.TextStyle(
                             color: PdfColors.white,
-                            fontSize: 11,
+                            fontSize: 14,
                             fontWeight: pw.FontWeight.bold,
                           ),
                         ),
@@ -2312,7 +2312,7 @@ class SimulationResultScreen extends StatelessWidget {
           pw.Text(
             'CORRIGÉ DÉTAILLÉ',
             style: pw.TextStyle(
-              fontSize: 14,
+              fontSize: 17,
               fontWeight: pw.FontWeight.bold,
               color: primaryColor,
             ),
@@ -2348,9 +2348,11 @@ class SimulationResultScreen extends StatelessWidget {
                   pw.Row(
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
-                      pw.Text(
-                        'Q${c['num']}.  ${(c['enonce'] as String).length > 100 ? '${(c['enonce'] as String).substring(0, 100)}...' : c['enonce']}',
-                        style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold),
+                      pw.Flexible(
+                        child: pw.Text(
+                          'Q${c['num']}.  ${(c['enonce'] as String).length > 120 ? '${(c['enonce'] as String).substring(0, 120)}...' : c['enonce']}',
+                          style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+                        ),
                       ),
                       pw.Container(
                         padding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -2360,7 +2362,7 @@ class SimulationResultScreen extends StatelessWidget {
                         ),
                         child: pw.Text(
                           statusIcon,
-                          style: pw.TextStyle(color: PdfColors.white, fontSize: 12, fontWeight: pw.FontWeight.bold),
+                          style: pw.TextStyle(color: PdfColors.white, fontSize: 14, fontWeight: pw.FontWeight.bold),
                         ),
                       ),
                     ],
@@ -2368,28 +2370,28 @@ class SimulationResultScreen extends StatelessWidget {
                   pw.SizedBox(height: 4),
                   pw.Row(
                     children: [
-                      pw.Text('Votre réponse: ', style: const pw.TextStyle(fontSize: 12)),
+                      pw.Text('Réponse : ', style: const pw.TextStyle(fontSize: 13)),
                       pw.Text(
                         c['choisies'].toString().isEmpty ? 'Aucune' : c['choisies'].toString(),
                         style: pw.TextStyle(
-                          fontSize: 12,
+                          fontSize: 13,
                           fontWeight: pw.FontWeight.bold,
                           color: correct ? successColor : errorColor,
                         ),
                       ),
-                      pw.SizedBox(width: 12),
-                      pw.Text('Bonne réponse: ', style: const pw.TextStyle(fontSize: 12)),
+                      pw.SizedBox(width: 16),
+                      pw.Text('Attendu : ', style: const pw.TextStyle(fontSize: 13)),
                       pw.Text(
                         c['bonne'].toString(),
-                        style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold, color: successColor),
+                        style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, color: successColor),
                       ),
                     ],
                   ),
                   if ((c['explication'] as String).isNotEmpty) ...[
                     pw.SizedBox(height: 3),
                     pw.Text(
-                      'Explication: ${c[\'explication\']}',
-                      style: pw.TextStyle(fontSize: 12, color: greyColor, fontStyle: pw.FontStyle.italic),
+                      "Explication : ${c['explication']}",
+                      style: pw.TextStyle(fontSize: 13, color: PdfColor.fromHex('5D4037'), fontStyle: pw.FontStyle.italic),
                     ),
                   ],
                 ],
@@ -2413,8 +2415,9 @@ class SimulationResultScreen extends StatelessWidget {
         ),
         child: pw.Column(
           children: [
-            pw.Text(value, style: pw.TextStyle(color: PdfColors.white, fontWeight: pw.FontWeight.bold, fontSize: 18)),
-            pw.Text(label, style: const pw.TextStyle(color: PdfColors.white, fontSize: 10)),
+            pw.Text(value, style: pw.TextStyle(color: PdfColors.white, fontWeight: pw.FontWeight.bold, fontSize: 22)),
+            pw.SizedBox(height: 2),
+            pw.Text(label, style: const pw.TextStyle(color: PdfColors.white, fontSize: 11)),
           ],
         ),
       ),

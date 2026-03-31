@@ -461,7 +461,7 @@ app.post('/api/exam-resultats', async (c) => {
 app.get('/api/health', (c) => c.json({
     status: 'ok',
     app: 'EF-FORT.BF API',
-    version: '7.0.0',
+    version: '7.1.0',
     timestamp: new Date().toISOString(),
     features: ['18-matieres', '1629-questions', 'simulation-v3', 'examens-blancs', 'pdf-export', 'entraide', 'simulations-admin', 'freemium-v2', 'annonces-crud', 'admin-delete'],
 }));

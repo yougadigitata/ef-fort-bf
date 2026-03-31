@@ -175,7 +175,7 @@ class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStat
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: _demandes.length,
-        itemBuilder: (context, index) {
+        itemBuilder: (listCtx, index) {
           final d = _demandes[index] as Map<String, dynamic>;
           final statut = (d['statut'] ?? 'EN_ATTENTE').toString();
           final isEnAttente = statut == 'EN_ATTENTE';
@@ -207,14 +207,14 @@ class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStat
                       onPressed: () async {
                         final id = d['id']?.toString();
                         if (id == null) return;
+                        final messenger = ScaffoldMessenger.of(listCtx);
                         final result = await ApiService.validerAbonnement(id);
+                        if (!mounted) return;
                         if (result['success'] == true) {
                           _loadData();
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Abonnement validé !'), backgroundColor: AppColors.success),
-                            );
-                          }
+                          messenger.showSnackBar(
+                            const SnackBar(content: Text('Abonnement validé !'), backgroundColor: AppColors.success),
+                          );
                         }
                       },
                     )
@@ -315,6 +315,7 @@ class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStat
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () async {
+                    final messenger = ScaffoldMessenger.of(ctx);
                     final result = await ApiService.addQuestion({
                       'matiere': matiereCtrl.text,
                       'question': questionCtrl.text,
@@ -328,7 +329,7 @@ class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStat
                     if (!ctx.mounted) return;
                     Navigator.pop(ctx);
                     if (result['success'] == true) {
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      messenger.showSnackBar(
                         const SnackBar(content: Text('Question ajoutée !'), backgroundColor: AppColors.success),
                       );
                     }
@@ -434,8 +435,9 @@ class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStat
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     onPressed: () async {
+                      final messenger = ScaffoldMessenger.of(ctx);
                       if (titreCtrl.text.trim().isEmpty || contenuCtrl.text.trim().isEmpty) {
-                        ScaffoldMessenger.of(ctx).showSnackBar(
+                        messenger.showSnackBar(
                           const SnackBar(content: Text('Titre et contenu requis'), backgroundColor: AppColors.error),
                         );
                         return;
@@ -447,15 +449,11 @@ class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStat
                       });
                       if (!ctx.mounted) return;
                       Navigator.pop(ctx);
-                      if (result['success'] == true) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('✅ Actualité publiée !'), backgroundColor: AppColors.success),
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(result['error']?.toString() ?? 'Erreur'), backgroundColor: AppColors.error),
-                        );
-                      }
+                      messenger.showSnackBar(
+                        result['success'] == true
+                            ? const SnackBar(content: Text('✅ Actualité publiée !'), backgroundColor: AppColors.success)
+                            : SnackBar(content: Text(result['error']?.toString() ?? 'Erreur'), backgroundColor: AppColors.error),
+                      );
                     },
                     child: const Text('Publier l\'actualité', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: Colors.white)),
                   ),
@@ -766,7 +764,7 @@ class _CmsDashboardSectionState extends State<_CmsDashboardSection> {
                 Expanded(flex: 4, child: Stack(children: [
                   Container(height: 8, decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(4))),
                   if (nb > 0) FractionallySizedBox(
-                    widthFactor: (nb / (stats['total_questions'] ?? 1) as double).clamp(0.0, 1.0),
+                    widthFactor: ((nb as num) / ((stats['total_questions'] as num?) ?? 1)).clamp(0.0, 1.0),
                     child: Container(height: 8, decoration: BoxDecoration(color: const Color(0xFF1A5C38), borderRadius: BorderRadius.circular(4))),
                   ),
                 ])),
@@ -1180,7 +1178,7 @@ class _CreateQuestionFormState extends State<_CreateQuestionForm> {
             const SizedBox(height: 16),
             // Matière
             DropdownButtonFormField<String>(
-              value: _matiereId,
+              initialValue: (_matiereId?.isNotEmpty == true) ? _matiereId : null,
               decoration: _inputDecor('Matière *'),
               items: widget.matieres.map((m) {
                 final mat = m as Map<String, dynamic>;
@@ -1191,10 +1189,10 @@ class _CreateQuestionFormState extends State<_CreateQuestionForm> {
             const SizedBox(height: 10),
             // Difficulté
             DropdownButtonFormField<String>(
-              value: _difficulte,
+              initialValue: _difficulte,
               decoration: _inputDecor('Difficulté'),
-              items: ['FACILE', 'MOYEN', 'DIFFICILE'].map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
-              onChanged: (v) => setState(() => _difficulte = v!),
+              items: const ['FACILE', 'MOYEN', 'DIFFICILE'].map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
+              onChanged: (v) { if (v != null) setState(() => _difficulte = v); },
             ),
             const SizedBox(height: 10),
             // Énoncé
@@ -1211,10 +1209,10 @@ class _CreateQuestionFormState extends State<_CreateQuestionForm> {
             const SizedBox(height: 10),
             // Bonne réponse
             DropdownButtonFormField<String>(
-              value: _bonneReponse,
+              initialValue: _bonneReponse,
               decoration: _inputDecor('Bonne réponse *'),
-              items: ['A', 'B', 'C', 'D', 'E'].map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(),
-              onChanged: (v) => setState(() => _bonneReponse = v!),
+              items: const ['A', 'B', 'C', 'D', 'E'].map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(),
+              onChanged: (v) { if (v != null) setState(() => _bonneReponse = v); },
             ),
             const SizedBox(height: 10),
             TextField(controller: _expCtrl, maxLines: 3, decoration: _inputDecor('Explication *')),
@@ -1460,7 +1458,7 @@ class _CmsBulkImportSectionState extends State<_CmsBulkImportSection> {
 
         // Sélection matière
         DropdownButtonFormField<String>(
-          value: _selectedMatiereId,
+          initialValue: _selectedMatiereId,
           decoration: InputDecoration(
             labelText: 'Matière cible *',
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
@@ -1693,7 +1691,7 @@ class _CmsSeriesSectionState extends State<_CmsSeriesSection> {
           child: Row(children: [
             Expanded(
               child: DropdownButtonFormField<String>(
-                value: _selectedMatiereId,
+                initialValue: _selectedMatiereId,
                 decoration: InputDecoration(labelText: 'Matière', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), isDense: true),
                 items: _matieres.map((m) {
                   final mat = m as Map<String, dynamic>;
@@ -1896,7 +1894,7 @@ class _CmsSimulationsSectionState extends State<_CmsSimulationsSection> {
         TextField(controller: _descCtrl, decoration: InputDecoration(labelText: 'Description', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), filled: true, fillColor: Colors.grey.shade50)),
         const SizedBox(height: 10),
         DropdownButtonFormField<int>(
-          value: _duree,
+          initialValue: _duree,
           decoration: InputDecoration(labelText: 'Durée', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
           items: [90, 120, 180, 240].map((d) => DropdownMenuItem(value: d, child: Text('${d ~/ 60}h${d % 60 == 0 ? '' : '${d % 60}min'}'))).toList(),
           onChanged: (v) => setState(() => _duree = v!),
