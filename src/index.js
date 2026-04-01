@@ -530,13 +530,12 @@ app.post('/api/simulations-admin/:id/demarrer', async (c) => {
     if (sim.ordre_questions === 'random') {
         questions = questions.sort(() => Math.random() - 0.5);
     }
-    // Créer la session
+    // Créer la session — sans simulation_id (type UUID incompatible avec INTEGER)
     const { data: session, error: sErr } = await db.from('sessions_examen').insert({
         user_id: userId,
         type_session: 'SIMULATION_ADMIN',
         total_questions: questions.length,
         termine: false,
-        simulation_id: simulationId,
     }).select().single();
     if (sErr)
         return c.json({ error: sErr.message }, 500);

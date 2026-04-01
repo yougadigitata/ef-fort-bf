@@ -3,7 +3,7 @@ import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
 import '../widgets/logo_widget.dart';
 import 'inscription_screen.dart';
-import 'home_screen.dart';
+import 'post_login_welcome_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -43,9 +43,18 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = false);
 
     if (result['success'] == true) {
+      // Récupérer le nom de l'utilisateur pour l'écran de bienvenue
+      final user = ApiService.currentUser;
+      final nom = user != null
+          ? '${user['prenom'] ?? ''} ${user['nom'] ?? ''}'.trim()
+          : 'Candidat';
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        MaterialPageRoute(
+          builder: (_) => PostLoginWelcomeScreen(
+            userName: nom.isNotEmpty ? nom : 'Candidat',
+          ),
+        ),
       );
     } else {
       setState(() {

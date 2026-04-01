@@ -2115,14 +2115,17 @@ class SimulationResultScreen extends StatelessWidget {
         mauvaises++;
       }
 
+      // Convertir le LaTeX en texte lisible pour le PDF
+      final enonceRaw = (q['enonce'] ?? q['question'] ?? '').toString();
+      final explicRaw = q['explication']?.toString() ?? '';
       correction.add({
         'num': i + 1,
-        'enonce': (q['enonce'] ?? q['question'] ?? '').toString(),
+        'enonce': _cleanLatexForPdf(enonceRaw),
         'choisies': choisies.join(', '),
         'bonne': bonneStr.isEmpty ? '?' : bonneStr,
         'correct': correct,
         'noAns': noAns,
-        'explication': q['explication']?.toString() ?? '',
+        'explication': _cleanLatexForPdf(explicRaw),
       });
     }
 
@@ -2432,6 +2435,28 @@ class SimulationResultScreen extends StatelessWidget {
     );
 
     return pdf.save();
+  }
+
+  // ── Convertir le LaTeX en texte lisible pour le PDF ──────────────────
+  static String _cleanLatexForPdf(String text) {
+    if (!text.contains(r'$') && !text.contains(r'\')) return text;
+    // Parser les segments $...$ et les convertir
+    String result = text;
+    // Remplacer les blocs $$...$$ d'abord
+    result = result.replaceAllMapped(
+      RegExp(r'\$\$([^$]*)\$\$'),
+      (m) => MathTextWidget.latexToReadablePublic(m.group(1)!.trim()),
+    );
+    // Remplacer les blocs $...$
+    result = result.replaceAllMapped(
+      RegExp(r'\$([^$]+)\$'),
+      (m) => MathTextWidget.latexToReadablePublic(m.group(1)!.trim()),
+    );
+    // Nettoyer les commandes LaTeX résiduelles hors délimiteurs
+    if (result.contains(r'\')) {
+      result = MathTextWidget.latexToReadablePublic(result);
+    }
+    return result;
   }
 
   pw.Widget _pdfStat(String label, String value, PdfColor color) {

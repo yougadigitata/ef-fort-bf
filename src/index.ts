@@ -581,40 +581,14 @@ app.post('/api/simulations-admin/:id/demarrer', async (c) => {
     questions = questions.sort(() => Math.random() - 0.5);
   }
 
-  // Créer la session — gestion robuste de simulation_id (colonne optionnelle)
-  let session: any = null;
-  let sErr: any = null;
-
-  // Tentative 1 : avec simulation_id
-  const result1 = await db.from('sessions_examen').insert({
+  // Créer la session — sans simulation_id car la colonne est de type UUID
+  // et simulations_examens.id est un INTEGER (incompatible)
+  const { data: session, error: sErr } = await db.from('sessions_examen').insert({
     user_id: userId,
     type_session: 'SIMULATION_ADMIN',
     total_questions: questions.length,
     termine: false,
-    simulation_id: simulationId,
   }).select().single();
-
-  if (result1.error) {
-    // Si l'erreur est liée à la colonne simulation_id manquante, réessayer sans
-    const errMsg = result1.error.message ?? '';
-    if (errMsg.includes('simulation_id') || errMsg.includes('schema cache') || errMsg.includes('42703')) {
-      // Tentative 2 : sans simulation_id (migration non encore appliquée)
-      const result2 = await db.from('sessions_examen').insert({
-        user_id: userId,
-        type_session: 'SIMULATION_ADMIN',
-        total_questions: questions.length,
-        termine: false,
-      }).select().single();
-      session = result2.data;
-      sErr = result2.error;
-    } else {
-      session = result1.data;
-      sErr = result1.error;
-    }
-  } else {
-    session = result1.data;
-    sErr = null;
-  }
 
   if (sErr || !session) return c.json({ error: sErr?.message ?? 'Erreur création session' }, 500);
 

@@ -117,6 +117,10 @@ class MathTextWidget extends StatelessWidget {
   }
 
   // ── Convertir LaTeX en texte Unicode lisible (fallback) ────────────
+  // Méthode publique pour usage externe (ex: génération PDF)
+  static String latexToReadablePublic(String latex) => _latexToReadable(latex);
+
+  // ── Convertir LaTeX en texte Unicode lisible (fallback) ────────────
   static String _latexToReadable(String latex) {
     String s = latex.trim();
 
