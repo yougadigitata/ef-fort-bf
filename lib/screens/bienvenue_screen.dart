@@ -1082,3 +1082,5 @@ class _GlowParticlePainter extends CustomPainter {
   @override
   bool shouldRepaint(_GlowParticlePainter old) => old.progress != progress;
 }
+
+// v3.0 — 2026-04-01 — MathText Web fix + Score pourcentage + Onboarding flow
