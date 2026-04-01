@@ -1,0 +1,29 @@
+{
+  "date": "2026-04-01",
+  "import_type": "questions_batch",
+  "sciences_physiques": {
+    "series_inserted": 6,
+    "questions_inserted": 120,
+    "series": [
+      "Série 01 — Mécanique et logique du mouvement (20q)",
+      "Série 02 — Électricité et pièges de calcul (20q)",
+      "Série 03 — Thermodynamique et chaleur (20q)",
+      "Série 04 — Chimie et réactions (20q)",
+      "Série 05 — Expert : niveau avancé (20q)",
+      "Série 06 — Définitions fondamentales et pièges conceptuels (20q)"
+    ]
+  },
+  "economie": {
+    "series_inserted": 6,
+    "questions_inserted": 120,
+    "series": [
+      "Série 04 — Entreprises et production (20q)",
+      "Série 05 — Analyse et calcul économique (20q)",
+      "Série 06 — Définitions fondamentales (20q)",
+      "Série 07 — Marché et mécanismes économiques (20q)",
+      "Série 08 — Finances publiques et fiscalité (20q)",
+      "Série 09 — Économie internationale et politiques (20q)"
+    ]
+  },
+  "total_questions_added": 240
+}
