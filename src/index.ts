@@ -339,14 +339,20 @@ app.get('/api/user/stats', async (c) => {
 
     const { data: sessions } = await db
       .from('sessions_examen')
-      .select('score_pourcentage')
+      .select('score, total_questions')  // Utiliser score et total_questions (colonnes existantes)
       .eq('user_id', userId)
       .eq('termine', true)
       .order('created_at', { ascending: false })
       .limit(20);
 
+    // Calculer le score moyen à partir des colonnes existantes (score/total_questions)
     const avgScore = sessions && sessions.length > 0
-      ? sessions.reduce((sum: number, s: any) => sum + (Number(s.score_pourcentage) || 0), 0) / sessions.length
+      ? sessions.reduce((sum: number, s: any) => {
+          const pct = (s.total_questions && s.total_questions > 0)
+            ? (Number(s.score || 0) / Number(s.total_questions)) * 100
+            : 0;
+          return sum + pct;
+        }, 0) / sessions.length
       : 0;
 
     const nbSim = nbSimulations ?? 0;
