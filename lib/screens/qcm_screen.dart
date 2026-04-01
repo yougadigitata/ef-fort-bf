@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
+import '../widgets/math_text_widget.dart';
 import 'abonnement_screen.dart';
 
 // ══════════════════════════════════════════════════════════════
@@ -257,15 +258,16 @@ class _QcmScreenState extends State<QcmScreen> {
                       width: 1.5,
                     ),
                   ),
-                  child: Text(
-                    texteQuestion,
-                    style: const TextStyle(
+                  child: MathTextWidget(
+                    text: texteQuestion,
+                    textStyle: const TextStyle(
                       fontSize: 17,
                       fontFamily: 'Georgia',
                       height: 1.6,
                       color: AppColors.textDark,
                       fontWeight: FontWeight.w500,
                     ),
+                    mathSize: 18.0,
                   ),
                 ),
 
@@ -341,15 +343,17 @@ class _QcmScreenState extends State<QcmScreen> {
                           ),
                           const SizedBox(width: 14),
                           Expanded(
-                            child: Text(
-                              text,
-                              style: TextStyle(
+                            child: MathTextWidget(
+                              text: text,
+                              textStyle: TextStyle(
                                 fontSize: 15,
                                 fontFamily: 'Georgia',
                                 height: 1.45,
                                 color: isSelected ? _couleur.withValues(alpha: 0.9) : AppColors.textDark,
                                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                               ),
+                              mathSize: 16.0,
+                              mathColor: isSelected ? _couleur.withValues(alpha: 0.9) : AppColors.textDark,
                             ),
                           ),
                         ],
@@ -595,15 +599,16 @@ class _QcmScreenState extends State<QcmScreen> {
                   const SizedBox(height: 8),
 
                   // Texte question
-                  Text(
-                    (q['enonce'] ?? q['question'] ?? '').toString(),
-                    style: const TextStyle(
+                  MathTextWidget(
+                    text: (q['enonce'] ?? q['question'] ?? '').toString(),
+                    textStyle: const TextStyle(
                       fontSize: 14,
                       fontFamily: 'Georgia',
                       height: 1.5,
                       fontWeight: FontWeight.w500,
                       color: AppColors.textDark,
                     ),
+                    mathSize: 15.0,
                   ),
                   const SizedBox(height: 10),
 
@@ -648,9 +653,9 @@ class _QcmScreenState extends State<QcmScreen> {
                             ),
                           ),
                           Expanded(
-                            child: Text(
-                              t,
-                              style: TextStyle(
+                            child: MathTextWidget(
+                              text: t,
+                              textStyle: TextStyle(
                                 fontSize: 13,
                                 fontFamily: 'Georgia',
                                 color: isBonne
@@ -658,6 +663,10 @@ class _QcmScreenState extends State<QcmScreen> {
                                     : isChoisie ? AppColors.error : AppColors.textDark,
                                 fontWeight: isBonne ? FontWeight.w600 : FontWeight.normal,
                               ),
+                              mathSize: 14.0,
+                              mathColor: isBonne
+                                  ? AppColors.success
+                                  : isChoisie ? AppColors.error : AppColors.textDark,
                             ),
                           ),
                           if (trailingIcon != null) trailingIcon,
@@ -682,14 +691,15 @@ class _QcmScreenState extends State<QcmScreen> {
                           const Icon(Icons.lightbulb_rounded, color: Color(0xFFD4A017), size: 16),
                           const SizedBox(width: 8),
                           Expanded(
-                            child: Text(
-                              q['explication'].toString(),
-                              style: const TextStyle(
+                            child: MathTextWidget(
+                              text: q['explication'].toString(),
+                              textStyle: const TextStyle(
                                 fontSize: 12,
                                 fontStyle: FontStyle.italic,
                                 height: 1.5,
                                 color: AppColors.textDark,
                               ),
+                              mathSize: 13.0,
                             ),
                           ),
                         ],
