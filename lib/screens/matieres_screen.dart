@@ -5,11 +5,9 @@ import 'qcm_screen.dart';
 import 'serie_selection_screen.dart';
 
 // ══════════════════════════════════════════════════════════════
-// IDs Supabase des matières — v6.0 DYNAMIQUE (chargé depuis API)
+// IDs Supabase des matières — v7.0 NOUVEAU DESIGN
 // ══════════════════════════════════════════════════════════════
 
-/// Matières officielles avec leurs métadonnées visuelles
-/// Pour AES: utiliser 'asset:assets/logo/aes_logo.png' pour logo PNG
 const Map<String, Map<String, dynamic>> _matieresMeta = {
   'hg':           {'icone': '🗺️', 'couleur': Color(0xFFBD3B3B)},
   'droit2':       {'icone': '⚖️', 'couleur': Color(0xFF1A5C38)},
@@ -42,7 +40,7 @@ const Set<String> _seriesMatieresIds = {
   'svt', 'pana', 'sp', 'psy', 'pc', 'enaref',
 };
 
-/// v6.0 — Matières DYNAMIQUES (chargées depuis l'API Supabase en temps réel)
+/// v7.0 — Matières DYNAMIQUES — Nouveau design carte avec bordure verte
 class MatieresScreen extends StatefulWidget {
   const MatieresScreen({super.key});
 
@@ -83,18 +81,14 @@ class _MatieresScreenState extends State<MatieresScreen> {
 
   Color _getColor(String code) {
     final key = code.toLowerCase();
-    // Chercher par code Supabase (ex: 'AES' → 'aes')
     return (_matieresMeta[key]?['couleur'] as Color?) ??
            (_matieresMeta['default']!['couleur'] as Color);
   }
 
   String _getIcone(Map<String, dynamic> m) {
-    // Utiliser d'abord le code (ex: 'AES', 'HG') puis l'id pour la recherche
     final code = (m['code'] as String? ?? m['id'] as String? ?? '').toLowerCase();
-    // Chercher d'abord par code, puis par icone en base
     final metaIcone = _matieresMeta[code]?['icone'] as String?;
     if (metaIcone != null) return metaIcone;
-    // Chercher aussi dans les variantes possibles (ex: 'aes' peut venir comme 'AES')
     for (final key in _matieresMeta.keys) {
       if (key.toLowerCase() == code) {
         final val = _matieresMeta[key]?['icone'] as String?;
@@ -106,38 +100,74 @@ class _MatieresScreenState extends State<MatieresScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final count = _matieres.isEmpty ? '' : '${_matieres.length} ';
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(
-          '📚 ${_matieres.isEmpty ? "Matières QCM" : "${_matieres.length} Matières"}',
-          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
-        ),
-        automaticallyImplyLeading: false,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [AppColors.primary, AppColors.primaryDark],
+      backgroundColor: const Color(0xFFF0F4F1),
+      body: Column(
+        children: [
+          // ── Header dégradé vert ──────────────────────────────
+          Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [AppColors.primary, AppColors.primaryDark],
+              ),
+            ),
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + 14,
+              bottom: 18,
+              left: 20,
+              right: 12,
+            ),
+            child: Row(
+              children: [
+                // Icône livres
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Center(
+                    child: Text('📚', style: TextStyle(fontSize: 22)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    '${count}Matières QCM',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.refresh_rounded, color: Colors.white, size: 22),
+                  tooltip: 'Actualiser',
+                  onPressed: _loadMatieres,
+                ),
+              ],
             ),
           ),
-        ),
-        foregroundColor: AppColors.white,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Actualiser',
-            onPressed: _loadMatieres,
+
+          // ── Contenu ──────────────────────────────────────────
+          Expanded(
+            child: _loading
+                ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+                : _error != null
+                    ? _buildError()
+                    : _matieres.isEmpty
+                        ? _buildEmpty()
+                        : _buildGrid(),
           ),
         ],
       ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
-          : _error != null
-              ? _buildError()
-              : _matieres.isEmpty
-                  ? _buildEmpty()
-                  : _buildGrid(),
     );
   }
 
@@ -148,13 +178,20 @@ class _MatieresScreenState extends State<MatieresScreen> {
         children: [
           const Text('📡', style: TextStyle(fontSize: 48)),
           const SizedBox(height: 16),
-          const Text('Impossible de charger les matières', style: TextStyle(fontSize: 15, color: AppColors.textLight)),
+          const Text(
+            'Impossible de charger les matières',
+            style: TextStyle(fontSize: 15, color: AppColors.textLight),
+          ),
           const SizedBox(height: 16),
           ElevatedButton.icon(
             onPressed: _loadMatieres,
             icon: const Icon(Icons.refresh_rounded),
             label: const Text('Réessayer'),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
           ),
         ],
       ),
@@ -168,13 +205,21 @@ class _MatieresScreenState extends State<MatieresScreen> {
         children: [
           const Text('📭', style: TextStyle(fontSize: 48)),
           const SizedBox(height: 16),
-          const Text('Aucune matière disponible\npour le moment.', textAlign: TextAlign.center, style: TextStyle(fontSize: 15, color: AppColors.textLight)),
+          const Text(
+            'Aucune matière disponible\npour le moment.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 15, color: AppColors.textLight),
+          ),
           const SizedBox(height: 16),
           ElevatedButton.icon(
             onPressed: _loadMatieres,
             icon: const Icon(Icons.refresh_rounded),
             label: const Text('Actualiser'),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
           ),
         ],
       ),
@@ -186,17 +231,16 @@ class _MatieresScreenState extends State<MatieresScreen> {
       onRefresh: _loadMatieres,
       color: AppColors.primary,
       child: GridView.builder(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.fromLTRB(14, 16, 14, 20),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: 1.0,
+          mainAxisSpacing: 14,
+          crossAxisSpacing: 14,
+          childAspectRatio: 0.92,
         ),
         itemCount: _matieres.length,
         itemBuilder: (context, index) {
           final matiere = _matieres[index];
-          // Utiliser 'code' (ex: 'AES', 'HG') en priorité, puis fallback sur 'id'
           final matiereCode = ((matiere['code'] as String?) ?? (matiere['id'] as String? ?? '')).toLowerCase();
           final color = _getColor(matiereCode);
           return _buildMatiereCard(matiere, matiereCode, color);
@@ -210,17 +254,24 @@ class _MatieresScreenState extends State<MatieresScreen> {
     final nbQuestions = matiere['nb_questions'] as int? ?? 0;
     final matiereId = matiere['matiere_id'] as String? ?? '';
     final icone = _getIcone(matiere);
-
-    // Déterminer si on affiche en mode séries ou mode direct
     final hasMatId = matiereId.isNotEmpty;
     final isSeriesMode = _seriesMatieresIds.contains(matiereCode) && hasMatId;
 
-    // Badge
+    // Badges
     String? badgeLabel;
+    Color badgeColor = const Color(0xFF1A5C38);
     if (nbQuestions >= 100) {
       badgeLabel = 'TOP';
+      badgeColor = const Color(0xFF1A5C38);
     } else if (nbQuestions > 0 && nbQuestions < 30) {
       badgeLabel = 'NEW';
+      badgeColor = const Color(0xFFE67E22);
+    }
+
+    // Libellé séries
+    String seriesLabel = '';
+    if (nbQuestions > 0) {
+      seriesLabel = isSeriesMode ? '$nbQuestions séries' : '$nbQuestions QCM';
     }
 
     return GestureDetector(
@@ -255,84 +306,84 @@ class _MatieresScreenState extends State<MatieresScreen> {
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          // Rectangle ombre
-          Positioned(
-            bottom: -4, left: 4, right: -4,
-            child: Container(
-              height: double.infinity,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.22),
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-          ),
-
-          // Card principale
+          // ── Carte principale ──────────────────────────────
           Container(
             decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: color.withValues(alpha: 0.15), width: 1),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFF27AE60),
+                width: 1.8,
+              ),
               boxShadow: [
-                BoxShadow(color: color.withValues(alpha: 0.14), blurRadius: 6, offset: const Offset(0, 2)),
+                BoxShadow(
+                  color: const Color(0xFF27AE60).withValues(alpha: 0.10),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
               ],
             ),
             child: Padding(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Icône — supporte emoji ET asset image (ex: logo AES)
+                  // ── Cercle icône ──────────────────────────
                   Container(
-                    width: 50, height: 50,
+                    width: 72,
+                    height: 72,
                     decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.12),
+                      color: color.withValues(alpha: 0.10),
                       shape: BoxShape.circle,
-                      border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
+                      border: Border.all(
+                        color: color.withValues(alpha: 0.25),
+                        width: 1.5,
+                      ),
                     ),
                     child: Center(
-                      child: _buildIconeWidget(icone, 28),
+                      child: _buildIconeWidget(icone, 36),
                     ),
                   ),
-                  const SizedBox(height: 7),
+                  const SizedBox(height: 10),
 
-                  // Nom
-                  SizedBox(
-                    height: 34,
-                    child: Text(
-                      nom,
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 11, fontWeight: FontWeight.w800,
-                        color: AppColors.textDark, height: 1.2,
-                      ),
+                  // ── Nom de la matière ─────────────────────
+                  Text(
+                    nom,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF1A1A2E),
+                      height: 1.25,
                     ),
                   ),
-                  const SizedBox(height: 5),
+                  const SizedBox(height: 8),
 
-                  // Badge bas — questions/séries
-                  if (nbQuestions > 0)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1A5C38).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        isSeriesMode ? '📋 $nbQuestions QCM' : '✏️ $nbQuestions QCM',
-                        style: const TextStyle(
-                          fontSize: 9, fontWeight: FontWeight.w700,
-                          color: Color(0xFF1A5C38),
+                  // ── Badge nb séries / QCM ─────────────────
+                  if (seriesLabel.isNotEmpty)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.content_paste_rounded,
+                            size: 13, color: Colors.grey.shade500),
+                        const SizedBox(width: 4),
+                        Text(
+                          seriesLabel,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade600,
+                          ),
                         ),
-                      ),
+                      ],
                     )
                   else
                     Container(
                       height: 3, width: 32,
                       decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.4),
+                        color: color.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -341,19 +392,27 @@ class _MatieresScreenState extends State<MatieresScreen> {
             ),
           ),
 
-          // Badge TOP/NEW
+          // ── Badge TOP / NEW ───────────────────────────────
           if (badgeLabel != null)
             Positioned(
-              top: 6, right: 6,
+              top: -1, right: -1,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: badgeLabel == 'TOP' ? const Color(0xFF1A5C38) : const Color(0xFFF39C12),
-                  borderRadius: BorderRadius.circular(5),
+                  color: badgeColor,
+                  borderRadius: const BorderRadius.only(
+                    topRight: Radius.circular(14),
+                    bottomLeft: Radius.circular(10),
+                  ),
                 ),
                 child: Text(
                   badgeLabel,
-                  style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.white),
+                  style: const TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ),
             ),
@@ -362,9 +421,7 @@ class _MatieresScreenState extends State<MatieresScreen> {
     );
   }
 
-  /// Widget icône intelligent : gère emoji, asset image (asset:...) et URL http
   Widget _buildIconeWidget(String icone, double size) {
-    // Asset local (ex: 'asset:assets/logo/aes_logo.png')
     if (icone.startsWith('asset:')) {
       final path = icone.substring(6);
       return Image.asset(
@@ -372,20 +429,18 @@ class _MatieresScreenState extends State<MatieresScreen> {
         width: size,
         height: size,
         fit: BoxFit.contain,
-        errorBuilder: (_, __, ___) => Text('🏛️', style: TextStyle(fontSize: size * 0.8)),
+        errorBuilder: (_, __, ___) => Text('🏛️', style: TextStyle(fontSize: size * 0.75)),
       );
     }
-    // URL externe (http/https)
     if (icone.startsWith('http://') || icone.startsWith('https://')) {
       return Image.network(
         icone,
         width: size,
         height: size,
         fit: BoxFit.contain,
-        errorBuilder: (_, __, ___) => Text('🌐', style: TextStyle(fontSize: size * 0.8)),
+        errorBuilder: (_, __, ___) => Text('🌐', style: TextStyle(fontSize: size * 0.75)),
       );
     }
-    // Emoji ou texte simple
-    return Text(icone, style: TextStyle(fontSize: size * 0.8));
+    return Text(icone, style: TextStyle(fontSize: size * 0.75));
   }
 }

@@ -3,9 +3,7 @@ import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
 import 'simulation_screen.dart';
 
-/// PHASE 4 — Écran de sélection des examens
-/// - Onglet 1 : Examens Blancs publiés par l'Admin (NOUVEAUTÉS)
-/// - Onglet 2 : 10 Examens professionnels classiques
+/// v7.0 — Écran de sélection des examens — Nouveau design coloré
 class ExamenSelectionScreen extends StatefulWidget {
   const ExamenSelectionScreen({super.key});
 
@@ -21,17 +19,31 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
   bool _loading = true;
   bool _loadingSimulations = true;
 
+  // Couleurs par catégorie pour le design coloré
+  static const Map<String, Color> _examColors = {
+    'exam_001': Color(0xFF2980B9),  // Bleu - Administration
+    'exam_002': Color(0xFFC0392B),  // Rouge - Justice
+    'exam_003': Color(0xFF27AE60),  // Vert - Finances
+    'exam_004': Color(0xFF8E44AD),  // Violet - Santé
+    'exam_005': Color(0xFF2980B9),  // Bleu - Éducation
+    'exam_006': Color(0xFFD4A017),  // Or - Technique
+    'exam_007': Color(0xFF27AE60),  // Vert - Agriculture
+    'exam_008': Color(0xFF16A085),  // Turquoise - Informatique
+    'exam_009': Color(0xFF8E44AD),  // Violet - TP
+    'exam_010': Color(0xFF5D6D7E),  // Gris - Stats
+  };
+
   static const List<Map<String, dynamic>> _fallbackExamens = [
-    {'id': 'exam_001', 'nom': 'Administration générale', 'description': 'Adjoints administratifs, agents administratifs', 'couleur': '#1A5C38', 'icone': '📋', 'nombre_questions': 50, 'duree_minutes': 90, 'ordre': 1},
+    {'id': 'exam_001', 'nom': 'Administration générale', 'description': 'Adjoints administratifs, agents administratifs', 'couleur': '#2980B9', 'icone': '🎓', 'nombre_questions': 50, 'duree_minutes': 90, 'ordre': 1},
     {'id': 'exam_002', 'nom': 'Justice & sécurité', 'description': 'Greffiers, police nationale, gendarmerie, douane', 'couleur': '#C0392B', 'icone': '⚖️', 'nombre_questions': 50, 'duree_minutes': 90, 'ordre': 2},
     {'id': 'exam_003', 'nom': 'Économie & finances', 'description': 'Impôts, trésor public, contrôleurs des finances', 'couleur': '#27AE60', 'icone': '💰', 'nombre_questions': 50, 'duree_minutes': 90, 'ordre': 3},
     {'id': 'exam_004', 'nom': 'Concours de la santé', 'description': 'Infirmiers, sages-femmes, agents de santé', 'couleur': '#8E44AD', 'icone': '⚕️', 'nombre_questions': 50, 'duree_minutes': 90, 'ordre': 4},
-    {'id': 'exam_005', 'nom': 'Éducation & formation', 'description': 'Enseignants du primaire et du secondaire', 'couleur': '#2980B9', 'icone': '🎓', 'nombre_questions': 50, 'duree_minutes': 90, 'ordre': 5},
-    {'id': 'exam_006', 'nom': 'Concours techniques', 'description': 'Techniciens génie civil, électricité, mécanique', 'couleur': '#D4A017', 'icone': '🔧', 'nombre_questions': 50, 'duree_minutes': 90, 'ordre': 6},
-    {'id': 'exam_007', 'nom': 'Agriculture & environnement', 'description': 'Agents agricoles, élevage, environnement', 'couleur': '#16A085', 'icone': '🌾', 'nombre_questions': 50, 'duree_minutes': 90, 'ordre': 7},
-    {'id': 'exam_008', 'nom': 'Informatique & numérique', 'description': 'Techniciens informatiques, développeurs', 'couleur': '#2ECC71', 'icone': '💻', 'nombre_questions': 50, 'duree_minutes': 90, 'ordre': 8},
-    {'id': 'exam_009', 'nom': 'Travaux publics & urbanisme', 'description': 'BTP, urbanisme, topographie', 'couleur': '#9B59B6', 'icone': '🏗️', 'nombre_questions': 50, 'duree_minutes': 90, 'ordre': 9},
-    {'id': 'exam_010', 'nom': 'Statistiques & planification', 'description': 'Statisticiens, économistes, planificateurs', 'couleur': '#34495E', 'icone': '📊', 'nombre_questions': 50, 'duree_minutes': 90, 'ordre': 10},
+    {'id': 'exam_005', 'nom': 'Éducation & formation', 'description': 'Enseignants du primaire, enseignants du second…', 'couleur': '#2980B9', 'icone': '🎓', 'nombre_questions': 50, 'duree_minutes': 90, 'ordre': 5},
+    {'id': 'exam_006', 'nom': 'Concours techniques', 'description': 'Techniciens génie civil, électricité, mécanique, s…', 'couleur': '#D4A017', 'icone': '🔧', 'nombre_questions': 50, 'duree_minutes': 90, 'ordre': 6},
+    {'id': 'exam_007', 'nom': 'Agriculture & environnement', 'description': 'Agents agricoles, élevage, environnement,…', 'couleur': '#27AE60', 'icone': '🌾', 'nombre_questions': 50, 'duree_minutes': 90, 'ordre': 7},
+    {'id': 'exam_008', 'nom': 'Informatique & numérique', 'description': 'Techniciens informatiques, développement,…', 'couleur': '#16A085', 'icone': '💻', 'nombre_questions': 50, 'duree_minutes': 90, 'ordre': 8},
+    {'id': 'exam_009', 'nom': 'Travaux publics & urbanisme', 'description': 'BTP, urbanisme, infrastructures,…', 'couleur': '#8E44AD', 'icone': '🏗️', 'nombre_questions': 50, 'duree_minutes': 90, 'ordre': 9},
+    {'id': 'exam_010', 'nom': 'Statistiques & planification', 'description': 'Statisticiens, planification, analyse de données,…', 'couleur': '#5D6D7E', 'icone': '📊', 'nombre_questions': 50, 'duree_minutes': 90, 'ordre': 10},
   ];
 
   @override
@@ -99,75 +111,124 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
     }
   }
 
+  // Obtenir la couleur par index ou par ID
+  Color _getExamColor(dynamic examen, int index) {
+    final id = examen['id']?.toString() ?? '';
+    if (_examColors.containsKey(id)) return _examColors[id]!;
+    final hex = examen['couleur']?.toString();
+    if (hex != null && hex.isNotEmpty) return _parseColor(hex);
+    // Fallback couleurs par index
+    const fallbackColors = [
+      Color(0xFF2980B9), Color(0xFFD4A017), Color(0xFF27AE60),
+      Color(0xFF16A085), Color(0xFF8E44AD), Color(0xFF5D6D7E),
+      Color(0xFFC0392B), Color(0xFFE67E22), Color(0xFF1A5C38),
+      Color(0xFF2ECC71),
+    ];
+    return fallbackColors[index % fallbackColors.length];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(colors: [AppColors.primary, AppColors.primaryDark]),
-          ),
-        ),
-        foregroundColor: AppColors.white,
-        elevation: 0,
-        title: const Text(
-          'Mode Examen',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-        ),
-        centerTitle: true,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.white,
-          indicatorWeight: 3,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
-          tabs: [
-            Tab(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('🎯 Examens Blancs'),
-                  if (_simulationsAdmin.isNotEmpty) ...[
-                    const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        '${_simulationsAdmin.length}',
-                        style: const TextStyle(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
+      backgroundColor: const Color(0xFFF0F4F1),
+      body: Column(
+        children: [
+          // ── Header dégradé vert ──────────────────────────────
+          Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [AppColors.primary, AppColors.primaryDark],
               ),
             ),
-            const Tab(text: '📋 Examens Types'),
-          ],
-        ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          // ── ONGLET 1 : Examens Blancs Admin ──
-          _buildExamensBlancsTab(),
-          // ── ONGLET 2 : Examens Types Classiques ──
-          _buildExamensTypesTab(),
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + 14,
+              bottom: 0,
+              left: 20,
+              right: 20,
+            ),
+            child: Column(
+              children: [
+                // Titre et sous-titre
+                const Text(
+                  'Choisir votre Concours',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '10 examens professionnels • 50 questions • 1h30',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white.withValues(alpha: 0.75),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                // TabBar
+                TabBar(
+                  controller: _tabController,
+                  indicatorColor: Colors.white,
+                  indicatorWeight: 3,
+                  labelColor: Colors.white,
+                  unselectedLabelColor: Colors.white70,
+                  indicatorSize: TabBarIndicatorSize.label,
+                  labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                  tabs: [
+                    Tab(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text('🎯 Examens Blancs'),
+                          if (_simulationsAdmin.isNotEmpty) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                '${_simulationsAdmin.length}',
+                                style: const TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const Tab(text: '📋 Examens Types'),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // ── Contenu ──────────────────────────────────────────
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildExamensBlancsTab(),
+                _buildExamensTypesTab(),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
-  // ─── ONGLET EXAMENS BLANCS ────────────────────────────────────
+  // ─── ONGLET EXAMENS BLANCS ──────────────────────────────────
   Widget _buildExamensBlancsTab() {
     if (_loadingSimulations) {
       return const Center(child: CircularProgressIndicator(color: AppColors.primary));
@@ -182,15 +243,11 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
             const SizedBox(height: 16),
             const Text(
               'Aucun examen blanc disponible',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textDark,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textDark),
             ),
             const SizedBox(height: 8),
             Text(
-              'L\'administrateur n\'a pas encore\npublié d\'examen blanc.',
+              "L'administrateur n'a pas encore\npublié d'examen blanc.",
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 13, color: AppColors.textLight),
             ),
@@ -202,7 +259,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
           ],
@@ -220,7 +277,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             color: AppColors.primary.withValues(alpha: 0.06),
             child: Text(
-              '${_simulationsAdmin.length} examen(s) blanc(s) publié(s) par l\'administration',
+              '${_simulationsAdmin.length} examen(s) blanc(s) publié(s)',
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: AppColors.primary,
@@ -259,7 +316,9 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
           return;
         }
         final user = ApiService.currentUser;
-        final nom = user != null ? '${user['prenom'] ?? ''} ${user['nom'] ?? ''}'.trim() : 'Candidat';
+        final nom = user != null
+            ? '${user['prenom'] ?? ''} ${user['nom'] ?? ''}'.trim()
+            : 'Candidat';
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -289,7 +348,6 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              // Badge numéro
               Container(
                 width: 56,
                 height: 56,
@@ -354,12 +412,12 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        _badge('$totalQ questions', color),
+                        _buildPillBadge('$totalQ questions', color),
                         const SizedBox(width: 8),
-                        _badge('$duree min', color),
+                        _buildPillBadge('$duree min', color, icon: Icons.access_time_rounded),
                         if (!ApiService.isAbonne && !ApiService.isAdmin) ...[
                           const SizedBox(width: 8),
-                          _badge('🔒 Premium', Colors.orange),
+                          _buildPillBadge('🔒 Premium', Colors.orange),
                         ],
                       ],
                     ),
@@ -374,53 +432,38 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
     );
   }
 
-  // ─── ONGLET EXAMENS TYPES ──────────────────────────────────────
+  // ─── ONGLET EXAMENS TYPES ────────────────────────────────────
   Widget _buildExamensTypesTab() {
     if (_loading) {
       return const Center(child: CircularProgressIndicator(color: AppColors.primary));
     }
-    return Column(
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          color: AppColors.primary.withValues(alpha: 0.06),
-          child: const Text(
-            '10 examens professionnels · 50 questions · 1h30',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: AppColors.primary,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+    return RefreshIndicator(
+      onRefresh: _loadExamens,
+      color: AppColors.primary,
+      child: GridView.builder(
+        padding: const EdgeInsets.fromLTRB(14, 16, 14, 20),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisSpacing: 14,
+          crossAxisSpacing: 14,
+          childAspectRatio: 0.82,
         ),
-        Expanded(
-          child: RefreshIndicator(
-            onRefresh: _loadExamens,
-            color: AppColors.primary,
-            child: GridView.builder(
-              padding: const EdgeInsets.all(14),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 14,
-                crossAxisSpacing: 14,
-                childAspectRatio: 0.88,
-              ),
-              itemCount: _examens.length,
-              itemBuilder: (ctx, i) => _buildExamenCard(_examens[i]),
-            ),
-          ),
-        ),
-      ],
+        itemCount: _examens.length,
+        itemBuilder: (ctx, i) => _buildExamenCard(_examens[i], i),
+      ),
     );
   }
 
-  Widget _buildExamenCard(dynamic examen) {
-    final color = _parseColor(examen['couleur']?.toString());
+  Widget _buildExamenCard(dynamic examen, int index) {
+    final color = _getExamColor(examen, index);
     final nom = examen['nom'] as String? ?? '';
     final description = examen['description'] as String? ?? '';
     final icone = examen['icone'] as String? ?? '📋';
+    final nbQ = examen['nombre_questions'] as int? ?? 50;
+    final duree = examen['duree_minutes'] as int? ?? 90;
+    final dureeStr = duree >= 60
+        ? '${duree ~/ 60}h${duree % 60 > 0 ? (duree % 60).toString().padLeft(2, '0') : ''}'
+        : '${duree}min';
 
     return GestureDetector(
       onTap: () {
@@ -441,59 +484,84 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: color.withValues(alpha: 0.22),
+            width: 1.5,
+          ),
           boxShadow: [
             BoxShadow(
-              color: color.withValues(alpha: 0.15),
+              color: color.withValues(alpha: 0.13),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.fromLTRB(10, 16, 10, 12),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // ── Icône sur pastille colorée ─────────────────
               Container(
-                width: 58,
-                height: 58,
+                width: 66,
+                height: 66,
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.12),
+                  color: color.withValues(alpha: 0.13),
                   shape: BoxShape.circle,
-                  border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
+                  border: Border.all(
+                    color: color.withValues(alpha: 0.3),
+                    width: 1.5,
+                  ),
                 ),
-                child: Center(child: Text(icone, style: const TextStyle(fontSize: 26))),
+                child: Center(
+                  child: Text(icone, style: const TextStyle(fontSize: 28)),
+                ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
+
+              // ── Nom du concours ────────────────────────────
               Text(
                 nom,
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 12.5,
                   fontWeight: FontWeight.w800,
                   color: color,
                   height: 1.2,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 5),
+
+              // ── Description ────────────────────────────────
               Text(
                 description,
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 10, color: Colors.black45, height: 1.3),
+                style: const TextStyle(
+                  fontSize: 10.5,
+                  color: Colors.black45,
+                  height: 1.3,
+                ),
               ),
-              const SizedBox(height: 8),
+
+              const Spacer(),
+
+              // ── Badges pilules ─────────────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _badge('50 q.', color),
+                  _buildPillBadge('$nbQ q.', color),
                   const SizedBox(width: 6),
-                  _badge('1h30', color),
+                  _buildPillBadge(
+                    dureeStr,
+                    color,
+                    icon: Icons.access_time_rounded,
+                  ),
                 ],
               ),
             ],
@@ -503,17 +571,31 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
     );
   }
 
-  Widget _badge(String label, Color color) {
+  // ── Badge pilule ─────────────────────────────────────────────
+  Widget _buildPillBadge(String label, Color color, {IconData? icon}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.35)),
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.30)),
       ),
-      child: Text(
-        label,
-        style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w700),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 11, color: color),
+            const SizedBox(width: 3),
+          ],
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              color: color,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -527,7 +609,8 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
           children: [
             Text('👑', style: TextStyle(fontSize: 22)),
             SizedBox(width: 8),
-            Text('Accès Premium', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+            Text('Accès Premium',
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
           ],
         ),
         content: const Text(
@@ -542,7 +625,8 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx),
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-            child: const Text("S'abonner", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+            child: const Text("S'abonner",
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
           ),
         ],
       ),

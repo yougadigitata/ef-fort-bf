@@ -1360,23 +1360,59 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
           : 'Candidat';
       final now = DateTime.now();
       final dateStr = '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}';
+      final noteDouble = total > 0 ? (score / total * 20) : 0.0;
+      final noteStr = noteDouble.toStringAsFixed(1);
 
       final pdf = pw.Document();
-      final primaryColor = PdfColor.fromHex('1A5C38');
-      final greyColor = PdfColor.fromHex('6C757D');
-      final successColor = PdfColor.fromHex('2E7D32');
-      final errorColor = PdfColor.fromHex('C62828');
-      final lightGreen = PdfColor.fromHex('E8F5E9');
-      final lightRed = PdfColor.fromHex('FFEBEE');
-      final lightGrey = PdfColor.fromHex('F5F5F5');
+      // ── Palette couleurs PDF ──────────────────────────────────────
+      final primaryColor  = PdfColor.fromHex('1A5C38');
+      final primaryDark   = PdfColor.fromHex('0E3D24');
+      final greyColor     = PdfColor.fromHex('6C757D');
+      final successColor  = PdfColor.fromHex('2E7D32');
+      final errorColor    = PdfColor.fromHex('C62828');
+      final greyDark      = PdfColor.fromHex('424242');
+      final lightGreen    = PdfColor.fromHex('E8F5E9');
+      final lightRed      = PdfColor.fromHex('FFEBEE');
+      final lightGrey     = PdfColor.fromHex('F5F5F5');
+      final borderGreen   = PdfColor.fromHex('A5D6A7');
+      final borderRed     = PdfColor.fromHex('EF9A9A');
+      final borderGrey    = PdfColor.fromHex('BDBDBD');
+      final orangeColor   = PdfColor.fromHex('E67E22');
+      final redCircle     = PdfColor.fromHex('C62828');
+      final redCircleDark = PdfColor.fromHex('8B0000');
 
-      // Charger une police supportant les accents français (Helvetica intégrée)
-      // Les polices intégrées au format PDF supportent les caractères Latin-1
-      final fontRegular = pw.Font.helvetica();
-      final fontBold = pw.Font.helveticaBold();
-      final fontItalic = pw.Font.helveticaOblique();
+      // ── Appréciation selon score ──────────────────────────────────
+      String getAppreciation() {
+        if (pct >= 90) return 'Excellent ! Vous maitrisez parfaitement le sujet. Continuez ainsi !';
+        if (pct >= 80) return 'Excellent travail ! Vous maitrisez bien les notions essentielles. Continuez sur cette lancee et visez la perfection.';
+        if (pct >= 70) return 'Tres bien ! Vous avez un bon niveau. Quelques revisions supplementaires vous permettront d\'atteindre l\'excellence.';
+        if (pct >= 60) return 'Bien ! Vous avez assimile les fondamentaux. Concentrez-vous sur les points manques pour progresser.';
+        if (pct >= 50) return 'Passable. Il vous faut revoir certaines notions importantes. Perseverez dans vos revisions !';
+        return 'Des efforts supplementaires sont necessaires. Revoyez attentivement le cours et recommencez. Vous pouvez y arriver !';
+      }
 
-      // Charger le logo
+      String getMention() {
+        if (pct >= 90) return 'EXCELLENT';
+        if (pct >= 80) return 'TRES BIEN';
+        if (pct >= 70) return 'BIEN';
+        if (pct >= 60) return 'ASSEZ BIEN';
+        if (pct >= 50) return 'PASSABLE';
+        return 'INSUFFISANT';
+      }
+
+      PdfColor getMentionColor() {
+        if (pct >= 70) return successColor;
+        if (pct >= 50) return orangeColor;
+        return errorColor;
+      }
+
+      // ── Polices ───────────────────────────────────────────────────
+      final fontRegular    = pw.Font.helvetica();
+      final fontBold       = pw.Font.helveticaBold();
+      final fontItalic     = pw.Font.helveticaOblique();
+      final fontBoldItalic = pw.Font.helveticaBoldOblique();
+
+      // ── Logo ──────────────────────────────────────────────────────
       pw.MemoryImage? logoImage;
       try {
         final ByteData logoData = await rootBundle.load('assets/images/logo_effort.png');
@@ -1390,258 +1426,400 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
         }
       }
 
-      // Nettoyer le texte : supprimer emojis et caractères non supportés par PDF
-      // Garder uniquement ASCII + Latin étendu (accents français inclus)
+      // ── Nettoyeur texte ───────────────────────────────────────────
       String cleanText(String text) {
         if (text.isEmpty) return text;
-        // Remplacer les emojis et caractères hors Latin par des espaces
-        String cleaned = text
+        return text
             .replaceAll(RegExp(r'[\u{1F000}-\u{1FFFF}]', unicode: true), '')
             .replaceAll(RegExp(r'[\u{2600}-\u{27BF}]', unicode: true), '')
             .replaceAll(RegExp(r'[\u{1F300}-\u{1F9FF}]', unicode: true), '')
             .replaceAll(RegExp(r'[^\x20-\x7E\u00A0-\u024F]'), ' ')
             .replaceAll(RegExp(r' {2,}'), ' ')
             .trim();
-        return cleaned;
       }
 
-      // Thème global PDF avec polices Helvetica (support accents latins)
       final theme = pw.ThemeData.withFont(
         base: fontRegular,
         bold: fontBold,
         italic: fontItalic,
-        boldItalic: pw.Font.helveticaBoldOblique(),
+        boldItalic: fontBoldItalic,
       );
 
       pdf.addPage(
         pw.MultiPage(
           pageFormat: PdfPageFormat.a4,
-          margin: const pw.EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+          margin: const pw.EdgeInsets.fromLTRB(28, 20, 28, 20),
           theme: theme,
-          header: (ctx) => pw.Container(
-            padding: const pw.EdgeInsets.only(bottom: 10),
-            decoration: pw.BoxDecoration(
-              border: pw.Border(bottom: pw.BorderSide(color: primaryColor, width: 2)),
-            ),
-            child: pw.Row(
-              crossAxisAlignment: pw.CrossAxisAlignment.center,
-              children: [
-                // Logo ou texte de remplacement
-                pw.Container(
-                  width: 52,
-                  height: 52,
-                  decoration: pw.BoxDecoration(
-                    color: primaryColor,
-                    borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+          // ════════════════════════════════════════════════════════
+          // HEADER — Logo + titre + bandeau vert résultats
+          // ════════════════════════════════════════════════════════
+          header: (ctx) => pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              // Ligne principale logo + infos + cercle note
+              pw.Row(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  // Logo EF-FORT
+                  pw.Container(
+                    width: 58,
+                    height: 58,
+                    decoration: pw.BoxDecoration(
+                      color: primaryColor,
+                      borderRadius: const pw.BorderRadius.all(pw.Radius.circular(10)),
+                      border: pw.Border.all(color: primaryDark, width: 2),
+                    ),
+                    padding: const pw.EdgeInsets.all(4),
+                    child: logoImage != null
+                        ? pw.Image(logoImage, fit: pw.BoxFit.contain)
+                        : pw.Center(
+                            child: pw.Text('EF',
+                                style: pw.TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: pw.FontWeight.bold,
+                                  color: PdfColors.white,
+                                ))),
                   ),
-                  padding: const pw.EdgeInsets.all(3),
-                  child: logoImage != null
-                      ? pw.Image(logoImage, fit: pw.BoxFit.contain)
-                      : pw.Center(
-                          child: pw.Text('EF',
-                              style: pw.TextStyle(
-                                fontSize: 18,
-                                fontWeight: pw.FontWeight.bold,
-                                color: PdfColors.white,
-                              )),
+                  pw.SizedBox(width: 12),
+                  // Nom + slogan + bandeau résultats
+                  pw.Expanded(
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text('EF-FORT.BF',
+                            style: pw.TextStyle(
+                              fontSize: 20,
+                              fontWeight: pw.FontWeight.bold,
+                              color: primaryColor,
+                            )),
+                        pw.Text('Plateforme N1 des Concours au Burkina Faso',
+                            style: pw.TextStyle(fontSize: 9.5, color: greyColor)),
+                        pw.Text('"Chaque effort te rapproche de ton admission finale"',
+                            style: pw.TextStyle(
+                              fontSize: 9,
+                              color: orangeColor,
+                              fontStyle: pw.FontStyle.italic,
+                            )),
+                        pw.SizedBox(height: 5),
+                        // Bandeau vert résultats
+                        pw.Container(
+                          padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: pw.BoxDecoration(
+                            color: lightGreen,
+                            borderRadius: const pw.BorderRadius.all(pw.Radius.circular(5)),
+                            border: pw.Border.all(color: borderGreen, width: 0.8),
+                          ),
+                          child: pw.Text(
+                            'Resultats ${cleanText(widget.label)}  •  ef-fort-bf.pages.dev',
+                            style: pw.TextStyle(fontSize: 9, color: primaryColor, fontWeight: pw.FontWeight.bold),
+                          ),
                         ),
-                ),
-                pw.SizedBox(width: 14),
-                pw.Expanded(
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      ],
+                    ),
+                  ),
+                  pw.SizedBox(width: 10),
+                  // ── Cercle note ────────────────────────────────
+                  pw.Column(
                     children: [
-                      pw.Text('EF-FORT.BF',
+                      pw.Container(
+                        width: 80,
+                        height: 80,
+                        decoration: pw.BoxDecoration(
+                          color: PdfColors.white,
+                          shape: pw.BoxShape.circle,
+                          border: pw.Border.all(color: redCircle, width: 3),
+                        ),
+                        child: pw.Center(
+                          child: pw.Column(
+                            mainAxisAlignment: pw.MainAxisAlignment.center,
+                            children: [
+                              pw.Text(
+                                noteStr,
+                                style: pw.TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: pw.FontWeight.bold,
+                                  color: redCircle,
+                                ),
+                              ),
+                              pw.Container(
+                                width: 40,
+                                height: 1,
+                                color: redCircleDark,
+                              ),
+                              pw.Text(
+                                '20',
+                                style: pw.TextStyle(fontSize: 14, color: redCircle),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      pw.SizedBox(height: 4),
+                      pw.Container(
+                        padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                        decoration: pw.BoxDecoration(
+                          color: getMentionColor(),
+                          borderRadius: const pw.BorderRadius.all(pw.Radius.circular(5)),
+                        ),
+                        child: pw.Text(
+                          getMention(),
                           style: pw.TextStyle(
-                            fontSize: 18,
+                            fontSize: 10,
                             fontWeight: pw.FontWeight.bold,
-                            color: primaryColor,
-                          )),
-                      pw.Text('Plateforme N°1 d\'apprentissage et d\'education au Burkina Faso',
-                          style: pw.TextStyle(fontSize: 10, color: greyColor)),
-                      pw.Text('Transformer l\'effort en reussite',
-                          style: pw.TextStyle(fontSize: 9, color: greyColor, fontStyle: pw.FontStyle.italic)),
+                            color: PdfColors.white,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
+                ],
+              ),
+              pw.SizedBox(height: 10),
+
+              // ── Fiche candidat ─────────────────────────────────
+              pw.Container(
+                padding: const pw.EdgeInsets.all(12),
+                decoration: pw.BoxDecoration(
+                  color: PdfColors.white,
+                  borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+                  border: pw.Border.all(color: PdfColors.grey300, width: 0.8),
                 ),
-                pw.Container(
-                  padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: pw.BoxDecoration(
-                    color: lightGreen,
-                    borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
-                  ),
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.end,
-                    children: [
-                      pw.Text('RESULTATS',
-                          style: pw.TextStyle(fontSize: 10, color: primaryColor, fontWeight: pw.FontWeight.bold)),
-                      pw.Text('$score / $total  ($pct%)',
-                          style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: primaryColor)),
-                      pw.Text('Note: $sur20 / 20',
-                          style: pw.TextStyle(fontSize: 11, color: greyColor)),
-                    ],
-                  ),
+                child: pw.Row(
+                  children: [
+                    pw.Expanded(
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          _pdfInfoRow('Candidat', cleanText(nom.isEmpty ? 'Candidat' : nom), fontBold, greyColor, primaryColor),
+                          pw.SizedBox(height: 3),
+                          _pdfInfoRow('Matiere', cleanText(widget.label), fontBold, greyColor, greyDark),
+                          pw.SizedBox(height: 3),
+                          _pdfInfoRow('Date', dateStr, fontBold, greyColor, greyDark),
+                          pw.SizedBox(height: 5),
+                          // Barre score
+                          pw.Container(
+                            padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            decoration: pw.BoxDecoration(
+                              color: lightGreen,
+                              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+                              border: pw.Border.all(color: borderGreen, width: 0.8),
+                            ),
+                            child: pw.Text(
+                              'Score : $score/$total ($pct%)   |   Note /20 : $noteStr',
+                              style: pw.TextStyle(
+                                fontSize: 11,
+                                fontWeight: pw.FontWeight.bold,
+                                color: primaryColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              pw.SizedBox(height: 8),
+
+              // ── Appréciation ───────────────────────────────────
+              pw.Container(
+                padding: const pw.EdgeInsets.fromLTRB(12, 8, 12, 8),
+                decoration: pw.BoxDecoration(
+                  color: lightGreen,
+                  borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+                  border: pw.Border.all(color: borderGreen, width: 0.8),
+                ),
+                child: pw.Row(
+                  children: [
+                    pw.Expanded(
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.Text('Appreciation',
+                              style: pw.TextStyle(
+                                fontSize: 11,
+                                fontWeight: pw.FontWeight.bold,
+                                color: primaryColor,
+                              )),
+                          pw.SizedBox(height: 3),
+                          pw.Text(getAppreciation(),
+                              style: pw.TextStyle(fontSize: 10, color: greyDark)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              pw.SizedBox(height: 10),
+            ],
           ),
+
+          // ════════════════════════════════════════════════════════
+          // FOOTER
+          // ════════════════════════════════════════════════════════
           footer: (ctx) => pw.Container(
-            alignment: pw.Alignment.center,
-            padding: const pw.EdgeInsets.only(top: 5),
+            padding: const pw.EdgeInsets.only(top: 6),
             decoration: pw.BoxDecoration(
               border: pw.Border(top: pw.BorderSide(color: PdfColors.grey300, width: 0.5)),
             ),
             child: pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
-                pw.Text('EF-FORT.BF - Chaque effort te rapproche de ton admission',
+                pw.Text('EF-FORT.BF  •  Chaque effort te rapproche de ton admission',
                     style: pw.TextStyle(fontSize: 8, color: greyColor)),
-                pw.Text('Page ${ctx.pageNumber} / ${ctx.pagesCount}',
+                pw.Text('ef-fort-bf.pages.dev  |  Page ${ctx.pageNumber}/${ctx.pagesCount}',
                     style: pw.TextStyle(fontSize: 8, color: greyColor)),
               ],
             ),
           ),
+
+          // ════════════════════════════════════════════════════════
+          // CONTENU — Questions Q1..Qn
+          // ════════════════════════════════════════════════════════
           build: (ctx) => [
-            // Fiche candidat
+            // Titre section
             pw.Container(
-              padding: const pw.EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: pw.BoxDecoration(
-                color: lightGreen,
-                borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
-              ),
-              child: pw.Row(
-                children: [
-                  pw.Expanded(
-                    child: pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: [
-                        pw.Text('Candidat : ${cleanText(nom.isEmpty ? "Candidat" : nom)}',
-                            style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, color: primaryColor)),
-                        pw.SizedBox(height: 2),
-                        pw.Text('Matiere  : ${cleanText(widget.label)}',
-                            style: pw.TextStyle(fontSize: 12, color: greyColor)),
-                        pw.Text('Date     : $dateStr',
-                            style: pw.TextStyle(fontSize: 12, color: greyColor)),
-                      ],
-                    ),
-                  ),
-                  // Cercle rouge avec note sur 20
-                  pw.Container(
-                    width: 70,
-                    height: 70,
-                    decoration: pw.BoxDecoration(
-                      color: PdfColor.fromHex('C62828'),
-                      shape: pw.BoxShape.circle,
-                      border: pw.Border.all(color: PdfColor.fromHex('8B0000'), width: 2),
-                    ),
-                    child: pw.Center(
-                      child: pw.Column(
-                        mainAxisAlignment: pw.MainAxisAlignment.center,
-                        children: [
-                          pw.Text(
-                            '${(score / total * 20).toStringAsFixed(1)}',
-                            style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold, color: PdfColors.white),
-                          ),
-                          pw.Text(
-                            '/ 20',
-                            style: pw.TextStyle(fontSize: 10, color: PdfColors.white),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            pw.SizedBox(height: 14),
-            // Titre section corrigé
-            pw.Container(
-              padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              width: double.infinity,
+              padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 7),
               decoration: pw.BoxDecoration(
                 color: primaryColor,
-                borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+                borderRadius: const pw.BorderRadius.all(pw.Radius.circular(7)),
               ),
-              child: pw.Text('CORRIGE DETAILLE',
-                  style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
+              child: pw.Text(
+                'CORRIGE DETAILLE',
+                style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+              ),
             ),
-            pw.SizedBox(height: 8),
-            // Questions
+            pw.SizedBox(height: 10),
+
+            // Questions détaillées
             ...List.generate(_questions.length, (i) {
               final q = _questions[i] as Map<String, dynamic>;
               final bonnes = _getBonnesReponses(q);
               final choisies = _selectedAnswers[i] ?? {};
               final skipped = _skipped.contains(i);
-              final correct = !skipped && choisies.isNotEmpty && choisies.containsAll(bonnes) && bonnes.containsAll(choisies);
+              final correct = !skipped && choisies.isNotEmpty &&
+                  choisies.containsAll(bonnes) && bonnes.containsAll(choisies);
               final noAns = choisies.isEmpty || skipped;
 
-              final bgColor = noAns ? lightGrey : (correct ? lightGreen : lightRed);
-              final labelColor = noAns ? greyColor : (correct ? successColor : errorColor);
-              final statusText = noAns ? 'Non repondu' : (correct ? 'CORRECT' : 'INCORRECT');
-
-              final enonce = cleanText((q['enonce'] ?? q['question'] ?? '').toString());
-              final explication = cleanText((q['explication'] ?? '').toString());
+              final bgColor      = noAns ? lightGrey   : (correct ? lightGreen : lightRed);
+              final borderColor  = noAns ? borderGrey  : (correct ? borderGreen : borderRed);
+              final circleColor  = noAns ? greyColor   : (correct ? successColor : errorColor);
+              final statusText   = noAns ? 'NON REPONDU' : (correct ? 'CORRECT' : 'INCORRECT');
+              final enonce       = cleanText((q['enonce'] ?? q['question'] ?? '').toString());
+              final explication  = cleanText((q['explication'] ?? '').toString());
 
               return pw.Container(
-                margin: const pw.EdgeInsets.only(bottom: 6),
-                padding: const pw.EdgeInsets.fromLTRB(10, 8, 10, 8),
+                margin: const pw.EdgeInsets.only(bottom: 8),
                 decoration: pw.BoxDecoration(
                   color: bgColor,
-                  borderRadius: const pw.BorderRadius.all(pw.Radius.circular(5)),
+                  borderRadius: const pw.BorderRadius.all(pw.Radius.circular(7)),
+                  border: pw.Border.all(color: borderColor, width: 0.8),
                 ),
                 child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    pw.Row(
-                      children: [
-                        pw.Container(
-                          width: 22,
-                          height: 22,
-                          decoration: pw.BoxDecoration(
-                            color: labelColor,
-                            shape: pw.BoxShape.circle,
-                          ),
-                          child: pw.Center(
-                            child: pw.Text('${i + 1}',
-                            style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
-                          ),
+                    // En-tête Q + statut
+                    pw.Container(
+                      padding: const pw.EdgeInsets.fromLTRB(10, 7, 10, 6),
+                      decoration: pw.BoxDecoration(
+                        color: bgColor,
+                        border: pw.Border(bottom: pw.BorderSide(color: borderColor, width: 0.5)),
+                        borderRadius: const pw.BorderRadius.only(
+                          topLeft: pw.Radius.circular(7),
+                          topRight: pw.Radius.circular(7),
                         ),
-                        pw.SizedBox(width: 6),
-                        pw.Expanded(
-                          child: pw.Text(statusText,
-                              style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold, color: labelColor)),
-                        ),
-                      ],
+                      ),
+                      child: pw.Row(
+                        children: [
+                          // Cercle numéro
+                          pw.Container(
+                            width: 24,
+                            height: 24,
+                            decoration: pw.BoxDecoration(
+                              color: circleColor,
+                              shape: pw.BoxShape.circle,
+                            ),
+                            child: pw.Center(
+                              child: pw.Text(
+                                'Q${i + 1}',
+                                style: pw.TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: pw.FontWeight.bold,
+                                  color: PdfColors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                          pw.SizedBox(width: 8),
+                          pw.Expanded(
+                            child: pw.Text(
+                              enonce.isNotEmpty ? enonce : 'Question ${i + 1}',
+                              style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, color: greyDark),
+                            ),
+                          ),
+                          // Badge statut
+                          pw.Container(
+                            padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: pw.BoxDecoration(
+                              color: circleColor,
+                              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(5)),
+                            ),
+                            child: pw.Text(
+                              statusText,
+                              style: pw.TextStyle(
+                                fontSize: 9,
+                                fontWeight: pw.FontWeight.bold,
+                                color: PdfColors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    pw.SizedBox(height: 4),
-                    if (enonce.isNotEmpty)
-                      pw.Text(enonce,
-                          style: pw.TextStyle(fontSize: 13, color: PdfColors.black)),
-                    pw.SizedBox(height: 3),
-                    pw.Text(
-                      'Votre reponse : ${choisies.isEmpty ? "-" : choisies.join(", ")}   |   Bonne(s) reponse(s) : ${bonnes.isEmpty ? "?" : bonnes.join(", ")}',
-                      style: pw.TextStyle(fontSize: 12, color: greyColor),
+                    // Détails réponse
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.fromLTRB(10, 5, 10, 7),
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.Text(
+                            'Votre reponse : ${choisies.isEmpty ? "-" : choisies.join(", ")}   |   Bonne(s) : ${bonnes.isEmpty ? "?" : bonnes.join(", ")}',
+                            style: pw.TextStyle(fontSize: 10, color: greyColor),
+                          ),
+                          if (explication.isNotEmpty) ...[
+                            pw.SizedBox(height: 3),
+                            pw.Text(
+                              'Explication : $explication',
+                              style: pw.TextStyle(
+                                fontSize: 9.5,
+                                color: greyColor,
+                                fontStyle: pw.FontStyle.italic,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
                     ),
-                    if (explication.isNotEmpty) ...[
-                      pw.SizedBox(height: 2),
-                      pw.Text('Explication : $explication',
-                          style: pw.TextStyle(fontSize: 11, color: greyColor, fontStyle: pw.FontStyle.italic)),
-                    ],
                   ],
                 ),
               );
             }),
-            pw.SizedBox(height: 12),
-            // Pied de page document
+
+            pw.SizedBox(height: 14),
+            // Pied de document
             pw.Container(
-              padding: const pw.EdgeInsets.all(8),
+              width: double.infinity,
+              padding: const pw.EdgeInsets.all(10),
               decoration: pw.BoxDecoration(
                 color: lightGreen,
-                borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+                borderRadius: const pw.BorderRadius.all(pw.Radius.circular(7)),
+                border: pw.Border.all(color: borderGreen, width: 0.8),
               ),
               child: pw.Text(
-                'EF-FORT.BF - Transformer l\'effort en reussite ! Bonne preparation.',
+                'EF-FORT.BF  •  Chaque effort te rapproche de ton admission finale  •  ef-fort-bf.pages.dev',
                 textAlign: pw.TextAlign.center,
-                style: pw.TextStyle(fontSize: 11, color: primaryColor, fontStyle: pw.FontStyle.italic),
+                style: pw.TextStyle(fontSize: 10, color: primaryColor, fontStyle: pw.FontStyle.italic),
               ),
             ),
           ],
@@ -1662,6 +1840,19 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
         );
       }
     }
+  }
+
+  // ── Helper ligne info PDF ─────────────────────────────────────────
+  pw.Widget _pdfInfoRow(String label, String value, pw.Font fontBold, PdfColor labelColor, PdfColor valueColor) {
+    return pw.Row(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text('$label : ', style: pw.TextStyle(fontSize: 11, font: fontBold, color: labelColor)),
+        pw.Expanded(
+          child: pw.Text(value, style: pw.TextStyle(fontSize: 11, color: valueColor)),
+        ),
+      ],
+    );
   }
 
   // ── Bannière Premium ──────────────────────────────────────────────
