@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_math_fork/flutter_math.dart';
 
 // ══════════════════════════════════════════════════════════════════════
-// MathTextWidget v2.0 — Rendu intelligent texte + formules LaTeX
+// MathTextWidget v3.0 — Rendu intelligent texte + formules LaTeX
 // Supporte : texte brut, LaTeX inline $...$ et block $$...$$
 // Fallback intelligent : convertit LaTeX en symboles Unicode lisibles
-// Compatible avec tous les QCM de EF-FORT.BF (Maths, SP, SVT...)
+// Compatible TOUS SUPPORTS : Mobile (Android/iOS) + Web Flutter
+// Corrections : gestion robuste des erreurs flutter_math_fork sur Web
+// Compatible avec tous les QCM de EF-FORT.BF (Maths, SP, SVT, Info...)
 // ══════════════════════════════════════════════════════════════════════
 
 class MathTextWidget extends StatelessWidget {
@@ -61,6 +64,14 @@ class MathTextWidget extends StatelessWidget {
   Widget _buildMathWidget(String latex, TextStyle baseStyle) {
     // Nettoyer le LaTeX avant de le soumettre
     final cleanedLatex = _normalizeLatex(latex);
+
+    // Sur le Web, utiliser directement le fallback Unicode pour plus de fiabilité
+    // flutter_math_fork peut avoir des problèmes de rendu sur certains navigateurs
+    if (kIsWeb) {
+      final readableText = _latexToReadable(cleanedLatex);
+      return _buildStyledMathText(readableText, baseStyle);
+    }
+
     try {
       return Math.tex(
         cleanedLatex,
@@ -71,30 +82,37 @@ class MathTextWidget extends StatelessWidget {
         onErrorFallback: (err) {
           // Fallback : convertir LaTeX en symboles Unicode lisibles
           final readableText = _latexToReadable(cleanedLatex);
-          return Text(
-            readableText,
-            style: baseStyle.copyWith(
-              fontFamily: 'Roboto',
-              fontStyle: FontStyle.normal,
-              color: baseStyle.color,
-            ),
-          );
+          return _buildStyledMathText(readableText, baseStyle);
         },
       );
     } catch (_) {
       final readableText = _latexToReadable(cleanedLatex);
-      return Text(
-        readableText,
-        style: baseStyle.copyWith(fontStyle: FontStyle.normal),
-      );
+      return _buildStyledMathText(readableText, baseStyle);
     }
+  }
+
+  Widget _buildStyledMathText(String text, TextStyle baseStyle) {
+    return Text(
+      text,
+      style: baseStyle.copyWith(
+        fontFamily: 'Roboto',
+        fontStyle: FontStyle.normal,
+        color: mathColor ?? baseStyle.color,
+        fontWeight: baseStyle.fontWeight ?? FontWeight.w500,
+      ),
+    );
   }
 
   // ── Normaliser le LaTeX avant rendu ────────────────────────────────
   String _normalizeLatex(String latex) {
     String s = latex.trim();
-    // Remplacer \left( par ( et \right) par ) si flutter_math les gère mal
-    // Conserver tel quel — flutter_math_fork les gère généralement bien
+    // Normaliser les espaces multiples
+    s = s.replaceAll(RegExp(r'\s+'), ' ');
+    // Supprimer les espaces en début/fin des commandes communes
+    s = s.replaceAll(r'\sqrt {', r'\sqrt{');
+    s = s.replaceAll(r'\frac {', r'\frac{');
+    s = s.replaceAll(r'\left (', r'\left(');
+    s = s.replaceAll(r'\right )', r'\right)');
     return s;
   }
 

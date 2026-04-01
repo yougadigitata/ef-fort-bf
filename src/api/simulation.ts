@@ -196,6 +196,7 @@ simulation.post('/terminer', requireAuth, async (c) => {
 
   await db.from('sessions_examen').update({
     score,
+    score_pourcentage: pct,
     total_questions: total,
     temps_utilise: temps_utilise ?? 0,
     termine: true,
