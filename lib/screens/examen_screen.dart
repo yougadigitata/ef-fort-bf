@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../widgets/math_text_widget.dart';
 
 /// PHASE 4 — Interface Examen Noir/Blanc (simulation vraie feuille)
 class ExamenScreen extends StatefulWidget {
@@ -296,15 +297,17 @@ class _ExamenScreenState extends State<ExamenScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Énoncé
-                  Text(
-                    q['enonce'] as String? ?? '',
-                    style: const TextStyle(
+                  // Énoncé avec support formules
+                  MathTextWidget(
+                    text: q['enonce'] as String? ?? '',
+                    textStyle: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: Colors.black,
                       height: 1.7,
                     ),
+                    mathSize: 16,
+                    mathColor: Colors.black,
                   ),
                   const SizedBox(height: 24),
 
@@ -495,14 +498,16 @@ class _ExamenScreenState extends State<ExamenScreen> {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(
-                '$letter.   $text',
-                style: TextStyle(
+              child: MathTextWidget(
+                text: '$letter.   $text',
+                textStyle: TextStyle(
                   fontSize: 14,
                   color: isSelected ? Colors.white : Colors.black,
                   height: 1.5,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 ),
+                mathSize: 14,
+                mathColor: isSelected ? Colors.white : Colors.black,
               ),
             ),
           ],
@@ -786,20 +791,20 @@ class ResultatsExamenScreen extends StatelessWidget {
           ),
           if ((d['enonce'] as String).isNotEmpty) ...[
             const SizedBox(height: 8),
-            Text(
-              d['enonce'] as String,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 12, color: Colors.black87, height: 1.4),
+            MathTextWidget(
+              text: d['enonce'] as String,
+              textStyle: const TextStyle(fontSize: 12, color: Colors.black87, height: 1.4),
+              mathSize: 12,
+              mathColor: Colors.black87,
             ),
           ],
           if ((d['explication'] as String).isNotEmpty) ...[
             const SizedBox(height: 6),
-            Text(
-              '💡 ${d['explication']}',
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 11, color: Colors.black54, height: 1.3),
+            MathTextWidget(
+              text: '💡 ${d['explication']}',
+              textStyle: const TextStyle(fontSize: 11, color: Colors.black54, height: 1.3),
+              mathSize: 11,
+              mathColor: Colors.black54,
             ),
           ],
         ],

@@ -7,6 +7,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
+import '../widgets/math_text_widget.dart';
 import 'abonnement_screen.dart';
 
 // ══════════════════════════════════════════════════════════════════════
@@ -467,16 +468,18 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
                     ],
                   ),
                 ),
-                // Texte question (GRAS)
-                Text(
-                  texte,
-                  style: const TextStyle(
+                // Texte question (GRAS avec support formules)
+                MathTextWidget(
+                  text: texte,
+                  textStyle: const TextStyle(
                     fontSize: 15.5,
                     fontFamily: 'Roboto',
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF1A1A1A),
                     height: 1.5,
                   ),
+                  mathSize: 15.5,
+                  mathColor: const Color(0xFF1A1A1A),
                 ),
                 const SizedBox(height: 5),
                 // Heure + double coche style WhatsApp
@@ -624,9 +627,9 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
                           ),
                           const SizedBox(width: 10),
                           Expanded(
-                            child: Text(
-                              text,
-                              style: TextStyle(
+                            child: MathTextWidget(
+                              text: text,
+                              textStyle: TextStyle(
                                 fontSize: 14,
                                 fontFamily: 'Roboto',
                                 color: textColor,
@@ -635,6 +638,8 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
                                     : FontWeight.normal,
                                 height: 1.4,
                               ),
+                              mathSize: 14,
+                              mathColor: textColor,
                             ),
                           ),
                           if (trailingWidget != null) ...[
@@ -1085,15 +1090,17 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
                       ],
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      (q['enonce'] ?? q['question'] ?? '').toString(),
-                      style: const TextStyle(
+                    MathTextWidget(
+                      text: (q['enonce'] ?? q['question'] ?? '').toString(),
+                      textStyle: const TextStyle(
                         fontFamily: 'Roboto',
                         fontWeight: FontWeight.w600,
                         fontSize: 13.5,
                         color: Color(0xFF1A1A1A),
                         height: 1.45,
                       ),
+                      mathSize: 13.5,
+                      mathColor: const Color(0xFF1A1A1A),
                     ),
                     const SizedBox(height: 8),
                     ...opts.entries
@@ -1133,9 +1140,9 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
                               ),
                             ),
                             Expanded(
-                              child: Text(
-                                opt.value,
-                                style: TextStyle(
+                              child: MathTextWidget(
+                                text: opt.value,
+                                textStyle: TextStyle(
                                   fontSize: 12.5,
                                   color: isBonne
                                       ? _waDarkGreen
@@ -1146,6 +1153,12 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
                                       ? FontWeight.w600
                                       : FontWeight.normal,
                                 ),
+                                mathSize: 12.5,
+                                mathColor: isBonne
+                                    ? _waDarkGreen
+                                    : isChoisie && !isBonne
+                                        ? Colors.red.shade700
+                                        : Colors.grey.shade700,
                               ),
                             ),
                             if (isBonne)
@@ -1172,13 +1185,15 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
                                 style: TextStyle(fontSize: 13)),
                             const SizedBox(width: 6),
                             Expanded(
-                              child: Text(
-                                q['explication'].toString(),
-                                style: TextStyle(
+                              child: MathTextWidget(
+                                text: q['explication'].toString(),
+                                textStyle: TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey.shade700,
                                   height: 1.4,
                                 ),
+                                mathSize: 12,
+                                mathColor: Colors.grey.shade700,
                               ),
                             ),
                           ],

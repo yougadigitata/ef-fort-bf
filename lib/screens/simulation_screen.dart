@@ -11,6 +11,7 @@ import '../services/api_service.dart';
 import '../services/supabase_service.dart';
 import '../services/bell_service.dart';
 import '../widgets/logo_widget.dart';
+import '../widgets/math_text_widget.dart';
 import 'abonnement_screen.dart';
 
 // ══════════════════════════════════════════════════════════════
@@ -1441,14 +1442,16 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                     ),
                   ),
                   Expanded(
-                    child: Text(
-                      texte,
-                      style: const TextStyle(
+                    child: MathTextWidget(
+                      text: texte,
+                      textStyle: const TextStyle(
                         fontSize: 14,
                         fontFamily: 'Georgia',
                         height: 1.55,
                         color: AppColors.textDark,
                       ),
+                      mathSize: 14,
+                      mathColor: AppColors.textDark,
                     ),
                   ),
                 ],
@@ -1923,9 +1926,11 @@ class SimulationResultScreen extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 6),
-                    Text(
-                      (q['enonce'] ?? q['question'] ?? '').toString(),
-                      style: const TextStyle(fontSize: 13, fontFamily: 'Georgia', height: 1.5, fontWeight: FontWeight.w500),
+                    MathTextWidget(
+                      text: (q['enonce'] ?? q['question'] ?? '').toString(),
+                      textStyle: const TextStyle(fontSize: 13, fontFamily: 'Georgia', height: 1.5, fontWeight: FontWeight.w500),
+                      mathSize: 13,
+                      mathColor: AppColors.textDark,
                     ),
                     const SizedBox(height: 8),
                     ...options.entries.map((opt) {
@@ -1955,13 +1960,15 @@ class SimulationResultScreen extends StatelessWidget {
                               ),
                             ),
                             Expanded(
-                              child: Text(
-                                t,
-                                style: TextStyle(
+                              child: MathTextWidget(
+                                text: t,
+                                textStyle: TextStyle(
                                   fontSize: 12,
                                   color: isBonne ? AppColors.success : AppColors.error,
                                   fontFamily: 'Georgia',
                                 ),
+                                mathSize: 12,
+                                mathColor: isBonne ? AppColors.success : AppColors.error,
                               ),
                             ),
                             Icon(
@@ -1981,14 +1988,16 @@ class SimulationResultScreen extends StatelessWidget {
                           color: const Color(0xFF1A5C38).withValues(alpha: 0.05),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Text(
-                          q['explication'].toString(),
-                          style: const TextStyle(
+                        child: MathTextWidget(
+                          text: q['explication'].toString(),
+                          textStyle: const TextStyle(
                             fontSize: 12,
                             fontStyle: FontStyle.italic,
                             height: 1.5,
                             color: AppColors.textDark,
                           ),
+                          mathSize: 12,
+                          mathColor: AppColors.textDark,
                         ),
                       ),
                     ],
