@@ -765,11 +765,15 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
   static const int _minSecondsBeforeSubmit = 30 * 60;
   static const int _durationSeconds = 90 * 60; // 1h30
 
+  // ── Admin bypass : l'admin peut soumettre à tout moment ──
+  bool get _isAdminUser => ApiService.isAdmin;
+
   bool get _canSubmit =>
+      _isAdminUser ||
       _remainingSeconds <= (_durationSeconds - _minSecondsBeforeSubmit);
 
   int get _secondsBeforeCanSubmit =>
-      _remainingSeconds > (_durationSeconds - _minSecondsBeforeSubmit)
+      (!_isAdminUser && _remainingSeconds > (_durationSeconds - _minSecondsBeforeSubmit))
           ? _remainingSeconds - (_durationSeconds - _minSecondsBeforeSubmit)
           : 0;
 
@@ -1385,94 +1389,283 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
     );
   }
 
-  // ── Feuille de questions (TÂCHE 7) ──
+  // ── Feuille de questions — avec options A/B/C/D ──
   Widget _buildQuestionsList() {
-    return ListView.builder(
-      controller: _questionsScroll,
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
-      itemCount: _questions.length,
-      itemBuilder: (ctx, i) {
-        final q = _questions[i] as Map<String, dynamic>;
-        final texte = (q['enonce'] ?? q['question'] ?? '').toString();
-        final showSep = _showMatiereSeparator(i);
-        final matiereLabel = _getMatiereLabel(i);
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Séparateur de matière
-            if (showSep) ...[
-              if (i > 0) const SizedBox(height: 16),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.07),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
-                ),
+    return Column(
+      children: [
+        // ── Bandeau d'accompagnement feuille de questions ──
+        Container(
+          width: double.infinity,
+          margin: const EdgeInsets.fromLTRB(12, 10, 12, 0),
+          padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 14),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE8F5E9),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: AppColors.primary.withValues(alpha: 0.3), width: 1),
+          ),
+          child: const Row(
+            children: [
+              Icon(Icons.menu_book_rounded, color: AppColors.primary, size: 18),
+              SizedBox(width: 8),
+              Expanded(
                 child: Text(
-                  '─────── ${matiereLabel.toUpperCase()} ───────',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  'Lisez attentivement chaque question et ses propositions avant de répondre.',
+                  style: TextStyle(
                     fontSize: 12,
-                    fontWeight: FontWeight.w800,
                     color: AppColors.primary,
-                    letterSpacing: 1,
-                    fontFamily: 'Poppins',
+                    fontStyle: FontStyle.italic,
+                    height: 1.4,
+                    fontFamily: 'Georgia',
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
             ],
+          ),
+        ),
+        const SizedBox(height: 6),
+        Expanded(
+          child: ListView.builder(
+            controller: _questionsScroll,
+            padding: const EdgeInsets.fromLTRB(12, 6, 12, 80),
+            itemCount: _questions.length,
+            itemBuilder: (ctx, i) {
+              final q = _questions[i] as Map<String, dynamic>;
+              final texte = (q['enonce'] ?? q['question'] ?? '').toString();
+              final showSep = _showMatiereSeparator(i);
+              final matiereLabel = _getMatiereLabel(i);
+              // Options de réponse
+              final optionA = (q['option_a'] ?? '').toString();
+              final optionB = (q['option_b'] ?? '').toString();
+              final optionC = (q['option_c'] ?? '').toString();
+              final optionD = (q['option_d'] ?? '').toString();
+              final options = <MapEntry<String, String>>[
+                if (optionA.isNotEmpty) MapEntry('A', optionA),
+                if (optionB.isNotEmpty) MapEntry('B', optionB),
+                if (optionC.isNotEmpty) MapEntry('C', optionC),
+                if (optionD.isNotEmpty) MapEntry('D', optionD),
+              ];
 
-            // Question
-            Padding(
-              padding: const EdgeInsets.only(bottom: 14),
-              child: Row(
+              return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    '${i + 1}. ',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                      color: AppColors.primary,
-                      fontFamily: 'Poppins',
-                    ),
-                  ),
-                  Expanded(
-                    child: MathTextWidget(
-                      text: texte,
-                      textStyle: const TextStyle(
-                        fontSize: 14,
-                        fontFamily: 'Georgia',
-                        height: 1.55,
-                        color: AppColors.textDark,
+                  // Séparateur de matière
+                  if (showSep) ...[
+                    if (i > 0) const SizedBox(height: 14),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.07),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
                       ),
-                      mathSize: 14,
-                      mathColor: AppColors.textDark,
+                      child: Text(
+                        '─────── ${matiereLabel.toUpperCase()} ───────',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.primary,
+                          letterSpacing: 1,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+
+                  // Carte question
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFFE0E0E0), width: 1),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Énoncé
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 26,
+                              height: 26,
+                              decoration: const BoxDecoration(
+                                color: AppColors.primary,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  '${i + 1}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 12,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: MathTextWidget(
+                                text: texte,
+                                textStyle: const TextStyle(
+                                  fontSize: 13.5,
+                                  fontFamily: 'Georgia',
+                                  height: 1.5,
+                                  color: AppColors.textDark,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                mathSize: 13.5,
+                                mathColor: AppColors.textDark,
+                              ),
+                            ),
+                          ],
+                        ),
+                        // Options A/B/C/D
+                        if (options.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          const Divider(height: 1, thickness: 0.5, color: Color(0xFFEEEEEE)),
+                          const SizedBox(height: 6),
+                          ...options.map((opt) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 5),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    width: 22,
+                                    height: 22,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(5),
+                                      border: Border.all(
+                                        color: AppColors.primary.withValues(alpha: 0.3),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        opt.key,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 11,
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 7),
+                                  Expanded(
+                                    child: MathTextWidget(
+                                      text: opt.value,
+                                      textStyle: const TextStyle(
+                                        fontSize: 12.5,
+                                        fontFamily: 'Georgia',
+                                        height: 1.45,
+                                        color: AppColors.textDark,
+                                      ),
+                                      mathSize: 12.5,
+                                      mathColor: AppColors.textDark,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                        ] else ...[
+                          // Si pas d'options en DB → message placeholder
+                          const SizedBox(height: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFF8E1),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: const Color(0xFFFFD54F), width: 1),
+                            ),
+                            child: const Row(
+                              children: [
+                                Icon(Icons.info_outline, size: 14, color: Color(0xFF795548)),
+                                SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    'Propositions à venir — Cochez votre réponse sur la feuille de droite',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: Color(0xFF795548),
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                 ],
-              ),
-            ),
-          ],
-        );
-      },
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
-  // ── Feuille de réponses style examen (TÂCHE 7) ──
+  // ── Feuille de réponses style examen ──
   Widget _buildAnswerSheet() {
     return Container(
       color: const Color(0xFFFAFAFA),
-      child: SingleChildScrollView(
-        controller: _reponseScroll,
-        padding: const EdgeInsets.fromLTRB(8, 12, 8, 80),
-        child: Column(
-          children: [
-            // En-tête tableau
+      child: Column(
+        children: [
+          // ── Bandeau d'accompagnement feuille de réponses ──
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.fromLTRB(8, 10, 8, 0),
+            padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE3F2FD),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFF1565C0).withValues(alpha: 0.3), width: 1),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.edit_rounded, color: Color(0xFF1565C0), size: 18),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Noircissez attentivement les cases correspondant à vos réponses.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF1565C0),
+                      fontStyle: FontStyle.italic,
+                      height: 1.4,
+                      fontFamily: 'Georgia',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
+          Expanded(
+          child: SingleChildScrollView(
+            controller: _reponseScroll,
+            padding: const EdgeInsets.fromLTRB(8, 4, 8, 80),
+            child: Column(
+              children: [
+                // En-tête tableau
             Container(
               padding: const EdgeInsets.symmetric(vertical: 6),
               decoration: BoxDecoration(
@@ -1503,7 +1696,6 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
             ),
             const SizedBox(height: 4),
 
-            // Lignes de réponses
             ...List.generate(_questions.length, (i) {
               final selectedLetters = _answers[i] ?? {};
               final isEven = i % 2 == 0;
@@ -1576,8 +1768,11 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                 ),
               );
             }),
-          ],
-        ),
+              ],
+            ),
+          ),
+          ),
+        ],
       ),
     );
   }
@@ -1597,22 +1792,50 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
         ],
       ),
       child: _canSubmit
-          ? SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                onPressed: () => _showConfirmSubmit(answeredCount),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.error,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  elevation: 4,
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (_isAdminUser) ...[
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                    margin: const EdgeInsets.only(bottom: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF3E0),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFFFF6F00).withValues(alpha: 0.4)),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.admin_panel_settings_rounded, size: 14, color: Color(0xFFE65100)),
+                        SizedBox(width: 5),
+                        Text(
+                          'MODE ADMIN — Soumission débloquée',
+                          style: TextStyle(fontSize: 11, color: Color(0xFFE65100), fontWeight: FontWeight.w700),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton(
+                    onPressed: () => _showConfirmSubmit(answeredCount),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.error,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      elevation: 4,
+                    ),
+                    child: const Text(
+                      'SOUMETTRE MA COPIE',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, fontFamily: 'Poppins'),
+                    ),
+                  ),
                 ),
-                child: const Text(
-                  'SOUMETTRE MA COPIE',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, fontFamily: 'Poppins'),
-                ),
-              ),
+              ],
             )
           : Container(
               width: double.infinity,
@@ -1627,13 +1850,13 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                   Text(
                     'Soumission disponible dans ${_secondsBeforeCanSubmit ~/ 60}min ${_secondsBeforeCanSubmit % 60}s',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 13,
                       color: AppColors.textLight,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  Text(
+                  const Text(
                     'Vous ne pouvez pas soumettre avant 30 minutes.',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 11, color: AppColors.textLight),
@@ -2118,6 +2341,10 @@ class SimulationResultScreen extends StatelessWidget {
       // Convertir le LaTeX en texte lisible pour le PDF
       final enonceRaw = (q['enonce'] ?? q['question'] ?? '').toString();
       final explicRaw = q['explication']?.toString() ?? '';
+      final optA = _cleanLatexForPdf((q['option_a'] ?? '').toString());
+      final optB = _cleanLatexForPdf((q['option_b'] ?? '').toString());
+      final optC = _cleanLatexForPdf((q['option_c'] ?? '').toString());
+      final optD = _cleanLatexForPdf((q['option_d'] ?? '').toString());
       correction.add({
         'num': i + 1,
         'enonce': _cleanLatexForPdf(enonceRaw),
@@ -2126,6 +2353,10 @@ class SimulationResultScreen extends StatelessWidget {
         'correct': correct,
         'noAns': noAns,
         'explication': _cleanLatexForPdf(explicRaw),
+        'option_a': optA,
+        'option_b': optB,
+        'option_c': optC,
+        'option_d': optD,
       });
     }
 
@@ -2403,10 +2634,64 @@ class SimulationResultScreen extends StatelessWidget {
                           'Votre reponse : ${c["choisies"].toString().isEmpty ? "-" : c["choisies"]}   |   Bonne(s) : ${c["bonne"]}',
                           style: pw.TextStyle(fontSize: 10, color: greyColor),
                         ),
+                        // ── Options A/B/C/D dans le PDF ──
+                        ...['A', 'B', 'C', 'D'].where((l) {
+                          final key = 'option_${l.toLowerCase()}';
+                          return (c[key] as String? ?? '').isNotEmpty;
+                        }).map((l) {
+                          final key = 'option_${l.toLowerCase()}';
+                          final optText = c[key] as String;
+                          final bonnes = (c['bonne'] as String).toUpperCase();
+                          final choisiesStr = (c['choisies'] as String).toUpperCase();
+                          final isBonne = bonnes.contains(l);
+                          final isChoisie = choisiesStr.contains(l);
+                          if (!isBonne && !isChoisie) return pw.SizedBox();
+                          final optColor = isBonne ? successColor : errorColor;
+                          return pw.Padding(
+                            padding: const pw.EdgeInsets.only(top: 3),
+                            child: pw.Row(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.Container(
+                                  width: 18, height: 18,
+                                  decoration: pw.BoxDecoration(
+                                    color: optColor,
+                                    borderRadius: const pw.BorderRadius.all(pw.Radius.circular(3)),
+                                  ),
+                                  child: pw.Center(
+                                    child: pw.Text(l,
+                                        style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
+                                  ),
+                                ),
+                                pw.SizedBox(width: 5),
+                                pw.Expanded(
+                                  child: pw.Text(optText,
+                                      style: pw.TextStyle(fontSize: 9.5, color: isBonne ? successColor : errorColor)),
+                                ),
+                                pw.Text(isBonne ? '✓' : '✗',
+                                    style: pw.TextStyle(fontSize: 10, color: optColor, fontWeight: pw.FontWeight.bold)),
+                              ],
+                            ),
+                          );
+                        }),
                         if ((c['explication'] as String).isNotEmpty) ...[
-                          pw.SizedBox(height: 3),
-                          pw.Text('Explication : ${c["explication"]}',
-                              style: pw.TextStyle(fontSize: 9.5, color: greyColor, fontStyle: pw.FontStyle.italic)),
+                          pw.SizedBox(height: 4),
+                          pw.Container(
+                            padding: const pw.EdgeInsets.all(5),
+                            decoration: pw.BoxDecoration(
+                              color: lightGrey,
+                              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
+                            ),
+                            child: pw.Row(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.Expanded(
+                                  child: pw.Text('Explication : ${c["explication"]}',
+                                      style: pw.TextStyle(fontSize: 9.5, color: greyColor, fontStyle: pw.FontStyle.italic)),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       ],
                     ),
@@ -2438,9 +2723,9 @@ class SimulationResultScreen extends StatelessWidget {
   }
 
   // ── Convertir le LaTeX en texte lisible pour le PDF ──────────────────
+  // Gère : délimiteurs $...$ et $$...$$, LaTeX brut sans délimiteurs
   static String _cleanLatexForPdf(String text) {
-    if (!text.contains(r'$') && !text.contains(r'\')) return text;
-    // Parser les segments $...$ et les convertir
+    if (text.isEmpty) return text;
     String result = text;
     // Remplacer les blocs $$...$$ d'abord
     result = result.replaceAllMapped(
@@ -2453,10 +2738,11 @@ class SimulationResultScreen extends StatelessWidget {
       (m) => MathTextWidget.latexToReadablePublic(m.group(1)!.trim()),
     );
     // Nettoyer les commandes LaTeX résiduelles hors délimiteurs
+    // (cas où le texte contient \sqrt, \frac etc. directement sans $)
     if (result.contains(r'\')) {
       result = MathTextWidget.latexToReadablePublic(result);
     }
-    return result;
+    return result.isEmpty ? text : result;
   }
 
   pw.Widget _pdfStat(String label, String value, PdfColor color) {
