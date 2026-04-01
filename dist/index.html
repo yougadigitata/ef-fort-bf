@@ -35,7 +35,6 @@
   <link rel="apple-touch-icon" sizes="180x180" href="icons/Icon-192.png">
   <link rel="apple-touch-icon" sizes="167x167" href="icons/Icon-192.png">
 
-  <!-- Favicon avec le LOGO de l'app bien visible -->
   <link rel="icon" type="image/png" sizes="512x512" href="icons/Icon-512.png"/>
   <link rel="icon" type="image/png" sizes="192x192" href="icons/Icon-192.png"/>
   <link rel="icon" type="image/png" href="icons/Icon-192.png"/>
@@ -53,144 +52,376 @@
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
-    /* ── Écran de chargement ── */
-    .loading {
+    /* ══════════════════════════════════════════════
+       SPLASH SCREEN ÉPIQUE — EF-FORT.BF
+    ══════════════════════════════════════════════ */
+    #splash {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      background: #0a1f10;
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
-      height: 100vh;
-      background: linear-gradient(160deg, #1A5C38 0%, #0E3D24 50%, #071F12 100%);
-      position: relative;
+      justify-content: center;
       overflow: hidden;
     }
 
-    /* Effet de particules animées (style éducatif/gamifié) */
-    .particles {
+    /* Fond animé gradient */
+    #splash::before {
+      content: '';
       position: absolute;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 40%, #1A5C38 0%, #0E3D24 40%, #051208 100%);
+      animation: bg-pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes bg-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.85; }
+    }
+
+    /* ── Cercles lumineux en arrière plan ── */
+    .glow-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(212,160,23,0.15);
+      animation: ring-expand 4s ease-out infinite;
       pointer-events: none;
     }
-    .particle {
+    .glow-ring:nth-child(1) { width: 200px; height: 200px; animation-delay: 0s; }
+    .glow-ring:nth-child(2) { width: 350px; height: 350px; animation-delay: 0.8s; }
+    .glow-ring:nth-child(3) { width: 500px; height: 500px; animation-delay: 1.6s; }
+    .glow-ring:nth-child(4) { width: 650px; height: 650px; animation-delay: 2.4s; }
+
+    @keyframes ring-expand {
+      0% { transform: scale(0.5); opacity: 0.6; }
+      100% { transform: scale(1.5); opacity: 0; }
+    }
+
+    /* ── Particules dorées flottantes ── */
+    .particle-field {
       position: absolute;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: rgba(212,160,23,0.4);
-      animation: float-up linear infinite;
-    }
-    .particle:nth-child(1) { left: 10%; animation-duration: 8s; animation-delay: 0s; }
-    .particle:nth-child(2) { left: 25%; animation-duration: 10s; animation-delay: 1s; width:4px; height:4px; }
-    .particle:nth-child(3) { left: 40%; animation-duration: 7s; animation-delay: 2s; }
-    .particle:nth-child(4) { left: 60%; animation-duration: 9s; animation-delay: 0.5s; width:8px; height:8px; }
-    .particle:nth-child(5) { left: 75%; animation-duration: 6s; animation-delay: 1.5s; }
-    .particle:nth-child(6) { left: 88%; animation-duration: 11s; animation-delay: 3s; width:5px; height:5px; }
-
-    @keyframes float-up {
-      0% { bottom: -10px; opacity: 0; transform: translateX(0) rotate(0deg); }
-      10% { opacity: 0.7; }
-      90% { opacity: 0.4; }
-      100% { bottom: 110%; opacity: 0; transform: translateX(20px) rotate(360deg); }
-    }
-
-    .loading-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      z-index: 10;
-      padding: 20px;
-      text-align: center;
-    }
-
-    /* Logo principal */
-    .logo-container {
-      width: 120px;
-      height: 120px;
-      border-radius: 28px;
-      background: white;
-      padding: 8px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 0 3px rgba(212,160,23,0.3);
-      margin-bottom: 20px;
-      animation: logo-pulse 2s ease-in-out infinite;
+      inset: 0;
+      pointer-events: none;
       overflow: hidden;
     }
+    .spark {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle, #FFD700, #D4A017, transparent);
+      animation: spark-float linear infinite;
+      pointer-events: none;
+    }
+    .spark:nth-child(1)  { width:4px; height:4px; left:5%;   animation-duration:6s;  animation-delay:0s;   }
+    .spark:nth-child(2)  { width:3px; height:3px; left:12%;  animation-duration:8s;  animation-delay:1s;   }
+    .spark:nth-child(3)  { width:5px; height:5px; left:20%;  animation-duration:5s;  animation-delay:2s;   }
+    .spark:nth-child(4)  { width:3px; height:3px; left:30%;  animation-duration:9s;  animation-delay:0.5s; }
+    .spark:nth-child(5)  { width:6px; height:6px; left:40%;  animation-duration:7s;  animation-delay:1.5s; }
+    .spark:nth-child(6)  { width:4px; height:4px; left:52%;  animation-duration:6s;  animation-delay:3s;   }
+    .spark:nth-child(7)  { width:3px; height:3px; left:62%;  animation-duration:10s; animation-delay:0.8s; }
+    .spark:nth-child(8)  { width:5px; height:5px; left:72%;  animation-duration:7s;  animation-delay:2.2s; }
+    .spark:nth-child(9)  { width:4px; height:4px; left:82%;  animation-duration:8s;  animation-delay:1.2s; }
+    .spark:nth-child(10) { width:3px; height:3px; left:90%;  animation-duration:6s;  animation-delay:3.5s; }
+    .spark:nth-child(11) { width:6px; height:6px; left:95%;  animation-duration:9s;  animation-delay:0.3s; }
+    .spark:nth-child(12) { width:2px; height:2px; left:8%;   animation-duration:11s; animation-delay:4s;   }
 
-    .logo-container img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      border-radius: 20px;
+    @keyframes spark-float {
+      0%   { bottom: -10px; opacity: 0; transform: translateX(0px)    rotate(0deg); }
+      10%  { opacity: 1; }
+      50%  { transform: translateX(30px)  rotate(180deg); }
+      90%  { opacity: 0.3; }
+      100% { bottom: 110%;  opacity: 0; transform: translateX(-20px) rotate(360deg); }
     }
 
-    @keyframes logo-pulse {
-      0%, 100% { transform: scale(1); box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 0 3px rgba(212,160,23,0.3); }
-      50% { transform: scale(1.03); box-shadow: 0 12px 40px rgba(0,0,0,0.35), 0 0 0 6px rgba(212,160,23,0.2); }
-    }
-
-    .app-name {
-      color: #FFFFFF;
-      font-size: 32px;
-      font-weight: 900;
-      letter-spacing: 1.5px;
-      margin-bottom: 8px;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    }
-
-    .app-slogan {
-      color: #D4A017;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      margin-bottom: 6px;
-      background: rgba(212,160,23,0.15);
-      padding: 6px 16px;
-      border-radius: 20px;
-      border: 1px solid rgba(212,160,23,0.3);
-    }
-
-    .app-tagline {
-      color: rgba(255,255,255,0.65);
-      font-size: 12px;
-      margin-bottom: 30px;
-      font-style: italic;
-    }
-
-    .spinner-container {
+    /* ── Contenu central ── */
+    .splash-content {
+      position: relative;
+      z-index: 10;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      text-align: center;
+      padding: 20px;
     }
 
-    .spinner {
-      width: 36px;
-      height: 36px;
-      border: 3px solid rgba(212,160,23,0.2);
-      border-top: 3px solid #D4A017;
+    /* ── Logo animé ── */
+    .logo-wrapper {
+      position: relative;
+      margin-bottom: 28px;
+    }
+    .logo-halo {
+      position: absolute;
+      inset: -20px;
       border-radius: 50%;
-      animation: spin 0.9s linear infinite;
+      background: radial-gradient(circle, rgba(212,160,23,0.25) 0%, transparent 70%);
+      animation: halo-pulse 2s ease-in-out infinite;
+    }
+    @keyframes halo-pulse {
+      0%, 100% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.2); opacity: 0.4; }
+    }
+    .logo-box {
+      position: relative;
+      width: 130px;
+      height: 130px;
+      border-radius: 32px;
+      background: white;
+      padding: 10px;
+      box-shadow:
+        0 0 0 3px rgba(212,160,23,0.5),
+        0 0 0 8px rgba(212,160,23,0.15),
+        0 20px 50px rgba(0,0,0,0.5);
+      animation: logo-entrance 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+      overflow: hidden;
+    }
+    @keyframes logo-entrance {
+      0% { transform: scale(0) rotate(-20deg); opacity: 0; }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    .logo-box img {
+      width: 100%; height: 100%;
+      object-fit: contain;
+      border-radius: 22px;
+    }
+    /* Shimmer sur logo */
+    .logo-box::after {
+      content: '';
+      position: absolute;
+      top: -100%; left: -100%;
+      width: 60%; height: 300%;
+      background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.4) 50%, transparent 60%);
+      animation: shimmer 3s ease-in-out infinite;
+    }
+    @keyframes shimmer {
+      0% { transform: translateX(-200%) rotate(0deg); }
+      50%, 100% { transform: translateX(400%) rotate(0deg); }
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    /* ── Titre ── */
+    .app-title {
+      animation: title-entrance 0.6s ease-out 0.4s both;
+    }
+    @keyframes title-entrance {
+      0% { transform: translateY(20px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+    .title-main {
+      color: #FFFFFF;
+      font-size: 38px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      line-height: 1;
+      text-shadow: 0 0 20px rgba(212,160,23,0.4), 0 3px 12px rgba(0,0,0,0.4);
+      margin-bottom: 6px;
+    }
+    .title-dot {
+      color: #D4A017;
+    }
+    .title-sub {
+      color: #D4A017;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      opacity: 0.9;
     }
 
-    .loading-text {
-      color: rgba(255,255,255,0.55);
+    /* ── Badge slogan ── */
+    .slogan-badge {
+      margin: 18px 0 8px;
+      background: rgba(212,160,23,0.12);
+      border: 1.5px solid rgba(212,160,23,0.4);
+      border-radius: 30px;
+      padding: 8px 20px;
+      color: #FFD700;
       font-size: 12px;
-      letter-spacing: 1px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      animation: badge-entrance 0.6s ease-out 0.7s both;
+    }
+    @keyframes badge-entrance {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .tagline {
+      color: rgba(255,255,255,0.5);
+      font-size: 11.5px;
+      font-style: italic;
+      margin-bottom: 10px;
+      animation: fade-in 0.6s ease-out 0.9s both;
+    }
+
+    /* ── Phrase de motivation dynamique ── */
+    .motivation-box {
+      margin: 16px 0 28px;
+      padding: 12px 22px;
+      border-left: 3px solid #D4A017;
+      background: rgba(255,255,255,0.05);
+      border-radius: 0 12px 12px 0;
+      max-width: 320px;
+      animation: motivation-entrance 0.8s ease-out 1.1s both;
+    }
+    @keyframes motivation-entrance {
+      0% { transform: translateX(-30px); opacity: 0; }
+      100% { transform: translateX(0); opacity: 1; }
+    }
+    .motivation-text {
+      color: rgba(255,255,255,0.85);
+      font-size: 13px;
+      font-style: italic;
+      line-height: 1.5;
+    }
+    .motivation-author {
+      color: #D4A017;
+      font-size: 11px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    /* ── Barre de progression épique ── */
+    .progress-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      animation: fade-in 0.5s ease-out 1.3s both;
+      width: 100%;
+      max-width: 300px;
+    }
+    @keyframes fade-in {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    .progress-track {
+      width: 100%;
+      height: 5px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(212,160,23,0.2);
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 10px;
+      background: linear-gradient(90deg, #D4A017, #FFD700, #D4A017);
+      background-size: 200% 100%;
+      animation:
+        progress-grow 2.5s cubic-bezier(0.4, 0, 0.2, 1) 0.5s forwards,
+        progress-shimmer 1.5s linear infinite;
+      box-shadow: 0 0 12px rgba(212,160,23,0.6);
+    }
+    @keyframes progress-grow {
+      0% { width: 0%; }
+      30% { width: 35%; }
+      60% { width: 65%; }
+      80% { width: 85%; }
+      100% { width: 100%; }
+    }
+    @keyframes progress-shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .loading-status {
+      color: rgba(255,255,255,0.5);
+      font-size: 11px;
+      letter-spacing: 1.5px;
       text-transform: uppercase;
     }
 
-    /* ── Bannière d'installation PWA ── */
+    /* ── Stats badges en bas ── */
+    .stats-row {
+      display: flex;
+      gap: 14px;
+      margin-top: 32px;
+      animation: fade-in 0.6s ease-out 1.5s both;
+    }
+    .stat-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 10px 16px;
+      min-width: 80px;
+    }
+    .stat-icon { font-size: 18px; margin-bottom: 2px; }
+    .stat-value {
+      color: #FFD700;
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+    .stat-label {
+      color: rgba(255,255,255,0.45);
+      font-size: 9px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    /* ── Son button (micro interaction) ── */
+    #sound-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 20;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.2s;
+      user-select: none;
+    }
+    #sound-toggle:hover { background: rgba(255,255,255,0.2); }
+    #sound-toggle:active { transform: scale(0.9); }
+
+    /* ── Confettis victoire ── */
+    .confetti-container {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      opacity: 0;
+    }
+    .confetti-piece {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      top: -10px;
+      animation: confetti-fall linear forwards;
+    }
+    @keyframes confetti-fall {
+      0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+      80% { opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg) scale(0.5); opacity: 0; }
+    }
+
+    /* ── Transition sortie ── */
+    #splash.hiding {
+      animation: splash-exit 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    @keyframes splash-exit {
+      0% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(1.05); }
+    }
+
+    /* ══════════════════════════════════════════════
+       Bannière d'installation PWA
+    ══════════════════════════════════════════════ */
     #pwa-install-banner {
       display: none;
       position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      bottom: 0; left: 0; right: 0;
       background: linear-gradient(135deg, #1A5C38, #0E3D24);
       color: white;
       padding: 16px 20px;
@@ -199,136 +430,121 @@
       box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
       animation: slide-up 0.4s ease-out;
     }
-
     @keyframes slide-up {
       from { transform: translateY(100%); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
     }
-
     .pwa-banner-inner {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      max-width: 500px;
-      margin: 0 auto;
+      display: flex; align-items: center; gap: 14px;
+      max-width: 500px; margin: 0 auto;
     }
-
-    .pwa-banner-icon {
-      width: 52px;
-      height: 52px;
-      border-radius: 12px;
-      background: white;
-      padding: 4px;
-      flex-shrink: 0;
-      overflow: hidden;
-    }
-
-    .pwa-banner-icon img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
-
-    .pwa-banner-text {
-      flex: 1;
-    }
-
-    .pwa-banner-title {
-      font-size: 14px;
-      font-weight: 800;
-      margin-bottom: 2px;
-    }
-
-    .pwa-banner-subtitle {
-      font-size: 11px;
-      color: rgba(255,255,255,0.75);
-    }
-
-    .pwa-banner-actions {
-      display: flex;
-      gap: 8px;
-      flex-shrink: 0;
-    }
-
+    .pwa-banner-icon { width:52px; height:52px; border-radius:12px; background:white; padding:4px; flex-shrink:0; overflow:hidden; }
+    .pwa-banner-icon img { width:100%; height:100%; object-fit:contain; }
+    .pwa-banner-text { flex: 1; }
+    .pwa-banner-title { font-size:14px; font-weight:800; margin-bottom:2px; }
+    .pwa-banner-subtitle { font-size:11px; color:rgba(255,255,255,0.75); }
+    .pwa-banner-actions { display:flex; gap:8px; flex-shrink:0; }
     .pwa-btn-install {
-      background: #D4A017;
-      color: white;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 10px;
-      font-weight: 800;
-      font-size: 13px;
-      cursor: pointer;
-      white-space: nowrap;
+      background:#D4A017; color:white; border:none;
+      padding:10px 18px; border-radius:10px;
+      font-weight:800; font-size:13px; cursor:pointer; white-space:nowrap;
     }
-
     .pwa-btn-dismiss {
-      background: transparent;
-      color: rgba(255,255,255,0.6);
-      border: 1px solid rgba(255,255,255,0.3);
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-size: 13px;
-      cursor: pointer;
-    }
-
-    /* Bouton flottant install (iOS / desktop) */
-    #pwa-float-btn {
-      display: none;
-      position: fixed;
-      bottom: 24px;
-      right: 20px;
-      background: linear-gradient(135deg, #1A5C38, #0E3D24);
-      color: white;
-      border: 2px solid #D4A017;
-      border-radius: 50px;
-      padding: 12px 20px;
-      font-size: 13px;
-      font-weight: 800;
-      cursor: pointer;
-      z-index: 99999;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-      animation: bounce-in 0.5s ease-out 3s both;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    @keyframes bounce-in {
-      0% { transform: scale(0); opacity: 0; }
-      60% { transform: scale(1.1); opacity: 1; }
-      100% { transform: scale(1); opacity: 1; }
+      background:transparent; color:rgba(255,255,255,0.6);
+      border:1px solid rgba(255,255,255,0.3);
+      padding:10px 14px; border-radius:10px; font-size:13px; cursor:pointer;
     }
   </style>
 </head>
 <body>
 
-  <!-- Écran de chargement stylisé -->
-  <div class="loading" id="loading">
-    <div class="particles">
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
-      <div class="particle"></div>
+  <!-- ══════════════════════════════════════════════
+       SPLASH SCREEN ÉPIQUE EF-FORT.BF
+  ══════════════════════════════════════════════ -->
+  <div id="splash">
+
+    <!-- Cercles lumineux -->
+    <div class="glow-ring"></div>
+    <div class="glow-ring"></div>
+    <div class="glow-ring"></div>
+    <div class="glow-ring"></div>
+
+    <!-- Particules dorées -->
+    <div class="particle-field">
+      <div class="spark"></div><div class="spark"></div><div class="spark"></div>
+      <div class="spark"></div><div class="spark"></div><div class="spark"></div>
+      <div class="spark"></div><div class="spark"></div><div class="spark"></div>
+      <div class="spark"></div><div class="spark"></div><div class="spark"></div>
     </div>
 
-    <div class="loading-content">
-      <div class="logo-container">
-        <img src="icons/Icon-512.png" alt="EF-FORT.BF" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1A5C38,#0E3D24);border-radius:20px\'><div style=\'text-align:center\'><div style=\'font-size:36px\'>🎓</div><div style=\'color:white;font-size:12px;font-weight:900\'>EF-FORT</div></div></div>'">
+    <!-- Confettis (activés à la fin) -->
+    <div class="confetti-container" id="confetti"></div>
+
+    <!-- Bouton son -->
+    <div id="sound-toggle" title="Son activé/désactivé">🔊</div>
+
+    <!-- Contenu principal -->
+    <div class="splash-content">
+
+      <!-- Logo -->
+      <div class="logo-wrapper">
+        <div class="logo-halo"></div>
+        <div class="logo-box">
+          <img src="icons/Icon-512.png" alt="EF-FORT.BF"
+            onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1A5C38,#0E3D24);border-radius:22px\'><div style=\'text-align:center\'><div style=\'font-size:42px\'>🎓</div><div style=\'color:white;font-size:13px;font-weight:900\'>EF-FORT</div></div></div>'">
+        </div>
       </div>
-      <div class="app-name">EF-FORT.BF</div>
-      <div class="app-slogan">🏆 Plateforme N°1 d'apprentissage et d'éducation au Burkina Faso</div>
-      <div class="app-tagline">Transformer l'effort en réussite</div>
-      <div class="spinner-container">
-        <div class="spinner"></div>
-        <div class="loading-text">Chargement en cours...</div>
+
+      <!-- Titre -->
+      <div class="app-title">
+        <div class="title-main">EF-FORT<span class="title-dot">.</span>BF</div>
+        <div class="title-sub">La voie de la réussite</div>
       </div>
+
+      <!-- Badge -->
+      <div class="slogan-badge">🏆 Plateforme N°1 d'apprentissage — Burkina Faso</div>
+
+      <div class="tagline">Transformer l'effort en réussite</div>
+
+      <!-- Citation de motivation (aléatoire) -->
+      <div class="motivation-box">
+        <div class="motivation-text" id="motivation-quote">
+          "Le succès n'est pas une destination, c'est un voyage. Chaque question répondue t'en rapproche."
+        </div>
+        <div class="motivation-author" id="motivation-author">— EF-FORT.BF</div>
+      </div>
+
+      <!-- Barre de progression -->
+      <div class="progress-section">
+        <div class="progress-track">
+          <div class="progress-fill"></div>
+        </div>
+        <div class="loading-status" id="loading-status">Préparation de votre session...</div>
+      </div>
+
+      <!-- Stats rapides -->
+      <div class="stats-row">
+        <div class="stat-badge">
+          <div class="stat-icon">📚</div>
+          <div class="stat-value">20K+</div>
+          <div class="stat-label">QCM</div>
+        </div>
+        <div class="stat-badge">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-value">18</div>
+          <div class="stat-label">Matières</div>
+        </div>
+        <div class="stat-badge">
+          <div class="stat-icon">🏆</div>
+          <div class="stat-value">N°1</div>
+          <div class="stat-label">Burkina</div>
+        </div>
+      </div>
+
     </div>
   </div>
 
-  <!-- Bannière d'installation PWA (Android Chrome) -->
+  <!-- Bannière PWA -->
   <div id="pwa-install-banner">
     <div class="pwa-banner-inner">
       <div class="pwa-banner-icon">
@@ -345,108 +561,325 @@
     </div>
   </div>
 
-  <!-- Script Web Audio API (cloches d'examen) -->
+  <!-- ══════════════════════════════════════════════
+       SCRIPTS : Son + Animations + PWA
+  ══════════════════════════════════════════════ -->
   <script>
-    // ── Cloche sonore via Web Audio API ──
-    window.effortPlayBell = function(frequency, durationSec) {
+  (function() {
+
+    // ────────────────────────────────────────────
+    // CITATIONS DE MOTIVATION (rotation aléatoire)
+    // ────────────────────────────────────────────
+    var quotes = [
+      { text: "L'échec n'est pas l'opposé du succès, il en fait partie. Continue !", author: "— Arianna Huffington" },
+      { text: "Le travail acharné bat le talent quand le talent ne travaille pas.", author: "— Kevin Durant" },
+      { text: "Chaque expert était autrefois un débutant. Ta persévérance est ta force.", author: "— EF-FORT.BF" },
+      { text: "La réussite au concours se prépare dans le silence de l'effort quotidien.", author: "— EF-FORT.BF" },
+      { text: "Un QCM à la fois. Une série à la fois. La fonction publique t'appartient.", author: "— EF-FORT.BF" },
+      { text: "Ceux qui osent apprendre sont ceux qui gouvernent leur destin.", author: "— Nelson Mandela" },
+      { text: "Éduque-toi. Sinon un ignorant te gouvernera.", author: "— Thomas Sankara" },
+      { text: "L'intelligence sans ambition est un oiseau sans ailes. Vise haut !", author: "— Salvador Dali" },
+      { text: "Ton cerveau est ton arme la plus puissante. Entraîne-le chaque jour.", author: "— EF-FORT.BF" },
+      { text: "Ne compte pas les jours. Fais que les jours comptent.", author: "— Muhammad Ali" },
+    ];
+    var randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+    var qEl = document.getElementById('motivation-quote');
+    var aEl = document.getElementById('motivation-author');
+    if (qEl) qEl.textContent = '"' + randomQuote.text + '"';
+    if (aEl) aEl.textContent = randomQuote.author;
+
+    // ────────────────────────────────────────────
+    // STATUS MESSAGES DYNAMIQUES
+    // ────────────────────────────────────────────
+    var statusMessages = [
+      "Préparation de votre session...",
+      "Chargement des matières...",
+      "Synchronisation des QCM...",
+      "Initialisation du moteur de quiz...",
+      "Presque prêt... 🚀",
+    ];
+    var statusEl = document.getElementById('loading-status');
+    var msgIdx = 0;
+    var statusInterval = setInterval(function() {
+      msgIdx = (msgIdx + 1) % statusMessages.length;
+      if (statusEl) statusEl.textContent = statusMessages[msgIdx];
+    }, 600);
+
+    // ────────────────────────────────────────────
+    // SYSTÈME AUDIO — FANFARE MOTIVANTE
+    // ────────────────────────────────────────────
+    var soundEnabled = (localStorage.getItem('ef_sound') !== 'off');
+    var soundBtn = document.getElementById('sound-toggle');
+    if (soundBtn) soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
+
+    if (soundBtn) {
+      soundBtn.addEventListener('click', function() {
+        soundEnabled = !soundEnabled;
+        localStorage.setItem('ef_sound', soundEnabled ? 'on' : 'off');
+        soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
+        // Petite animation feedback
+        soundBtn.style.transform = 'scale(1.3)';
+        setTimeout(function() { soundBtn.style.transform = 'scale(1)'; }, 200);
+      });
+    }
+
+    // Fanfare africaine motivante (Web Audio API)
+    function playMotivationFanfare() {
+      if (!soundEnabled) return;
       try {
-        var ctx = new (window.AudioContext || window.webkitAudioContext)();
+        var AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        var ctx = new AudioCtx();
 
-        var osc1 = ctx.createOscillator();
-        var gainNode1 = ctx.createGain();
-        osc1.type = 'sine';
-        osc1.frequency.setValueAtTime(frequency, ctx.currentTime);
-        gainNode1.gain.setValueAtTime(0.6, ctx.currentTime);
-        gainNode1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + durationSec);
-        osc1.connect(gainNode1);
-        gainNode1.connect(ctx.destination);
+        // Mélodie motivante (gamme pentatonique africaine)
+        // Notes: DO RE MI SOL LA (pentatonique majeure)
+        var melody = [
+          // [fréquence, début, durée, volume]
+          // Intro puissante — accord en montée
+          [523.25, 0.0,  0.15, 0.5],   // Do5
+          [659.25, 0.15, 0.15, 0.5],   // Mi5
+          [783.99, 0.30, 0.15, 0.5],   // Sol5
+          [1046.5, 0.45, 0.35, 0.7],   // Do6 — pic !
 
-        var osc2 = ctx.createOscillator();
-        var gainNode2 = ctx.createGain();
-        osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(frequency * 2, ctx.currentTime);
-        gainNode2.gain.setValueAtTime(0.3, ctx.currentTime);
-        gainNode2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + durationSec * 0.7);
-        osc2.connect(gainNode2);
-        gainNode2.connect(ctx.destination);
+          // Descente gracieuse
+          [880.00, 0.90, 0.20, 0.55],  // La5
+          [783.99, 1.10, 0.20, 0.5],   // Sol5
+          [659.25, 1.30, 0.15, 0.45],  // Mi5
 
-        osc1.start(ctx.currentTime);
-        osc1.stop(ctx.currentTime + durationSec);
-        osc2.start(ctx.currentTime);
-        osc2.stop(ctx.currentTime + durationSec * 0.7);
+          // Motif central rythmé
+          [523.25, 1.55, 0.12, 0.5],   // Do5
+          [659.25, 1.67, 0.12, 0.5],   // Mi5
+          [783.99, 1.79, 0.12, 0.5],   // Sol5
+          [880.00, 1.91, 0.25, 0.6],   // La5
+          [783.99, 2.16, 0.12, 0.5],   // Sol5
+          [659.25, 2.28, 0.12, 0.45],  // Mi5
 
-        setTimeout(function() {
-          try { ctx.close(); } catch(e) {}
-        }, (durationSec + 0.5) * 1000);
+          // Finale triomphante
+          [523.25, 2.50, 0.10, 0.4],
+          [659.25, 2.60, 0.10, 0.45],
+          [783.99, 2.70, 0.10, 0.5],
+          [880.00, 2.80, 0.10, 0.55],
+          [1046.5, 2.90, 0.50, 0.75],  // Do6 long — victoire !
+
+          // Accord final
+          [783.99, 3.50, 0.20, 0.4],
+          [1046.5, 3.70, 0.60, 0.5],
+        ];
+
+        // Basse accompagnatrice (tams-tams)
+        var bass = [
+          [130.81, 0.0,  0.1, 0.4],   // Do2
+          [130.81, 0.5,  0.1, 0.3],
+          [130.81, 1.0,  0.1, 0.35],
+          [174.61, 1.5,  0.1, 0.35],  // Fa2
+          [130.81, 2.0,  0.1, 0.3],
+          [174.61, 2.5,  0.1, 0.3],
+          [130.81, 3.0,  0.1, 0.4],
+          [130.81, 3.5,  0.2, 0.3],
+        ];
+
+        // Jouer la mélodie
+        melody.forEach(function(n) {
+          var osc = ctx.createOscillator();
+          var gain = ctx.createGain();
+          var filter = ctx.createBiquadFilter();
+
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(3000, ctx.currentTime);
+
+          osc.type = 'triangle';  // Son chaud et doux
+          osc.frequency.setValueAtTime(n[0], ctx.currentTime + n[1]);
+
+          gain.gain.setValueAtTime(0, ctx.currentTime + n[1]);
+          gain.gain.linearRampToValueAtTime(n[3] * 0.45, ctx.currentTime + n[1] + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + n[1] + n[2] + 0.05);
+
+          osc.connect(filter);
+          filter.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + n[1]);
+          osc.stop(ctx.currentTime + n[1] + n[2] + 0.1);
+        });
+
+        // Jouer la basse
+        bass.forEach(function(n) {
+          var osc = ctx.createOscillator();
+          var gain = ctx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(n[0], ctx.currentTime + n[1]);
+
+          gain.gain.setValueAtTime(0, ctx.currentTime + n[1]);
+          gain.gain.linearRampToValueAtTime(n[3] * 0.3, ctx.currentTime + n[1] + 0.01);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + n[1] + n[2] + 0.15);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + n[1]);
+          osc.stop(ctx.currentTime + n[1] + n[2] + 0.2);
+        });
+
+        // Nettoyage
+        setTimeout(function() { try { ctx.close(); } catch(e) {} }, 5000);
 
       } catch(e) {
-        console.warn('EF-FORT Bell:', e);
+        console.warn('EF-FORT Audio:', e.message);
       }
-    };
+    }
 
+    // Jouer la fanfare après 0.5s (laisser le temps au DOM de se charger)
+    setTimeout(playMotivationFanfare, 500);
+
+    // ────────────────────────────────────────────
+    // CONFETTIS VICTORY (dernière seconde avant fermeture)
+    // ────────────────────────────────────────────
+    function launchConfetti() {
+      var container = document.getElementById('confetti');
+      if (!container) return;
+      container.style.opacity = '1';
+
+      var colors = ['#FFD700','#D4A017','#FFFFFF','#1A5C38','#4CAF50','#FFA500'];
+      var shapes = ['◆','★','●','▲','■'];
+
+      for (var i = 0; i < 50; i++) {
+        (function(idx) {
+          setTimeout(function() {
+            var piece = document.createElement('div');
+            piece.className = 'confetti-piece';
+            piece.textContent = shapes[Math.floor(Math.random() * shapes.length)];
+            piece.style.left = (Math.random() * 100) + '%';
+            piece.style.color = colors[Math.floor(Math.random() * colors.length)];
+            piece.style.fontSize = (6 + Math.random() * 10) + 'px';
+            piece.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+            piece.style.animationDelay = '0s';
+            piece.style.width = 'auto';
+            piece.style.height = 'auto';
+            container.appendChild(piece);
+            setTimeout(function() { piece.remove(); }, 3500);
+          }, idx * 40);
+        })(i);
+      }
+    }
+
+    // ────────────────────────────────────────────
+    // MASQUER LE SPLASH QUAND FLUTTER EST PRÊT
+    // ────────────────────────────────────────────
+    function hideSplash() {
+      clearInterval(statusInterval);
+
+      // Lancer les confettis
+      launchConfetti();
+
+      // Changer le message
+      if (statusEl) {
+        statusEl.textContent = '✅ Prêt ! Bonne session !';
+        statusEl.style.color = '#FFD700';
+      }
+
+      // Petite sonnerie de victoire
+      if (soundEnabled) {
+        try {
+          var ctx2 = new (window.AudioContext || window.webkitAudioContext)();
+          var vic = [[1046.5, 0, 0.1, 0.4],[1318.5, 0.1, 0.1, 0.4],[1568.0, 0.2, 0.3, 0.5]];
+          vic.forEach(function(n) {
+            var o = ctx2.createOscillator(); var g = ctx2.createGain();
+            o.type = 'sine'; o.frequency.setValueAtTime(n[0], ctx2.currentTime + n[1]);
+            g.gain.setValueAtTime(n[3]*0.4, ctx2.currentTime + n[1]);
+            g.gain.exponentialRampToValueAtTime(0.001, ctx2.currentTime + n[1] + n[2] + 0.1);
+            o.connect(g); g.connect(ctx2.destination);
+            o.start(ctx2.currentTime + n[1]); o.stop(ctx2.currentTime + n[1] + n[2] + 0.15);
+          });
+          setTimeout(function() { try { ctx2.close(); } catch(e) {} }, 1500);
+        } catch(e) {}
+      }
+
+      // Fermer le splash après 800ms
+      setTimeout(function() {
+        var splash = document.getElementById('splash');
+        if (splash) {
+          splash.classList.add('hiding');
+          setTimeout(function() {
+            if (splash && splash.parentNode) splash.parentNode.removeChild(splash);
+          }, 700);
+        }
+      }, 800);
+    }
+
+    // Écouter l'événement Flutter
+    window.addEventListener('flutter-first-frame', hideSplash);
+
+    // Fallback : fermer après 8s maximum
+    setTimeout(function() {
+      if (document.getElementById('splash')) hideSplash();
+    }, 8000);
+
+    // ────────────────────────────────────────────
+    // API BELLS (utilisable depuis Flutter)
+    // ────────────────────────────────────────────
+    window.effortPlayBell = function(frequency, durationSec) {
+      if (!soundEnabled) return;
+      try {
+        var ctx = new (window.AudioContext || window.webkitAudioContext)();
+        var osc1 = ctx.createOscillator(); var g1 = ctx.createGain();
+        osc1.type = 'sine'; osc1.frequency.setValueAtTime(frequency, ctx.currentTime);
+        g1.gain.setValueAtTime(0.5, ctx.currentTime);
+        g1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + durationSec);
+        osc1.connect(g1); g1.connect(ctx.destination);
+        var osc2 = ctx.createOscillator(); var g2 = ctx.createGain();
+        osc2.type = 'sine'; osc2.frequency.setValueAtTime(frequency * 2, ctx.currentTime);
+        g2.gain.setValueAtTime(0.25, ctx.currentTime);
+        g2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + durationSec * 0.7);
+        osc2.connect(g2); g2.connect(ctx.destination);
+        osc1.start(); osc1.stop(ctx.currentTime + durationSec);
+        osc2.start(); osc2.stop(ctx.currentTime + durationSec * 0.7);
+        setTimeout(function() { try { ctx.close(); } catch(e) {} }, (durationSec + 0.5) * 1000);
+      } catch(e) {}
+    };
     window.effortPlayDoubleBell = function() {
       window.effortPlayBell(880, 1.5);
       setTimeout(function() { window.effortPlayBell(660, 2.0); }, 800);
     };
 
-    // ── Masquer le chargement quand Flutter est prêt ──
-    window.addEventListener('flutter-first-frame', function () {
-      var loading = document.getElementById('loading');
-      if (loading) {
-        loading.style.transition = 'opacity 0.5s ease';
-        loading.style.opacity = '0';
-        setTimeout(function() { loading.remove(); }, 500);
-      }
-    });
-
-    // ── PWA Install Logic ──
+    // ────────────────────────────────────────────
+    // PWA INSTALL
+    // ────────────────────────────────────────────
     var deferredPrompt = null;
     var installBanner = document.getElementById('pwa-install-banner');
     var installBtn = document.getElementById('pwa-install-btn');
     var dismissBtn = document.getElementById('pwa-dismiss-btn');
-
-    // Vérifier si déjà installée ou déjà refusée
     var pwaStatus = localStorage.getItem('pwa_install_dismissed');
 
     window.addEventListener('beforeinstallprompt', function(e) {
       e.preventDefault();
       deferredPrompt = e;
-
-      // Afficher la bannière seulement si pas encore refusée
       if (!pwaStatus && installBanner) {
-        setTimeout(function() {
-          installBanner.style.display = 'block';
-        }, 3000); // Attendre 3s après le chargement de l'app
+        setTimeout(function() { installBanner.style.display = 'block'; }, 5000);
       }
     });
-
     if (installBtn) {
       installBtn.addEventListener('click', function() {
         if (deferredPrompt) {
           deferredPrompt.prompt();
-          deferredPrompt.userChoice.then(function(choiceResult) {
-            if (choiceResult.outcome === 'accepted') {
-              localStorage.setItem('pwa_install_dismissed', 'installed');
-            }
+          deferredPrompt.userChoice.then(function(r) {
+            if (r.outcome === 'accepted') localStorage.setItem('pwa_install_dismissed', 'installed');
             deferredPrompt = null;
             if (installBanner) installBanner.style.display = 'none';
           });
         }
       });
     }
-
     if (dismissBtn) {
       dismissBtn.addEventListener('click', function() {
         if (installBanner) installBanner.style.display = 'none';
         localStorage.setItem('pwa_install_dismissed', 'dismissed');
       });
     }
-
-    // Détecter si déjà installée en PWA
     window.addEventListener('appinstalled', function() {
       if (installBanner) installBanner.style.display = 'none';
       localStorage.setItem('pwa_install_dismissed', 'installed');
     });
+
+  })();
   </script>
 
   <script src="flutter_bootstrap.js" async></script>
