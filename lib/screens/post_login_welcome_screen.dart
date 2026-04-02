@@ -1,8 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
-import 'package:audioplayers/audioplayers.dart';
+import '../services/bell_service.dart';
 import 'home_screen.dart';
 
 // ══════════════════════════════════════════════════════════════════════
@@ -35,7 +34,6 @@ class _PostLoginWelcomeScreenState extends State<PostLoginWelcomeScreen>
   late Animation<double> _pulseAnim;
 
   // ── État ────────────────────────────────────────────────────────────
-  final AudioPlayer _audioPlayer = AudioPlayer();
   bool _soundPlayed = false;
   int _loadingStep = 0;
   Timer? _stepTimer;
@@ -151,9 +149,8 @@ class _PostLoginWelcomeScreenState extends State<PostLoginWelcomeScreen>
     if (_soundPlayed) return;
     _soundPlayed = true;
     try {
-      if (kIsWeb) return;
-      await _audioPlayer.setVolume(0.85);
-      await _audioPlayer.play(AssetSource('sounds/bell_start.mp3'));
+      // BellService gère Web (Web Audio API) ET Mobile (audioplayers)
+      await BellService.playStart();
     } catch (_) {}
   }
 
@@ -183,7 +180,6 @@ class _PostLoginWelcomeScreenState extends State<PostLoginWelcomeScreen>
     _pulseController.dispose();
     _stepTimer?.cancel();
     _navigationTimer?.cancel();
-    _audioPlayer.dispose();
     super.dispose();
   }
 

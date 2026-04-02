@@ -100,11 +100,23 @@
         gainNode2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + durationSec * 0.7);
         osc2.connect(gainNode2);
         gainNode2.connect(ctx.destination);
+
+        // Harmonique tierce (couleur sonore)
+        var osc3 = ctx.createOscillator();
+        var gainNode3 = ctx.createGain();
+        osc3.type = 'triangle';
+        osc3.frequency.setValueAtTime(frequency * 1.5, ctx.currentTime);
+        gainNode3.gain.setValueAtTime(0.15, ctx.currentTime);
+        gainNode3.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + durationSec * 0.5);
+        osc3.connect(gainNode3);
+        gainNode3.connect(ctx.destination);
         
         osc1.start(ctx.currentTime);
         osc1.stop(ctx.currentTime + durationSec);
         osc2.start(ctx.currentTime);
         osc2.stop(ctx.currentTime + durationSec * 0.7);
+        osc3.start(ctx.currentTime);
+        osc3.stop(ctx.currentTime + durationSec * 0.5);
         
         // Libérer le contexte après la fin
         setTimeout(function() { 
@@ -113,6 +125,35 @@
         
       } catch(e) {
         console.warn('EF-FORT Bell error:', e);
+      }
+    };
+
+    // ── Mélodie de bienvenue premium (3 notes ascendantes) ──
+    window.effortPlayWelcomeMelody = function() {
+      try {
+        var ctx = new (window.AudioContext || window.webkitAudioContext)();
+        var notes = [
+          { freq: 523.25, time: 0.0, dur: 0.35 },    // Do5
+          { freq: 659.25, time: 0.25, dur: 0.35 },   // Mi5
+          { freq: 783.99, time: 0.50, dur: 0.55 },   // Sol5
+          { freq: 1046.5, time: 0.85, dur: 1.2 },    // Do6 (finale)
+        ];
+        notes.forEach(function(note) {
+          var osc = ctx.createOscillator();
+          var gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(note.freq, ctx.currentTime + note.time);
+          gain.gain.setValueAtTime(0.0, ctx.currentTime + note.time);
+          gain.gain.linearRampToValueAtTime(0.5, ctx.currentTime + note.time + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + note.time + note.dur);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + note.time);
+          osc.stop(ctx.currentTime + note.time + note.dur);
+        });
+        setTimeout(function() { try { ctx.close(); } catch(e) {} }, 3000);
+      } catch(e) {
+        console.warn('EF-FORT Melody error:', e);
       }
     };
 

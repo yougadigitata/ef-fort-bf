@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
@@ -15,31 +16,113 @@ class DashboardScreen extends StatefulWidget {
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class _DashboardScreenState extends State<DashboardScreen>
+    with TickerProviderStateMixin {
   List<dynamic> _actualites = [];
   bool _loadingActu = true;
   bool _showWelcome = true;
 
-  // ── TÂCHE 4 : Stats utilisateur dynamiques ──
+  // Stats utilisateur
   String _scoresMoyen = '--';
   String _nbSimulations = '0';
   String _nbQuestions = '0';
 
+  // ── Animation Controllers ──────────────────────────────────────────
+  late AnimationController _headerParticleController;
+  late AnimationController _shimmerController;
+  late AnimationController _pulseSimController;
+  late AnimationController _cardSlideController;
+  late AnimationController _statsCountController;
+  late AnimationController _floatController;
+  late AnimationController _rotateController;
+
+  // ── Animations ────────────────────────────────────────────────────
+  late Animation<double> _headerParticleAnim;
+  late Animation<double> _shimmerAnim;
+  late Animation<double> _pulseSimAnim;
+  late Animation<double> _cardSlideAnim;
+  late Animation<double> _floatAnim;
+  late Animation<double> _rotateAnim;
+
   @override
   void initState() {
     super.initState();
+    _initAnimations();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
       _loadUserStats();
+      _cardSlideController.forward();
     });
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void _initAnimations() {
+    _headerParticleController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 6),
+    )..repeat();
+
+    _shimmerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2200),
+    )..repeat();
+
+    _pulseSimController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..repeat(reverse: true);
+
+    _cardSlideController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+
+    _statsCountController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+
+    _floatController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3000),
+    )..repeat(reverse: true);
+
+    _rotateController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 12),
+    )..repeat();
+
+    _headerParticleAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _headerParticleController, curve: Curves.linear),
+    );
+    _shimmerAnim = Tween<double>(begin: -1.5, end: 2.5).animate(
+      CurvedAnimation(parent: _shimmerController, curve: Curves.easeInOut),
+    );
+    _pulseSimAnim = Tween<double>(begin: 1.0, end: 1.05).animate(
+      CurvedAnimation(parent: _pulseSimController, curve: Curves.easeInOut),
+    );
+    _cardSlideAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _cardSlideController, curve: Curves.easeOutCubic),
+    );
+    _floatAnim = Tween<double>(begin: -6.0, end: 6.0).animate(
+      CurvedAnimation(parent: _floatController, curve: Curves.easeInOut),
+    );
+    _rotateAnim = Tween<double>(begin: 0.0, end: 2 * math.pi).animate(
+      CurvedAnimation(parent: _rotateController, curve: Curves.linear),
+    );
   }
 
-  // ── Recharger stats quand on revient sur l'écran ──
+  @override
+  void dispose() {
+    _headerParticleController.dispose();
+    _shimmerController.dispose();
+    _pulseSimController.dispose();
+    _cardSlideController.dispose();
+    _statsCountController.dispose();
+    _floatController.dispose();
+    _rotateController.dispose();
+    super.dispose();
+  }
+
   @override
   void activate() {
     super.activate();
@@ -56,7 +139,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  // ── TÂCHE 4 : Charger les stats depuis Supabase via sessions_examen ──
   Future<void> _loadUserStats() async {
     final stats = await ApiService.getUserStats();
     if (mounted) {
@@ -86,309 +168,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
           onRefresh: _loadData,
           color: AppColors.primary,
           child: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
             slivers: [
-              // ─── SECTION 1 : En-tête premium ───────────────────────
+              // ─── SECTION 1 : En-tête PREMIUM animé ─────────────────
               SliverToBoxAdapter(
-                child: Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [AppColors.primary, AppColors.primaryDark],
-                    ),
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(32),
-                      bottomRight: Radius.circular(32),
-                    ),
-                  ),
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          const LogoWidget(size: 48, borderRadius: 14),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Bonjour $prenom 👋',
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.white,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  '$nom  ·  Niveau $niveau',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: AppColors.white.withValues(alpha: 0.75),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Badge abonnement
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 5),
-                            decoration: BoxDecoration(
-                              color: isAbonne
-                                  ? const Color(0xFFD4A017).withValues(alpha: 0.25)
-                                  : Colors.grey.withValues(alpha: 0.25),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: isAbonne
-                                    ? const Color(0xFFD4A017)
-                                    : Colors.grey,
-                                width: 1.5,
-                              ),
-                            ),
-                            child: Text(
-                              isAbonne ? '✅ Abonné' : '🔓 Gratuit',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: isAbonne
-                                    ? const Color(0xFFD4A017)
-                                    : Colors.white70,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          // Icône notification
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: AppColors.white.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Stack(
-                              children: [
-                                const Icon(Icons.notifications_rounded,
-                                    color: AppColors.white, size: 22),
-                                if (_actualites.isNotEmpty)
-                                  Positioned(
-                                    right: 0,
-                                    top: 0,
-                                    child: Container(
-                                      width: 8,
-                                      height: 8,
-                                      decoration: const BoxDecoration(
-                                        color: Color(0xFFD4A017),
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      // ─── SECTION 3 : Stats personnelles ─────────────
-                      const SizedBox(height: 20),
-                      Row(
-                        children: [
-                          _buildStatBadge('🎯', 'Score moyen', _scoresMoyen, AppColors.white),
-                          const SizedBox(width: 10),
-                          _buildStatBadge('📝', 'Simulations', _nbSimulations, AppColors.white),
-                          const SizedBox(width: 10),
-                          _buildStatBadge('✅', 'Questions', _nbQuestions, AppColors.white),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+                child: _buildPremiumHeader(prenom, nom, niveau, isAbonne),
               ),
 
-              // ─── SECTION 2 : Bannière de bienvenue ──────────────────
+              // ─── SECTION 2 : Message de bienvenue ──────────────────
               if (_showWelcome)
                 SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFD4A017), Color(0xFFE8B520)],
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFFD4A017).withValues(alpha: 0.3),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          const Text('🎯', style: TextStyle(fontSize: 32)),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Bienvenue sur EF-FORT.BF !',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w800,
-                                    color: Color(0xFF1A5C38),
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Chaque effort te rapproche de ton admission finale.',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: const Color(0xFF1A5C38).withValues(alpha: 0.8),
-                                    height: 1.4,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () => setState(() => _showWelcome = false),
-                            child: Icon(Icons.close_rounded,
-                                color: const Color(0xFF1A5C38).withValues(alpha: 0.6),
-                                size: 20),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  child: _buildWelcomeBanner(),
                 ),
 
-              // ─── SECTION 4 : BOUTON PRINCIPAL SIMULATION ──────────
+              // ─── SECTION 3 : Bouton SIMULATION animé ───────────────
               SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                  child: GestureDetector(
-                    onTap: () {
-                      if (widget.onGoToSimulation != null) {
-                        widget.onGoToSimulation!();
-                      }
-                    },
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [Color(0xFFD4A017), Color(0xFFE67E22)],
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFFD4A017).withValues(alpha: 0.4),
-                            blurRadius: 16,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: const Text('⏱️', style: TextStyle(fontSize: 32)),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'DÉMARRER UNE SIMULATION',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.white,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  '50 questions · 1h30 · Barème officiel',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.white.withValues(alpha: 0.85),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Icon(Icons.arrow_forward_ios_rounded,
-                              color: Colors.white, size: 20),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+                child: _buildSimulationButton(),
               ),
 
-              // ─── SECTION 5 : Accès rapide matières ──────────────────
+              // ─── SECTION 4 : Matières rapides ──────────────────────
               SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        '📚 Mes Matières',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textDark,
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          if (widget.onGoToMatieres != null) {
-                            widget.onGoToMatieres!();
-                          }
-                        },
-                        child: Text(
-                          'Voir tout →',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 90,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.only(left: 20, right: 20, top: 10),
-                    children: _buildMatiereChips(),
-                  ),
-                ),
+                child: _buildMatieresSection(),
               ),
 
-              // ─── SECTION 6 : Actualités style WhatsApp Status ──────────
+              // ─── SECTION 5 : Actualités ─────────────────────────────
               if (_loadingActu)
                 const SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.all(40),
+                    padding: EdgeInsets.all(30),
                     child: Center(
-                        child: CircularProgressIndicator(color: AppColors.primary)),
+                      child: CircularProgressIndicator(color: AppColors.primary),
+                    ),
                   ),
                 )
               else
@@ -396,197 +206,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: ActualitesStatusWidget(actualites: _actualites),
                 ),
 
-              // ─── SECTION 7 : Abonnement ──────────────────────────────
+              // ─── SECTION 6 : Abonnement animé ───────────────────────
               SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const AbonnementScreen()),
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: AppColors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                            color: const Color(0xFFD4A017).withValues(alpha: 0.4)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              const Text('💳',
-                                  style: TextStyle(fontSize: 32)),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Débloquez EF-FORT Complet',
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w800,
-                                        color: AppColors.textDark,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    RichText(
-                                      text: const TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: '12 000 FCFA ',
-                                            style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w900,
-                                              color: Color(0xFFD4A017),
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: '· jusqu\'au 31/12/2028',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: AppColors.textLight,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const Icon(Icons.arrow_forward_ios_rounded,
-                                  color: AppColors.primary, size: 18),
-                            ],
-                          ),
-                          const SizedBox(height: 14),
-                          Row(
-                            children: [
-                              _buildAvatange('Questions illimitées'),
-                              const SizedBox(width: 8),
-                              _buildAvatange('PDF corrigés'),
-                              const SizedBox(width: 8),
-                              _buildAvatange('Entraide'),
-                            ],
-                          ),
-                          const SizedBox(height: 14),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (_) => const AbonnementScreen()),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                foregroundColor: AppColors.white,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12)),
-                              ),
-                              child: const Text(
-                                'VOIR L\'OFFRE →',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w700, fontSize: 14),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+                child: _buildAbonnementSection(isAbonne),
               ),
 
-              // ─── SECTION 8 : Entraide ─────────────────────────────────
+              // ─── SECTION 7 : Communauté ──────────────────────────────
               SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const EntraideScreen()),
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            AppColors.primary.withValues(alpha: 0.05),
-                            AppColors.primary.withValues(alpha: 0.12),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                            color: AppColors.primary.withValues(alpha: 0.2)),
-                      ),
-                      child: Row(
-                        children: [
-                          const Text('🤝', style: TextStyle(fontSize: 36)),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Rejoindre la Communauté',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.textDark,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Des candidats actifs vous attendent',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: AppColors.textLight,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Text(
-                              'Rejoindre',
-                              style: TextStyle(
-                                color: AppColors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+                child: _buildCommunitySection(),
               ),
 
               const SliverToBoxAdapter(child: SizedBox(height: 30)),
@@ -597,53 +224,836 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildStatBadge(
-      String emoji, String label, String value, Color color) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(12),
-          border:
-              Border.all(color: color.withValues(alpha: 0.2)),
+  // ═══════════════════════════════════════════════════════════════════
+  // EN-TÊTE PREMIUM — Particules + Shimmer + Stats animées
+  // ═══════════════════════════════════════════════════════════════════
+  Widget _buildPremiumHeader(String prenom, String nom, String niveau, bool isAbonne) {
+    return AnimatedBuilder(
+      animation: Listenable.merge([_headerParticleAnim, _shimmerAnim, _floatAnim]),
+      builder: (_, __) {
+        return Container(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF1E6B42),
+                Color(0xFF1A5C38),
+                Color(0xFF0F3D24),
+              ],
+            ),
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(36),
+              bottomRight: Radius.circular(36),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF1A5C38).withValues(alpha: 0.4),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              // ── Particules dorées flottantes ──
+              CustomPaint(
+                painter: _HeaderParticlePainter(
+                  progress: _headerParticleAnim.value,
+                ),
+                child: const SizedBox(height: 200, width: double.infinity),
+              ),
+
+              // ── Cercles décoratifs lumineux ──
+              Positioned(
+                right: -30,
+                top: -30,
+                child: Transform.rotate(
+                  angle: _rotateAnim.value,
+                  child: Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFFD4A017).withValues(alpha: 0.15),
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: -20,
+                bottom: 10,
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFFD4A017).withValues(alpha: 0.06),
+                  ),
+                ),
+              ),
+
+              // ── Contenu principal ──
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+                child: Column(
+                  children: [
+                    // Ligne utilisateur
+                    Row(
+                      children: [
+                        // Avatar avec bordure dorée brillante
+                        AnimatedBuilder(
+                          animation: _floatAnim,
+                          builder: (_, child) => Transform.translate(
+                            offset: Offset(0, _floatAnim.value * 0.3),
+                            child: child,
+                          ),
+                          child: Container(
+                            width: 52,
+                            height: 52,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFD4A017), Color(0xFFF0C040)],
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFD4A017).withValues(alpha: 0.5),
+                                  blurRadius: 12,
+                                  spreadRadius: 1,
+                                ),
+                              ],
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(2.5),
+                              child: ClipOval(
+                                child: const LogoWidget(size: 47, borderRadius: 24),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    'Bonjour $prenom 👋',
+                                    style: const TextStyle(
+                                      fontSize: 19,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 2),
+                              // Message motivant animé
+                              _buildShimmerText(
+                                '🔥 Continue sur ta lancée !',
+                                fontSize: 12,
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Badge abonnement premium
+                        _buildPremiumBadge(isAbonne),
+                        const SizedBox(width: 8),
+                        _buildNotifBadge(),
+                      ],
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Niveau et stats
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.07),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.1),
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          // Niveau badge
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFF1A5C38), Color(0xFF2D8F5E)],
+                                  ),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.2),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Text('🎓', style: TextStyle(fontSize: 14)),
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      'Niveau : $niveau',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Spacer(),
+                              Text(
+                                '$nom',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white.withValues(alpha: 0.7),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          // Stats 3 colonnes avec animation
+                          Row(
+                            children: [
+                              _buildAnimatedStat('🎯', 'Score moyen', _scoresMoyen),
+                              _buildStatDivider(),
+                              _buildAnimatedStat('📝', 'Simulations', _nbSimulations),
+                              _buildStatDivider(),
+                              _buildAnimatedStat('✅', 'Questions', _nbQuestions),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildShimmerText(String text, {double fontSize = 13}) {
+    return AnimatedBuilder(
+      animation: _shimmerAnim,
+      builder: (_, __) {
+        return ShaderMask(
+          shaderCallback: (bounds) {
+            return LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [
+                Colors.white.withValues(alpha: 0.6),
+                const Color(0xFFD4A017),
+                Colors.white.withValues(alpha: 0.6),
+              ],
+              stops: [
+                (_shimmerAnim.value - 0.4).clamp(0.0, 1.0),
+                _shimmerAnim.value.clamp(0.0, 1.0),
+                (_shimmerAnim.value + 0.4).clamp(0.0, 1.0),
+              ],
+            ).createShader(bounds);
+          },
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: fontSize,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPremiumBadge(bool isAbonne) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        gradient: isAbonne
+            ? const LinearGradient(
+                colors: [Color(0xFFD4A017), Color(0xFFB8860B)],
+              )
+            : null,
+        color: isAbonne ? null : Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isAbonne
+              ? const Color(0xFFF0C040)
+              : Colors.white.withValues(alpha: 0.3),
+          width: 1.5,
         ),
-        child: Column(
-          children: [
-            Text(emoji, style: const TextStyle(fontSize: 20)),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-                color: color,
-              ),
-            ),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 10,
-                color: color.withValues(alpha: 0.8),
-              ),
-            ),
-          ],
+        boxShadow: isAbonne
+            ? [
+                BoxShadow(
+                  color: const Color(0xFFD4A017).withValues(alpha: 0.5),
+                  blurRadius: 10,
+                ),
+              ]
+            : null,
+      ),
+      child: Text(
+        isAbonne ? '👑 Premium' : '🔓 Gratuit',
+        style: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
         ),
       ),
     );
   }
 
-  Widget _buildAvatange(String text) {
+  Widget _buildNotifBadge() {
+    return Stack(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Icon(Icons.notifications_rounded, color: Colors.white, size: 22),
+        ),
+        if (_actualites.isNotEmpty)
+          Positioned(
+            right: 2,
+            top: 2,
+            child: Container(
+              width: 9,
+              height: 9,
+              decoration: const BoxDecoration(
+                color: Color(0xFFD4A017),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildAnimatedStat(String emoji, String label, String value) {
+    return Expanded(
+      child: AnimatedBuilder(
+        animation: _floatAnim,
+        builder: (_, __) {
+          return Transform.translate(
+            offset: Offset(0, _floatAnim.value * 0.15),
+            child: Column(
+              children: [
+                Text(emoji, style: const TextStyle(fontSize: 18)),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFFD4A017),
+                  ),
+                ),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 9.5,
+                    color: Colors.white.withValues(alpha: 0.7),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildStatDivider() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      width: 1,
+      height: 40,
+      color: Colors.white.withValues(alpha: 0.15),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // BANNIÈRE DE BIENVENUE animée
+  // ═══════════════════════════════════════════════════════════════════
+  Widget _buildWelcomeBanner() {
+    return AnimatedBuilder(
+      animation: _cardSlideAnim,
+      builder: (_, child) {
+        return Transform.translate(
+          offset: Offset(0, 30 * (1 - _cardSlideAnim.value)),
+          child: Opacity(
+            opacity: _cardSlideAnim.value,
+            child: child,
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFFD4A017), Color(0xFFE8C030)],
+            ),
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFD4A017).withValues(alpha: 0.35),
+                blurRadius: 16,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              AnimatedBuilder(
+                animation: _floatAnim,
+                builder: (_, child) => Transform.translate(
+                  offset: Offset(0, _floatAnim.value * 0.5),
+                  child: child,
+                ),
+                child: const Text('🎯', style: TextStyle(fontSize: 34)),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Bienvenue sur EF-FORT.BF !',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF1A5C38),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Chaque effort te rapproche de ton admission finale. 💪',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: const Color(0xFF1A5C38).withValues(alpha: 0.8),
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              GestureDetector(
+                onTap: () => setState(() => _showWelcome = false),
+                child: Icon(
+                  Icons.close_rounded,
+                  color: const Color(0xFF1A5C38).withValues(alpha: 0.6),
+                  size: 20,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // BOUTON SIMULATION — Grand bouton animé pulsant
+  // ═══════════════════════════════════════════════════════════════════
+  Widget _buildSimulationButton() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 22, 20, 0),
+      child: GestureDetector(
+        onTap: () => widget.onGoToSimulation?.call(),
+        child: AnimatedBuilder(
+          animation: _pulseSimAnim,
+          builder: (_, child) {
+            return Transform.scale(
+              scale: _pulseSimAnim.value,
+              child: child,
+            );
+          },
+          child: AnimatedBuilder(
+            animation: _shimmerAnim,
+            builder: (_, __) {
+              return Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 20),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFFE8A000),
+                      Color(0xFFD4A017),
+                      Color(0xFFE67E22),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFD4A017).withValues(alpha: 0.5),
+                      blurRadius: 22,
+                      offset: const Offset(0, 8),
+                      spreadRadius: 2,
+                    ),
+                    BoxShadow(
+                      color: const Color(0xFFE67E22).withValues(alpha: 0.2),
+                      blurRadius: 40,
+                      offset: const Offset(0, 16),
+                    ),
+                  ],
+                ),
+                child: Stack(
+                  children: [
+                    // Effet shimmer
+                    Positioned.fill(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(24),
+                        child: ShaderMask(
+                          shaderCallback: (bounds) {
+                            return LinearGradient(
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                              colors: [
+                                Colors.transparent,
+                                Colors.white.withValues(alpha: 0.15),
+                                Colors.transparent,
+                              ],
+                              stops: [
+                                (_shimmerAnim.value - 0.3).clamp(0.0, 1.0),
+                                _shimmerAnim.value.clamp(0.0, 1.0),
+                                (_shimmerAnim.value + 0.3).clamp(0.0, 1.0),
+                              ],
+                            ).createShader(bounds);
+                          },
+                          child: Container(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                    // Contenu
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                          child: const Text('🚀', style: TextStyle(fontSize: 30)),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'LANCER UNE SIMULATION',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                              const SizedBox(height: 5),
+                              Row(
+                                children: [
+                                  _buildSimTag('⏱️', '50 questions'),
+                                  const SizedBox(width: 6),
+                                  _buildSimTag('⏰', '1h30'),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '🎯 Objectif : 70%+ · Conditions réelles',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.white.withValues(alpha: 0.85),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSimTag(String emoji, String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.08),
+        color: Colors.white.withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
-        '✅ $text',
+        '$emoji $text',
         style: const TextStyle(
+          fontSize: 11,
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // SECTION MATIÈRES avec entrée animée en cascade
+  // ═══════════════════════════════════════════════════════════════════
+  Widget _buildMatieresSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildSectionTitle('📚 Mes Matières'),
+              GestureDetector(
+                onTap: () => widget.onGoToMatieres?.call(),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                  ),
+                  child: Text(
+                    'Voir tout →',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 92,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.only(left: 20, right: 20),
+            children: _buildAnimatedMatiereChips(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSectionTitle(String text) {
+    return Text(
+      text,
+      style: const TextStyle(
+        fontSize: 17,
+        fontWeight: FontWeight.w800,
+        color: AppColors.textDark,
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // SECTION ABONNEMENT
+  // ═══════════════════════════════════════════════════════════════════
+  Widget _buildAbonnementSection(bool isAbonne) {
+    return AnimatedBuilder(
+      animation: _cardSlideAnim,
+      builder: (_, child) {
+        return Transform.translate(
+          offset: Offset(0, 40 * (1 - _cardSlideAnim.value)),
+          child: Opacity(
+            opacity: _cardSlideAnim.value,
+            child: child,
+          ),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+        child: GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const AbonnementScreen()),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(
+                color: const Color(0xFFD4A017).withValues(alpha: 0.35),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFD4A017).withValues(alpha: 0.1),
+                  blurRadius: 18,
+                  offset: const Offset(0, 6),
+                ),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFD4A017), Color(0xFFE8B520)],
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFD4A017).withValues(alpha: 0.3),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                      child: const Text('💳', style: TextStyle(fontSize: 26)),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Débloquer EF-FORT Complet',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.textDark,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          RichText(
+                            text: const TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: '12 000 FCFA ',
+                                  style: TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w900,
+                                    color: Color(0xFFD4A017),
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: '· jusqu\'au 31/12/2028',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.textLight,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.arrow_forward_ios_rounded,
+                        color: AppColors.primary, size: 16),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  children: [
+                    _buildAdvantageTag('✅ Questions illimitées'),
+                    _buildAdvantageTag('📄 PDF corrigés'),
+                    _buildAdvantageTag('🤝 Entraide'),
+                    _buildAdvantageTag('🏆 Simulations'),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const AbonnementScreen()),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      elevation: 4,
+                      shadowColor: AppColors.primary.withValues(alpha: 0.4),
+                    ),
+                    child: const Text(
+                      '🚀  VOIR L\'OFFRE PREMIUM',
+                      style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAdvantageTag(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.15)),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
           fontSize: 11,
           color: AppColors.primary,
           fontWeight: FontWeight.w600,
@@ -652,7 +1062,134 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  List<Widget> _buildMatiereChips() {
+  // ═══════════════════════════════════════════════════════════════════
+  // SECTION COMMUNAUTÉ
+  // ═══════════════════════════════════════════════════════════════════
+  Widget _buildCommunitySection() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+      child: GestureDetector(
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const EntraideScreen()),
+        ),
+        child: AnimatedBuilder(
+          animation: _floatAnim,
+          builder: (_, child) => Transform.translate(
+            offset: Offset(0, _floatAnim.value * 0.3),
+            child: child,
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppColors.primary.withValues(alpha: 0.06),
+                  AppColors.primary.withValues(alpha: 0.14),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.2),
+              ),
+            ),
+            child: Row(
+              children: [
+                AnimatedBuilder(
+                  animation: _pulseSimAnim,
+                  builder: (_, child) => Transform.scale(
+                    scale: _pulseSimAnim.value,
+                    child: child,
+                  ),
+                  child: const Text('🤝', style: TextStyle(fontSize: 38)),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Rejoindre la Communauté',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textDark,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        'Des candidats actifs vous attendent',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textLight,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          _buildMiniTag('🟢 En ligne'),
+                          const SizedBox(width: 6),
+                          _buildMiniTag('24h/24'),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [AppColors.primary, Color(0xFF2D8F5E)],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
+                  child: const Text(
+                    'Rejoindre',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMiniTag(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 10,
+          color: AppColors.primary,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // CHIPS MATIÈRES animés
+  // ═══════════════════════════════════════════════════════════════════
+  List<Widget> _buildAnimatedMatiereChips() {
     final matieres = [
       {'emoji': '🌍', 'label': 'Culture G.', 'color': const Color(0xFF1A5C38)},
       {'emoji': '🧠', 'label': 'Psycho', 'color': const Color(0xFF8E44AD)},
@@ -663,48 +1200,135 @@ class _DashboardScreenState extends State<DashboardScreen> {
       {'emoji': '📊', 'label': 'Économie', 'color': const Color(0xFFD4A017)},
     ];
 
-    return matieres
-        .map(
-          (m) => GestureDetector(
-            onTap: () {
-              if (widget.onGoToMatieres != null) widget.onGoToMatieres!();
-            },
-            child: Container(
-              margin: const EdgeInsets.only(right: 12),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(
-                color: AppColors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                    color: (m['color'] as Color).withValues(alpha: 0.3)),
-                boxShadow: [
-                  BoxShadow(
-                    color: (m['color'] as Color).withValues(alpha: 0.1),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+    return matieres.asMap().entries.map((entry) {
+      final i = entry.key;
+      final m = entry.value;
+      final color = m['color'] as Color;
+
+      return AnimatedBuilder(
+        animation: _floatAnim,
+        builder: (_, child) {
+          final offset = math.sin(_floatAnim.value * 0.1 + i * 0.8) * 2.5;
+          return Transform.translate(
+            offset: Offset(0, offset),
+            child: child,
+          );
+        },
+        child: GestureDetector(
+          onTap: () => widget.onGoToMatieres?.call(),
+          child: Container(
+            margin: const EdgeInsets.only(right: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: color.withValues(alpha: 0.3)),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.12),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(m['emoji'] as String, style: const TextStyle(fontSize: 24)),
+                const SizedBox(height: 4),
+                Text(
+                  m['label'] as String,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: color,
                   ),
-                ],
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(m['emoji'] as String,
-                      style: const TextStyle(fontSize: 24)),
-                  const SizedBox(height: 4),
-                  Text(
-                    m['label'] as String,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: m['color'] as Color,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        )
-        .toList();
+        ),
+      );
+    }).toList();
   }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// PAINTER : Particules flottantes dorées dans l'en-tête
+// ═══════════════════════════════════════════════════════════════════════
+class _HeaderParticlePainter extends CustomPainter {
+  final double progress;
+  static final _random = math.Random(42);
+  static late List<_Particle> _particles;
+  static bool _initialized = false;
+
+  _HeaderParticlePainter({required this.progress}) {
+    if (!_initialized) {
+      _particles = List.generate(30, (i) => _Particle(
+        x: _random.nextDouble(),
+        y: _random.nextDouble(),
+        size: 1.5 + _random.nextDouble() * 3,
+        speed: 0.15 + _random.nextDouble() * 0.25,
+        opacity: 0.2 + _random.nextDouble() * 0.6,
+        phase: _random.nextDouble(),
+      ));
+      _initialized = true;
+    }
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (final p in _particles) {
+      final phase = (progress * p.speed + p.phase) % 1.0;
+      final y = size.height * (1 - phase);
+      final x = p.x * size.width + math.sin(phase * 2 * math.pi) * 20;
+
+      // Scintillement
+      final alpha = math.sin(phase * math.pi) * p.opacity;
+
+      final paint = Paint()
+        ..color = const Color(0xFFD4A017).withValues(alpha: alpha)
+        ..style = PaintingStyle.fill;
+
+      // Étoile ou cercle
+      if (p.size > 3) {
+        _drawStar(canvas, Offset(x, y), p.size * 1.2, paint);
+      } else {
+        canvas.drawCircle(Offset(x, y), p.size, paint);
+      }
+    }
+  }
+
+  void _drawStar(Canvas canvas, Offset center, double size, Paint paint) {
+    final path = Path();
+    const points = 4;
+    for (int i = 0; i < points * 2; i++) {
+      final angle = (i * math.pi / points) - math.pi / 2;
+      final radius = i.isEven ? size : size * 0.4;
+      final x = center.dx + radius * math.cos(angle);
+      final y = center.dy + radius * math.sin(angle);
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
+    path.close();
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(_HeaderParticlePainter old) => old.progress != progress;
+}
+
+class _Particle {
+  final double x, y, size, speed, opacity, phase;
+  _Particle({
+    required this.x,
+    required this.y,
+    required this.size,
+    required this.speed,
+    required this.opacity,
+    required this.phase,
+  });
 }

@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../core/theme/app_colors.dart';
@@ -503,7 +504,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// PAGE À PROPOS - AVEC EBOOK CYBERCRIMINALITÉ EN AFRIQUE
+// PAGE À PROPOS - PREMIUM ANIMÉE
 // ═══════════════════════════════════════════════════════════════
 class _AboutScreen extends StatefulWidget {
   const _AboutScreen();
@@ -512,8 +513,93 @@ class _AboutScreen extends StatefulWidget {
   State<_AboutScreen> createState() => _AboutScreenState();
 }
 
-class _AboutScreenState extends State<_AboutScreen> {
+class _AboutScreenState extends State<_AboutScreen>
+    with TickerProviderStateMixin {
   int _activeTab = 0; // 0=Mission, 1=Cyber Edu, 2=Contact
+
+  // Animation controllers
+  late AnimationController _particleCtrl;
+  late AnimationController _shimmerCtrl;
+  late AnimationController _pulseCtrl;
+  late AnimationController _floatCtrl;
+  late AnimationController _rotateCtrl;
+  late AnimationController _slideCtrl;
+
+  late Animation<double> _particleAnim;
+  late Animation<double> _shimmerAnim;
+  late Animation<double> _pulseAnim;
+  late Animation<double> _floatAnim;
+  late Animation<double> _rotateAnim;
+  late Animation<double> _slideAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _initAnimations();
+    _slideCtrl.forward();
+  }
+
+  void _initAnimations() {
+    _particleCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 6),
+    )..repeat();
+
+    _shimmerCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..repeat();
+
+    _pulseCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1600),
+    )..repeat(reverse: true);
+
+    _floatCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3200),
+    )..repeat(reverse: true);
+
+    _rotateCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 15),
+    )..repeat();
+
+    _slideCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+
+    _particleAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _particleCtrl, curve: Curves.linear),
+    );
+    _shimmerAnim = Tween<double>(begin: -1.5, end: 2.5).animate(
+      CurvedAnimation(parent: _shimmerCtrl, curve: Curves.easeInOut),
+    );
+    _pulseAnim = Tween<double>(begin: 0.97, end: 1.03).animate(
+      CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut),
+    );
+    _floatAnim = Tween<double>(begin: -5.0, end: 5.0).animate(
+      CurvedAnimation(parent: _floatCtrl, curve: Curves.easeInOut),
+    );
+    _rotateAnim = Tween<double>(begin: 0.0, end: 2 * math.pi).animate(
+      CurvedAnimation(parent: _rotateCtrl, curve: Curves.linear),
+    );
+    _slideAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _slideCtrl, curve: Curves.easeOutCubic),
+    );
+  }
+
+  @override
+  void dispose() {
+    _particleCtrl.dispose();
+    _shimmerCtrl.dispose();
+    _pulseCtrl.dispose();
+    _floatCtrl.dispose();
+    _rotateCtrl.dispose();
+    _slideCtrl.dispose();
+    super.dispose();
+  }
 
   Future<void> _openWhatsApp() async {
     final uri = Uri.parse(
@@ -543,94 +629,226 @@ class _AboutScreenState extends State<_AboutScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
         slivers: [
-          // ── AppBar avec gradient ──
+          // ── AppBar PREMIUM animée avec particules ──
           SliverAppBar(
-            expandedHeight: 200,
+            expandedHeight: 230,
             pinned: true,
+            stretch: true,
             flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [AppColors.primaryDark, AppColors.primary],
-                  ),
-                ),
-                child: SafeArea(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 36),
-                      Container(
-                        width: 90,
-                        height: 90,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(22),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.25),
-                              blurRadius: 20,
-                              offset: const Offset(0, 6),
-                            ),
-                          ],
+              background: AnimatedBuilder(
+                animation: Listenable.merge([_particleAnim, _shimmerAnim, _rotateAnim, _floatAnim]),
+                builder: (_, __) {
+                  return Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color(0xFF0A2E1A),
+                          Color(0xFF1A5C38),
+                          Color(0xFF0F3D24),
+                        ],
+                      ),
+                    ),
+                    child: Stack(
+                      children: [
+                        // Particules dorées
+                        CustomPaint(
+                          painter: _AboutParticlePainter(progress: _particleAnim.value),
+                          size: Size.infinite,
                         ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(22),
-                          child: Image.asset(
-                            'assets/images/logo_effort.png',
-                            fit: BoxFit.contain,
-                            errorBuilder: (ctx, err, _) => Container(
-                              decoration: const BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [AppColors.primary, AppColors.primaryDark],
+                        // Cercle rotatif décoratif
+                        Positioned(
+                          right: -40,
+                          top: -40,
+                          child: Transform.rotate(
+                            angle: _rotateAnim.value,
+                            child: Container(
+                              width: 160,
+                              height: 160,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: const Color(0xFFD4A017).withValues(alpha: 0.12),
+                                  width: 2,
                                 ),
                               ),
-                              child: const Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text('🎓', style: TextStyle(fontSize: 32)),
-                                  Text('EF-FORT', style: TextStyle(
-                                    color: Colors.white, fontSize: 10,
-                                    fontWeight: FontWeight.w900,
-                                  )),
-                                ],
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          left: -20,
+                          bottom: -20,
+                          child: Transform.rotate(
+                            angle: -_rotateAnim.value * 0.7,
+                            child: Container(
+                              width: 100,
+                              height: 100,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: const Color(0xFFD4A017).withValues(alpha: 0.08),
+                                  width: 1.5,
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 10),
-                      const Text(
-                        'EF-FORT.BF',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-                        decoration: BoxDecoration(
-                          color: AppColors.secondary.withValues(alpha: 0.25),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: AppColors.secondary.withValues(alpha: 0.5)),
-                        ),
-                        child: const Text(
-                          '🏆 Plateforme N°1 d\'apprentissage au Burkina Faso',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
+                        // Contenu de l'en-tête
+                        SafeArea(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const SizedBox(height: 44),
+                              // Logo avec halo doré pulsant
+                              AnimatedBuilder(
+                                animation: _pulseAnim,
+                                builder: (_, child) => Transform.scale(
+                                  scale: _pulseAnim.value,
+                                  child: child,
+                                ),
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    // Halo extérieur
+                                    Container(
+                                      width: 106,
+                                      height: 106,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        gradient: RadialGradient(
+                                          colors: [
+                                            const Color(0xFFD4A017).withValues(alpha: 0.25),
+                                            const Color(0xFFD4A017).withValues(alpha: 0.0),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    // Bordure dorée
+                                    Container(
+                                      width: 96,
+                                      height: 96,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        gradient: const LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                          colors: [Color(0xFFD4A017), Color(0xFFF0C040)],
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: const Color(0xFFD4A017).withValues(alpha: 0.5),
+                                            blurRadius: 20,
+                                            spreadRadius: 2,
+                                          ),
+                                        ],
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(3),
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.white,
+                                          ),
+                                          child: ClipOval(
+                                            child: Image.asset(
+                                              'assets/images/logo_effort.png',
+                                              fit: BoxFit.contain,
+                                              errorBuilder: (ctx, err, _) => Container(
+                                                decoration: const BoxDecoration(
+                                                  gradient: LinearGradient(
+                                                    colors: [AppColors.primary, AppColors.primaryDark],
+                                                  ),
+                                                ),
+                                                child: const Column(
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  children: [
+                                                    Text('🎓', style: TextStyle(fontSize: 28)),
+                                                    Text('EF-FORT', style: TextStyle(
+                                                      color: Colors.white, fontSize: 9,
+                                                      fontWeight: FontWeight.w900,
+                                                    )),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              // Titre avec shimmer
+                              ShaderMask(
+                                shaderCallback: (bounds) {
+                                  return LinearGradient(
+                                    begin: Alignment.centerLeft,
+                                    end: Alignment.centerRight,
+                                    colors: [
+                                      Colors.white.withValues(alpha: 0.7),
+                                      const Color(0xFFD4A017),
+                                      Colors.white.withValues(alpha: 0.7),
+                                    ],
+                                    stops: [
+                                      (_shimmerAnim.value - 0.4).clamp(0.0, 1.0),
+                                      _shimmerAnim.value.clamp(0.0, 1.0),
+                                      (_shimmerAnim.value + 0.4).clamp(0.0, 1.0),
+                                    ],
+                                  ).createShader(bounds);
+                                },
+                                child: const Text(
+                                  'EF-FORT.BF',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 2,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              // Badge animé flottant
+                              AnimatedBuilder(
+                                animation: _floatAnim,
+                                builder: (_, child) => Transform.translate(
+                                  offset: Offset(0, _floatAnim.value * 0.4),
+                                  child: child,
+                                ),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [Color(0xFFD4A017), Color(0xFFE8B520)],
+                                    ),
+                                    borderRadius: BorderRadius.circular(20),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFFD4A017).withValues(alpha: 0.4),
+                                        blurRadius: 10,
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Text(
+                                    '🏆 Plateforme N°1 au Burkina Faso',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
             backgroundColor: AppColors.primaryDark,
@@ -638,18 +856,27 @@ class _AboutScreenState extends State<_AboutScreen> {
             title: const Text('À propos', style: TextStyle(fontWeight: FontWeight.w700)),
           ),
 
-          // ── Onglets de navigation ──
+          // ── Onglets de navigation Premium ──
           SliverToBoxAdapter(
             child: Container(
-              color: AppColors.white,
-              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               child: Row(
                 children: [
-                  _buildTab(0, '🎯 Mission', Icons.flag_rounded),
+                  _buildPremiumTab(0, '🎯 Mission', Icons.flag_rounded),
                   const SizedBox(width: 8),
-                  _buildTab(1, '🔐 Cyber Éducation', Icons.security_rounded),
+                  _buildPremiumTab(1, '🔐 Cyber Edu', Icons.security_rounded),
                   const SizedBox(width: 8),
-                  _buildTab(2, '📞 Contact', Icons.contact_support_rounded),
+                  _buildPremiumTab(2, '📞 Contact', Icons.contact_support_rounded),
                 ],
               ),
             ),
@@ -659,13 +886,23 @@ class _AboutScreenState extends State<_AboutScreen> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: _activeTab == 0
-                    ? _buildMissionTab()
-                    : _activeTab == 1
-                        ? _buildCyberEduTab()
-                        : _buildContactTab(),
+              child: AnimatedBuilder(
+                animation: _slideAnim,
+                builder: (_, child) => Transform.translate(
+                  offset: Offset(0, 10 * (1 - _slideAnim.value)),
+                  child: Opacity(
+                    opacity: _slideAnim.value,
+                    child: child,
+                  ),
+                ),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: _activeTab == 0
+                      ? _buildMissionTab()
+                      : _activeTab == 1
+                          ? _buildCyberEduTab()
+                          : _buildContactTab(),
+                ),
               ),
             ),
           ),
@@ -674,26 +911,52 @@ class _AboutScreenState extends State<_AboutScreen> {
     );
   }
 
-  Widget _buildTab(int index, String label, IconData icon) {
+  Widget _buildPremiumTab(int index, String label, IconData icon) {
     final isActive = _activeTab == index;
     return Expanded(
       child: GestureDetector(
-        onTap: () => setState(() => _activeTab = index),
+        onTap: () {
+          setState(() => _activeTab = index);
+        },
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+          duration: const Duration(milliseconds: 250),
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
           decoration: BoxDecoration(
-            color: isActive ? AppColors.primary : AppColors.background,
-            borderRadius: BorderRadius.circular(12),
+            gradient: isActive
+                ? const LinearGradient(
+                    colors: [AppColors.primary, Color(0xFF2D8F5E)],
+                  )
+                : null,
+            color: isActive ? null : AppColors.background,
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: isActive ? AppColors.primary : AppColors.primary.withValues(alpha: 0.2),
+              color: isActive
+                  ? AppColors.primary
+                  : AppColors.primary.withValues(alpha: 0.2),
+              width: isActive ? 1.5 : 1,
             ),
+            boxShadow: isActive
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ]
+                : null,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 18,
-                color: isActive ? Colors.white : AppColors.primary),
+              AnimatedScale(
+                scale: isActive ? 1.15 : 1.0,
+                duration: const Duration(milliseconds: 200),
+                child: Icon(
+                  icon,
+                  size: 18,
+                  color: isActive ? Colors.white : AppColors.primary,
+                ),
+              ),
               const SizedBox(height: 4),
               Text(
                 label,
@@ -716,27 +979,42 @@ class _AboutScreenState extends State<_AboutScreen> {
       key: const ValueKey('mission'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Badge plateforme #1
-        Container(
+        // Badge Plateforme N°1 animé
+        AnimatedBuilder(
+          animation: _floatAnim,
+          builder: (_, child) => Transform.translate(
+            offset: Offset(0, _floatAnim.value * 0.3),
+            child: child,
+          ),
+          child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFFD4A017), Color(0xFFE8B82A)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFFD4A017), Color(0xFFE8B82A), Color(0xFFF0C030)],
             ),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFD4A017).withValues(alpha: 0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
+                color: const Color(0xFFD4A017).withValues(alpha: 0.4),
+                blurRadius: 18,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
           child: Row(
             children: [
-              const Text('🏆', style: TextStyle(fontSize: 32)),
-              const SizedBox(width: 12),
+              AnimatedBuilder(
+                animation: _pulseAnim,
+                builder: (_, child) => Transform.scale(
+                  scale: _pulseAnim.value,
+                  child: child,
+                ),
+                child: const Text('🏆', style: TextStyle(fontSize: 38)),
+              ),
+              const SizedBox(width: 14),
               const Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -745,10 +1023,12 @@ class _AboutScreenState extends State<_AboutScreen> {
                       'Plateforme N°1',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 18,
+                        fontSize: 20,
                         fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
                       ),
                     ),
+                    SizedBox(height: 2),
                     Text(
                       'd\'apprentissage et d\'éducation au Burkina Faso',
                       style: TextStyle(
@@ -757,11 +1037,21 @@ class _AboutScreenState extends State<_AboutScreen> {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
+                    SizedBox(height: 6),
+                    Text(
+                      '🇧🇫 Conçu par des Burkinabè, pour des Burkinabè',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ],
                 ),
               ),
             ],
           ),
+        ),
         ),
         const SizedBox(height: 16),
         _buildInfoCard(
@@ -1517,4 +1807,71 @@ class _AboutScreenState extends State<_AboutScreen> {
       ),
     );
   }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// PAINTER : Particules flottantes dorées pour la page À propos
+// ═══════════════════════════════════════════════════════════════════════
+class _AboutParticlePainter extends CustomPainter {
+  final double progress;
+  static final _random = math.Random(77);
+  static late List<_AboutParticle> _particles;
+  static bool _initialized = false;
+
+  _AboutParticlePainter({required this.progress}) {
+    if (!_initialized) {
+      _particles = List.generate(25, (i) => _AboutParticle(
+        x: _random.nextDouble(),
+        y: _random.nextDouble(),
+        size: 1.2 + _random.nextDouble() * 2.8,
+        speed: 0.12 + _random.nextDouble() * 0.2,
+        opacity: 0.2 + _random.nextDouble() * 0.55,
+        phase: _random.nextDouble(),
+      ));
+      _initialized = true;
+    }
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (final p in _particles) {
+      final phase = (progress * p.speed + p.phase) % 1.0;
+      final y = size.height * (1 - phase);
+      final x = p.x * size.width + math.sin(phase * 2 * math.pi + p.phase) * 15;
+      final alpha = math.sin(phase * math.pi) * p.opacity;
+
+      final paint = Paint()
+        ..color = const Color(0xFFD4A017).withValues(alpha: alpha)
+        ..style = PaintingStyle.fill;
+
+      if (p.size > 2.5) {
+        // Dessiner une petite étoile
+        final path = Path();
+        const pts = 4;
+        for (int i = 0; i < pts * 2; i++) {
+          final angle = (i * math.pi / pts) - math.pi / 2;
+          final r = i.isEven ? p.size * 1.2 : p.size * 0.4;
+          final px = x + r * math.cos(angle);
+          final py = y + r * math.sin(angle);
+          if (i == 0) path.moveTo(px, py);
+          else path.lineTo(px, py);
+        }
+        path.close();
+        canvas.drawPath(path, paint);
+      } else {
+        canvas.drawCircle(Offset(x, y), p.size, paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_AboutParticlePainter old) => old.progress != progress;
+}
+
+class _AboutParticle {
+  final double x, y, size, speed, opacity, phase;
+  _AboutParticle({
+    required this.x, required this.y, required this.size,
+    required this.speed, required this.opacity, required this.phase,
+  });
 }

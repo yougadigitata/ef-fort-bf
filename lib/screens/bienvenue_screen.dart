@@ -1,8 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
-import 'package:audioplayers/audioplayers.dart';
+import '../services/bell_service.dart';
 import 'login_screen.dart';
 
 // ══════════════════════════════════════════════════════════════════════
@@ -37,7 +36,6 @@ class _BienvenueScreenState extends State<BienvenueScreen>
   late Animation<double> _particleAnim;
 
   // ── État ────────────────────────────────────────────────────────────
-  final AudioPlayer _audioPlayer = AudioPlayer();
   bool _soundPlayed = false;
   int _currentBannerIndex = 0;
   Timer? _bannerTimer;
@@ -137,9 +135,8 @@ class _BienvenueScreenState extends State<BienvenueScreen>
     if (_soundPlayed) return;
     _soundPlayed = true;
     try {
-      if (kIsWeb) return; // Web ne supporte pas tous les formats audio
-      await _audioPlayer.setVolume(0.9);
-      await _audioPlayer.play(AssetSource('sounds/bell_start.mp3'));
+      // BellService gère Web (Web Audio API) ET Mobile (audioplayers)
+      await BellService.playStart();
     } catch (_) {
       // Silencieux si erreur
     }
@@ -150,7 +147,6 @@ class _BienvenueScreenState extends State<BienvenueScreen>
     for (final t in _sectionTimers) {
       t.cancel();
     }
-    _audioPlayer.dispose();
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
@@ -182,7 +178,6 @@ class _BienvenueScreenState extends State<BienvenueScreen>
     for (final t in _sectionTimers) {
       t.cancel();
     }
-    _audioPlayer.dispose();
     super.dispose();
   }
 
