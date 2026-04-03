@@ -40,12 +40,28 @@ questions.get('/matieres', async (c) => {
     }
   }
 
+  // Compter aussi les séries par matière
+  const seriesMap: Record<string, number> = {};
+  for (const mat of matieresFiltrees) {
+    try {
+      const { count } = await db
+        .from('series_qcm')
+        .select('*', { count: 'exact', head: true })
+        .eq('matiere_id', mat.id)
+        .eq('actif', true);
+      seriesMap[mat.id] = count ?? 0;
+    } catch (_) {
+      seriesMap[mat.id] = 0;
+    }
+  }
+
   const result = matieresFiltrees.map(m => ({
     id: m.code?.toLowerCase() || m.id,
     nom: m.nom,
     icone: m.icone ?? '📚',
     couleur: m.couleur ?? '#1A5C38',
     nb_questions: countMap[m.id] ?? 0,
+    nb_series: seriesMap[m.id] ?? 0,
     abonne_only: false,
     matiere_id: m.id,
     ordre: m.ordre ?? 99,

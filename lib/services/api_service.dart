@@ -497,7 +497,96 @@ class ApiService {
     }
   }
 
-  // Compatibilité
+  // ══════════════════════════════════════════════════════════════
+  // ENTRAIDE v5.0 — Questions/Réponses Admin via /api/entraide
+  // ══════════════════════════════════════════════════════════════
+
+  /// Récupérer les messages d'entraide avec réponses
+  static Future<List<Map<String, dynamic>>> getEntraideMsgsV2() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$apiBase/entraide'),
+        headers: _headers,
+      ).timeout(const Duration(seconds: 10));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final list = data['messages'] as List? ?? [];
+        return list.map((e) => e as Map<String, dynamic>).toList();
+      }
+      return [];
+    } catch (e) {
+      if (kDebugMode) debugPrint('getEntraideMsgsV2 error: $e');
+      return [];
+    }
+  }
+
+  /// Publier un message d'entraide (1 par jour pour les non-admins)
+  static Future<Map<String, dynamic>> publierEntraideMsg({
+    required String contenu,
+    bool partagerWhatsApp = false,
+    String? telephone,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$apiBase/entraide'),
+        headers: _headers,
+        body: jsonEncode({
+          'contenu': contenu,
+          'partage_whatsapp': partagerWhatsApp,
+          if (telephone != null) 'telephone_partage': telephone,
+        }),
+      ).timeout(const Duration(seconds: 10));
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return {'success': true};
+      }
+      if (response.statusCode == 429) {
+        return {'error': data['error'] ?? 'Quota journalier atteint.', 'already_posted': true};
+      }
+      return {'error': data['error'] ?? 'Erreur lors de la publication'};
+    } catch (e) {
+      if (kDebugMode) debugPrint('publierEntraideMsg error: $e');
+      return {'error': 'Erreur de connexion.'};
+    }
+  }
+
+  /// Admin répond à un message d'entraide
+  static Future<Map<String, dynamic>> repondreEntraideMsg({
+    required String messageId,
+    required String reponse,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$apiBase/entraide/$messageId/repondre'),
+        headers: _headers,
+        body: jsonEncode({'contenu': reponse}),
+      ).timeout(const Duration(seconds: 10));
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return {'success': true};
+      }
+      return {'error': data['error'] ?? 'Erreur lors de la réponse'};
+    } catch (e) {
+      if (kDebugMode) debugPrint('repondreEntraideMsg error: $e');
+      return {'error': 'Erreur de connexion.'};
+    }
+  }
+
+  /// Supprimer un message d'entraide
+  static Future<bool> supprimerEntraide(String id) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$apiBase/entraide/$id'),
+        headers: _headers,
+      ).timeout(const Duration(seconds: 10));
+      return response.statusCode == 200 || response.statusCode == 204;
+    } catch (e) {
+      if (kDebugMode) debugPrint('supprimerEntraide error: $e');
+      return false;
+    }
+  }
+
+  // Compatibilité ancienne API (statuts)
   static Future<List<dynamic>> getEntraideMsgs() async => [];
 
   static Future<Map<String, dynamic>> sendEntraideMsgAPI({
@@ -505,7 +594,7 @@ class ApiService {
     bool partagerWhatsApp = false,
     String? telephone,
   }) async {
-    return {'error': 'Utilisez ApiService.publierStatutAPI'};
+    return publierEntraideMsg(contenu: contenu, partagerWhatsApp: partagerWhatsApp, telephone: telephone);
   }
 
   // ══════════════════════════════════════════════════════════════

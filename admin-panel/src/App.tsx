@@ -12,10 +12,11 @@ import AuditLogPage from './pages/AuditLogPage';
 import AnnoncesPage from './pages/AnnoncesPage';
 import ExamGeneratorPage from './pages/ExamGeneratorPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
+import EntraidePage from './pages/EntraidePage';
 import {
   LayoutDashboard, FileQuestion, Upload, BookOpen, Target,
   Flag, History, LogOut, Menu, X, Newspaper, Layers, KeyRound,
-  CreditCard
+  CreditCard, MessageCircle
 } from 'lucide-react';
 
 // ── Context Auth ─────────────────────────────────────────────
@@ -26,7 +27,7 @@ export const useAuth = () => useContext(AuthContext);
 export type Page =
   | 'dashboard' | 'questions' | 'create-question' | 'edit-question'
   | 'bulk-import' | 'series' | 'simulations' | 'flags' | 'audit-log'
-  | 'annonces' | 'exam-generator' | 'change-password' | 'paiements';
+  | 'annonces' | 'exam-generator' | 'change-password' | 'paiements' | 'entraide';
 
 export default function App() {
   const [user, setUser] = useState<any>(() => {
@@ -101,6 +102,7 @@ export default function App() {
 
             <NavSection label="Communication" />
             <NavItem icon={<Newspaper size={18} />} label="Publier une Annonce" active={currentPage === 'annonces'} onClick={() => navigate('annonces')} />
+            <NavItem icon={<MessageCircle size={18} />} label="Entraide — Répondre" active={currentPage === 'entraide'} onClick={() => navigate('entraide')} />
 
             <NavSection label="Modération & Audit" />
             <NavItem icon={<Flag size={18} />} label="Signalements" active={currentPage === 'flags'} onClick={() => navigate('flags')} />
@@ -163,6 +165,7 @@ export default function App() {
             {currentPage === 'flags' && <FlagsPage onNavigate={navigate} />}
             {currentPage === 'audit-log' && <AuditLogPage onNavigate={navigate} />}
             {currentPage === 'annonces' && <AnnoncesPage onNavigate={navigate} />}
+            {currentPage === 'entraide' && <EntraidePage onNavigate={navigate} />}
             {currentPage === 'change-password' && <ChangePasswordPage onNavigate={navigate} />}
           </div>
         </div>
@@ -210,6 +213,7 @@ function getPageTitle(page: Page): string {
     'flags': '🚨 Signalements',
     'audit-log': '📜 Audit & Historique',
     'annonces': '📢 Publier une annonce',
+    'entraide': '🤝 Entraide — Répondre aux Questions',
     'change-password': '🔑 Changer le mot de passe',
   };
   return titles[page] ?? 'Admin';

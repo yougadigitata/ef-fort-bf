@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
-import '../widgets/logo_widget.dart';
 import 'login_screen.dart';
 import 'admin_screen.dart';
 
@@ -14,8 +13,59 @@ class ProfilScreen extends StatefulWidget {
   State<ProfilScreen> createState() => _ProfilScreenState();
 }
 
-class _ProfilScreenState extends State<ProfilScreen> {
+class _ProfilScreenState extends State<ProfilScreen>
+    with TickerProviderStateMixin {
   bool _loadingAbonnement = false;
+
+  // Animations fluides style "À propos"
+  late AnimationController _headerCtrl;
+  late AnimationController _contentCtrl;
+  late AnimationController _pulseCtrl;
+
+  late Animation<double> _headerAnim;
+  late Animation<double> _contentAnim;
+  late Animation<double> _pulseAnim;
+  late Animation<Offset> _slideAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _headerCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _contentCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _pulseCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    )..repeat(reverse: true);
+
+    _headerAnim = CurvedAnimation(parent: _headerCtrl, curve: Curves.easeOutCubic);
+    _contentAnim = CurvedAnimation(parent: _contentCtrl, curve: Curves.easeOut);
+    _pulseAnim = Tween<double>(begin: 0.98, end: 1.02).animate(
+      CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut),
+    );
+    _slideAnim = Tween<Offset>(
+      begin: const Offset(0, 0.15),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _contentCtrl, curve: Curves.easeOut));
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _headerCtrl.forward();
+      await _contentCtrl.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _headerCtrl.dispose();
+    _contentCtrl.dispose();
+    _pulseCtrl.dispose();
+    super.dispose();
+  }
 
   Future<void> _demanderAbonnement(String moyen) async {
     setState(() => _loadingAbonnement = true);
@@ -68,75 +118,126 @@ class _ProfilScreenState extends State<ProfilScreen> {
     final isAbonne = user?['abonnement_actif'] == true;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFFF0F4F1),
       body: SafeArea(
         child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
           child: Column(
             children: [
-              Container(
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [AppColors.primary, AppColors.primaryDark],
-                  ),
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(28),
-                    bottomRight: Radius.circular(28),
-                  ),
-                ),
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
-                child: Column(
-                  children: [
-                    const LogoWidget(size: 80, borderRadius: 18),
-                    const SizedBox(height: 16),
-                    Text(
-                      '$prenom $nom',
-                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.white),
+              // ── Header animé ──
+              FadeTransition(
+                opacity: _headerAnim,
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0, -0.1),
+                    end: Offset.zero,
+                  ).animate(_headerAnim),
+                  child: Container(
+                    width: double.infinity,
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [AppColors.primary, AppColors.primaryDark],
+                      ),
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(32),
+                        bottomRight: Radius.circular(32),
+                      ),
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      telephone,
-                      style: TextStyle(fontSize: 14, color: AppColors.white.withValues(alpha: 0.7)),
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+                    child: Column(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: AppColors.white.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            'Niveau $niveau',
-                            style: const TextStyle(fontSize: 12, color: AppColors.white, fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: isAbonne ? AppColors.success.withValues(alpha: 0.2) : AppColors.secondary.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            isAbonne ? 'ABONNE' : 'GRATUIT',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: isAbonne ? AppColors.success : AppColors.secondary,
+                        // Avatar animé avec pulse
+                        ScaleTransition(
+                          scale: _pulseAnim,
+                          child: Container(
+                            width: 90,
+                            height: 90,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white.withValues(alpha: 0.15),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.3),
+                                width: 3,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.2),
+                                  blurRadius: 20,
+                                  spreadRadius: 5,
+                                ),
+                              ],
+                            ),
+                            child: ClipOval(
+                              child: Image.asset(
+                                'assets/images/logo_effort.png',
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => Center(
+                                  child: Text(
+                                    prenom.isNotEmpty ? prenom[0].toUpperCase() : 'U',
+                                    style: const TextStyle(
+                                      fontSize: 36,
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ),
+                        const SizedBox(height: 16),
+
+                        // Nom complet
+                        Text(
+                          '$prenom $nom',
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          telephone,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.white.withValues(alpha: 0.75),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+
+                        // Badges niveau + statut
+                        Wrap(
+                          spacing: 8,
+                          children: [
+                            _buildBadge('Niveau $niveau', Icons.school_outlined, Colors.white.withValues(alpha: 0.2)),
+                            _buildBadge(
+                              isAbonne ? '✅ ABONNÉ' : '🆓 GRATUIT',
+                              isAbonne ? Icons.workspace_premium_rounded : Icons.lock_open_rounded,
+                              isAbonne ? AppColors.success.withValues(alpha: 0.25) : Colors.orange.withValues(alpha: 0.25),
+                            ),
+                            if (isAdmin)
+                              _buildBadge('👑 ADMIN', Icons.admin_panel_settings_rounded, Colors.purple.withValues(alpha: 0.25)),
+                          ],
+                        ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
               ),
+
               const SizedBox(height: 20),
+
+              // ── Contenu animé en slide + fade ──
+              SlideTransition(
+                position: _slideAnim,
+                child: FadeTransition(
+                  opacity: _contentAnim,
+                  child: Column(
+                    children: [
               if (!isAbonne) ...[
                 Container(
                   margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -306,9 +407,35 @@ class _ProfilScreenState extends State<ProfilScreen> {
                 () => _showLogoutConfirm(),
               ),
               const SizedBox(height: 40),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildBadge(String label, IconData icon, Color bg) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: Colors.white),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.w700),
+          ),
+        ],
       ),
     );
   }

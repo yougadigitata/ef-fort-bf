@@ -252,6 +252,7 @@ class _MatieresScreenState extends State<MatieresScreen> {
   Widget _buildMatiereCard(Map<String, dynamic> matiere, String matiereCode, Color color) {
     final nom = matiere['nom'] as String? ?? matiereCode.toUpperCase();
     final nbQuestions = matiere['nb_questions'] as int? ?? 0;
+    final nbSeries = matiere['nb_series'] as int? ?? 0;
     final matiereId = matiere['matiere_id'] as String? ?? '';
     final icone = _getIcone(matiere);
     final hasMatId = matiereId.isNotEmpty;
@@ -268,10 +269,19 @@ class _MatieresScreenState extends State<MatieresScreen> {
       badgeColor = const Color(0xFFE67E22);
     }
 
-    // Libellé séries
+    // Libellé avec questions ET séries séparés
     String seriesLabel = '';
-    if (nbQuestions > 0) {
-      seriesLabel = isSeriesMode ? '$nbQuestions séries' : '$nbQuestions QCM';
+    if (isSeriesMode) {
+      // Afficher les deux informations distinctement
+      if (nbQuestions > 0 && nbSeries > 0) {
+        seriesLabel = '$nbQuestions questions · $nbSeries séries';
+      } else if (nbQuestions > 0) {
+        seriesLabel = '$nbQuestions questions';
+      } else if (nbSeries > 0) {
+        seriesLabel = '$nbSeries séries';
+      }
+    } else if (nbQuestions > 0) {
+      seriesLabel = '$nbQuestions QCM';
     }
 
     return GestureDetector(

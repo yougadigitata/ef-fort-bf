@@ -163,6 +163,7 @@ admin.post('/valider-abonnement/:id', requireAdmin, async (c) => {
 });
 
 // ── POST /api/admin/change-password ───────────────────────────
+// CORRECTION: Utilise verifyPassword() au lieu de SHA-256 simple
 admin.post('/change-password', requireAdmin, async (c) => {
   const body = await c.req.json().catch(() => null) as Record<string, unknown> | null;
   if (!body) return c.json({ error: 'Corps invalide.' }, 400);
@@ -196,18 +197,17 @@ admin.post('/change-password', requireAdmin, async (c) => {
 
   if (!profile) return c.json({ error: 'Utilisateur introuvable.' }, 404);
 
-  // Hash le nouveau mot de passe (SHA-256 simple compatible avec auth.ts)
-  const encoder = new TextEncoder();
-  const hashBuf = await crypto.subtle.digest('SHA-256', encoder.encode(currentPassword));
-  const currentHash = Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
-
-  if (profile.password_hash !== currentHash) {
+  // CORRECTION CRITIQUE: Utiliser verifyPassword() qui gère le format sel:hash
+  // L'ancien code utilisait SHA-256 simple ce qui ne correspond pas au format stocké
+  const { verifyPassword, makePasswordHash } = await import('../lib/auth');
+  const isValid = await verifyPassword(String(currentPassword), profile.password_hash);
+  
+  if (!isValid) {
     return c.json({ error: 'Mot de passe actuel incorrect.' }, 401);
   }
 
-  // Hash du nouveau mot de passe
-  const newHashBuf = await crypto.subtle.digest('SHA-256', encoder.encode(newPassword));
-  const newHash = Array.from(new Uint8Array(newHashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  // Hash du nouveau mot de passe avec le bon format sel:hash
+  const newHash = await makePasswordHash(String(newPassword));
 
   const { error: updateErr } = await db.from('profiles')
     .update({ password_hash: newHash })
@@ -215,6 +215,31 @@ admin.post('/change-password', requireAdmin, async (c) => {
 
   if (updateErr) return c.json({ error: updateErr.message }, 500);
   return c.json({ success: true, message: 'Mot de passe modifié avec succès.' });
+});
+
+// ── POST /api/admin/reset-password — Réinitialiser le mot de passe admin (URGENCE) ──
+admin.post('/reset-password', async (c) => {
+  const body = await c.req.json().catch(() => ({})) as Record<string, unknown>;
+  // Vérification par secret d'urgence
+  if (body['secret'] !== 'EfFortAdmin2026!BF') {
+    return c.json({ error: 'Secret invalide.' }, 403);
+  }
+  
+  const newPassword = body['new_password'] as string;
+  if (!newPassword || newPassword.length < 8) {
+    return c.json({ error: 'Nouveau mot de passe invalide (8 char min).' }, 400);
+  }
+
+  const db = getDB(c.env);
+  const { makePasswordHash } = await import('../lib/auth');
+  const newHash = await makePasswordHash(String(newPassword));
+
+  const { error } = await db.from('profiles')
+    .update({ password_hash: newHash })
+    .eq('is_admin', true);
+
+  if (error) return c.json({ error: error.message }, 500);
+  return c.json({ success: true, message: `Mot de passe admin réinitialisé.` });
 });
 
 admin.get('/users', requireAdmin, async (c) => {
