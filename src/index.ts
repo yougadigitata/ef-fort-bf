@@ -519,10 +519,65 @@ app.post('/api/exam-resultats', async (c) => {
 app.get('/api/health', (c) => c.json({
   status: 'ok',
   app: 'EF-FORT.BF API',
-  version: '7.1.0',
+  version: '9.2.0',
   timestamp: new Date().toISOString(),
-  features: ['18-matieres', '1629-questions', 'simulation-v3', 'examens-blancs', 'pdf-export', 'entraide', 'simulations-admin', 'freemium-v2', 'annonces-crud', 'admin-delete'],
+  features: ['18-matieres', '1629-questions', 'simulation-v3', 'examens-blancs', 'pdf-export', 'entraide', 'simulations-admin', 'freemium-v2', 'annonces-crud', 'admin-delete', 'parent_id-migration'],
 }));
+
+// ── POST /api/admin/migrate-parent-id — Migration parent_id entraide ──
+// Endpoint spécial pour exécuter la migration via l'API Supabase Management
+app.post('/api/admin/migrate-parent-id', async (c) => {
+  const authHeader = c.req.header('Authorization');
+  if (!authHeader?.startsWith('Bearer ')) return c.json({ error: 'Auth requise.' }, 401);
+  const payload = await verifyJWT(authHeader.slice(7));
+  if (!payload || !payload['is_admin']) return c.json({ error: 'Admin requis.' }, 403);
+
+  const supabaseUrl = (c.env as any).SUPABASE_URL || 'https://xqifdbgqxyrlhrkwlyir.supabase.co';
+  const serviceKey = (c.env as any).SUPABASE_KEY;
+  const supabaseRef = 'xqifdbgqxyrlhrkwlyir';
+  
+  const results: any[] = [];
+
+  // Méthode 1 : Tenter via l'API Management Supabase (Project Database API)
+  try {
+    const mgmtUrl = `https://api.supabase.com/v1/projects/${supabaseRef}/database/query`;
+    const r1 = await fetch(mgmtUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${serviceKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: `ALTER TABLE public.messages_entraide ADD COLUMN IF NOT EXISTS parent_id UUID REFERENCES public.messages_entraide(id) ON DELETE CASCADE; CREATE INDEX IF NOT EXISTS idx_messages_entraide_parent_id ON public.messages_entraide(parent_id);`
+      }),
+    });
+    const r1Data = await r1.json() as any;
+    results.push({ method: 'management_api', status: r1.status, data: r1Data });
+  } catch (e: any) {
+    results.push({ method: 'management_api', error: e.message });
+  }
+
+  // Vérification finale
+  const db = getDB(c.env);
+  const { data: test, error: testErr } = await db
+    .from('messages_entraide')
+    .select('id, parent_id')
+    .limit(1);
+  
+  const migrationOk = !testErr || !testErr.message?.includes('parent_id');
+
+  return c.json({ 
+    success: migrationOk, 
+    results,
+    migration_status: migrationOk ? '✅ Colonne parent_id présente' : '❌ Colonne parent_id absente',
+    sql_to_run_manually: `
+-- À exécuter dans Supabase SQL Editor :
+-- https://supabase.com/dashboard/project/${supabaseRef}/sql/new
+ALTER TABLE public.messages_entraide ADD COLUMN IF NOT EXISTS parent_id UUID REFERENCES public.messages_entraide(id) ON DELETE CASCADE;
+CREATE INDEX IF NOT EXISTS idx_messages_entraide_parent_id ON public.messages_entraide(parent_id);
+    `.trim()
+  });
+});
 
 // ── GET /api/simulations-admin — Simulations publiées par l'admin (pour les utilisateurs) ──
 app.get('/api/simulations-admin', async (c) => {

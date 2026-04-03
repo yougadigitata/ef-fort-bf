@@ -251,14 +251,13 @@ class _MatieresScreenState extends State<MatieresScreen> {
 
   Widget _buildMatiereCard(Map<String, dynamic> matiere, String matiereCode, Color color) {
     final nom = matiere['nom'] as String? ?? matiereCode.toUpperCase();
-    final nbQuestions = (matiere['nb_questions'] as num?)?.toInt() ?? 0;
     final nbSeries = (matiere['nb_series'] as num?)?.toInt() ?? 0;
     final matiereId = matiere['matiere_id'] as String? ?? '';
     final icone = _getIcone(matiere);
     final hasMatId = matiereId.isNotEmpty;
     final isSeriesMode = _seriesMatieresIds.contains(matiereCode) && hasMatId;
 
-    // Badges basés sur le nombre de séries
+    // Badges uniquement basés sur le nombre de séries
     String? badgeLabel;
     Color badgeColor = const Color(0xFF1A5C38);
     if (nbSeries >= 10) {
@@ -267,25 +266,11 @@ class _MatieresScreenState extends State<MatieresScreen> {
     } else if (nbSeries > 0 && nbSeries <= 2) {
       badgeLabel = 'NEW';
       badgeColor = const Color(0xFFE67E22);
-    } else if (nbQuestions >= 100 && nbSeries == 0) {
-      badgeLabel = 'TOP';
-      badgeColor = const Color(0xFF1A5C38);
     }
 
-    // Libellé simplifié — uniquement le nombre de séries disponibles
-    // (plus de confusion entre questions et séries)
-    String seriesLabel = '';
-    if (isSeriesMode) {
-      if (nbSeries > 0) {
-        seriesLabel = '$nbSeries séries disponibles';
-      } else if (nbQuestions > 0) {
-        // Calculer le nombre de séries estimé à partir des questions
-        final nbSeriesEstime = (nbQuestions / 20).ceil();
-        seriesLabel = '~$nbSeriesEstime séries';
-      }
-    } else if (nbQuestions > 0) {
-      seriesLabel = '$nbQuestions QCM';
-    }
+    // HARMONISATION : on n'affiche PLUS "X questions · Y séries"
+    // Seule info utile : une flèche indiquant qu'on peut entrer
+    // (conforme à la demande client)
 
     return GestureDetector(
       onTap: () {
@@ -372,34 +357,35 @@ class _MatieresScreenState extends State<MatieresScreen> {
                       height: 1.25,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
 
-                  // ── Badge nb séries / QCM ─────────────────
-                  if (seriesLabel.isNotEmpty)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                  // ── Flèche de navigation (remplace X questions · Y séries) ─
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: color.withValues(alpha: 0.20),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.content_paste_rounded,
-                            size: 13, color: Colors.grey.shade500),
-                        const SizedBox(width: 4),
                         Text(
-                          seriesLabel,
+                          isSeriesMode ? 'Séries QCM' : 'QCM',
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
-                            color: Colors.grey.shade600,
+                            color: color,
                           ),
                         ),
+                        const SizedBox(width: 4),
+                        Icon(Icons.arrow_forward_ios_rounded, size: 10, color: color),
                       ],
-                    )
-                  else
-                    Container(
-                      height: 3, width: 32,
-                      decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
                     ),
+                  ),
                 ],
               ),
             ),

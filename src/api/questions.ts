@@ -84,6 +84,13 @@ questions.get('/questions', async (c) => {
 
   const db = getDB(c.env);
 
+  // Charger la map ID → nom des matières pour éviter d'afficher des UUIDs
+  const matiereNomMap: Record<string, string> = {};
+  try {
+    const { data: mats } = await db.from('matieres').select('id, nom');
+    (mats ?? []).forEach((m: any) => { matiereNomMap[m.id] = m.nom; });
+  } catch (_) {}
+
   let query = db.from('questions')
     .select('id, serie_id, matiere_id, numero, enonce, option_a, option_b, option_c, option_d, option_e, bonne_reponse, explication, difficulte');
 
@@ -93,10 +100,25 @@ questions.get('/questions', async (c) => {
     // Récupérer TOUTES les questions de la série (pas de limite artificielle)
     const { data, error } = await query.order('numero', { ascending: true }).limit(1000);
     if (error) return c.json({ error: error.message }, 500);
+
+    // Récupérer le nom de la série pour affichage
+    let serieNom = '';
+    try {
+      const { data: serie } = await db.from('series_qcm').select('titre, matiere_id').eq('id', serieId).single();
+      if (serie) {
+        serieNom = serie.titre ?? '';
+        if (!matiereNomMap[serie.matiere_id]) {
+          const { data: mat } = await db.from('matieres').select('nom').eq('id', serie.matiere_id).single();
+          if (mat) matiereNomMap[serie.matiere_id] = mat.nom;
+        }
+      }
+    } catch (_) {}
+
     const mapped = (data ?? []).map(q => ({
       id: q.id,
       serie_id: q.serie_id,
-      matiere: q.matiere_id,
+      matiere: matiereNomMap[q.matiere_id] ?? q.matiere_id,  // Nom réel, jamais UUID
+      matiere_id: q.matiere_id,
       question: q.enonce,
       enonce: q.enonce,
       option_a: q.option_a,
@@ -115,12 +137,14 @@ questions.get('/questions', async (c) => {
   if (matiereCode) {
     const { data: mat } = await db
       .from('matieres')
-      .select('id')
+      .select('id, nom')
       .ilike('code', matiereCode)
       .maybeSingle();
 
     if (mat) {
       query = query.eq('matiere_id', mat.id) as typeof query;
+      // Enrichir la map avec cette matière
+      matiereNomMap[mat.id] = mat.nom;
     }
   }
 
@@ -146,7 +170,8 @@ questions.get('/questions', async (c) => {
   const mapped = (data ?? []).map(q => ({
     id: q.id,
     serie_id: q.serie_id,
-    matiere: q.matiere_id,
+    matiere: matiereNomMap[q.matiere_id] ?? q.matiere_id,  // Nom réel, jamais UUID
+    matiere_id: q.matiere_id,
     question: q.enonce,
     enonce: q.enonce,
     option_a: q.option_a,
