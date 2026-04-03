@@ -948,7 +948,7 @@ class _CmsQuestionsSectionState extends State<_CmsQuestionsSection> {
                       if (matiereId != null) 'matiere_id': matiereId,
                     };
                     if (isEdit) {
-                      await _cmsPut('/questions/${existing!['id']}', payload);
+                      await _cmsPut('/questions/${existing['id']}', payload);
                     } else {
                       await _cmsPost('/questions', payload);
                     }
@@ -1025,7 +1025,6 @@ class _CmsBulkImportSectionState extends State<_CmsBulkImportSection> {
     setState(() { _loading = true; _error = null; _result = null; });
     try {
       String url;
-      Map<String, dynamic> body;
 
       if (_destination == 'matiere') {
         url = '$_cmsBase/questions/bulk-import${_selectedMatiere != null ? '?matiere_id=$_selectedMatiere' : ''}';
