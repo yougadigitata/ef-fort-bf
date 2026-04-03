@@ -258,19 +258,30 @@ app.get('/api/examens/:id/questions', async (c) => {
   const examenId = c.req.param('id');
   const db = getDB(c.env);
 
-  // IDs des matières principales importées (Phase 3)
+  // IDs des matières principales — avec noms explicites (jamais d'UUID affiché)
   const MATIERES_EXAMEN = [
-    { id: 'cbd22275-d260-40d1-8ff3-d31545f3f1ab', nom: 'Psychotechnique',  quota: 10 },
-    { id: '104f51e4-be6e-4ce8-961e-56e604818670', nom: 'Figure Africaine', quota: 10 },
-    { id: '756e1ca6-7f7f-4f42-940a-b6d9952ffcdf', nom: 'Économie',         quota: 10 },
-    { id: '37febc5e-8ab5-4875-b7ad-71b30a8253e7', nom: 'Anglais',          quota: 10 },
-    { id: '9497ca2c-dc1b-43dd-8b7a-af11dde7039d', nom: 'Droit',            quota: 10 },
+    { id: '54f53d06-2d5d-4d82-91bc-4bfff904c12b', nom: 'Psychotechnique',   quota: 10 },
+    { id: '104f51e4-be6e-4ce8-961e-56e604818670', nom: 'Figure Africaine',  quota: 10 },
+    { id: '756e1ca6-7f7f-4f42-940a-b6d9952ffcdf', nom: 'Économie',          quota: 10 },
+    { id: '37febc5e-8ab5-4875-b7ad-71b30a8253e7', nom: 'Anglais',           quota: 10 },
+    { id: '9497ca2c-dc1b-43dd-8b7a-af11dde7039d', nom: 'Droit',             quota: 10 },
   ];
+
+  // Map UUID → nom de matière pour éviter d'afficher des UUIDs
+  const matiereNomMap: Record<string, string> = {};
+  MATIERES_EXAMEN.forEach(m => { matiereNomMap[m.id] = m.nom; });
+
+  // Récupérer le vrai nom de l'examen depuis la table si disponible
+  let examenNom = 'Examen Blanc';
+  try {
+    const { data: exData } = await db.from('examens').select('nom').eq('id', examenId).maybeSingle();
+    if (exData?.nom) examenNom = exData.nom;
+  } catch (_) {}
 
   const allSelected: any[] = [];
 
   for (const mat of MATIERES_EXAMEN) {
-    // Récupérer un échantillon aléatoire par matière
+    // Récupérer des questions réelles de la matière (pas inventées)
     const { data: matData, error: matErr } = await db
       .from('questions')
       .select('id, matiere_id, enonce, option_a, option_b, option_c, option_d, option_e, bonne_reponse, explication, difficulte')
@@ -278,13 +289,19 @@ app.get('/api/examens/:id/questions', async (c) => {
       .limit(200);  // Large pool pour le shuffle
 
     if (!matErr && matData && matData.length > 0) {
-      const shuffledMat = matData.sort(() => Math.random() - 0.5).slice(0, mat.quota);
+      // Attacher le nom de la matière à chaque question
+      const withNom = matData.map(q => ({ ...q, matiere_nom: mat.nom }));
+      const shuffledMat = withNom.sort(() => Math.random() - 0.5).slice(0, mat.quota);
       allSelected.push(...shuffledMat);
     }
   }
 
-  // Si pas assez de questions des matières cibles, compléter avec d'autres matières
+  // Si pas assez de questions, compléter depuis d'autres matières avec leur vrai nom
   if (allSelected.length < 50) {
+    const { data: allMatieres } = await db.from('matieres').select('id, nom');
+    const matiereNomAll: Record<string, string> = {};
+    (allMatieres ?? []).forEach((m: any) => { matiereNomAll[m.id] = m.nom; });
+
     const { data: extra } = await db
       .from('questions')
       .select('id, matiere_id, enonce, option_a, option_b, option_c, option_d, option_e, bonne_reponse, explication, difficulte')
@@ -293,18 +310,21 @@ app.get('/api/examens/:id/questions', async (c) => {
 
     if (extra && extra.length > 0) {
       const needed = 50 - allSelected.length;
-      const shuffledExtra = extra.sort(() => Math.random() - 0.5).slice(0, needed);
+      const withNom = extra.map((q: any) => ({ ...q, matiere_nom: matiereNomAll[q.matiere_id] ?? 'Culture Générale' }));
+      const shuffledExtra = withNom.sort(() => Math.random() - 0.5).slice(0, needed);
       allSelected.push(...shuffledExtra);
     }
   }
 
-  // Mélanger l'ensemble final
-  const finalQuestions = allSelected
-    .sort(() => Math.random() - 0.5)
+  // Mélanger l'ensemble final — groupé par matière pour affichage propre
+  // Tri par matière d'abord, puis numérotation
+  const grouped = allSelected.sort((a, b) => (a.matiere_nom || '').localeCompare(b.matiere_nom || ''));
+  const finalQuestions = grouped
     .slice(0, 50)
     .map((q, idx) => ({
       id: q.id,
       examen_id: examenId,
+      examen_nom: examenNom,
       numero: idx + 1,
       enonce: q.enonce,
       option_a: q.option_a,
@@ -315,6 +335,8 @@ app.get('/api/examens/:id/questions', async (c) => {
       bonne_reponse: q.bonne_reponse,
       explication: q.explication,
       difficulte: q.difficulte ?? 'moyen',
+      matiere: q.matiere_nom ?? matiereNomMap[q.matiere_id] ?? 'Culture Générale',
+      matiere_id: q.matiere_id,
     }));
 
   return c.json({ success: true, questions: finalQuestions });
@@ -681,6 +703,77 @@ ALTER TABLE sessions_examen ADD COLUMN IF NOT EXISTS simulation_id UUID;
 ALTER TABLE sessions_examen ADD COLUMN IF NOT EXISTS score_pourcentage NUMERIC(5,2);
     `.trim(),
     sql_editor_url: 'https://supabase.com/dashboard/project/xqifdbgqxyrlhrkwlyir/sql/new',
+  });
+});
+
+// ── POST /api/admin/migrate-entraide — Ajouter parent_id à messages_entraide ──
+app.post('/api/admin/migrate-entraide', async (c) => {
+  const h = c.req.header('Authorization');
+  if (!h?.startsWith('Bearer ')) return c.json({ error: 'Auth requise.' }, 401);
+  const payload = await verifyJWT(h.slice(7));
+  if (!payload || !payload['is_admin']) return c.json({ error: 'Admin requis.' }, 403);
+
+  const supabaseUrl = (c.env as any).SUPABASE_URL || 'https://xqifdbgqxyrlhrkwlyir.supabase.co';
+  const serviceKey = (c.env as any).SUPABASE_KEY || '';
+
+  // SQL de migration - ajout de la colonne parent_id
+  const migrationSQL = `
+ALTER TABLE public.messages_entraide 
+  ADD COLUMN IF NOT EXISTS parent_id UUID REFERENCES public.messages_entraide(id) ON DELETE CASCADE;
+CREATE INDEX IF NOT EXISTS idx_messages_entraide_parent_id ON public.messages_entraide(parent_id);
+  `.trim();
+
+  // Tenter via RPC exec_ddl
+  try {
+    const resp = await fetch(`${supabaseUrl}/rest/v1/rpc/exec_ddl`, {
+      method: 'POST',
+      headers: {
+        'apikey': serviceKey,
+        'Authorization': `Bearer ${serviceKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ ddl: migrationSQL }),
+    });
+
+    if (resp.ok) {
+      return c.json({ 
+        success: true, 
+        message: '✅ Migration réussie! Colonne parent_id ajoutée.',
+        method: 'exec_ddl'
+      });
+    }
+  } catch (_) {}
+
+  // Retourner le SQL pour exécution manuelle
+  return c.json({
+    success: false,
+    message: '⚠️ Migration automatique indisponible. Exécutez ce SQL dans Supabase SQL Editor:',
+    sql: migrationSQL,
+    sql_editor_url: 'https://supabase.com/dashboard/project/xqifdbgqxyrlhrkwlyir/sql/new',
+  });
+});
+
+// ── GET /api/admin/check-entraide-schema — Vérifier le schéma entraide ──
+app.get('/api/admin/check-entraide-schema', async (c) => {
+  const db = getDB(c.env);
+  
+  // Tester si parent_id existe
+  const { data, error } = await db
+    .from('messages_entraide')
+    .select('id, parent_id')
+    .limit(1);
+  
+  if (error && (error as any).code === '42703') {
+    return c.json({ 
+      parent_id_exists: false,
+      message: 'La colonne parent_id est manquante. Migration requise.',
+      migration_endpoint: 'POST /api/admin/migrate-entraide'
+    });
+  }
+  
+  return c.json({ 
+    parent_id_exists: true,
+    message: '✅ Schéma entraide OK - parent_id présent'
   });
 });
 

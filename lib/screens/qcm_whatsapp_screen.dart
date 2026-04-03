@@ -26,7 +26,8 @@ const _waBg = Color(0xFFECE5DD);          // Fond papier peint WhatsApp
 
 class QcmWhatsappScreen extends StatefulWidget {
   final String matiere;        // ex: "hg", "droit", "ang"...
-  final String label;          // ex: "Histoire-Géographie"
+  final String label;          // ex: titre de la série ou nom de la matière
+  final String? matiereNom;    // Nom de la matière (affiché en titre principal)
   final Color? couleur;
   final String? icone;
   final String? serieId;       // UUID série optionnel
@@ -36,6 +37,7 @@ class QcmWhatsappScreen extends StatefulWidget {
     super.key,
     required this.matiere,
     required this.label,
+    this.matiereNom,
     this.couleur,
     this.icone,
     this.serieId,
@@ -292,8 +294,9 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Titre principal = nom de la matière (jamais un UUID)
                 Text(
-                  widget.label,
+                  widget.matiereNom ?? widget.label,
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
@@ -301,13 +304,24 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
+                // Sous-titre = titre de la série OU progression
                 if (!_loading && _questions.isNotEmpty && !_serieTerminee)
                   Text(
-                    q,
+                    '${widget.matiereNom != null ? widget.label + ' · ' : ''}$q',
                     style: const TextStyle(
-                      fontSize: 12,
+                      fontSize: 11,
                       color: Colors.white70,
                     ),
+                    overflow: TextOverflow.ellipsis,
+                  )
+                else if (widget.matiereNom != null && widget.label != widget.matiereNom)
+                  Text(
+                    widget.label,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Colors.white70,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
               ],
             ),

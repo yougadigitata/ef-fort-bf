@@ -145,6 +145,7 @@ class _SerieSelectionScreenState extends State<SerieSelectionScreen> {
         builder: (_) => QcmWhatsappScreen(
           matiere: widget.matiereCode,
           label: widget.matiereNom,
+          matiereNom: widget.matiereNom,
           couleur: _color,
           icone: widget.icone,
         ),
@@ -251,6 +252,7 @@ class _SerieSelectionScreenState extends State<SerieSelectionScreen> {
             builder: (_) => QcmWhatsappScreen(
               matiere: widget.matiereCode,
               label: titre,
+              matiereNom: widget.matiereNom,
               couleur: _color,
               icone: widget.icone,
               serieId: serie['id'] as String?,

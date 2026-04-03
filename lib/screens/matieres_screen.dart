@@ -258,27 +258,30 @@ class _MatieresScreenState extends State<MatieresScreen> {
     final hasMatId = matiereId.isNotEmpty;
     final isSeriesMode = _seriesMatieresIds.contains(matiereCode) && hasMatId;
 
-    // Badges
+    // Badges basés sur le nombre de séries
     String? badgeLabel;
     Color badgeColor = const Color(0xFF1A5C38);
-    if (nbQuestions >= 100) {
+    if (nbSeries >= 10) {
       badgeLabel = 'TOP';
       badgeColor = const Color(0xFF1A5C38);
-    } else if (nbQuestions > 0 && nbQuestions < 30) {
+    } else if (nbSeries > 0 && nbSeries <= 2) {
       badgeLabel = 'NEW';
       badgeColor = const Color(0xFFE67E22);
+    } else if (nbQuestions >= 100 && nbSeries == 0) {
+      badgeLabel = 'TOP';
+      badgeColor = const Color(0xFF1A5C38);
     }
 
-    // Libellé avec questions ET séries séparés
+    // Libellé simplifié — uniquement le nombre de séries disponibles
+    // (plus de confusion entre questions et séries)
     String seriesLabel = '';
     if (isSeriesMode) {
-      // Afficher les deux informations distinctement
-      if (nbQuestions > 0 && nbSeries > 0) {
-        seriesLabel = '$nbQuestions questions · $nbSeries séries';
+      if (nbSeries > 0) {
+        seriesLabel = '$nbSeries séries disponibles';
       } else if (nbQuestions > 0) {
-        seriesLabel = '$nbQuestions questions';
-      } else if (nbSeries > 0) {
-        seriesLabel = '$nbSeries séries';
+        // Calculer le nombre de séries estimé à partir des questions
+        final nbSeriesEstime = (nbQuestions / 20).ceil();
+        seriesLabel = '~$nbSeriesEstime séries';
       }
     } else if (nbQuestions > 0) {
       seriesLabel = '$nbQuestions QCM';

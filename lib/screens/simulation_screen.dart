@@ -1087,23 +1087,54 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
     });
   }
 
+  // Map UUID → nom de matière pour éviter d'afficher des UUIDs
+  static const Map<String, String> _matiereNomMap = {
+    '54f53d06-2d5d-4d82-91bc-4bfff904c12b': 'Psychotechnique',
+    '104f51e4-be6e-4ce8-961e-56e604818670': 'Figure Africaine',
+    '756e1ca6-7f7f-4f42-940a-b6d9952ffcdf': 'Économie',
+    '37febc5e-8ab5-4875-b7ad-71b30a8253e7': 'Anglais',
+    '9497ca2c-dc1b-43dd-8b7a-af11dde7039d': 'Droit',
+    '9005951c-331e-4ce7-90e4-887bd26d0b3e': 'Mathématiques',
+    '12e5b05a-6410-4b55-97b7-b8a838dcfb9a': 'Sciences Physiques',
+    '7dd7029c-76cf-4d36-9912-7d60fbac7bba': 'SVT',
+    '70795d8a-0691-407e-abce-59202590f4f3': 'Culture Générale',
+    '5f7ef458-9fd3-4f70-b498-d3391b5d5677': 'Actualité Internationale',
+    'b8df7f6e-587d-4871-856c-30dbaa6a52c3': 'Force Armée Nationale',
+    'd1560595-b4d9-45d2-af70-8bdf7016af72': 'Français',
+    'a72cc6f9-1282-4c2a-ae19-298933047694': 'Informatique',
+    'cc979206-e60d-4224-940d-943b8c68c8fa': 'Communication',
+    '0a88b3ac-33b7-4d8c-bc19-fe68bb514aef': 'Histoire-Géographie',
+    '7c2b0599-4971-4d31-87ce-aeeb5c5cb394': 'Burkina Faso',
+    'c7681b66-91af-423b-9ef6-becbe8f5bd85': 'Alliance des États du Sahel',
+  };
+
   // Groupe de matière : retourne le label section pour la question n°i
   String _getMatiereLabel(int idx) {
     if (idx >= _questions.length) return '';
     final q = _questions[idx] as Map<String, dynamic>;
-    final mat = (q['matiere'] ?? '').toString();
-    return mat
-        .replaceAll('_', ' ')
-        .split(' ')
-        .map((w) => w.isEmpty ? '' : w[0].toUpperCase() + w.substring(1))
-        .join(' ');
+    // Priorité 1 : champ 'matiere' (nom explicite depuis API)
+    final matNom = (q['matiere'] ?? '').toString();
+    // Si c'est un UUID (36 chars avec tirets), convertir en nom lisible
+    if (matNom.length == 36 && matNom.contains('-')) {
+      final fromMap = _matiereNomMap[matNom];
+      if (fromMap != null) return fromMap;
+      // Essayer le champ matiere_id si disponible  
+      final matiereId = (q['matiere_id'] ?? '').toString();
+      return _matiereNomMap[matiereId] ?? 'Culture Générale';
+    }
+    if (matNom.isEmpty) {
+      final matiereId = (q['matiere_id'] ?? '').toString();
+      return _matiereNomMap[matiereId] ?? 'Culture Générale';
+    }
+    // Sinon retourner tel quel (c'est déjà un nom)
+    return matNom;
   }
 
   // Vérifie si on doit afficher un séparateur de matière
   bool _showMatiereSeparator(int idx) {
     if (idx == 0) return true;
-    final cur = (_questions[idx] as Map<String, dynamic>)['matiere'] ?? '';
-    final prev = (_questions[idx - 1] as Map<String, dynamic>)['matiere'] ?? '';
+    final cur = _getMatiereLabel(idx);
+    final prev = _getMatiereLabel(idx - 1);
     return cur != prev;
   }
 
