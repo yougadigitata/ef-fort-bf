@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../core/theme/app_colors.dart';
@@ -246,7 +247,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                         textBaseline: TextBaseline.alphabetic,
                         children: [
                           const Text(
-                            '15 000',
+                            '25 000',
                             style: TextStyle(
                               fontSize: 18,
                               color: Colors.red,
@@ -282,7 +283,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Text(
-                          '✅  Valable jusqu\'au 31 Décembre 2028 — Paiement unique !',
+                          '🔥 Offre spéciale valable jusqu\'au 3 mai 2026 — Ne ratez pas cette chance !',
                           style: TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w700),
                         ),
                       ),
@@ -292,10 +293,15 @@ class _AbonnementScreenState extends State<AbonnementScreen>
               ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
-            // ══════════════════════════════════════════════
-            // CE QUE VOUS GAGNEZ — Valeur concrète
+            // ── Compte à rebours offre limitée ────────────────────
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: OffreCountdownWidget(),
+            ),
+
+            const SizedBox(height: 24),
             // ══════════════════════════════════════════════
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -706,7 +712,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
       {'icon': '📄', 'titre': '10 000+ Copies PDF Imprimables', 'desc': 'Chaque QCM traité génère un PDF avec corrections. Imprimez, partagez, révisez partout, même sans internet.'},
       {'icon': '🤝', 'titre': 'Communauté Active & Entraide', 'desc': 'Des milliers de candidats s\'entraident. Posez vos questions, obtenez des réponses. Vous n\'êtes jamais seul.'},
       {'icon': '📰', 'titre': 'Actualités Concours en Temps Réel', 'desc': 'Ne ratez AUCUNE ouverture de concours, AUCUNE date limite, AUCUNE opportunité au Burkina Faso.'},
-      {'icon': '💰', 'titre': 'Paiement Unique — Accès Illimité', 'desc': 'Payez 12 000 FCFA UNE SEULE FOIS. Accès garanti jusqu\'au 31 Décembre 2028. Pas d\'abonnement mensuel !'},
+      {'icon': '💰', 'titre': 'Paiement Unique — Offre Limitée', 'desc': '🔥 Payez 12 000 FCFA (au lieu de 25 000 FCFA) UNE SEULE FOIS. Offre valable jusqu\'au 3 mai 2026 uniquement !'},
     ];
     return items.map((item) {
       final icon = item['icon'] ?? item['icon'];
@@ -830,4 +836,115 @@ class _AbonnementScreenState extends State<AbonnementScreen>
       ),
     );
   }
+}
+
+// ══════════════════════════════════════════════════════════
+// WIDGET COMPTE À REBOURS — Offre valable jusqu'au 3 mai 2026
+// ══════════════════════════════════════════════════════════
+class OffreCountdownWidget extends StatefulWidget {
+  const OffreCountdownWidget({super.key});
+
+  @override
+  State<OffreCountdownWidget> createState() => _OffreCountdownWidgetState();
+}
+
+class _OffreCountdownWidgetState extends State<OffreCountdownWidget> {
+  Timer? _timer;
+  Duration _remaining = Duration.zero;
+  // Date limite : 3 mai 2026 à minuit
+  static final DateTime _deadline = DateTime(2026, 5, 3, 23, 59, 59);
+
+  @override
+  void initState() {
+    super.initState();
+    _updateRemaining();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) => _updateRemaining());
+  }
+
+  void _updateRemaining() {
+    final now = DateTime.now();
+    final diff = _deadline.difference(now);
+    if (mounted) setState(() => _remaining = diff.isNegative ? Duration.zero : diff);
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  String _twoDigits(int n) => n.toString().padLeft(2, '0');
+
+  @override
+  Widget build(BuildContext context) {
+    final days = _remaining.inDays;
+    final hours = _remaining.inHours % 24;
+    final minutes = _remaining.inMinutes % 60;
+    final seconds = _remaining.inSeconds % 60;
+    final expired = _remaining == Duration.zero;
+
+    if (expired) {
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.red.shade200)),
+        child: const Text('⏰ Offre expirée', style: TextStyle(color: Colors.red, fontWeight: FontWeight.w700, fontSize: 14), textAlign: TextAlign.center),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(colors: [Color(0xFF7B0D0D), Color(0xFFCE1126)]),
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [BoxShadow(color: Colors.red.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 4))],
+      ),
+      child: Column(
+        children: [
+          const Text(
+            '⏰ OFFRE LIMITÉE — EXPIRE DANS :',
+            style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: 1.0),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _countUnit(days.toString(), 'JOURS'),
+              _separator(),
+              _countUnit(_twoDigits(hours), 'HEURES'),
+              _separator(),
+              _countUnit(_twoDigits(minutes), 'MIN'),
+              _separator(),
+              _countUnit(_twoDigits(seconds), 'SEC'),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(20)),
+            child: const Text(
+              '🔥 12 000 FCFA au lieu de 25 000 FCFA — Économisez 13 000 FCFA !',
+              style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _countUnit(String value, String label) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8)),
+          child: Text(value, style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900, fontFamily: 'monospace')),
+        ),
+        const SizedBox(height: 4),
+        Text(label, style: const TextStyle(color: Colors.white60, fontSize: 10, fontWeight: FontWeight.w600, letterSpacing: 0.5)),
+      ],
+    );
+  }
+
+  Widget _separator() => const Text(':', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900));
 }

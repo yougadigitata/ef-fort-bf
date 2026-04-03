@@ -2076,5 +2076,120 @@ UPDATE simulations_examens SET type = 'simulation' WHERE type IS NULL;
   });
 });
 
+// ══════════════════════════════════════════════════════════════
+// EXAM GENERATOR — Génération d'examens composites multi-matières
+// POST /api/admin-cms/exam-generator/preview
+// POST /api/admin-cms/exam-generator/generate
+// ══════════════════════════════════════════════════════════════
+
+adminCms.post('/exam-generator/preview', requireAdmin, async (c) => {
+  const body = await c.req.json().catch(() => null) as any;
+  if (!body?.allocations || !Array.isArray(body.allocations)) {
+    return c.json({ error: 'allocations[] requis.' }, 400);
+  }
+  const db = getDB(c.env);
+  const allQuestions: any[] = [];
+
+  for (const alloc of body.allocations) {
+    const { matiere_id, count } = alloc as { matiere_id: string; count: number };
+    if (!matiere_id || !count) continue;
+    const { data: questions } = await db.from('questions')
+      .select('id, enonce, option_a, option_b, option_c, option_d, bonne_reponse, explication, difficulte, matiere_id')
+      .eq('matiere_id', matiere_id)
+      .limit(count * 3); // Récupérer plus pour avoir du choix
+
+    if (questions) {
+      // Mélanger et prendre `count` questions
+      const shuffled = questions.sort(() => Math.random() - 0.5).slice(0, count);
+      // Ajouter nom matière
+      const { data: mat } = await db.from('matieres').select('nom, code').eq('id', matiere_id).single();
+      const matiereName = mat?.nom ?? mat?.code ?? matiere_id;
+      allQuestions.push(...shuffled.map((q: any) => ({ ...q, matiere: matiereName })));
+    }
+  }
+
+  return c.json({ success: true, questions: allQuestions, total: allQuestions.length });
+});
+
+adminCms.post('/exam-generator/generate', requireAdmin, async (c) => {
+  const body = await c.req.json().catch(() => null) as any;
+  if (!body?.titre || !body?.allocations?.length) {
+    return c.json({ error: 'titre et allocations[] requis.' }, 400);
+  }
+
+  const db = getDB(c.env);
+  const h = c.req.header('Authorization')!;
+  const payload = await verifyJWT(h.slice(7)) as any;
+  const adminId = payload?.id;
+
+  const { titre, duree_minutes = 60, destination = 'simulation', simulation_id, allocations } = body;
+
+  // Récupérer les questions selon les allocations
+  const allQuestions: any[] = [];
+  for (const alloc of allocations) {
+    const { matiere_id, count } = alloc as { matiere_id: string; count: number };
+    if (!matiere_id || !count) continue;
+    const { data: questions } = await db.from('questions')
+      .select('id, enonce, option_a, option_b, option_c, option_d, bonne_reponse, explication, difficulte, matiere_id')
+      .eq('matiere_id', matiere_id)
+      .limit(count * 3);
+    if (questions) {
+      const shuffled = questions.sort(() => Math.random() - 0.5).slice(0, count);
+      allQuestions.push(...shuffled);
+    }
+  }
+
+  if (allQuestions.length === 0) {
+    return c.json({ error: 'Aucune question trouvée pour les matières sélectionnées.' }, 400);
+  }
+
+  // Créer la simulation/examen dans simulations_examens
+  let examId = simulation_id;
+  if (!examId || destination === 'simulation') {
+    const { data: newSim, error: simErr } = await db.from('simulations_examens').insert({
+      titre,
+      description: `Examen composite généré automatiquement — ${allQuestions.length} questions`,
+      duree_minutes,
+      nb_questions: allQuestions.length,
+      published: false,
+      type: destination === 'simulation' ? 'simulation' : 'examen_type',
+      created_at: new Date().toISOString(),
+    }).select('id').single();
+    if (simErr) return c.json({ error: simErr.message }, 500);
+    examId = newSim?.id;
+  }
+
+  if (!examId) return c.json({ error: 'Impossible de créer l\'examen.' }, 500);
+
+  // Lier les questions à la simulation
+  const liens = allQuestions.map((q: any, i: number) => ({
+    simulation_id: examId,
+    question_id: q.id,
+    ordre: i + 1,
+  }));
+
+  const { error: lienErr } = await db.from('simulations_questions').insert(liens);
+  if (lienErr) {
+    // Essayer avec une table différente si simulations_questions n'existe pas
+    const { error: lienErr2 } = await db.from('simulation_questions').insert(liens);
+    if (lienErr2) return c.json({ error: `Erreur liaison questions: ${lienErr.message}` }, 500);
+  }
+
+  // Log audit
+  try {
+    await logAdminAction(db, adminId, 'generate_exam', 'simulation', examId,
+      null, { titre, nb_questions: allQuestions.length, allocations },
+      `Examen composite généré: "${titre}" — ${allQuestions.length} questions`);
+  } catch (_) {}
+
+  return c.json({
+    success: true,
+    simulation_id: examId,
+    titre,
+    total_questions: allQuestions.length,
+    message: `✅ Examen "${titre}" créé avec ${allQuestions.length} questions. À publier depuis "Simulations & Examens".`,
+  });
+});
+
 
 export default adminCms;

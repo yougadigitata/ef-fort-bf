@@ -1,21 +1,30 @@
 import { useState, useEffect } from 'react';
-import { getDashboard, runMigration } from '../api';
+import { getDashboard, runMigration, getAdminStats } from '../api';
 import type { Page } from '../App';
 
 const COLORS = { green: '#1A5C38', gold: '#D4A017', blue: '#3b82f6', red: '#ef4444', purple: '#8b5cf6', cyan: '#06b6d4' };
 
 export default function DashboardPage({ onNavigate }: { onNavigate: (page: Page) => void }) {
   const [stats, setStats] = useState<any>(null);
+  const [adminStats, setAdminStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [migrationStatus, setMigrationStatus] = useState<any>(null);
   const [migrating, setMigrating] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
   useEffect(() => { loadStats(); }, []);
 
+  // Auto-refresh toutes les 60 secondes
+  useEffect(() => {
+    const interval = setInterval(() => { loadStats(); setLastRefresh(new Date()); }, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   async function loadStats() {
     try {
-      const data = await getDashboard();
-      setStats(data.stats);
+      const [cmsData, adminData] = await Promise.allSettled([getDashboard(), getAdminStats()]);
+      if (cmsData.status === 'fulfilled') setStats(cmsData.value.stats);
+      if (adminData.status === 'fulfilled') setAdminStats(adminData.value.stats ?? adminData.value);
     } catch (err: any) {
       console.error(err);
     } finally {
@@ -38,19 +47,30 @@ export default function DashboardPage({ onNavigate }: { onNavigate: (page: Page)
   if (loading) return <LoadingSpinner />;
 
   const cards = [
-    { label: 'Utilisateurs', value: stats?.total_users ?? 0, icon: '👥', color: COLORS.blue, page: null },
-    { label: 'Questions publiées', value: stats?.total_questions ?? 0, icon: '📚', color: COLORS.green, page: 'questions' as Page },
-    { label: 'Simulations jouées', value: stats?.total_simulations_played ?? 0, icon: '🎯', color: COLORS.purple, page: null },
-    { label: 'Score moyen', value: `${stats?.avg_score ?? 0}%`, icon: '⭐', color: COLORS.gold, page: null },
-    { label: 'Signalements en attente', value: stats?.pending_flags ?? 0, icon: '🚨', color: stats?.pending_flags > 0 ? COLORS.red : '#334155', page: 'flags' as Page },
-    { label: 'Simulations d\'examen', value: stats?.total_simulations_examens ?? 0, icon: '📝', color: COLORS.cyan, page: 'simulations' as Page },
+    { label: 'Utilisateurs', value: stats?.total_users ?? adminStats?.totalUsers ?? adminStats?.total_users ?? 0, icon: '👥', color: COLORS.blue, page: null },
+    { label: 'Abonnés actifs', value: adminStats?.abonnes ?? adminStats?.total_abonnes ?? 0, icon: '⭐', color: COLORS.gold, page: null },
+    { label: 'Questions publiées', value: stats?.total_questions ?? adminStats?.totalQuestions ?? 0, icon: '📚', color: COLORS.green, page: 'questions' as Page },
+    { label: 'Simulations jouées', value: stats?.total_simulations_played ?? adminStats?.totalSimulations ?? 0, icon: '🎯', color: COLORS.purple, page: null },
+    { label: 'Demandes en attente', value: adminStats?.demandesEnAttente ?? adminStats?.demandes_en_attente ?? 0, icon: '💳', color: (adminStats?.demandesEnAttente ?? 0) > 0 ? COLORS.red : '#334155', page: 'paiements' as Page },
+    { label: 'Signalements actifs', value: stats?.pending_flags ?? 0, icon: '🚨', color: (stats?.pending_flags ?? 0) > 0 ? COLORS.red : '#334155', page: 'flags' as Page },
   ];
 
   return (
     <div>
-      <div style={{ marginBottom: 24 }}>
-        <h2 style={{ color: '#f1f5f9', fontSize: 22, fontWeight: 700 }}>Tableau de bord</h2>
-        <p style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>Vue d'ensemble de la plateforme EF-FORT.BF</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+        <div>
+          <h2 style={{ color: '#f1f5f9', fontSize: 22, fontWeight: 700 }}>📊 Tableau de bord</h2>
+          <p style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>Vue d'ensemble consolidée de la plateforme EF-FORT.BF</p>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <button onClick={() => { setLoading(true); loadStats(); }} style={{
+            background: '#1e293b', border: '1px solid #334155', color: '#94a3b8',
+            padding: '7px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 13,
+          }}>🔄 Actualiser</button>
+          <div style={{ color: '#475569', fontSize: 11, marginTop: 4 }}>
+            Mis à jour : {lastRefresh.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+          </div>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -75,12 +95,12 @@ export default function DashboardPage({ onNavigate }: { onNavigate: (page: Page)
         ))}
       </div>
 
-      {/* Quick Actions */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 16, marginBottom: 32 }}>
-        <QuickAction icon="✚" title="Créer une question" desc="Ajouter une nouvelle QCM à la base" color={COLORS.green} onClick={() => onNavigate('create-question')} />
-        <QuickAction icon="📤" title="Import en masse" desc="Importer 400+ questions en CSV/JSON" color={COLORS.blue} onClick={() => onNavigate('bulk-import')} />
-        <QuickAction icon="📚" title="Gérer les séries" desc="Créer et organiser les séries QCM" color={COLORS.purple} onClick={() => onNavigate('series')} />
-        <QuickAction icon="🎯" title="Créer simulation" desc="Examen blanc multi-matières" color={COLORS.gold} onClick={() => onNavigate('simulations')} />
+      {/* Quick Actions — SIMPLIFIÉES */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 14, marginBottom: 32 }}>
+        <QuickAction icon="💳" title="Valider paiements" desc={`${adminStats?.demandesEnAttente ?? 0} demande(s) en attente`} color={COLORS.gold} onClick={() => onNavigate('paiements')} />
+        <QuickAction icon="📤" title="Importer des QCM" desc="Txt, Markdown ou PDF en masse" color={COLORS.blue} onClick={() => onNavigate('bulk-import')} />
+        <QuickAction icon="🧩" title="Créer un examen" desc="Composer depuis plusieurs matières" color={COLORS.purple} onClick={() => onNavigate('exam-generator')} />
+        <QuickAction icon="📢" title="Publier annonce" desc="Communiquer avec les utilisateurs" color={COLORS.green} onClick={() => onNavigate('annonces')} />
       </div>
 
       {/* Section Matières */}

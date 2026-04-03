@@ -254,3 +254,41 @@ export async function createActualite(data: { titre: string; contenu: string; ca
     body: JSON.stringify(data),
   });
 }
+
+// ── Change Password ───────────────────────────────────────────
+export async function changePassword(currentPassword: string, newPassword: string) {
+  return apiCall(`${BASE_URL}/api/admin/change-password`, {
+    method: 'POST',
+    body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+  });
+}
+
+// ── Exam Generator ────────────────────────────────────────────
+export async function generateExam(data: {
+  titre: string;
+  duree_minutes: number;
+  destination: 'simulation' | 'serie';
+  simulation_id?: string | null;
+  allocations: Array<{ matiere_id: string; count: number }>;
+}) {
+  return apiCall(`${CMS_BASE}/exam-generator/generate`, { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function previewExam(allocations: Array<{ matiere_id: string; count: number }>) {
+  return apiCall(`${CMS_BASE}/exam-generator/preview`, {
+    method: 'POST',
+    body: JSON.stringify({ allocations }),
+  });
+}
+
+// ── Paiements Admin ───────────────────────────────────────────
+export async function getPaiements() {
+  return apiCall(`${BASE_URL}/api/admin/demandes-abonnement`);
+}
+
+export async function validerPaiement(id: string) {
+  return apiCall(`${BASE_URL}/api/admin/valider-abonnement/${id}`, {
+    method: 'POST',
+    body: JSON.stringify({ statut: 'VALIDE' }),
+  });
+}

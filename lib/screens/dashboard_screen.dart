@@ -137,9 +137,12 @@ class _DashboardScreenState extends State<DashboardScreen>
         _loadingActu = false;
       });
     }
+    // Recharger les stats utilisateur en même temps
+    await _loadUserStats();
   }
 
   Future<void> _loadUserStats() async {
+    // Charger stats depuis API (temps réel)
     final stats = await ApiService.getUserStats();
     if (mounted) {
       setState(() {
@@ -151,6 +154,10 @@ class _DashboardScreenState extends State<DashboardScreen>
         _nbQuestions = '$questions';
       });
     }
+    // Relancer dans 30 secondes pour mise à jour automatique
+    Future.delayed(const Duration(seconds: 30), () {
+      if (mounted) _loadUserStats();
+    });
   }
 
   @override

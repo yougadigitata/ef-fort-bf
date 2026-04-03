@@ -123,6 +123,100 @@ admin.post('/rejeter/:id', requireAdmin, async (c) => {
   return c.json({ success: true, message: 'Demande rejetée.' });
 });
 
+// ── GET /api/admin/demandes-abonnement (alias compatible panel) ──
+admin.get('/demandes-abonnement', requireAdmin, async (c) => {
+  const db = getDB(c.env);
+  const { data, error } = await db.from('demandes_abonnement')
+    .select('*, profiles(nom, prenom, telephone)')
+    .order('created_at', { ascending: false });
+  if (error) return c.json({ error: error.message }, 500);
+  const demandes = (data || []).map((d: any) => ({
+    ...d,
+    nom_complet: d.profiles ? `${d.profiles.prenom} ${d.profiles.nom}` : 'Inconnu',
+    telephone: d.profiles?.telephone || '',
+  }));
+  return c.json({ success: true, demandes });
+});
+
+// ── POST /api/admin/valider-abonnement/:id ────────────────────
+admin.post('/valider-abonnement/:id', requireAdmin, async (c) => {
+  const id = c.req.param('id');
+  const db = getDB(c.env);
+  const body = await c.req.json().catch(() => ({})) as Record<string, unknown>;
+  const statut = (body['statut'] as string) || 'VALIDE';
+
+  if (statut === 'REJETE') {
+    await db.from('demandes_abonnement').update({ statut: 'REJETE' }).eq('id', id);
+    return c.json({ success: true, message: 'Demande rejetée.' });
+  }
+
+  const { data: dem } = await db.from('demandes_abonnement').select('user_id').eq('id', id).single();
+  if (!dem) return c.json({ error: 'Demande introuvable.' }, 404);
+  await db.from('demandes_abonnement').update({ statut: 'VALIDE' }).eq('id', id);
+  await db.from('profiles').update({
+    abonnement_actif: true,
+    abonnement_fin: '2028-12-31',
+    abonnement_debut: new Date().toISOString().split('T')[0],
+    abonnement_type: 'premium',
+  }).eq('id', dem.user_id);
+  return c.json({ success: true, message: 'Abonnement activé.' });
+});
+
+// ── POST /api/admin/change-password ───────────────────────────
+admin.post('/change-password', requireAdmin, async (c) => {
+  const body = await c.req.json().catch(() => null) as Record<string, unknown> | null;
+  if (!body) return c.json({ error: 'Corps invalide.' }, 400);
+
+  const currentPassword = body['current_password'] as string;
+  const newPassword = body['new_password'] as string;
+
+  if (!currentPassword || !newPassword) {
+    return c.json({ error: 'Mot de passe actuel et nouveau requis.' }, 400);
+  }
+  if (newPassword.length < 8) {
+    return c.json({ error: 'Le nouveau mot de passe doit faire au moins 8 caractères.' }, 400);
+  }
+  if (!/[A-Z]/.test(newPassword)) {
+    return c.json({ error: 'Le nouveau mot de passe doit contenir au moins une majuscule.' }, 400);
+  }
+  if (!/[0-9]/.test(newPassword)) {
+    return c.json({ error: 'Le nouveau mot de passe doit contenir au moins un chiffre.' }, 400);
+  }
+
+  const db = getDB(c.env);
+  const h = c.req.header('Authorization')!;
+  const payload = await verifyJWT(h.slice(7)) as any;
+  const adminId = payload?.id;
+
+  // Vérifier le mot de passe actuel
+  const { data: profile } = await db.from('profiles')
+    .select('id, telephone, password_hash')
+    .eq('id', adminId)
+    .single();
+
+  if (!profile) return c.json({ error: 'Utilisateur introuvable.' }, 404);
+
+  // Hash le nouveau mot de passe (SHA-256 simple compatible avec auth.ts)
+  const encoder = new TextEncoder();
+  const hashBuf = await crypto.subtle.digest('SHA-256', encoder.encode(currentPassword));
+  const currentHash = Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+
+  if (profile.password_hash !== currentHash) {
+    return c.json({ error: 'Mot de passe actuel incorrect.' }, 401);
+  }
+
+  // Hash du nouveau mot de passe
+  const newHashBuf = await crypto.subtle.digest('SHA-256', encoder.encode(newPassword));
+  const newHash = Array.from(new Uint8Array(newHashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+
+  const { error: updateErr } = await db.from('profiles')
+    .update({ password_hash: newHash })
+    .eq('id', adminId);
+
+  if (updateErr) return c.json({ error: updateErr.message }, 500);
+  return c.json({ success: true, message: 'Mot de passe modifié avec succès.' });
+});
+
 admin.get('/users', requireAdmin, async (c) => {
   const db = getDB(c.env);
   const { data, error } = await db.from('profiles')

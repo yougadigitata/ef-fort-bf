@@ -319,13 +319,19 @@ app.get('/api/user/stats', async (c) => {
             .eq('termine', true);
         const { data: sessions } = await db
             .from('sessions_examen')
-            .select('score_pourcentage')
+            .select('score, total_questions') // Utiliser score et total_questions (colonnes existantes)
             .eq('user_id', userId)
             .eq('termine', true)
             .order('created_at', { ascending: false })
             .limit(20);
+        // Calculer le score moyen à partir des colonnes existantes (score/total_questions)
         const avgScore = sessions && sessions.length > 0
-            ? sessions.reduce((sum, s) => sum + (Number(s.score_pourcentage) || 0), 0) / sessions.length
+            ? sessions.reduce((sum, s) => {
+                const pct = (s.total_questions && s.total_questions > 0)
+                    ? (Number(s.score || 0) / Number(s.total_questions)) * 100
+                    : 0;
+                return sum + pct;
+            }, 0) / sessions.length
             : 0;
         const nbSim = nbSimulations ?? 0;
         return c.json({
@@ -469,22 +475,36 @@ app.get('/api/health', (c) => c.json({
 app.get('/api/simulations-admin', async (c) => {
     const db = getDB(c.env);
     try {
+        // Inclure question_ids dans le select pour calculer le vrai nombre de questions
         const { data, error } = await db.from('simulations_examens')
-            .select('id, titre, description, duree_minutes, score_max, created_at, updated_at')
+            .select('id, titre, description, duree_minutes, score_max, question_ids, created_at, updated_at')
             .eq('published', true)
             .order('created_at', { ascending: false })
             .limit(50);
         if (!error && data && data.length > 0) {
-            // Calculer le nombre de questions pour chaque simulation
-            const simulationsWithCount = await Promise.all(data.map(async (sim) => {
+            // Calculer le nombre réel de questions pour chaque simulation
+            const simulationsWithCount = data.map((sim) => {
                 let totalQ = 0;
                 try {
-                    const qIds = JSON.parse(sim.question_ids ?? '[]');
+                    let qIds = [];
+                    if (typeof sim.question_ids === 'string') {
+                        qIds = JSON.parse(sim.question_ids);
+                    }
+                    else if (Array.isArray(sim.question_ids)) {
+                        qIds = sim.question_ids;
+                    }
+                    else if (sim.question_ids && typeof sim.question_ids === 'object') {
+                        qIds = Object.values(sim.question_ids);
+                    }
                     totalQ = Array.isArray(qIds) ? qIds.length : 0;
                 }
-                catch (_) { }
-                return { ...sim, total_questions: totalQ };
-            }));
+                catch (_) {
+                    totalQ = 0;
+                }
+                // Ne pas exposer question_ids aux clients
+                const { question_ids: _qi, ...simWithoutIds } = sim;
+                return { ...simWithoutIds, total_questions: totalQ };
+            });
             return c.json({ success: true, simulations: simulationsWithCount });
         }
         return c.json({ success: true, simulations: [] });
@@ -530,15 +550,16 @@ app.post('/api/simulations-admin/:id/demarrer', async (c) => {
     if (sim.ordre_questions === 'random') {
         questions = questions.sort(() => Math.random() - 0.5);
     }
-    // Créer la session — sans simulation_id (type UUID incompatible avec INTEGER)
+    // Créer la session — sans simulation_id car la colonne est de type UUID
+    // et simulations_examens.id est un INTEGER (incompatible)
     const { data: session, error: sErr } = await db.from('sessions_examen').insert({
         user_id: userId,
         type_session: 'SIMULATION_ADMIN',
         total_questions: questions.length,
         termine: false,
     }).select().single();
-    if (sErr)
-        return c.json({ error: sErr.message }, 500);
+    if (sErr || !session)
+        return c.json({ error: sErr?.message ?? 'Erreur création session' }, 500);
     return c.json({
         success: true,
         session_id: session.id,
@@ -556,6 +577,75 @@ app.post('/api/simulations-admin/:id/demarrer', async (c) => {
         })),
         total: questions.length,
         show_corrections: sim.show_corrections !== false,
+    });
+});
+// ── POST /api/admin/migrate-schema — Migrer le schéma (ajouter colonnes manquantes) ──
+app.post('/api/admin/migrate-schema', async (c) => {
+    const h = c.req.header('Authorization');
+    if (!h?.startsWith('Bearer '))
+        return c.json({ error: 'Auth requise.' }, 401);
+    const payload = await verifyJWT(h.slice(7));
+    if (!payload || !payload['is_admin'])
+        return c.json({ error: 'Admin requis.' }, 403);
+    const supabaseUrl = c.env.SUPABASE_URL || 'https://xqifdbgqxyrlhrkwlyir.supabase.co';
+    const serviceKey = c.env.SUPABASE_SERVICE_KEY || '';
+    const results = [];
+    // Liste des migrations à appliquer
+    const migrations = [
+        {
+            name: 'Ajouter simulation_id à sessions_examen',
+            sql: `ALTER TABLE sessions_examen ADD COLUMN IF NOT EXISTS simulation_id UUID`,
+        },
+        {
+            name: 'Ajouter score_pourcentage à sessions_examen',
+            sql: `ALTER TABLE sessions_examen ADD COLUMN IF NOT EXISTS score_pourcentage NUMERIC(5,2)`,
+        },
+    ];
+    for (const migration of migrations) {
+        try {
+            // Utiliser l'API REST Supabase avec service role
+            const resp = await fetch(`${supabaseUrl}/rest/v1/rpc/exec_ddl`, {
+                method: 'POST',
+                headers: {
+                    'apikey': serviceKey,
+                    'Authorization': `Bearer ${serviceKey}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ ddl: migration.sql }),
+            });
+            if (resp.ok) {
+                results.push({ sql: migration.name, status: '✅ Succès' });
+            }
+            else {
+                // Essayer via l'API de gestion Supabase
+                const resp2 = await fetch(`${supabaseUrl}/rest/v1/rpc/query`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': serviceKey,
+                        'Authorization': `Bearer ${serviceKey}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query: migration.sql }),
+                });
+                results.push({
+                    sql: migration.name,
+                    status: resp2.ok ? '✅ Succès (v2)' : `⚠️ HTTP ${resp.status}: Exécuter manuellement dans SQL Editor`,
+                });
+            }
+        }
+        catch (e) {
+            results.push({ sql: migration.name, status: `❌ Erreur: ${e.message}` });
+        }
+    }
+    return c.json({
+        success: true,
+        results,
+        message: 'Migration terminée. Si des colonnes manquent, utilisez le SQL Editor Supabase:',
+        manual_sql: `
+ALTER TABLE sessions_examen ADD COLUMN IF NOT EXISTS simulation_id UUID;
+ALTER TABLE sessions_examen ADD COLUMN IF NOT EXISTS score_pourcentage NUMERIC(5,2);
+    `.trim(),
+        sql_editor_url: 'https://supabase.com/dashboard/project/xqifdbgqxyrlhrkwlyir/sql/new',
     });
 });
 // 404

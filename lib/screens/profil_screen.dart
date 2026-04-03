@@ -156,19 +156,42 @@ class _ProfilScreenState extends State<ProfilScreen> {
                         'Abonnement Premium',
                         style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.white),
                       ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        '12 000 FCFA',
-                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: AppColors.white),
-                      ),
+                      const SizedBox(height: 6),
+                      // Prix barré ancien + nouveau prix
+                      Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                        Text(
+                          '25 000 FCFA',
+                          style: TextStyle(
+                            fontSize: 17, fontWeight: FontWeight.w600,
+                            color: AppColors.white.withValues(alpha: 0.6),
+                            decoration: TextDecoration.lineThrough,
+                            decorationColor: AppColors.white.withValues(alpha: 0.6),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        const Text(
+                          '12 000 FCFA',
+                          style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: AppColors.white),
+                        ),
+                      ]),
                       const SizedBox(height: 4),
-                      Text(
-                        'Valable jusqu\'au 31 decembre 2028',
-                        style: TextStyle(fontSize: 13, color: AppColors.white.withValues(alpha: 0.8)),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.5)),
+                        ),
+                        child: const Text(
+                          '🔥 OFFRE SPÉCIALE — Expire le 3 mai 2026',
+                          style: TextStyle(fontSize: 11, color: AppColors.white, fontWeight: FontWeight.w700),
+                        ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 8),
+                      const _CountdownWidget(),
+                      const SizedBox(height: 12),
                       const Text(
-                        'Acces illimite a +250 QCM\nSimulations d\'examen illimitees\nCorrections detaillees',
+                        'Accès illimité à +250 QCM\nSimulations d\'examen illimitées\nCorrections détaillées',
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 13, color: AppColors.white, height: 1.6),
                       ),
@@ -252,7 +275,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text('Abonnement actif', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.success)),
-                            Text('Acces illimite jusqu\'au 31/12/2028', style: TextStyle(fontSize: 12, color: AppColors.textLight)),
+                            Text('Accès illimité jusqu\'au 31/12/2028', style: TextStyle(fontSize: 12, color: AppColors.textLight)),
                           ],
                         ),
                       ),
@@ -1874,4 +1897,77 @@ class _AboutParticle {
     required this.x, required this.y, required this.size,
     required this.speed, required this.opacity, required this.phase,
   });
+}
+
+// ══════════════════════════════════════════════════════════════
+// WIDGET COMPTE À REBOURS — Expire le 3 mai 2026
+// ══════════════════════════════════════════════════════════════
+class _CountdownWidget extends StatefulWidget {
+  const _CountdownWidget();
+  @override
+  State<_CountdownWidget> createState() => _CountdownWidgetState();
+}
+
+class _CountdownWidgetState extends State<_CountdownWidget> {
+  late Duration _remaining;
+  late DateTime _expiry;
+
+  @override
+  void initState() {
+    super.initState();
+    _expiry = DateTime(2026, 5, 3, 23, 59, 59);
+    _updateRemaining();
+    _startTimer();
+  }
+
+  void _updateRemaining() {
+    final now = DateTime.now();
+    _remaining = _expiry.isAfter(now) ? _expiry.difference(now) : Duration.zero;
+  }
+
+  void _startTimer() {
+    Future.delayed(const Duration(seconds: 1), () {
+      if (mounted) {
+        setState(() => _updateRemaining());
+        _startTimer();
+      }
+    });
+  }
+
+  String _pad(int n) => n.toString().padLeft(2, '0');
+
+  @override
+  Widget build(BuildContext context) {
+    if (_remaining == Duration.zero) {
+      return const Text('Offre expirée', style: TextStyle(color: Colors.white70, fontSize: 12));
+    }
+    final days = _remaining.inDays;
+    final hours = _remaining.inHours % 24;
+    final minutes = _remaining.inMinutes % 60;
+    final seconds = _remaining.inSeconds % 60;
+    return Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+      _countUnit('$days', 'j'),
+      const Text(' : ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
+      _countUnit(_pad(hours), 'h'),
+      const Text(' : ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
+      _countUnit(_pad(minutes), 'min'),
+      const Text(' : ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
+      _countUnit(_pad(seconds), 'sec'),
+    ]);
+  }
+
+  Widget _countUnit(String value, String label) {
+    return Column(children: [
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.black26,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 20)),
+      ),
+      const SizedBox(height: 2),
+      Text(label, style: const TextStyle(color: Colors.white70, fontSize: 10)),
+    ]);
+  }
 }

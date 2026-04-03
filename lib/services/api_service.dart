@@ -555,6 +555,39 @@ class ApiService {
     await prefs.remove('user_data');
   }
 
+  // ── Changer le mot de passe ──────────────────────────────────
+  static Future<Map<String, dynamic>> changePassword(String currentPassword, String newPassword) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${apiBase.replaceAll('/api', '')}/api/admin/change-password'),
+        headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $_token'},
+        body: jsonEncode({'current_password': currentPassword, 'new_password': newPassword}),
+      );
+      if (response.statusCode == 200) return jsonDecode(response.body) as Map<String, dynamic>;
+      final err = jsonDecode(response.body) as Map<String, dynamic>;
+      return {'success': false, 'error': err['error'] ?? 'Erreur ${response.statusCode}'};
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+
+  // ── Stats utilisateur en temps réel ────────────────────────
+  static Future<Map<String, dynamic>> getUserDashboardStats() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$apiBase/user/dashboard-stats'),
+        headers: {
+          'Content-Type': 'application/json',
+          if (_token != null) 'Authorization': 'Bearer $_token',
+        },
+      );
+      if (response.statusCode == 200) return jsonDecode(response.body) as Map<String, dynamic>;
+      return {};
+    } catch (e) {
+      return {};
+    }
+  }
+
   static Future<bool> loadToken() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('jwt_token');
