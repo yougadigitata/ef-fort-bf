@@ -2230,19 +2230,41 @@ class SimulationResultScreen extends StatelessWidget {
             }),
 
             const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton.icon(
-                onPressed: () => _exportPDF(context),
-                icon: const Icon(Icons.file_download_rounded),
-                label: const Text('Telecharger copie (PDF)'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF27AE60),
-                  foregroundColor: AppColors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            // ── Deux boutons PDF : Corrigé + Sujet vierge ──
+            Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 50,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _exportPDF(context),
+                      icon: const Icon(Icons.assignment_turned_in_rounded, size: 18),
+                      label: const Text('Corrigé PDF', style: TextStyle(fontSize: 13)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF27AE60),
+                        foregroundColor: AppColors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: SizedBox(
+                    height: 50,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _exportPDFSujetVierge(context),
+                      icon: const Icon(Icons.print_rounded, size: 18),
+                      label: const Text('Sujet vierge', style: TextStyle(fontSize: 13)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2980B9),
+                        foregroundColor: AppColors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 12),
             SizedBox(
@@ -2291,6 +2313,254 @@ class SimulationResultScreen extends StatelessWidget {
         );
       }
     }
+  }
+
+  /// Export PDF sujet vierge (sans réponses) — pour s'entraîner en conditions réelles
+  Future<void> _exportPDFSujetVierge(BuildContext ctx) async {
+    ScaffoldMessenger.of(ctx).showSnackBar(
+      const SnackBar(
+        content: Text('Génération du sujet vierge en cours...'),
+        duration: Duration(seconds: 2),
+        backgroundColor: Color(0xFF2980B9),
+      ),
+    );
+
+    try {
+      final pdfBytes = await _generatePdfSujetVierge(ctx);
+      await Printing.sharePdf(
+        bytes: pdfBytes,
+        filename: 'EF-FORT_Sujet_Examen.pdf',
+      );
+    } catch (e) {
+      if (ctx.mounted) {
+        ScaffoldMessenger.of(ctx).showSnackBar(
+          SnackBar(
+            content: Text('Erreur PDF: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Génère un PDF sujet vierge (SANS réponses, SANS corrections)
+  Future<Uint8List> _generatePdfSujetVierge(BuildContext ctx) async {
+    final pdf = pw.Document();
+    final user = ApiService.currentUser;
+    final nomCandidat = user != null
+        ? '${user['prenom'] ?? ''} ${user['nom'] ?? ''}'.trim()
+        : 'Candidat';
+
+    pw.MemoryImage? logoImage;
+    try {
+      final ByteData data = await rootBundle.load('assets/images/logo_effort.png');
+      logoImage = pw.MemoryImage(data.buffer.asUint8List());
+    } catch (_) {}
+
+    final now = DateTime.now();
+    final dateStr = '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}';
+    final primaryColor = PdfColor.fromHex('1A5C38');
+    final font = pw.Font.helvetica();
+    final fontBold = pw.Font.helveticaBold();
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.symmetric(horizontal: 28, vertical: 36),
+        build: (context) => [
+          // ── En-tête ──
+          pw.Container(
+            padding: const pw.EdgeInsets.all(14),
+            decoration: pw.BoxDecoration(
+              color: PdfColor.fromHex('1A5C38'),
+              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+            ),
+            child: pw.Row(
+              children: [
+                if (logoImage != null) ...[
+                  pw.Container(
+                    width: 50, height: 50,
+                    child: pw.Image(logoImage, fit: pw.BoxFit.contain),
+                  ),
+                  pw.SizedBox(width: 12),
+                ],
+                pw.Expanded(
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text('EF-FORT.BF',
+                          style: pw.TextStyle(font: fontBold, fontSize: 18, color: PdfColors.white)),
+                      pw.SizedBox(height: 2),
+                      pw.Text('SUJET D\'EXAMEN — SIMULATION OFFICIELLE',
+                          style: pw.TextStyle(font: font, fontSize: 10, color: PdfColors.white)),
+                    ],
+                  ),
+                ),
+                pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.end, children: [
+                  pw.Text('Date : $dateStr',
+                      style: pw.TextStyle(font: font, fontSize: 9, color: PdfColors.white)),
+                  pw.SizedBox(height: 4),
+                  pw.Text('Candidat : $nomCandidat',
+                      style: pw.TextStyle(font: fontBold, fontSize: 9, color: PdfColors.white)),
+                ]),
+              ],
+            ),
+          ),
+          pw.SizedBox(height: 12),
+
+          // ── Consignes ──
+          pw.Container(
+            padding: const pw.EdgeInsets.all(10),
+            decoration: pw.BoxDecoration(
+              color: PdfColor.fromHex('FFF8E1'),
+              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+              border: pw.Border.all(color: PdfColor.fromHex('F39C12'), width: 0.8),
+            ),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text('CONSIGNES :',
+                    style: pw.TextStyle(font: fontBold, fontSize: 10, color: PdfColor.fromHex('E67E22'))),
+                pw.SizedBox(height: 4),
+                pw.Text(
+                  '• Chaque question ne comporte qu\'une seule bonne réponse sauf indication contraire.\n'
+                  '• Entourez la lettre correspondant à votre réponse. Durée : 2h00.\n'
+                  '• Aucun document autorisé. Téléphone portable interdit.',
+                  style: pw.TextStyle(font: font, fontSize: 9, lineSpacing: 3, color: PdfColor.fromHex('5D4037')),
+                ),
+              ],
+            ),
+          ),
+          pw.SizedBox(height: 16),
+
+          // ── Tableau de réponses ──
+          pw.Text('GRILLE DE RÉPONSES :',
+              style: pw.TextStyle(font: fontBold, fontSize: 10, color: primaryColor)),
+          pw.SizedBox(height: 6),
+          pw.Table(
+            border: pw.TableBorder.all(color: PdfColor.fromHex('BDBDBD'), width: 0.5),
+            children: [
+              pw.TableRow(
+                decoration: pw.BoxDecoration(color: PdfColor.fromHex('E8F5E9')),
+                children: ['N°', 'A', 'B', 'C', 'D'].map((h) => pw.Padding(
+                  padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 6),
+                  child: pw.Text(h, style: pw.TextStyle(font: fontBold, fontSize: 9, color: primaryColor), textAlign: pw.TextAlign.center),
+                )).toList(),
+              ),
+              ...List.generate(questions.length, (i) => pw.TableRow(
+                decoration: i % 2 == 0 ? const pw.BoxDecoration(color: PdfColors.white) : pw.BoxDecoration(color: PdfColor.fromHex('F5F5F5')),
+                children: [
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 6),
+                    child: pw.Text('${i + 1}', style: pw.TextStyle(font: fontBold, fontSize: 9), textAlign: pw.TextAlign.center),
+                  ),
+                  ...[' A ', ' B ', ' C ', ' D '].map((l) => pw.Padding(
+                    padding: const pw.EdgeInsets.symmetric(vertical: 3, horizontal: 6),
+                    child: pw.Container(
+                      width: 18, height: 18,
+                      decoration: pw.BoxDecoration(
+                        shape: pw.BoxShape.circle,
+                        border: pw.Border.all(color: PdfColor.fromHex('9E9E9E'), width: 0.8),
+                      ),
+                      child: pw.Text(l.trim(),
+                          style: pw.TextStyle(font: font, fontSize: 8, color: PdfColor.fromHex('9E9E9E')),
+                          textAlign: pw.TextAlign.center),
+                    ),
+                  )),
+                ],
+              )),
+            ],
+          ),
+          pw.SizedBox(height: 20),
+
+          // ── Questions ──
+          pw.Text('QUESTIONS :',
+              style: pw.TextStyle(font: fontBold, fontSize: 11, color: primaryColor)),
+          pw.SizedBox(height: 8),
+          ...List.generate(questions.length, (i) {
+            final q = questions[i] as Map<String, dynamic>;
+            final enonce = _cleanLatexForPdf((q['enonce'] ?? q['question'] ?? '').toString());
+            final opts = {
+              'A': _cleanLatexForPdf((q['option_a'] ?? '').toString()),
+              'B': _cleanLatexForPdf((q['option_b'] ?? '').toString()),
+              'C': _cleanLatexForPdf((q['option_c'] ?? '').toString()),
+              'D': _cleanLatexForPdf((q['option_d'] ?? '').toString()),
+            };
+            return pw.Container(
+              margin: const pw.EdgeInsets.only(bottom: 10),
+              padding: const pw.EdgeInsets.all(8),
+              decoration: pw.BoxDecoration(
+                border: pw.Border.all(color: PdfColor.fromHex('E0E0E0'), width: 0.6),
+                borderRadius: const pw.BorderRadius.all(pw.Radius.circular(5)),
+              ),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Row(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Container(
+                        width: 22, height: 22,
+                        decoration: pw.BoxDecoration(color: primaryColor, shape: pw.BoxShape.circle),
+                        child: pw.Center(
+                          child: pw.Text('${i + 1}',
+                              style: pw.TextStyle(font: fontBold, fontSize: 9, color: PdfColors.white)),
+                        ),
+                      ),
+                      pw.SizedBox(width: 8),
+                      pw.Expanded(
+                        child: pw.Text(enonce,
+                            style: pw.TextStyle(font: fontBold, fontSize: 10, lineSpacing: 2)),
+                      ),
+                    ],
+                  ),
+                  pw.SizedBox(height: 6),
+                  ...opts.entries.where((e) => e.value.isNotEmpty).map((e) => pw.Padding(
+                    padding: const pw.EdgeInsets.only(left: 30, bottom: 3),
+                    child: pw.Row(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Container(
+                          width: 16, height: 16,
+                          decoration: pw.BoxDecoration(
+                            shape: pw.BoxShape.circle,
+                            border: pw.Border.all(color: PdfColor.fromHex('757575'), width: 0.7),
+                          ),
+                          child: pw.Center(
+                            child: pw.Text(e.key,
+                                style: pw.TextStyle(font: font, fontSize: 8, color: PdfColor.fromHex('757575'))),
+                          ),
+                        ),
+                        pw.SizedBox(width: 6),
+                        pw.Expanded(
+                          child: pw.Text(e.value,
+                              style: pw.TextStyle(font: font, fontSize: 9, lineSpacing: 2)),
+                        ),
+                      ],
+                    ),
+                  )),
+                ],
+              ),
+            );
+          }),
+
+          // ── Pied de page ──
+          pw.SizedBox(height: 16),
+          pw.Divider(color: PdfColor.fromHex('E0E0E0')),
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Text('EF-FORT.BF — Préparation aux concours de la Fonction Publique du Burkina Faso',
+                  style: pw.TextStyle(font: font, fontSize: 8, color: PdfColor.fromHex('9E9E9E'))),
+              pw.Text('© ${now.year}',
+                  style: pw.TextStyle(font: font, fontSize: 8, color: PdfColor.fromHex('9E9E9E'))),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    return pdf.save();
   }
 
   Future<Uint8List> _generatePdfBytes(BuildContext ctx) async {

@@ -1905,22 +1905,57 @@ class _ChangePasswordTabState extends State<_ChangePasswordTab> {
     setState(() => _loading = true);
     try {
       final token = ApiService.token;
+      if (token == null || token.isEmpty) {
+        if (mounted) setState(() { _error = 'Session expirée. Veuillez vous déconnecter et vous reconnecter.'; _loading = false; });
+        return;
+      }
       final res = await http.post(
         Uri.parse('$_baseUrl/api/admin/change-password'),
         headers: {'Authorization': 'Bearer $token', 'Content-Type': 'application/json'},
         body: jsonEncode({'current_password': current, 'new_password': newPwd}),
-      );
-      final data = jsonDecode(res.body) as Map<String, dynamic>;
-      if (!res.statusCode.toString().startsWith('2')) throw Exception(data['error'] ?? 'Erreur');
+      ).timeout(const Duration(seconds: 15));
+      
+      Map<String, dynamic> data = {};
+      try {
+        data = jsonDecode(res.body) as Map<String, dynamic>;
+      } catch (_) {}
+      
+      if (res.statusCode == 401) {
+        // Mot de passe actuel incorrect
+        if (mounted) setState(() { 
+          _error = data['error']?.toString() ?? 'Mot de passe actuel incorrect. Vérifiez et réessayez.'; 
+          _loading = false; 
+        });
+        return;
+      }
+      if (res.statusCode == 403) {
+        if (mounted) setState(() { 
+          _error = 'Accès refusé. Votre session admin est peut-être expirée. Reconnectez-vous.'; 
+          _loading = false; 
+        });
+        return;
+      }
+      if (res.statusCode >= 400) {
+        if (mounted) setState(() { 
+          _error = data['error']?.toString() ?? 'Erreur serveur (${res.statusCode}). Réessayez.'; 
+          _loading = false; 
+        });
+        return;
+      }
+      
       if (mounted) {
         setState(() {
           _success = '✅ Mot de passe changé avec succès ! Reconnectez-vous pour des raisons de sécurité.';
           _loading = false;
+          _error = null;
         });
         _currentCtrl.clear(); _newCtrl.clear(); _confirmCtrl.clear();
       }
     } catch (e) {
-      if (mounted) setState(() { _error = e.toString(); _loading = false; });
+      if (mounted) setState(() { 
+        _error = e.toString().replaceAll('Exception: ', ''); 
+        _loading = false; 
+      });
     }
   }
 

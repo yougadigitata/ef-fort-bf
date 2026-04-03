@@ -251,8 +251,8 @@ class _MatieresScreenState extends State<MatieresScreen> {
 
   Widget _buildMatiereCard(Map<String, dynamic> matiere, String matiereCode, Color color) {
     final nom = matiere['nom'] as String? ?? matiereCode.toUpperCase();
-    final nbQuestions = matiere['nb_questions'] as int? ?? 0;
-    final nbSeries = matiere['nb_series'] as int? ?? 0;
+    final nbQuestions = (matiere['nb_questions'] as num?)?.toInt() ?? 0;
+    final nbSeries = (matiere['nb_series'] as num?)?.toInt() ?? 0;
     final matiereId = matiere['matiere_id'] as String? ?? '';
     final icone = _getIcone(matiere);
     final hasMatId = matiereId.isNotEmpty;
