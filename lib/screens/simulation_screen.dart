@@ -1088,6 +1088,7 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
   }
 
   // Map UUID → nom de matière pour éviter d'afficher des UUIDs
+  // IDs vérifiés directement en base Supabase — NE PAS MODIFIER
   static const Map<String, String> _matiereNomMap = {
     '54f53d06-2d5d-4d82-91bc-4bfff904c12b': 'Psychotechnique',
     '104f51e4-be6e-4ce8-961e-56e604818670': 'Figure Africaine',
@@ -1106,6 +1107,8 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
     '0a88b3ac-33b7-4d8c-bc19-fe68bb514aef': 'Histoire-Géographie',
     '7c2b0599-4971-4d31-87ce-aeeb5c5cb394': 'Burkina Faso',
     'c7681b66-91af-423b-9ef6-becbe8f5bd85': 'Alliance des États du Sahel',
+    'a0b2c3c5-8dbf-4c7f-ab73-356530962c48': 'Guide Panafricain',
+    '691aed6c-b030-4311-bbd5-c8fe848b94d7': 'Sciences PC/SVT',
   };
 
   // Groupe de matière : retourne le label section pour la question n°i

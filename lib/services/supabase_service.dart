@@ -333,12 +333,13 @@ class SupabaseService {
       // Pour chaque matière disponible, prendre jusqu'à 10 questions
       const int quota = 10;
       const int totalNeeded = 50;
+      // Matières avec suffisamment de questions en base (vérifiées)
       final matiereOrder = [
-        'Culture Générale',
-        'Français',
-        'Mathématiques',
-        'Histoire-Géographie',
-        'Sciences PC/SVT',
+        'Psychotechnique',       // 201 questions
+        'Figure Africaine',      // 520 questions
+        'Économie',              // 220 questions
+        'Droit',                 // 220 questions
+        'Français',              // 520 questions
       ];
 
       for (final matName in matiereOrder) {
@@ -364,20 +365,20 @@ class SupabaseService {
         }
       }
 
-      // Si on n'a pas 50, compléter avec Culture Générale
+      // Si on n'a pas 50, compléter avec Droit (220 questions disponibles)
       if (selected.length < totalNeeded) {
-        final cgId = matMap.entries
-            .where((e) => e.value == 'Culture Générale')
+        final droitId = matMap.entries
+            .where((e) => e.value == 'Droit')
             .map((e) => e.key)
             .firstOrNull;
-        if (cgId != null) {
-          final cgQ = (byMat[cgId] ?? [])
+        if (droitId != null) {
+          final droitQ = (byMat[droitId] ?? [])
               .where((q) => !selected.any((s) => s['id'] == q['id']))
               .toList();
-          cgQ.shuffle();
+          droitQ.shuffle();
           int more = totalNeeded - selected.length;
-          for (final q in cgQ.take(more)) {
-            selected.add({...q, 'matiere': 'Culture Générale'});
+          for (final q in droitQ.take(more)) {
+            selected.add({...q, 'matiere': 'Droit'});
           }
         }
       }

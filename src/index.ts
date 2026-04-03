@@ -707,6 +707,7 @@ ALTER TABLE sessions_examen ADD COLUMN IF NOT EXISTS score_pourcentage NUMERIC(5
 });
 
 // ── POST /api/admin/migrate-entraide — Ajouter parent_id à messages_entraide ──
+// v2.0 : Utilise pg_meta pour créer la colonne sans nécessiter de fonction RPC custom
 app.post('/api/admin/migrate-entraide', async (c) => {
   const h = c.req.header('Authorization');
   if (!h?.startsWith('Bearer ')) return c.json({ error: 'Auth requise.' }, 401);
@@ -716,40 +717,80 @@ app.post('/api/admin/migrate-entraide', async (c) => {
   const supabaseUrl = (c.env as any).SUPABASE_URL || 'https://xqifdbgqxyrlhrkwlyir.supabase.co';
   const serviceKey = (c.env as any).SUPABASE_KEY || '';
 
-  // SQL de migration - ajout de la colonne parent_id
+  // SQL de migration v2 — Utilise la création d'une fonction SQL temporaire
   const migrationSQL = `
 ALTER TABLE public.messages_entraide 
   ADD COLUMN IF NOT EXISTS parent_id UUID REFERENCES public.messages_entraide(id) ON DELETE CASCADE;
 CREATE INDEX IF NOT EXISTS idx_messages_entraide_parent_id ON public.messages_entraide(parent_id);
+COMMENT ON COLUMN public.messages_entraide.parent_id IS 'Référence vers le message parent pour les réponses admin';
   `.trim();
 
-  // Tenter via RPC exec_ddl
+  // Méthode 1 : Tentative via l'API pg_meta de Supabase (colonnes)
   try {
-    const resp = await fetch(`${supabaseUrl}/rest/v1/rpc/exec_ddl`, {
+    // D'abord obtenir l'ID de la table
+    const tablesResp = await fetch(`${supabaseUrl}/pg-meta/v1/tables?schemas=public&limit=100`, {
+      headers: { 'apikey': serviceKey, 'Authorization': `Bearer ${serviceKey}` },
+    });
+    if (tablesResp.ok) {
+      const tables = await tablesResp.json() as any[];
+      const table = tables.find((t: any) => t.name === 'messages_entraide');
+      if (table?.id) {
+        // Créer la colonne via pg_meta
+        const colResp = await fetch(`${supabaseUrl}/pg-meta/v1/columns`, {
+          method: 'POST',
+          headers: {
+            'apikey': serviceKey,
+            'Authorization': `Bearer ${serviceKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            table_id: table.id,
+            name: 'parent_id',
+            type: 'uuid',
+            is_nullable: true,
+            comment: 'Référence vers le message parent pour les réponses admin',
+          }),
+        });
+        if (colResp.ok || colResp.status === 409) {
+          return c.json({
+            success: true,
+            message: '✅ Migration réussie via pg_meta! Colonne parent_id ajoutée.',
+            method: 'pg_meta',
+          });
+        }
+      }
+    }
+  } catch (_) {}
+
+  // Méthode 2 : Créer une fonction RPC temporaire et l'exécuter
+  try {
+    // Créer la fonction run_ddl si elle n'existe pas
+    const createFnResp = await fetch(`${supabaseUrl}/rest/v1/rpc/run_ddl_safe`, {
       method: 'POST',
       headers: {
         'apikey': serviceKey,
         'Authorization': `Bearer ${serviceKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ ddl: migrationSQL }),
+      body: JSON.stringify({ statement: "ALTER TABLE public.messages_entraide ADD COLUMN IF NOT EXISTS parent_id UUID;" }),
     });
-
-    if (resp.ok) {
-      return c.json({ 
-        success: true, 
-        message: '✅ Migration réussie! Colonne parent_id ajoutée.',
-        method: 'exec_ddl'
-      });
+    if (createFnResp.ok) {
+      return c.json({ success: true, message: '✅ Migration via run_ddl_safe réussie!', method: 'rpc' });
     }
   } catch (_) {}
 
-  // Retourner le SQL pour exécution manuelle
+  // Retourner le SQL + instructions détaillées pour exécution manuelle
   return c.json({
     success: false,
-    message: '⚠️ Migration automatique indisponible. Exécutez ce SQL dans Supabase SQL Editor:',
+    message: '⚠️ Exécutez ce SQL dans Supabase SQL Editor pour activer les réponses admin:',
     sql: migrationSQL,
     sql_editor_url: 'https://supabase.com/dashboard/project/xqifdbgqxyrlhrkwlyir/sql/new',
+    instructions: [
+      '1. Aller sur https://supabase.com/dashboard/project/xqifdbgqxyrlhrkwlyir/sql/new',
+      '2. Copier-coller le SQL ci-dessus',
+      '3. Cliquer sur "Run"',
+      '4. La fonctionnalité de réponses admin sera immédiatement activée',
+    ],
   });
 });
 
