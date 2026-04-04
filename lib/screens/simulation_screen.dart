@@ -733,6 +733,30 @@ class ExamRulesSlide extends StatelessWidget {
   }
 }
 
+// ── Map UUID → nom de matière (niveau top-level, accessible partout) ──
+// IDs vérifiés directement en base Supabase — NE PAS MODIFIER
+const Map<String, String> _kMatiereNomMap = {
+  '54f53d06-2d5d-4d82-91bc-4bfff904c12b': 'Psychotechnique',
+  '104f51e4-be6e-4ce8-961e-56e604818670': 'Figure Africaine',
+  '756e1ca6-7f7f-4f42-940a-b6d9952ffcdf': 'Économie',
+  '37febc5e-8ab5-4875-b7ad-71b30a8253e7': 'Anglais',
+  '9497ca2c-dc1b-43dd-8b7a-af11dde7039d': 'Droit',
+  '9005951c-331e-4ce7-90e4-887bd26d0b3e': 'Mathématiques',
+  '12e5b05a-6410-4b55-97b7-b8a838dcfb9a': 'Sciences Physiques',
+  '7dd7029c-76cf-4d36-9912-7d60fbac7bba': 'SVT',
+  '70795d8a-0691-407e-abce-59202590f4f3': 'Culture Générale',
+  '5f7ef458-9fd3-4f70-b498-d3391b5d5677': 'Actualité Internationale',
+  'b8df7f6e-587d-4871-856c-30dbaa6a52c3': 'Force Armée Nationale',
+  'd1560595-b4d9-45d2-af70-8bdf7016af72': 'Français',
+  'a72cc6f9-1282-4c2a-ae19-298933047694': 'Informatique',
+  'cc979206-e60d-4224-940d-943b8c68c8fa': 'Communication',
+  '0a88b3ac-33b7-4d8c-bc19-fe68bb514aef': 'Histoire-Géographie',
+  '7c2b0599-4971-4d31-87ce-aeeb5c5cb394': 'Burkina Faso',
+  'c7681b66-91af-423b-9ef6-becbe8f5bd85': 'Alliance des États du Sahel',
+  'a0b2c3c5-8dbf-4c7f-ab73-356530962c48': 'Guide Panafricain',
+  '691aed6c-b030-4311-bbd5-c8fe848b94d7': 'Sciences PC/SVT',
+};
+
 // ══════════════════════════════════════════════════════════════
 // ÉCRAN EXAMEN — INTERFACE 2 COLONNES (TÂCHE 7)
 // ══════════════════════════════════════════════════════════════
@@ -1087,29 +1111,8 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
     });
   }
 
-  // Map UUID → nom de matière pour éviter d'afficher des UUIDs
-  // IDs vérifiés directement en base Supabase — NE PAS MODIFIER
-  static const Map<String, String> _matiereNomMap = {
-    '54f53d06-2d5d-4d82-91bc-4bfff904c12b': 'Psychotechnique',
-    '104f51e4-be6e-4ce8-961e-56e604818670': 'Figure Africaine',
-    '756e1ca6-7f7f-4f42-940a-b6d9952ffcdf': 'Économie',
-    '37febc5e-8ab5-4875-b7ad-71b30a8253e7': 'Anglais',
-    '9497ca2c-dc1b-43dd-8b7a-af11dde7039d': 'Droit',
-    '9005951c-331e-4ce7-90e4-887bd26d0b3e': 'Mathématiques',
-    '12e5b05a-6410-4b55-97b7-b8a838dcfb9a': 'Sciences Physiques',
-    '7dd7029c-76cf-4d36-9912-7d60fbac7bba': 'SVT',
-    '70795d8a-0691-407e-abce-59202590f4f3': 'Culture Générale',
-    '5f7ef458-9fd3-4f70-b498-d3391b5d5677': 'Actualité Internationale',
-    'b8df7f6e-587d-4871-856c-30dbaa6a52c3': 'Force Armée Nationale',
-    'd1560595-b4d9-45d2-af70-8bdf7016af72': 'Français',
-    'a72cc6f9-1282-4c2a-ae19-298933047694': 'Informatique',
-    'cc979206-e60d-4224-940d-943b8c68c8fa': 'Communication',
-    '0a88b3ac-33b7-4d8c-bc19-fe68bb514aef': 'Histoire-Géographie',
-    '7c2b0599-4971-4d31-87ce-aeeb5c5cb394': 'Burkina Faso',
-    'c7681b66-91af-423b-9ef6-becbe8f5bd85': 'Alliance des États du Sahel',
-    'a0b2c3c5-8dbf-4c7f-ab73-356530962c48': 'Guide Panafricain',
-    '691aed6c-b030-4311-bbd5-c8fe848b94d7': 'Sciences PC/SVT',
-  };
+  // Map UUID → nom de matière (référence la map globale _kMatiereNomMap)
+  static Map<String, String> get _matiereNomMap => _kMatiereNomMap;
 
   // Groupe de matière : retourne le label section pour la question n°i
   String _getMatiereLabel(int idx) {
@@ -2086,7 +2089,12 @@ class SimulationResultScreen extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               ...scoreParMatiere.entries.map((entry) {
-                final matNom = entry.key.replaceAll('_', ' ').toUpperCase();
+                // Convertir l'UUID en nom lisible si nécessaire
+                String matNom = entry.key;
+                if (matNom.length == 36 && matNom.contains('-')) {
+                  matNom = _kMatiereNomMap[matNom] ?? matNom;
+                }
+                matNom = matNom.replaceAll('_', ' ').toUpperCase();
                 final b = entry.value[0];
                 final t = entry.value[1];
                 final p = t > 0 ? b / t : 0.0;
@@ -2389,128 +2397,188 @@ class SimulationResultScreen extends StatelessWidget {
     try {
       final ByteData data = await rootBundle.load('assets/images/logo_effort.png');
       logoImage = pw.MemoryImage(data.buffer.asUint8List());
-    } catch (_) {}
+    } catch (_) {
+      try {
+        final ByteData data = await rootBundle.load('assets/icons/logo_effort.png');
+        logoImage = pw.MemoryImage(data.buffer.asUint8List());
+      } catch (_) {}
+    }
 
     final now = DateTime.now();
     final dateStr = '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}';
     final primaryColor = PdfColor.fromHex('1A5C38');
-    final font = pw.Font.helvetica();
+    final accentColor  = PdfColor.fromHex('D4A017');
+    final font     = pw.Font.helvetica();
     final fontBold = pw.Font.helveticaBold();
 
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.symmetric(horizontal: 28, vertical: 36),
-        build: (context) => [
-          // ── En-tête ──
-          pw.Container(
-            padding: const pw.EdgeInsets.all(14),
-            decoration: pw.BoxDecoration(
-              color: PdfColor.fromHex('1A5C38'),
-              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
-            ),
-            child: pw.Row(
-              children: [
-                if (logoImage != null) ...[
-                  pw.Container(
-                    width: 50, height: 50,
-                    child: pw.Image(logoImage, fit: pw.BoxFit.contain),
+        // Marges généreuses pour lisibilité livre
+        margin: const pw.EdgeInsets.fromLTRB(45, 42, 45, 42),
+        header: (context) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            // ── En-tête coloré ──
+            pw.Container(
+              padding: const pw.EdgeInsets.fromLTRB(18, 14, 18, 14),
+              decoration: pw.BoxDecoration(
+                color: primaryColor,
+                borderRadius: const pw.BorderRadius.all(pw.Radius.circular(10)),
+              ),
+              child: pw.Row(
+                crossAxisAlignment: pw.CrossAxisAlignment.center,
+                children: [
+                  if (logoImage != null) ...[
+                    pw.Container(
+                      width: 56, height: 56,
+                      decoration: pw.BoxDecoration(
+                        color: PdfColors.white,
+                        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+                      ),
+                      padding: const pw.EdgeInsets.all(4),
+                      child: pw.Image(logoImage, fit: pw.BoxFit.contain),
+                    ),
+                    pw.SizedBox(width: 14),
+                  ] else ...[
+                    pw.Container(
+                      width: 56, height: 56,
+                      decoration: pw.BoxDecoration(
+                        color: PdfColors.white,
+                        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+                      ),
+                      child: pw.Center(
+                        child: pw.Text('EF', style: pw.TextStyle(font: fontBold, fontSize: 20, color: primaryColor)),
+                      ),
+                    ),
+                    pw.SizedBox(width: 14),
+                  ],
+                  pw.Expanded(
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text('EF-FORT.BF',
+                            style: pw.TextStyle(font: fontBold, fontSize: 22, color: PdfColors.white)),
+                        pw.SizedBox(height: 3),
+                        pw.Text('SUJET D\'EXAMEN — SIMULATION OFFICIELLE',
+                            style: pw.TextStyle(font: font, fontSize: 14, color: PdfColors.white)),
+                        pw.SizedBox(height: 4),
+                        pw.Text('"Chaque effort te rapproche de ton admission finale"',
+                            style: pw.TextStyle(font: font, fontSize: 12, color: accentColor, fontStyle: pw.FontStyle.italic)),
+                      ],
+                    ),
                   ),
                   pw.SizedBox(width: 12),
+                  pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.end, children: [
+                    pw.Text('Date : $dateStr',
+                        style: pw.TextStyle(font: font, fontSize: 13, color: PdfColors.white)),
+                    pw.SizedBox(height: 6),
+                    pw.Text('Candidat :',
+                        style: pw.TextStyle(font: font, fontSize: 12, color: PdfColors.grey200)),
+                    pw.Text(nomCandidat.isNotEmpty ? nomCandidat : 'Candidat',
+                        style: pw.TextStyle(font: fontBold, fontSize: 14, color: PdfColors.white)),
+                  ]),
                 ],
-                pw.Expanded(
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text('EF-FORT.BF',
-                          style: pw.TextStyle(font: fontBold, fontSize: 18, color: PdfColors.white)),
-                      pw.SizedBox(height: 2),
-                      pw.Text('SUJET D\'EXAMEN — SIMULATION OFFICIELLE',
-                          style: pw.TextStyle(font: font, fontSize: 10, color: PdfColors.white)),
-                    ],
-                  ),
-                ),
-                pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.end, children: [
-                  pw.Text('Date : $dateStr',
-                      style: pw.TextStyle(font: font, fontSize: 9, color: PdfColors.white)),
-                  pw.SizedBox(height: 4),
-                  pw.Text('Candidat : $nomCandidat',
-                      style: pw.TextStyle(font: fontBold, fontSize: 9, color: PdfColors.white)),
-                ]),
-              ],
+              ),
             ),
+            pw.SizedBox(height: 14),
+          ],
+        ),
+        footer: (context) => pw.Container(
+          padding: const pw.EdgeInsets.only(top: 6),
+          decoration: pw.BoxDecoration(
+            border: pw.Border(top: pw.BorderSide(color: PdfColors.grey300, width: 0.5)),
           ),
-          pw.SizedBox(height: 12),
-
+          child: pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Text('EF-FORT.BF  •  Plateforme N1 des Concours au Burkina Faso',
+                  style: pw.TextStyle(font: font, fontSize: 11, color: PdfColors.grey600)),
+              pw.Text('ef-fort-bf.pages.dev  |  Page ${context.pageNumber}/${context.pagesCount}',
+                  style: pw.TextStyle(font: font, fontSize: 11, color: PdfColors.grey600)),
+            ],
+          ),
+        ),
+        build: (context) => [
           // ── Consignes ──
           pw.Container(
-            padding: const pw.EdgeInsets.all(10),
+            padding: const pw.EdgeInsets.fromLTRB(16, 12, 16, 12),
             decoration: pw.BoxDecoration(
               color: PdfColor.fromHex('FFF8E1'),
-              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
               border: pw.Border.all(color: PdfColor.fromHex('F39C12'), width: 0.8),
             ),
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 pw.Text('CONSIGNES :',
-                    style: pw.TextStyle(font: fontBold, fontSize: 10, color: PdfColor.fromHex('E67E22'))),
-                pw.SizedBox(height: 4),
+                    style: pw.TextStyle(font: fontBold, fontSize: 14, color: PdfColor.fromHex('E67E22'))),
+                pw.SizedBox(height: 6),
                 pw.Text(
-                  '• Chaque question ne comporte qu\'une seule bonne réponse sauf indication contraire.\n'
-                  '• Entourez la lettre correspondant à votre réponse. Durée : 2h00.\n'
-                  '• Aucun document autorisé. Téléphone portable interdit.',
-                  style: pw.TextStyle(font: font, fontSize: 9, lineSpacing: 3, color: PdfColor.fromHex('5D4037')),
+                  '• Chaque question ne comporte qu\'une seule bonne reponse sauf indication contraire.',
+                  style: pw.TextStyle(font: font, fontSize: 14, lineSpacing: 4, color: PdfColor.fromHex('5D4037')),
+                ),
+                pw.SizedBox(height: 2),
+                pw.Text(
+                  '• Entourez la lettre correspondant a votre reponse. Duree : 2h00.',
+                  style: pw.TextStyle(font: font, fontSize: 14, lineSpacing: 4, color: PdfColor.fromHex('5D4037')),
+                ),
+                pw.SizedBox(height: 2),
+                pw.Text(
+                  '• Aucun document autorise. Telephone portable interdit.',
+                  style: pw.TextStyle(font: font, fontSize: 14, lineSpacing: 4, color: PdfColor.fromHex('5D4037')),
                 ),
               ],
             ),
           ),
-          pw.SizedBox(height: 16),
+          pw.SizedBox(height: 20),
 
-          // ── Tableau de réponses ──
-          pw.Text('GRILLE DE RÉPONSES :',
-              style: pw.TextStyle(font: fontBold, fontSize: 10, color: primaryColor)),
-          pw.SizedBox(height: 6),
+          // ── Grille de réponses ──
+          pw.Text('GRILLE DE REPONSES :',
+              style: pw.TextStyle(font: fontBold, fontSize: 15, color: primaryColor)),
+          pw.SizedBox(height: 8),
           pw.Table(
-            border: pw.TableBorder.all(color: PdfColor.fromHex('BDBDBD'), width: 0.5),
+            border: pw.TableBorder.all(color: PdfColor.fromHex('BDBDBD'), width: 0.6),
             children: [
               pw.TableRow(
                 decoration: pw.BoxDecoration(color: PdfColor.fromHex('E8F5E9')),
                 children: ['N°', 'A', 'B', 'C', 'D'].map((h) => pw.Padding(
-                  padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 6),
-                  child: pw.Text(h, style: pw.TextStyle(font: fontBold, fontSize: 9, color: primaryColor), textAlign: pw.TextAlign.center),
+                  padding: const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                  child: pw.Text(h, style: pw.TextStyle(font: fontBold, fontSize: 14, color: primaryColor), textAlign: pw.TextAlign.center),
                 )).toList(),
               ),
               ...List.generate(questions.length, (i) => pw.TableRow(
                 decoration: i % 2 == 0 ? const pw.BoxDecoration(color: PdfColors.white) : pw.BoxDecoration(color: PdfColor.fromHex('F5F5F5')),
                 children: [
                   pw.Padding(
-                    padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 6),
-                    child: pw.Text('${i + 1}', style: pw.TextStyle(font: fontBold, fontSize: 9), textAlign: pw.TextAlign.center),
+                    padding: const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                    child: pw.Text('${i + 1}', style: pw.TextStyle(font: fontBold, fontSize: 14), textAlign: pw.TextAlign.center),
                   ),
                   ...[' A ', ' B ', ' C ', ' D '].map((l) => pw.Padding(
-                    padding: const pw.EdgeInsets.symmetric(vertical: 3, horizontal: 6),
+                    padding: const pw.EdgeInsets.symmetric(vertical: 5, horizontal: 8),
                     child: pw.Container(
-                      width: 18, height: 18,
+                      width: 22, height: 22,
                       decoration: pw.BoxDecoration(
                         shape: pw.BoxShape.circle,
                         border: pw.Border.all(color: PdfColor.fromHex('9E9E9E'), width: 0.8),
                       ),
-                      child: pw.Text(l.trim(),
-                          style: pw.TextStyle(font: font, fontSize: 8, color: PdfColor.fromHex('9E9E9E')),
-                          textAlign: pw.TextAlign.center),
+                      child: pw.Center(
+                        child: pw.Text(l.trim(),
+                            style: pw.TextStyle(font: font, fontSize: 12, color: PdfColor.fromHex('9E9E9E')),
+                            textAlign: pw.TextAlign.center),
+                      ),
                     ),
                   )),
                 ],
               )),
             ],
           ),
-          pw.SizedBox(height: 20),
+          pw.SizedBox(height: 24),
 
           // ── Questions ──
           pw.Text('QUESTIONS :',
-              style: pw.TextStyle(font: fontBold, fontSize: 11, color: primaryColor)),
-          pw.SizedBox(height: 8),
+              style: pw.TextStyle(font: fontBold, fontSize: 15, color: primaryColor)),
+          pw.SizedBox(height: 12),
           ...List.generate(questions.length, (i) {
             final q = questions[i] as Map<String, dynamic>;
             final enonce = _cleanLatexForPdf((q['enonce'] ?? q['question'] ?? '').toString());
@@ -2521,11 +2589,12 @@ class SimulationResultScreen extends StatelessWidget {
               'D': _cleanLatexForPdf((q['option_d'] ?? '').toString()),
             };
             return pw.Container(
-              margin: const pw.EdgeInsets.only(bottom: 10),
-              padding: const pw.EdgeInsets.all(8),
+              margin: const pw.EdgeInsets.only(bottom: 14),
+              padding: const pw.EdgeInsets.fromLTRB(14, 10, 14, 10),
               decoration: pw.BoxDecoration(
-                border: pw.Border.all(color: PdfColor.fromHex('E0E0E0'), width: 0.6),
-                borderRadius: const pw.BorderRadius.all(pw.Radius.circular(5)),
+                color: PdfColors.white,
+                border: pw.Border.all(color: PdfColor.fromHex('D0D0D0'), width: 0.7),
+                borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
               ),
               child: pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -2534,41 +2603,41 @@ class SimulationResultScreen extends StatelessWidget {
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
                       pw.Container(
-                        width: 22, height: 22,
+                        width: 26, height: 26,
                         decoration: pw.BoxDecoration(color: primaryColor, shape: pw.BoxShape.circle),
                         child: pw.Center(
                           child: pw.Text('${i + 1}',
-                              style: pw.TextStyle(font: fontBold, fontSize: 9, color: PdfColors.white)),
+                              style: pw.TextStyle(font: fontBold, fontSize: 12, color: PdfColors.white)),
                         ),
                       ),
-                      pw.SizedBox(width: 8),
+                      pw.SizedBox(width: 10),
                       pw.Expanded(
                         child: pw.Text(enonce,
-                            style: pw.TextStyle(font: fontBold, fontSize: 10, lineSpacing: 2)),
+                            style: pw.TextStyle(font: fontBold, fontSize: 14, lineSpacing: 4)),
                       ),
                     ],
                   ),
-                  pw.SizedBox(height: 6),
+                  pw.SizedBox(height: 8),
                   ...opts.entries.where((e) => e.value.isNotEmpty).map((e) => pw.Padding(
-                    padding: const pw.EdgeInsets.only(left: 30, bottom: 3),
+                    padding: const pw.EdgeInsets.only(left: 36, bottom: 5),
                     child: pw.Row(
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
                         pw.Container(
-                          width: 16, height: 16,
+                          width: 20, height: 20,
                           decoration: pw.BoxDecoration(
                             shape: pw.BoxShape.circle,
-                            border: pw.Border.all(color: PdfColor.fromHex('757575'), width: 0.7),
+                            border: pw.Border.all(color: PdfColor.fromHex('757575'), width: 0.8),
                           ),
                           child: pw.Center(
                             child: pw.Text(e.key,
-                                style: pw.TextStyle(font: font, fontSize: 8, color: PdfColor.fromHex('757575'))),
+                                style: pw.TextStyle(font: fontBold, fontSize: 11, color: PdfColor.fromHex('424242'))),
                           ),
                         ),
-                        pw.SizedBox(width: 6),
+                        pw.SizedBox(width: 8),
                         pw.Expanded(
                           child: pw.Text(e.value,
-                              style: pw.TextStyle(font: font, fontSize: 9, lineSpacing: 2)),
+                              style: pw.TextStyle(font: font, fontSize: 14, lineSpacing: 3)),
                         ),
                       ],
                     ),
@@ -2577,19 +2646,6 @@ class SimulationResultScreen extends StatelessWidget {
               ),
             );
           }),
-
-          // ── Pied de page ──
-          pw.SizedBox(height: 16),
-          pw.Divider(color: PdfColor.fromHex('E0E0E0')),
-          pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Text('EF-FORT.BF — Préparation aux concours de la Fonction Publique du Burkina Faso',
-                  style: pw.TextStyle(font: font, fontSize: 8, color: PdfColor.fromHex('9E9E9E'))),
-              pw.Text('© ${now.year}',
-                  style: pw.TextStyle(font: font, fontSize: 8, color: PdfColor.fromHex('9E9E9E'))),
-            ],
-          ),
         ],
       ),
     );
@@ -2713,108 +2769,129 @@ class SimulationResultScreen extends StatelessWidget {
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.fromLTRB(28, 20, 28, 20),
+        // Marges généreuses style "livre" pour lisibilité optimale
+        margin: const pw.EdgeInsets.fromLTRB(45, 40, 45, 40),
         header: (context) => pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
             pw.Row(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
               children: [
                 pw.Container(
-                  width: 58,
-                  height: 58,
+                  width: 64,
+                  height: 64,
                   decoration: pw.BoxDecoration(
                     color: primaryColor,
                     borderRadius: const pw.BorderRadius.all(pw.Radius.circular(10)),
                     border: pw.Border.all(color: primaryDark, width: 2),
                   ),
-                  padding: const pw.EdgeInsets.all(4),
+                  padding: const pw.EdgeInsets.all(5),
                   child: logoImage != null
                       ? pw.Image(logoImage, fit: pw.BoxFit.contain)
-                      : pw.Center(child: pw.Text('EF', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold, color: PdfColors.white))),
+                      : pw.Center(child: pw.Text('EF', style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold, color: PdfColors.white))),
                 ),
-                pw.SizedBox(width: 12),
+                pw.SizedBox(width: 14),
                 pw.Expanded(
                   child: pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
-                      pw.Text('EF-FORT.BF', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold, color: primaryColor)),
-                      pw.Text('Plateforme N1 des Concours au Burkina Faso', style: pw.TextStyle(fontSize: 9.5, color: greyColor)),
-                      pw.Text('"Chaque effort te rapproche de ton admission finale"', style: pw.TextStyle(fontSize: 9, color: accentColor, fontStyle: pw.FontStyle.italic)),
-                      pw.SizedBox(height: 5),
+                      pw.Text('EF-FORT.BF', style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold, color: primaryColor)),
+                      pw.SizedBox(height: 3),
+                      pw.Text('Plateforme N°1 des Concours au Burkina Faso', style: pw.TextStyle(fontSize: 14, color: greyColor)),
+                      pw.SizedBox(height: 3),
+                      pw.Text('"Chaque effort te rapproche de ton admission finale"', style: pw.TextStyle(fontSize: 13, color: accentColor, fontStyle: pw.FontStyle.italic)),
+                      pw.SizedBox(height: 6),
                       pw.Container(
-                        padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                         decoration: pw.BoxDecoration(
                           color: lightGreen,
                           borderRadius: const pw.BorderRadius.all(pw.Radius.circular(5)),
                           border: pw.Border.all(color: borderGreen, width: 0.8),
                         ),
-                        child: pw.Text('Resultats Examen Blanc  •  ef-fort-bf.pages.dev',
-                            style: pw.TextStyle(fontSize: 9, color: primaryColor, fontWeight: pw.FontWeight.bold)),
+                        child: pw.Text('RESULTATS EXAMEN BLANC  •  ef-fort-bf.pages.dev',
+                            style: pw.TextStyle(fontSize: 13, color: primaryColor, fontWeight: pw.FontWeight.bold)),
                       ),
                     ],
                   ),
                 ),
-                pw.SizedBox(width: 10),
+                pw.SizedBox(width: 12),
                 pw.Column(
                   children: [
                     pw.Container(
-                      width: 80,
-                      height: 80,
+                      width: 88,
+                      height: 88,
                       decoration: pw.BoxDecoration(
                         color: PdfColors.white,
                         shape: pw.BoxShape.circle,
-                        border: pw.Border.all(color: redCircle, width: 3),
+                        border: pw.Border.all(color: redCircle, width: 3.5),
                       ),
                       child: pw.Center(
                         child: pw.Column(
                           mainAxisAlignment: pw.MainAxisAlignment.center,
                           children: [
-                            pw.Text(noteStr2, style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold, color: redCircle)),
-                            pw.Container(width: 40, height: 1, color: redCircleDark),
-                            pw.Text('20', style: pw.TextStyle(fontSize: 14, color: redCircle)),
+                            pw.Text(noteStr2, style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold, color: redCircle)),
+                            pw.Container(width: 44, height: 1.5, color: redCircleDark),
+                            pw.Text('20', style: pw.TextStyle(fontSize: 16, color: redCircle)),
                           ],
                         ),
                       ),
                     ),
-                    pw.SizedBox(height: 4),
+                    pw.SizedBox(height: 5),
                     pw.Container(
-                      padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                      padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                       decoration: pw.BoxDecoration(
                         color: getMentionColor2(),
                         borderRadius: const pw.BorderRadius.all(pw.Radius.circular(5)),
                       ),
-                      child: pw.Text(getMention2(), style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
+                      child: pw.Text(getMention2(), style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
                     ),
                   ],
                 ),
               ],
             ),
-            pw.SizedBox(height: 10),
+            pw.SizedBox(height: 12),
             // Fiche candidat
             pw.Container(
-              padding: const pw.EdgeInsets.all(12),
+              padding: const pw.EdgeInsets.fromLTRB(14, 10, 14, 10),
               decoration: pw.BoxDecoration(
                 color: PdfColors.white,
                 borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
                 border: pw.Border.all(color: PdfColors.grey300, width: 0.8),
               ),
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
+              child: pw.Row(
                 children: [
-                  pw.Row(children: [pw.Text('Candidat : ', style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, color: primaryColor)), pw.Text(nomCandidat.isEmpty ? 'Candidat' : nomCandidat, style: pw.TextStyle(fontSize: 11, color: greyDark))]),
-                  pw.SizedBox(height: 3),
-                  pw.Row(children: [pw.Text('Date     : ', style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, color: greyColor)), pw.Text(dateStr, style: pw.TextStyle(fontSize: 11, color: greyDark))]),
-                  pw.SizedBox(height: 5),
+                  pw.Expanded(
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Row(children: [
+                          pw.Text('Candidat : ', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: primaryColor)),
+                          pw.Text(nomCandidat.isEmpty ? 'Candidat' : nomCandidat, style: pw.TextStyle(fontSize: 14, color: greyDark)),
+                        ]),
+                        pw.SizedBox(height: 4),
+                        pw.Row(children: [
+                          pw.Text('Date     : ', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: greyColor)),
+                          pw.Text(dateStr, style: pw.TextStyle(fontSize: 14, color: greyDark)),
+                        ]),
+                      ],
+                    ),
+                  ),
+                  pw.SizedBox(width: 12),
                   pw.Container(
-                    padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: const pw.EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: pw.BoxDecoration(
                       color: lightGreen,
                       borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
                       border: pw.Border.all(color: borderGreen, width: 0.8),
                     ),
-                    child: pw.Text('Score : $bonnes/$total ($pct%)   |   Note /20 : $noteStr2',
-                        style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, color: primaryColor)),
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.center,
+                      children: [
+                        pw.Text('Score : $bonnes / $total', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: primaryColor)),
+                        pw.SizedBox(height: 2),
+                        pw.Text('Note : $noteStr2 / 20  ($pct%)', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: primaryColor)),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -2822,7 +2899,8 @@ class SimulationResultScreen extends StatelessWidget {
             pw.SizedBox(height: 8),
             // Appréciation
             pw.Container(
-              padding: const pw.EdgeInsets.fromLTRB(12, 8, 12, 8),
+              width: double.infinity,
+              padding: const pw.EdgeInsets.fromLTRB(14, 10, 14, 10),
               decoration: pw.BoxDecoration(
                 color: lightGreen,
                 borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
@@ -2831,17 +2909,17 @@ class SimulationResultScreen extends StatelessWidget {
               child: pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  pw.Text('Appreciation', style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, color: primaryColor)),
-                  pw.SizedBox(height: 3),
-                  pw.Text(getAppreciation2(), style: pw.TextStyle(fontSize: 10, color: greyDark)),
+                  pw.Text('APPRECIATION', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: primaryColor)),
+                  pw.SizedBox(height: 4),
+                  pw.Text(getAppreciation2(), style: pw.TextStyle(fontSize: 14, color: greyDark, lineSpacing: 3)),
                 ],
               ),
             ),
-            pw.SizedBox(height: 10),
+            pw.SizedBox(height: 12),
           ],
         ),
         footer: (context) => pw.Container(
-          padding: const pw.EdgeInsets.only(top: 6),
+          padding: const pw.EdgeInsets.only(top: 7),
           decoration: pw.BoxDecoration(
             border: pw.Border(top: pw.BorderSide(color: PdfColors.grey300, width: 0.5)),
           ),
@@ -2849,9 +2927,9 @@ class SimulationResultScreen extends StatelessWidget {
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             children: [
               pw.Text('EF-FORT.BF  •  Chaque effort te rapproche de ton admission',
-                  style: pw.TextStyle(fontSize: 8, color: greyColor)),
+                  style: pw.TextStyle(fontSize: 11, color: greyColor)),
               pw.Text('ef-fort-bf.pages.dev  |  Page ${context.pageNumber}/${context.pagesCount}',
-                  style: pw.TextStyle(fontSize: 8, color: greyColor)),
+                  style: pw.TextStyle(fontSize: 11, color: greyColor)),
             ],
           ),
         ),
@@ -2859,28 +2937,28 @@ class SimulationResultScreen extends StatelessWidget {
           // Titre section corrigé
           pw.Container(
             width: double.infinity,
-            padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            padding: const pw.EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: pw.BoxDecoration(
               color: primaryColor,
-              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(7)),
+              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
             ),
-            child: pw.Text('CORRIGE DETAILLE',
-                style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
+            child: pw.Text('CORRIGE DETAILLE — QUESTION PAR QUESTION',
+                style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
           ),
-          pw.SizedBox(height: 10),
+          pw.SizedBox(height: 12),
           // Statistiques
           pw.Row(
             children: [
               _pdfStat('Bonnes', '$bonnes', successColor),
-              pw.SizedBox(width: 8),
+              pw.SizedBox(width: 10),
               _pdfStat('Fausses', '$mauvaises', errorColor),
-              pw.SizedBox(width: 8),
+              pw.SizedBox(width: 10),
               _pdfStat('Sans rep.', '$sansRep', greyColor),
-              pw.SizedBox(width: 8),
+              pw.SizedBox(width: 10),
               _pdfStat('Score', '$pct%', pct >= 50 ? successColor : errorColor),
             ],
           ),
-          pw.SizedBox(height: 12),
+          pw.SizedBox(height: 16),
           ...correction.map((c) {
             final correct = c['correct'] as bool;
             final noAns   = c['noAns'] as bool;
@@ -2889,55 +2967,58 @@ class SimulationResultScreen extends StatelessWidget {
             final circleColor = noAns ? greyColor  : (correct ? successColor : errorColor);
             final statusText  = noAns ? 'NON REPONDU' : (correct ? 'CORRECT' : 'INCORRECT');
             final enonce = c['enonce'] as String;
-            final shortEnonce = enonce.length > 140 ? '${enonce.substring(0, 140)}...' : enonce;
+            // Pas de troncature — afficher l'énoncé complet
             return pw.Container(
-              margin: const pw.EdgeInsets.only(bottom: 8),
+              margin: const pw.EdgeInsets.only(bottom: 12),
               decoration: pw.BoxDecoration(
                 color: bgColor,
-                borderRadius: const pw.BorderRadius.all(pw.Radius.circular(7)),
+                borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
                 border: pw.Border.all(color: borderColor, width: 0.8),
               ),
               child: pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
                   pw.Padding(
-                    padding: const pw.EdgeInsets.fromLTRB(10, 7, 10, 6),
+                    padding: const pw.EdgeInsets.fromLTRB(12, 10, 12, 8),
                     child: pw.Row(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
                         pw.Container(
-                          width: 24, height: 24,
+                          width: 28, height: 28,
                           decoration: pw.BoxDecoration(color: circleColor, shape: pw.BoxShape.circle),
                           child: pw.Center(
                             child: pw.Text('Q${c["num"]}',
-                                style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
+                                style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
                           ),
                         ),
-                        pw.SizedBox(width: 8),
+                        pw.SizedBox(width: 10),
                         pw.Expanded(
-                          child: pw.Text(shortEnonce,
-                              style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, color: greyDark)),
+                          child: pw.Text(enonce,
+                              style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: greyDark, lineSpacing: 3)),
                         ),
+                        pw.SizedBox(width: 6),
                         pw.Container(
-                          padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: pw.BoxDecoration(
                             color: circleColor,
                             borderRadius: const pw.BorderRadius.all(pw.Radius.circular(5)),
                           ),
                           child: pw.Text(statusText,
-                              style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
+                              style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
                         ),
                       ],
                     ),
                   ),
                   pw.Padding(
-                    padding: const pw.EdgeInsets.fromLTRB(10, 3, 10, 7),
+                    padding: const pw.EdgeInsets.fromLTRB(12, 0, 12, 10),
                     child: pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
                         pw.Text(
-                          'Votre reponse : ${c["choisies"].toString().isEmpty ? "-" : c["choisies"]}   |   Bonne(s) : ${c["bonne"]}',
-                          style: pw.TextStyle(fontSize: 10, color: greyColor),
+                          'Votre reponse : ${c["choisies"].toString().isEmpty ? "Aucune" : c["choisies"]}   |   Bonne(s) reponse(s) : ${c["bonne"]}',
+                          style: pw.TextStyle(fontSize: 14, color: greyDark),
                         ),
+                        pw.SizedBox(height: 6),
                         // ── Options A/B/C/D dans le PDF ──
                         ...['A', 'B', 'C', 'D'].where((l) {
                           final key = 'option_${l.toLowerCase()}';
@@ -2945,56 +3026,60 @@ class SimulationResultScreen extends StatelessWidget {
                         }).map((l) {
                           final key = 'option_${l.toLowerCase()}';
                           final optText = c[key] as String;
-                          final bonnes = (c['bonne'] as String).toUpperCase();
+                          final bonnesStr = (c['bonne'] as String).toUpperCase();
                           final choisiesStr = (c['choisies'] as String).toUpperCase();
-                          final isBonne = bonnes.contains(l);
+                          final isBonne = bonnesStr.contains(l);
                           final isChoisie = choisiesStr.contains(l);
                           if (!isBonne && !isChoisie) return pw.SizedBox();
                           final optColor = isBonne ? successColor : errorColor;
                           return pw.Padding(
-                            padding: const pw.EdgeInsets.only(top: 3),
+                            padding: const pw.EdgeInsets.only(top: 5),
                             child: pw.Row(
                               crossAxisAlignment: pw.CrossAxisAlignment.start,
                               children: [
                                 pw.Container(
-                                  width: 18, height: 18,
+                                  width: 22, height: 22,
                                   decoration: pw.BoxDecoration(
                                     color: optColor,
-                                    borderRadius: const pw.BorderRadius.all(pw.Radius.circular(3)),
+                                    borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
                                   ),
                                   child: pw.Center(
                                     child: pw.Text(l,
-                                        style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
+                                        style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
                                   ),
                                 ),
-                                pw.SizedBox(width: 5),
+                                pw.SizedBox(width: 8),
                                 pw.Expanded(
                                   child: pw.Text(optText,
-                                      style: pw.TextStyle(fontSize: 9.5, color: isBonne ? successColor : errorColor)),
+                                      style: pw.TextStyle(fontSize: 14, color: isBonne ? successColor : errorColor, lineSpacing: 3)),
                                 ),
+                                pw.SizedBox(width: 4),
                                 pw.Text(isBonne ? '✓' : '✗',
-                                    style: pw.TextStyle(fontSize: 10, color: optColor, fontWeight: pw.FontWeight.bold)),
+                                    style: pw.TextStyle(fontSize: 14, color: optColor, fontWeight: pw.FontWeight.bold)),
                               ],
                             ),
                           );
                         }),
                         if ((c['explication'] as String).isNotEmpty || (c['bonne'] as String? ?? '').isNotEmpty) ...[
-                          pw.SizedBox(height: 4),
+                          pw.SizedBox(height: 8),
                           pw.Container(
-                            padding: const pw.EdgeInsets.all(5),
+                            width: double.infinity,
+                            padding: const pw.EdgeInsets.fromLTRB(10, 8, 10, 8),
                             decoration: pw.BoxDecoration(
                               color: lightGrey,
-                              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
+                              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(5)),
+                              border: pw.Border.all(color: borderGrey, width: 0.5),
                             ),
                             child: pw.Row(
                               crossAxisAlignment: pw.CrossAxisAlignment.start,
                               children: [
+                                pw.Text('Explication : ', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: greyDark)),
                                 pw.Expanded(
                                   child: pw.Text(
                                     (c['explication'] as String).isNotEmpty
-                                        ? 'Explication : ${c["explication"]}'
-                                        : 'La bonne reponse est ${c["bonne"] ?? "?"}. Reportez-vous au cours correspondant pour approfondir cette notion.',
-                                    style: pw.TextStyle(fontSize: 9.5, color: greyColor, fontStyle: pw.FontStyle.italic),
+                                        ? (c['explication'] as String)
+                                        : 'La bonne reponse est ${c["bonne"] ?? "?"}. Reportez-vous au cours correspondant.',
+                                    style: pw.TextStyle(fontSize: 14, color: greyDark, lineSpacing: 3, fontStyle: pw.FontStyle.italic),
                                   ),
                                 ),
                               ],
@@ -3008,19 +3093,19 @@ class SimulationResultScreen extends StatelessWidget {
               ),
             );
           }),
-          pw.SizedBox(height: 14),
+          pw.SizedBox(height: 16),
           pw.Container(
             width: double.infinity,
-            padding: const pw.EdgeInsets.all(10),
+            padding: const pw.EdgeInsets.fromLTRB(14, 12, 14, 12),
             decoration: pw.BoxDecoration(
               color: lightGreen,
-              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(7)),
+              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
               border: pw.Border.all(color: borderGreen, width: 0.8),
             ),
             child: pw.Text(
               'EF-FORT.BF  •  Chaque effort te rapproche de ton admission finale  •  ef-fort-bf.pages.dev',
               textAlign: pw.TextAlign.center,
-              style: pw.TextStyle(fontSize: 10, color: primaryColor, fontStyle: pw.FontStyle.italic),
+              style: pw.TextStyle(fontSize: 14, color: primaryColor, fontStyle: pw.FontStyle.italic),
             ),
           ),
         ],
@@ -3032,9 +3117,11 @@ class SimulationResultScreen extends StatelessWidget {
 
   // ── Convertir le LaTeX en texte lisible pour le PDF ──────────────────
   // Gère : délimiteurs $...$ et $$...$$, LaTeX brut sans délimiteurs
+  // Supprime TOUS les symboles LaTeX bruts du texte final
   static String _cleanLatexForPdf(String text) {
     if (text.isEmpty) return text;
     String result = text;
+
     // Remplacer les blocs $$...$$ d'abord
     result = result.replaceAllMapped(
       RegExp(r'\$\$([^$]*)\$\$'),
@@ -3045,27 +3132,47 @@ class SimulationResultScreen extends StatelessWidget {
       RegExp(r'\$([^$]+)\$'),
       (m) => MathTextWidget.latexToReadablePublic(m.group(1)!.trim()),
     );
+
     // Nettoyer les commandes LaTeX résiduelles hors délimiteurs
     // (cas où le texte contient \sqrt, \frac etc. directement sans $)
     if (result.contains(r'\')) {
       result = MathTextWidget.latexToReadablePublic(result);
     }
+
+    // Supprimer tout $ résiduel
+    result = result.replaceAll(r'$', '');
+
+    // Supprimer les accolades résiduelles
+    result = result.replaceAll('{', '').replaceAll('}', '');
+
+    // Supprimer toute commande LaTeX restante du type \mot
+    result = result.replaceAllMapped(
+      RegExp(r'\\[a-zA-Z]+'),
+      (m) => '',
+    );
+
+    // Supprimer les caractères d'échappement résiduels isolés
+    result = result.replaceAll(RegExp(r'\\(?![a-zA-Z])'), '');
+
+    // Nettoyer espaces multiples
+    result = result.replaceAll(RegExp(r'\s+'), ' ').trim();
+
     return result.isEmpty ? text : result;
   }
 
   pw.Widget _pdfStat(String label, String value, PdfColor color) {
     return pw.Expanded(
       child: pw.Container(
-        padding: const pw.EdgeInsets.all(10),
+        padding: const pw.EdgeInsets.fromLTRB(10, 14, 10, 14),
         decoration: pw.BoxDecoration(
           color: color,
-          borderRadius: pw.BorderRadius.circular(6),
+          borderRadius: pw.BorderRadius.circular(7),
         ),
         child: pw.Column(
           children: [
-            pw.Text(value, style: pw.TextStyle(color: PdfColors.white, fontWeight: pw.FontWeight.bold, fontSize: 22)),
-            pw.SizedBox(height: 2),
-            pw.Text(label, style: const pw.TextStyle(color: PdfColors.white, fontSize: 11)),
+            pw.Text(value, style: pw.TextStyle(color: PdfColors.white, fontWeight: pw.FontWeight.bold, fontSize: 24)),
+            pw.SizedBox(height: 3),
+            pw.Text(label, style: const pw.TextStyle(color: PdfColors.white, fontSize: 14)),
           ],
         ),
       ),
