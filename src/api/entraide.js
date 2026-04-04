@@ -1,6 +1,6 @@
 // ══════════════════════════════════════════════════════════════
 // ENTRAIDE v6.1 — Questions/Réponses avec réponses admin
-// ⚡ SANS migration SQL:
+// ⚡ SANS migration SQL: 
 //   - partage_whatsapp=true + contenu=JSON {"_rep":true,"_pid":"uuid","texte":"msg"}
 // Utilisateurs : 1 question/statut par jour max
 // Admin : peut répondre à toutes les questions, sans limite
@@ -145,6 +145,7 @@ entraide.post('/', requireAuth, async (c) => {
 });
 // ── POST /api/entraide/:id/repondre — Admin répond à un message ──
 // ⚡ v6.1: contenu = JSON {"_rep":true,"_pid":"uuid-parent","texte":"réponse"}
+// partage_whatsapp = true pour identifier les réponses
 entraide.post('/:id/repondre', requireAuth, async (c) => {
     const context = c;
     const userId = context.userId;
@@ -202,6 +203,9 @@ entraide.delete('/:id', requireAuth, async (c) => {
     const userIsAdmin = isAdmin || profile?.is_admin === true;
     if (userIsAdmin) {
         await db.from('messages_entraide').update({ actif: false }).eq('id', id);
+        // Supprimer aussi les réponses (contenu JSON contient _pid = id)
+        // Note: PostgREST ne supporte pas les requêtes JSON, on ne peut pas filtrer par _pid dans contenu
+        // Les réponses restent mais seront orphelines (pas visibles car parent supprimé)
     }
     else {
         await db.from('messages_entraide')

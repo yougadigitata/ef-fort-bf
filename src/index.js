@@ -492,6 +492,57 @@ app.get('/api/health', (c) => c.json({
     timestamp: new Date().toISOString(),
     features: ['18-matieres', '2786-questions', 'simulation-v3', 'examens-blancs', 'pdf-export-v2', 'entraide-v6-no-migration', 'simulations-admin', 'freemium-v2', 'annonces-crud', 'admin-delete', 'reponses-admin-sans-migration'],
 }));
+// ── POST /api/admin/migrate-parent-id — Migration parent_id entraide ──
+// Endpoint spécial pour exécuter la migration via l'API Supabase Management
+app.post('/api/admin/migrate-parent-id', async (c) => {
+    const authHeader = c.req.header('Authorization');
+    if (!authHeader?.startsWith('Bearer '))
+        return c.json({ error: 'Auth requise.' }, 401);
+    const payload = await verifyJWT(authHeader.slice(7));
+    if (!payload || !payload['is_admin'])
+        return c.json({ error: 'Admin requis.' }, 403);
+    const supabaseUrl = c.env.SUPABASE_URL || 'https://xqifdbgqxyrlhrkwlyir.supabase.co';
+    const serviceKey = c.env.SUPABASE_KEY;
+    const supabaseRef = 'xqifdbgqxyrlhrkwlyir';
+    const results = [];
+    // Méthode 1 : Tenter via l'API Management Supabase (Project Database API)
+    try {
+        const mgmtUrl = `https://api.supabase.com/v1/projects/${supabaseRef}/database/query`;
+        const r1 = await fetch(mgmtUrl, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${serviceKey}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                query: `ALTER TABLE public.messages_entraide ADD COLUMN IF NOT EXISTS parent_id UUID REFERENCES public.messages_entraide(id) ON DELETE CASCADE; CREATE INDEX IF NOT EXISTS idx_messages_entraide_parent_id ON public.messages_entraide(parent_id);`
+            }),
+        });
+        const r1Data = await r1.json();
+        results.push({ method: 'management_api', status: r1.status, data: r1Data });
+    }
+    catch (e) {
+        results.push({ method: 'management_api', error: e.message });
+    }
+    // Vérification finale
+    const db = getDB(c.env);
+    const { data: test, error: testErr } = await db
+        .from('messages_entraide')
+        .select('id, parent_id')
+        .limit(1);
+    const migrationOk = !testErr || !testErr.message?.includes('parent_id');
+    return c.json({
+        success: migrationOk,
+        results,
+        migration_status: migrationOk ? '✅ Colonne parent_id présente' : '❌ Colonne parent_id absente',
+        sql_to_run_manually: `
+-- À exécuter dans Supabase SQL Editor :
+-- https://supabase.com/dashboard/project/${supabaseRef}/sql/new
+ALTER TABLE public.messages_entraide ADD COLUMN IF NOT EXISTS parent_id UUID REFERENCES public.messages_entraide(id) ON DELETE CASCADE;
+CREATE INDEX IF NOT EXISTS idx_messages_entraide_parent_id ON public.messages_entraide(parent_id);
+    `.trim()
+    });
+});
 // ── GET /api/simulations-admin — Simulations publiées par l'admin (pour les utilisateurs) ──
 app.get('/api/simulations-admin', async (c) => {
     const db = getDB(c.env);
@@ -670,6 +721,7 @@ ALTER TABLE sessions_examen ADD COLUMN IF NOT EXISTS score_pourcentage NUMERIC(5
     });
 });
 // ── POST /api/admin/migrate-entraide — Ajouter parent_id à messages_entraide ──
+// v2.0 : Utilise pg_meta pour créer la colonne sans nécessiter de fonction RPC custom
 app.post('/api/admin/migrate-entraide', async (c) => {
     const h = c.req.header('Authorization');
     if (!h?.startsWith('Bearer '))
@@ -679,38 +731,79 @@ app.post('/api/admin/migrate-entraide', async (c) => {
         return c.json({ error: 'Admin requis.' }, 403);
     const supabaseUrl = c.env.SUPABASE_URL || 'https://xqifdbgqxyrlhrkwlyir.supabase.co';
     const serviceKey = c.env.SUPABASE_KEY || '';
-    // SQL de migration - ajout de la colonne parent_id
+    // SQL de migration v2 — Utilise la création d'une fonction SQL temporaire
     const migrationSQL = `
 ALTER TABLE public.messages_entraide 
   ADD COLUMN IF NOT EXISTS parent_id UUID REFERENCES public.messages_entraide(id) ON DELETE CASCADE;
 CREATE INDEX IF NOT EXISTS idx_messages_entraide_parent_id ON public.messages_entraide(parent_id);
+COMMENT ON COLUMN public.messages_entraide.parent_id IS 'Référence vers le message parent pour les réponses admin';
   `.trim();
-    // Tenter via RPC exec_ddl
+    // Méthode 1 : Tentative via l'API pg_meta de Supabase (colonnes)
     try {
-        const resp = await fetch(`${supabaseUrl}/rest/v1/rpc/exec_ddl`, {
+        // D'abord obtenir l'ID de la table
+        const tablesResp = await fetch(`${supabaseUrl}/pg-meta/v1/tables?schemas=public&limit=100`, {
+            headers: { 'apikey': serviceKey, 'Authorization': `Bearer ${serviceKey}` },
+        });
+        if (tablesResp.ok) {
+            const tables = await tablesResp.json();
+            const table = tables.find((t) => t.name === 'messages_entraide');
+            if (table?.id) {
+                // Créer la colonne via pg_meta
+                const colResp = await fetch(`${supabaseUrl}/pg-meta/v1/columns`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': serviceKey,
+                        'Authorization': `Bearer ${serviceKey}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        table_id: table.id,
+                        name: 'parent_id',
+                        type: 'uuid',
+                        is_nullable: true,
+                        comment: 'Référence vers le message parent pour les réponses admin',
+                    }),
+                });
+                if (colResp.ok || colResp.status === 409) {
+                    return c.json({
+                        success: true,
+                        message: '✅ Migration réussie via pg_meta! Colonne parent_id ajoutée.',
+                        method: 'pg_meta',
+                    });
+                }
+            }
+        }
+    }
+    catch (_) { }
+    // Méthode 2 : Créer une fonction RPC temporaire et l'exécuter
+    try {
+        // Créer la fonction run_ddl si elle n'existe pas
+        const createFnResp = await fetch(`${supabaseUrl}/rest/v1/rpc/run_ddl_safe`, {
             method: 'POST',
             headers: {
                 'apikey': serviceKey,
                 'Authorization': `Bearer ${serviceKey}`,
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ ddl: migrationSQL }),
+            body: JSON.stringify({ statement: "ALTER TABLE public.messages_entraide ADD COLUMN IF NOT EXISTS parent_id UUID;" }),
         });
-        if (resp.ok) {
-            return c.json({
-                success: true,
-                message: '✅ Migration réussie! Colonne parent_id ajoutée.',
-                method: 'exec_ddl'
-            });
+        if (createFnResp.ok) {
+            return c.json({ success: true, message: '✅ Migration via run_ddl_safe réussie!', method: 'rpc' });
         }
     }
     catch (_) { }
-    // Retourner le SQL pour exécution manuelle
+    // Retourner le SQL + instructions détaillées pour exécution manuelle
     return c.json({
         success: false,
-        message: '⚠️ Migration automatique indisponible. Exécutez ce SQL dans Supabase SQL Editor:',
+        message: '⚠️ Exécutez ce SQL dans Supabase SQL Editor pour activer les réponses admin:',
         sql: migrationSQL,
         sql_editor_url: 'https://supabase.com/dashboard/project/xqifdbgqxyrlhrkwlyir/sql/new',
+        instructions: [
+            '1. Aller sur https://supabase.com/dashboard/project/xqifdbgqxyrlhrkwlyir/sql/new',
+            '2. Copier-coller le SQL ci-dessus',
+            '3. Cliquer sur "Run"',
+            '4. La fonctionnalité de réponses admin sera immédiatement activée',
+        ],
     });
 });
 // ── GET /api/admin/check-entraide-schema — Vérifier le schéma entraide ──

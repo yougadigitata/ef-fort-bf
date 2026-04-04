@@ -417,4 +417,79 @@ admin.get('/user-stats/:userId', requireAdmin, async (c) => {
         return c.json({ error: e.message }, 500);
     }
 });
+// ── POST /api/admin/migrate — Exécuter les migrations SQL nécessaires ──
+// Endpoint sécurisé pour lancer les migrations de la base de données
+admin.post('/migrate', requireAdmin, async (c) => {
+    const db = getDB(c.env);
+    const results = [];
+    // Migration 1 : Ajouter parent_id dans messages_entraide
+    try {
+        // Tenter d'insérer un message test avec parent_id pour vérifier si la colonne existe
+        const { error: checkError } = await db
+            .from('messages_entraide')
+            .select('parent_id')
+            .limit(1);
+        if (checkError && checkError.message.includes('parent_id')) {
+            // La colonne n'existe pas, on doit la créer
+            // Supabase ne supporte pas DDL via REST API directement
+            // On retourne le SQL à exécuter manuellement
+            results.push('⚠️ Migration parent_id requise - SQL à exécuter dans Supabase Dashboard');
+        }
+        else {
+            results.push('✅ Colonne parent_id déjà présente dans messages_entraide');
+        }
+    }
+    catch (e) {
+        results.push(`Info: ${e.message}`);
+    }
+    // Migration 2 : Vérifier les tables importantes
+    const tables = ['messages_entraide', 'profiles', 'matieres', 'series_qcm', 'questions'];
+    for (const table of tables) {
+        try {
+            const { count, error } = await db.from(table).select('*', { count: 'exact', head: true });
+            if (error) {
+                results.push(`❌ Table ${table}: ${error.message}`);
+            }
+            else {
+                results.push(`✅ Table ${table}: ${count} lignes`);
+            }
+        }
+        catch (e) {
+            results.push(`❌ Table ${table}: ${e.message}`);
+        }
+    }
+    // SQL de migration à exécuter manuellement dans Supabase
+    const migrationSQL = `
+-- MIGRATION EF-FORT.BF v8 - À exécuter dans Supabase SQL Editor
+ALTER TABLE public.messages_entraide 
+  ADD COLUMN IF NOT EXISTS parent_id UUID 
+  REFERENCES public.messages_entraide(id) ON DELETE CASCADE;
+
+CREATE INDEX IF NOT EXISTS idx_messages_entraide_parent_id 
+  ON public.messages_entraide(parent_id);
+`;
+    return c.json({
+        success: true,
+        results,
+        migration_sql: migrationSQL,
+        message: 'Diagnostic terminé'
+    });
+});
+// ── GET /api/admin/migrate/check — Vérifier l'état des migrations ──
+admin.get('/migrate/check', requireAdmin, async (c) => {
+    const db = getDB(c.env);
+    // Vérifier si parent_id existe
+    const { data, error } = await db
+        .from('messages_entraide')
+        .select('id, parent_id')
+        .limit(1);
+    const hasParentId = !error || !error.message.includes('parent_id');
+    return c.json({
+        success: true,
+        migrations: {
+            parent_id_exists: hasParentId,
+            error: error?.message || null,
+        }
+    });
+});
 export default admin;
