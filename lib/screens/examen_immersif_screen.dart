@@ -2568,8 +2568,17 @@ class _ExamenImmersifResultatsScreenState
 
   // ── Nettoyer le texte pour le PDF (supprimer LaTeX, URL, symboles) ────
   static String _cleanForPdf(String text) {
+    // Supprimer les cases à croix ☒☑☐ et symboles checkbox
+    String s = text
+        .replaceAll('\u2612', '')  // ☒
+        .replaceAll('\u2611', '')  // ☑
+        .replaceAll('\u2610', '')  // ☐
+        .replaceAll('\u2713', '')  // ✓
+        .replaceAll('\u2714', '')  // ✔
+        .replaceAll('\u2717', '')  // ✗
+        .replaceAll('\u2718', ''); // ✘
     // Utiliser le convertisseur LaTeX du MathTextWidget
-    String s = MathTextWidget.latexToReadablePublic(text);
+    s = MathTextWidget.latexToReadablePublic(s);
     // Supprimer les balises $ restantes
     s = s.replaceAll(r'$', '');
     // Supprimer URL de développement

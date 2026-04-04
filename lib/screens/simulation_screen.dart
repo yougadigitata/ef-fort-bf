@@ -3122,6 +3122,16 @@ class SimulationResultScreen extends StatelessWidget {
     if (text.isEmpty) return text;
     String result = text;
 
+    // ── Supprimer les cases à croix ☒☑☐ et symboles checkbox ────────
+    result = result
+        .replaceAll('\u2612', '')  // ☒ checked box with X
+        .replaceAll('\u2611', '')  // ☑ checked box with checkmark
+        .replaceAll('\u2610', '')  // ☐ empty box
+        .replaceAll('\u2713', '')  // ✓ checkmark
+        .replaceAll('\u2714', '')  // ✔ heavy checkmark
+        .replaceAll('\u2717', '')  // ✗ ballot X
+        .replaceAll('\u2718', ''); // ✘ heavy ballot X
+
     // Remplacer les blocs $$...$$ d'abord
     result = result.replaceAllMapped(
       RegExp(r'\$\$([^$]*)\$\$'),

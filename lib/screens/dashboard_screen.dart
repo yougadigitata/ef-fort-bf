@@ -223,6 +223,11 @@ class _DashboardScreenState extends State<DashboardScreen>
                 child: _buildCommunitySection(),
               ),
 
+              // ─── SECTION 8 : Citation burkinabè du jour ─────────────
+              const SliverToBoxAdapter(
+                child: _CitationBurkinabeWidget(),
+              ),
+
               const SliverToBoxAdapter(child: SizedBox(height: 30)),
             ],
           ),
@@ -441,6 +446,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                               _buildAnimatedStat('✅', 'Questions', _nbQuestions),
                             ],
                           ),
+                          const SizedBox(height: 12),
+                          // ── Barre de progression niveau — Micro-amélioration #5
+                          _buildNiveauProgressBar(),
                         ],
                       ),
                     ),
@@ -594,6 +602,85 @@ class _DashboardScreenState extends State<DashboardScreen>
       width: 1,
       height: 40,
       color: Colors.white.withValues(alpha: 0.15),
+    );
+  }
+
+  // ── Barre de progression niveau candidat — Micro-amélioration #5 ──
+  Widget _buildNiveauProgressBar() {
+    // Calculer le niveau basé sur le nombre de questions traitées
+    final nbQ = int.tryParse(_nbQuestions.replaceAll('+', '').replaceAll(' ', '')) ?? 0;
+    final nbSim = int.tryParse(_nbSimulations) ?? 0;
+
+    // Niveau basé sur les questions (paliers : 0-50, 50-200, 200-500, 500-1000, 1000+)
+    String niveau;
+    double progress;
+    String nextMilestone;
+    Color niveauColor;
+
+    if (nbQ >= 1000) {
+      niveau = '🏆 Champion';
+      progress = 1.0;
+      nextMilestone = 'Niveau max atteint !';
+      niveauColor = const Color(0xFFD4A017);
+    } else if (nbQ >= 500) {
+      niveau = '💎 Expert';
+      progress = (nbQ - 500) / 500;
+      nextMilestone = '${1000 - nbQ} questions pour Champion';
+      niveauColor = const Color(0xFF9C27B0);
+    } else if (nbQ >= 200) {
+      niveau = '🚀 Avancé';
+      progress = (nbQ - 200) / 300;
+      nextMilestone = '${500 - nbQ} questions pour Expert';
+      niveauColor = const Color(0xFF2196F3);
+    } else if (nbQ >= 50) {
+      niveau = '📈 Intermédiaire';
+      progress = (nbQ - 50) / 150;
+      nextMilestone = '${200 - nbQ} questions pour Avancé';
+      niveauColor = const Color(0xFF4CAF50);
+    } else {
+      niveau = '🌱 Débutant';
+      progress = nbQ == 0 ? 0.0 : nbQ / 50;
+      nextMilestone = nbQ == 0 ? 'Commence ta 1ère série !' : '${50 - nbQ} questions pour Intermédiaire';
+      niveauColor = Colors.white.withValues(alpha: 0.7);
+    }
+
+    // Bonus simulation
+    final simBonus = nbSim > 0 ? ' · $nbSim simulation${nbSim > 1 ? 's' : ''}' : '';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              niveau,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+              ),
+            ),
+            Text(
+              nextMilestone + simBonus,
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.white.withValues(alpha: 0.7),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 5),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(6),
+          child: LinearProgressIndicator(
+            value: progress.clamp(0.0, 1.0),
+            minHeight: 6,
+            backgroundColor: Colors.white.withValues(alpha: 0.2),
+            valueColor: AlwaysStoppedAnimation<Color>(niveauColor),
+          ),
+        ),
+      ],
     );
   }
 
@@ -1221,7 +1308,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             child: child,
           );
         },
-        child: GestureDetector(
+        child: _ScaleTapWidget(
           onTap: () => widget.onGoToMatieres?.call(),
           child: Container(
             margin: const EdgeInsets.only(right: 12),
@@ -1338,4 +1425,227 @@ class _Particle {
     required this.opacity,
     required this.phase,
   });
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// WIDGET EFFET SCALE AU CLIC — Micro-amélioration #2
+// Applique un léger rebond (scale down/up) au clic
+// ══════════════════════════════════════════════════════════════════════
+class _ScaleTapWidget extends StatefulWidget {
+  final Widget child;
+  final VoidCallback? onTap;
+
+  const _ScaleTapWidget({required this.child, this.onTap});
+
+  @override
+  State<_ScaleTapWidget> createState() => _ScaleTapWidgetState();
+}
+
+class _ScaleTapWidgetState extends State<_ScaleTapWidget>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 120),
+      reverseDuration: const Duration(milliseconds: 180),
+    );
+    _scale = Tween<double>(begin: 1.0, end: 0.88).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  void _onTapDown(TapDownDetails _) => _ctrl.forward();
+  void _onTapUp(TapUpDetails _) {
+    _ctrl.reverse();
+    widget.onTap?.call();
+  }
+  void _onTapCancel() => _ctrl.reverse();
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: _onTapDown,
+      onTapUp: _onTapUp,
+      onTapCancel: _onTapCancel,
+      child: AnimatedBuilder(
+        animation: _scale,
+        builder: (_, child) => Transform.scale(scale: _scale.value, child: child),
+        child: widget.child,
+      ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// WIDGET CITATION BURKINABÈ DU JOUR — Micro-amélioration #1
+// ══════════════════════════════════════════════════════════════════════
+class _CitationBurkinabeWidget extends StatefulWidget {
+  const _CitationBurkinabeWidget();
+
+  @override
+  State<_CitationBurkinabeWidget> createState() => _CitationBurkinabeWidgetState();
+}
+
+class _CitationBurkinabeWidgetState extends State<_CitationBurkinabeWidget>
+    with SingleTickerProviderStateMixin {
+  static const List<Map<String, String>> _citations = [
+    {
+      'texte': 'L\'effort d\'aujourd\'hui est la victoire de demain.',
+      'source': 'Sagesse burkinabè',
+    },
+    {
+      'texte': 'Celui qui avance lentement mais sûrement arrive toujours à bon port.',
+      'source': 'Proverbe mooré',
+    },
+    {
+      'texte': 'La connaissance est le meilleur héritage que tu peux laisser à tes enfants.',
+      'source': 'Sagesse africaine',
+    },
+    {
+      'texte': 'Un seul bracelet ne fait pas de bruit. Ensemble, nous réussirons.',
+      'source': 'Proverbe burkinabè',
+    },
+    {
+      'texte': 'Chaque question maîtrisée est une pierre posée sur ta maison de réussite.',
+      'source': 'EF-FORT.BF',
+    },
+    {
+      'texte': 'Le courage n\'est pas l\'absence de peur, c\'est décider que quelque chose est plus important que la peur.',
+      'source': 'Sagesse africaine',
+    },
+    {
+      'texte': 'Révise comme si tu devais passer le concours demain. Vis comme si tu avais toute la vie.',
+      'source': 'EF-FORT.BF',
+    },
+    {
+      'texte': 'L\'étalon du Faso ne recule jamais. Avance, candidat !',
+      'source': 'Burkina Faso',
+    },
+    {
+      'texte': 'Si tu veux aller vite, marche seul. Si tu veux aller loin, marchons ensemble.',
+      'source': 'Proverbe africain',
+    },
+    {
+      'texte': 'La persévérance est la clé qui ouvre toutes les portes de la réussite.',
+      'source': 'Sagesse burkinabè',
+    },
+  ];
+
+  late final int _citationIndex;
+  late final AnimationController _fadeCtrl;
+  late final Animation<double> _fadeAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    // Choisir une citation basée sur le jour de l'année
+    final dayOfYear = DateTime.now().difference(DateTime(DateTime.now().year)).inDays;
+    _citationIndex = dayOfYear % _citations.length;
+
+    _fadeCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _fadeAnim = CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeIn);
+    _fadeCtrl.forward();
+  }
+
+  @override
+  void dispose() {
+    _fadeCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final citation = _citations[_citationIndex];
+    return FadeTransition(
+      opacity: _fadeAnim,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                const Color(0xFF1A5C38).withValues(alpha: 0.08),
+                const Color(0xFFD4A017).withValues(alpha: 0.08),
+              ],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: const Color(0xFF1A5C38).withValues(alpha: 0.25),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Drapeau BF stylisé
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1A5C38),
+                  shape: BoxShape.circle,
+                ),
+                child: const Center(
+                  child: Text('🦁', style: TextStyle(fontSize: 18)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '💬 Citation du jour',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1A5C38),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '"${citation['texte']}"',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontStyle: FontStyle.italic,
+                        color: Color(0xFF2D2D2D),
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '— ${citation['source']}',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

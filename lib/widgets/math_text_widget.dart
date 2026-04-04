@@ -35,9 +35,10 @@ class MathTextWidget extends StatelessWidget {
           height: 1.5,
         );
 
-    final segments = _parseText(text);
+    final cleanedText = removeCheckboxSymbols(text);
+    final segments = _parseText(cleanedText);
     if (segments.isEmpty) {
-      return Text(text, style: defaultStyle);
+      return Text(cleanedText, style: defaultStyle);
     }
 
     // Si un seul segment texte, afficher directement
@@ -120,9 +121,26 @@ class MathTextWidget extends StatelessWidget {
   // Méthode publique pour usage externe (ex: génération PDF)
   static String latexToReadablePublic(String latex) => _latexToReadable(latex);
 
+  // ── Supprimer les cases à croix et symboles checkbox Unicode ─────────
+  // Élimine ☒ (U+2612), ☑ (U+2611), ☐ (U+2610) et caractères similaires
+  static String removeCheckboxSymbols(String text) {
+    return text
+        .replaceAll('\u2612', '')  // ☒ checked box
+        .replaceAll('\u2611', '')  // ☑ checked box
+        .replaceAll('\u2610', '')  // ☐ empty box
+        .replaceAll('\u2713', '')  // ✓ checkmark
+        .replaceAll('\u2714', '')  // ✔ heavy checkmark
+        .replaceAll('\u2717', '')  // ✗ ballot X
+        .replaceAll('\u2718', '')  // ✘ heavy ballot X
+        .replaceAllMapped(RegExp(r'\s{2,}'), (m) => ' ')
+        .trim();
+  }
+
   // ── Convertir LaTeX en texte Unicode lisible (fallback) ────────────
   static String _latexToReadable(String latex) {
     String s = latex.trim();
+    // Supprimer les cases à croix avant tout traitement
+    s = removeCheckboxSymbols(s);
 
     // ── Fonctions spéciales ────────────────────────────────────────
     // \sqrt{x} → √x   /   \sqrt[n]{x} → ⁿ√x

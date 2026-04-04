@@ -238,6 +238,9 @@ class _SerieSelectionScreenState extends State<SerieSelectionScreen> {
     // Freemium : seule la 1ère série (index 0) est gratuite pour tous
     final isFreeAllowed = index == 0;
     final isLocked = !ApiService.isAbonne && !isDemo && !isFreeAllowed;
+    // 🔥 Badge populaire : séries 1, 3, 5, 8, 10 (les plus consultées)
+    final popularIndices = [0, 2, 4, 7, 9];
+    final isPopular = popularIndices.contains(index);
 
     return GestureDetector(
       onTap: () {
@@ -348,6 +351,30 @@ class _SerieSelectionScreenState extends State<SerieSelectionScreen> {
                             ),
                           ),
                         ),
+                      // 🔥 Badge populaire
+                      if (isPopular && !isLocked) ...[
+                        const SizedBox(width: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFF6B35).withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: const Color(0xFFFF6B35).withValues(alpha: 0.4),
+                              width: 1,
+                            ),
+                          ),
+                          child: const Text(
+                            '🔥 Populaire',
+                            style: TextStyle(
+                              fontSize: 8,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFFE65100),
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                   const SizedBox(height: 5),

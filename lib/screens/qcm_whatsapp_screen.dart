@@ -1003,6 +1003,10 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
               ),
             ),
 
+            // ── Message de motivation — Micro-amélioration #4 ────
+            _buildMotivationMessage(pct),
+            const SizedBox(height: 12),
+
             // ── Correction question par question ──────────────────
             Text(
               '📋 Correction détaillée',
@@ -1247,6 +1251,81 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
             const SizedBox(height: 30),
           ],
         ),
+      ),
+    );
+  }
+
+  // ── Message de motivation selon le score — Micro-amélioration #4 ─
+  Widget _buildMotivationMessage(int pct) {
+    String message;
+    String emoji;
+    Color bgColor;
+    Color textColor;
+
+    if (pct >= 90) {
+      emoji = '🏆';
+      message = 'Extraordinaire ! Tu es au sommet. Le concours n\'a aucun secret pour toi, continue à briller !';
+      bgColor = const Color(0xFF1A5C38).withValues(alpha: 0.1);
+      textColor = const Color(0xFF1A5C38);
+    } else if (pct >= 70) {
+      emoji = '🦁';
+      message = 'Excellent travail, futur admis ! Avec cette régularité, ton admission est inévitable. L\'étalon du Faso est fier de toi !';
+      bgColor = const Color(0xFF2196F3).withValues(alpha: 0.08);
+      textColor = const Color(0xFF1565C0);
+    } else if (pct >= 50) {
+      emoji = '💪';
+      message = 'Bonne progression ! Chaque série te rapproche de l\'admission. Recommence, corrige tes erreurs, tu vas y arriver !';
+      bgColor = const Color(0xFFFF9800).withValues(alpha: 0.1);
+      textColor = const Color(0xFFE65100);
+    } else if (pct >= 30) {
+      emoji = '📚';
+      message = 'Ne lâche pas ! Tous les champions ont d\'abord échoué avant de réussir. Relis le cours et recommence cette série.';
+      bgColor = const Color(0xFFFF5722).withValues(alpha: 0.08);
+      textColor = const Color(0xFFBF360C);
+    } else {
+      emoji = '🌱';
+      message = 'Courage, candidat ! Chaque effort planté aujourd\'hui fleurira le jour du concours. Relis attentivement et reviens plus fort !';
+      bgColor = Colors.grey.shade100;
+      textColor = Colors.grey.shade700;
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: textColor.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 28)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  pct >= 70 ? '🎉 Félicitations !' : pct >= 50 ? '👏 Bien joué !' : '💡 Conseil du coach',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: textColor,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  message,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    color: textColor.withValues(alpha: 0.85),
+                    height: 1.45,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
