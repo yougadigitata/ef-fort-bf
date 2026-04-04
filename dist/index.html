@@ -161,6 +161,75 @@
     window.effortPlayDoubleBell = function() {
       window.effortPlayBell(880, 1.5);
       setTimeout(function() { window.effortPlayBell(660, 2.0); }, 800);
+      // Troisième note finale après 2s
+      setTimeout(function() { window.effortPlayBell(523, 3.0); }, 2200);
+    };
+
+    // ── Son de rappel 5 minutes (urgent) ──
+    window.effortPlay5MinWarning = function() {
+      try {
+        var ctx = new (window.AudioContext || window.webkitAudioContext)();
+        // 3 bips courts urgents
+        [0, 0.3, 0.6].forEach(function(delay) {
+          var osc = ctx.createOscillator();
+          var gain = ctx.createGain();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(880, ctx.currentTime + delay);
+          gain.gain.setValueAtTime(0.0, ctx.currentTime + delay);
+          gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + delay + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.2);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + delay);
+          osc.stop(ctx.currentTime + delay + 0.25);
+        });
+        setTimeout(function() { try { ctx.close(); } catch(e) {} }, 2000);
+      } catch(e) { console.warn('EF-FORT 5min warning error:', e); }
+    };
+
+    // ── Applaudissements (synthèse bruit blanc modulé) ──
+    window.effortPlayApplauds = function() {
+      try {
+        var ctx = new (window.AudioContext || window.webkitAudioContext)();
+        var bufferSize = ctx.sampleRate * 3; // 3 secondes
+        var buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        var data = buffer.getChannelData(0);
+        for (var i = 0; i < bufferSize; i++) {
+          // Bruit modulé en amplitude pour simuler des applaudissements
+          var env = Math.sin(i / bufferSize * Math.PI);
+          var bursts = Math.sin(i / ctx.sampleRate * 18) > 0.3 ? 1 : 0.2;
+          data[i] = (Math.random() * 2 - 1) * env * bursts * 0.3;
+        }
+        var source = ctx.createBufferSource();
+        source.buffer = buffer;
+        var gainNode = ctx.createGain();
+        gainNode.gain.setValueAtTime(0.8, ctx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 3);
+        source.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        source.start();
+        source.stop(ctx.currentTime + 3);
+        setTimeout(function() { try { ctx.close(); } catch(e) {} }, 4000);
+      } catch(e) { console.warn('EF-FORT Applauds error:', e); }
+    };
+
+    // ── Son de clic enrichi (noircissement de case) ──
+    window.effortPlayClickEnhanced = function() {
+      try {
+        var ctx = new (window.AudioContext || window.webkitAudioContext)();
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1400, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.06);
+        gain.gain.setValueAtTime(0.35, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.1);
+        setTimeout(function() { try { ctx.close(); } catch(e) {} }, 500);
+      } catch(e) {}
     };
 
     window.addEventListener('flutter-first-frame', function () {
