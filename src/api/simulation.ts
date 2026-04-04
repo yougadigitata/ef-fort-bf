@@ -117,7 +117,8 @@ simulation.post('/terminer', requireAuth, async (c) => {
 
   const { session_id, reponses, temps_utilise } = body as {
     session_id: string;
-    reponses: Array<{ question_id: string; reponse: string }>;
+    // reponse peut être string (simple) ou string[] (multiple)
+    reponses: Array<{ question_id: string; reponse: string | string[] }>;
     temps_utilise: number;
   };
 
@@ -144,7 +145,7 @@ simulation.post('/terminer', requireAuth, async (c) => {
   const qMap: Record<string, any> = {};
   for (const q of questionsData ?? []) qMap[q.id] = q;
 
-  // Calcul score — barème officiel
+  // Calcul score — barème officiel avec support multi-réponses
   let score = 0;
   const details: any[] = [];
   const scoreParMatiere: Record<string, { correct: number; total: number }> = {};
@@ -160,23 +161,45 @@ simulation.post('/terminer', requireAuth, async (c) => {
     let points = 0;
     let correct = false;
 
-    if (!rep.reponse || rep.reponse === '') {
+    // Normaliser la réponse utilisateur (peut être string ou string[])
+    const userRepRaw = rep.reponse;
+    const userReps: string[] = Array.isArray(userRepRaw)
+      ? userRepRaw.map((r: string) => r.toUpperCase().trim()).filter(Boolean)
+      : (userRepRaw && typeof userRepRaw === 'string' ? [userRepRaw.toUpperCase().trim()] : []);
+
+    // Normaliser la bonne réponse (peut contenir / ou , pour multi-réponses)
+    const bonneRepRaw = (q.bonne_reponse || '').trim().toUpperCase();
+    const bonnesReps: string[] = bonneRepRaw
+      .split(/[/,;]/)
+      .map((s: string) => s.trim())
+      .filter(Boolean);
+
+    if (userReps.length === 0) {
       points = 0;
-    } else if (rep.reponse === q.bonne_reponse) {
-      points = 1;
-      correct = true;
-      scoreParMatiere[mat].correct++;
     } else {
-      points = -1;
+      // Vérifier si l'utilisateur a exactement les bonnes réponses
+      const userSet = new Set(userReps);
+      const bonneSet = new Set(bonnesReps);
+      const isExact =
+        userSet.size === bonneSet.size &&
+        [...userSet].every(r => bonneSet.has(r));
+      if (isExact) {
+        points = 1;
+        correct = true;
+        scoreParMatiere[mat].correct++;
+      } else {
+        points = -1;
+      }
     }
 
+    const userRepDisplay = userReps.join('+') || null;
     score += points;
     details.push({
       question_id: q.id,
       question: q.enonce,
       option_a: q.option_a, option_b: q.option_b,
       option_c: q.option_c, option_d: q.option_d,
-      reponse_user: rep.reponse || null,
+      reponse_user: userRepDisplay,
       bonne_reponse: q.bonne_reponse,
       explication: q.explication,
       correct,

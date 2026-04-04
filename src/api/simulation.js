@@ -124,7 +124,7 @@ simulation.post('/terminer', requireAuth, async (c) => {
     const qMap = {};
     for (const q of questionsData ?? [])
         qMap[q.id] = q;
-    // Calcul score — barème officiel
+    // Calcul score — barème officiel avec support multi-réponses
     let score = 0;
     const details = [];
     const scoreParMatiere = {};
@@ -138,24 +138,40 @@ simulation.post('/terminer', requireAuth, async (c) => {
         scoreParMatiere[mat].total++;
         let points = 0;
         let correct = false;
-        if (!rep.reponse || rep.reponse === '') {
+        // Normaliser la réponse utilisateur (peut être string ou string[])
+        const userRepRaw = rep.reponse;
+        const userReps = Array.isArray(userRepRaw)
+            ? userRepRaw.map((r) => r.toUpperCase().trim()).filter(Boolean)
+            : (userRepRaw && typeof userRepRaw === 'string' ? [userRepRaw.toUpperCase().trim()] : []);
+        // Normaliser la bonne réponse (peut contenir / ou , pour multi-réponses)
+        const bonneRepRaw = (q.bonne_reponse || '').trim().toUpperCase();
+        const bonnesReps = bonneRepRaw
+            .split(/[/,;]/)
+            .map((s) => s.trim())
+            .filter(Boolean);
+        if (userReps.length === 0) {
             points = 0;
+        } else {
+            const userSet = new Set(userReps);
+            const bonneSet = new Set(bonnesReps);
+            const isExact = userSet.size === bonneSet.size &&
+                [...userSet].every(r => bonneSet.has(r));
+            if (isExact) {
+                points = 1;
+                correct = true;
+                scoreParMatiere[mat].correct++;
+            } else {
+                points = -1;
+            }
         }
-        else if (rep.reponse === q.bonne_reponse) {
-            points = 1;
-            correct = true;
-            scoreParMatiere[mat].correct++;
-        }
-        else {
-            points = -1;
-        }
+        const userRepDisplay = userReps.join('+') || null;
         score += points;
         details.push({
             question_id: q.id,
             question: q.enonce,
             option_a: q.option_a, option_b: q.option_b,
             option_c: q.option_c, option_d: q.option_d,
-            reponse_user: rep.reponse || null,
+            reponse_user: userRepDisplay,
             bonne_reponse: q.bonne_reponse,
             explication: q.explication,
             correct,

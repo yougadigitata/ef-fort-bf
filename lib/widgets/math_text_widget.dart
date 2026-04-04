@@ -414,7 +414,23 @@ class MathTextWidget extends StatelessWidget {
   }
 
   // ── Parser : détecte $...$ et $$...$$ dans le texte ───────────────
+  // Détecte aussi les commandes LaTeX sans $ (ex: \times, \frac, \sqrt)
   List<_TextSegment> _parseText(String input) {
+    // Si contient des commandes LaTeX communes sans $, traiter tout le texte
+    final hasLatexCommands = RegExp(
+      r'\\(times|frac|sqrt|div|pm|alpha|beta|gamma|delta|pi|sigma|theta|'
+      r'mu|lambda|omega|epsilon|infty|sum|int|prod|leq|geq|neq|approx|'
+      r'rightarrow|leftarrow|Rightarrow|Leftarrow|cdot|ldots|cdots|'
+      r'overline|vec|hat|tilde|bar|text|mathrm|mathbf|sin|cos|tan|log|ln|'
+      r'left|right|subset|supset|cup|cap|in|notin|forall|exists)'
+    ).hasMatch(input);
+
+    if (hasLatexCommands && !input.contains(r'$')) {
+      // Convertir directement les commandes LaTeX du texte entier
+      final converted = _latexToReadable(input);
+      return [_TextSegment(content: converted, isMath: false)];
+    }
+
     if (!input.contains(r'$')) {
       return [_TextSegment(content: input, isMath: false)];
     }
