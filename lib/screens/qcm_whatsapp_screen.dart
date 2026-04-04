@@ -1721,7 +1721,7 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
             ),
             pw.SizedBox(height: 10),
 
-            // Questions détaillées
+            // Questions détaillées avec correction complète
             ...List.generate(_questions.length, (i) {
               final q = _questions[i] as Map<String, dynamic>;
               final bonnes = _getBonnesReponses(q);
@@ -1736,7 +1736,21 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
               final circleColor  = noAns ? greyColor   : (correct ? successColor : errorColor);
               final statusText   = noAns ? 'NON REPONDU' : (correct ? 'CORRECT' : 'INCORRECT');
               final enonce       = cleanText((q['enonce'] ?? q['question'] ?? '').toString());
-              final explication  = cleanText((q['explication'] ?? '').toString());
+              final rawExp       = (q['explication'] ?? '').toString().trim();
+              final explication  = cleanText(rawExp);
+              
+              // Options A/B/C/D/E pour la correction détaillée
+              final optA = cleanText((q['option_a'] ?? '').toString());
+              final optB = cleanText((q['option_b'] ?? '').toString());
+              final optC = cleanText((q['option_c'] ?? '').toString());
+              final optD = cleanText((q['option_d'] ?? '').toString());
+              final optE = cleanText((q['option_e'] ?? '').toString());
+              
+              // Construire l'explication à afficher (même si le champ est vide)
+              final bonnesStr = bonnes.isEmpty ? '?' : bonnes.join(', ');
+              final explicationFinale = explication.isNotEmpty 
+                  ? explication
+                  : 'La bonne reponse est $bonnesStr. Reportez-vous au cours correspondant pour approfondir cette notion.';
 
               return pw.Container(
                 margin: const pw.EdgeInsets.only(bottom: 8),
@@ -1806,27 +1820,112 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
                         ],
                       ),
                     ),
-                    // Détails réponse
+                    // Détails réponse avec options et explication
                     pw.Padding(
-                      padding: const pw.EdgeInsets.fromLTRB(10, 5, 10, 7),
+                      padding: const pw.EdgeInsets.fromLTRB(10, 5, 10, 8),
                       child: pw.Column(
                         crossAxisAlignment: pw.CrossAxisAlignment.start,
                         children: [
+                          // Ligne votre réponse / bonne réponse
                           pw.Text(
-                            'Votre reponse : ${choisies.isEmpty ? "-" : choisies.join(", ")}   |   Bonne(s) : ${bonnes.isEmpty ? "?" : bonnes.join(", ")}',
+                            'Votre reponse : ${choisies.isEmpty ? "-" : choisies.join(", ")}   |   Bonne(s) : $bonnesStr',
                             style: pw.TextStyle(fontSize: 10, color: greyColor),
                           ),
-                          if (explication.isNotEmpty) ...[
-                            pw.SizedBox(height: 3),
-                            pw.Text(
-                              'Explication : $explication',
-                              style: pw.TextStyle(
-                                fontSize: 9.5,
-                                color: greyColor,
-                                fontStyle: pw.FontStyle.italic,
+                          pw.SizedBox(height: 5),
+                          // Options A/B/C/D affichées avec la bonne réponse mise en évidence
+                          ...([
+                            if (optA.isNotEmpty) pw.Row(children: [
+                              pw.Container(
+                                width: 18, height: 18,
+                                decoration: pw.BoxDecoration(
+                                  color: bonnes.contains('A') ? successColor : PdfColors.grey300,
+                                  shape: pw.BoxShape.circle,
+                                ),
+                                child: pw.Center(child: pw.Text('A', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold, color: PdfColors.white))),
                               ),
+                              pw.SizedBox(width: 5),
+                              pw.Expanded(child: pw.Text(optA, style: pw.TextStyle(fontSize: 9.5, color: bonnes.contains('A') ? successColor : greyDark, fontWeight: bonnes.contains('A') ? pw.FontWeight.bold : pw.FontWeight.normal))),
+                              if (bonnes.contains('A')) pw.Text(' CORRECT', style: pw.TextStyle(fontSize: 8, color: successColor, fontWeight: pw.FontWeight.bold)),
+                            ]),
+                            if (optB.isNotEmpty) pw.Row(children: [
+                              pw.Container(
+                                width: 18, height: 18,
+                                decoration: pw.BoxDecoration(
+                                  color: bonnes.contains('B') ? successColor : PdfColors.grey300,
+                                  shape: pw.BoxShape.circle,
+                                ),
+                                child: pw.Center(child: pw.Text('B', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold, color: PdfColors.white))),
+                              ),
+                              pw.SizedBox(width: 5),
+                              pw.Expanded(child: pw.Text(optB, style: pw.TextStyle(fontSize: 9.5, color: bonnes.contains('B') ? successColor : greyDark, fontWeight: bonnes.contains('B') ? pw.FontWeight.bold : pw.FontWeight.normal))),
+                              if (bonnes.contains('B')) pw.Text(' CORRECT', style: pw.TextStyle(fontSize: 8, color: successColor, fontWeight: pw.FontWeight.bold)),
+                            ]),
+                            if (optC.isNotEmpty) pw.Row(children: [
+                              pw.Container(
+                                width: 18, height: 18,
+                                decoration: pw.BoxDecoration(
+                                  color: bonnes.contains('C') ? successColor : PdfColors.grey300,
+                                  shape: pw.BoxShape.circle,
+                                ),
+                                child: pw.Center(child: pw.Text('C', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold, color: PdfColors.white))),
+                              ),
+                              pw.SizedBox(width: 5),
+                              pw.Expanded(child: pw.Text(optC, style: pw.TextStyle(fontSize: 9.5, color: bonnes.contains('C') ? successColor : greyDark, fontWeight: bonnes.contains('C') ? pw.FontWeight.bold : pw.FontWeight.normal))),
+                              if (bonnes.contains('C')) pw.Text(' CORRECT', style: pw.TextStyle(fontSize: 8, color: successColor, fontWeight: pw.FontWeight.bold)),
+                            ]),
+                            if (optD.isNotEmpty) pw.Row(children: [
+                              pw.Container(
+                                width: 18, height: 18,
+                                decoration: pw.BoxDecoration(
+                                  color: bonnes.contains('D') ? successColor : PdfColors.grey300,
+                                  shape: pw.BoxShape.circle,
+                                ),
+                                child: pw.Center(child: pw.Text('D', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold, color: PdfColors.white))),
+                              ),
+                              pw.SizedBox(width: 5),
+                              pw.Expanded(child: pw.Text(optD, style: pw.TextStyle(fontSize: 9.5, color: bonnes.contains('D') ? successColor : greyDark, fontWeight: bonnes.contains('D') ? pw.FontWeight.bold : pw.FontWeight.normal))),
+                              if (bonnes.contains('D')) pw.Text(' CORRECT', style: pw.TextStyle(fontSize: 8, color: successColor, fontWeight: pw.FontWeight.bold)),
+                            ]),
+                            if (optE.isNotEmpty) pw.Row(children: [
+                              pw.Container(
+                                width: 18, height: 18,
+                                decoration: pw.BoxDecoration(
+                                  color: bonnes.contains('E') ? successColor : PdfColors.grey300,
+                                  shape: pw.BoxShape.circle,
+                                ),
+                                child: pw.Center(child: pw.Text('E', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold, color: PdfColors.white))),
+                              ),
+                              pw.SizedBox(width: 5),
+                              pw.Expanded(child: pw.Text(optE, style: pw.TextStyle(fontSize: 9.5, color: bonnes.contains('E') ? successColor : greyDark, fontWeight: bonnes.contains('E') ? pw.FontWeight.bold : pw.FontWeight.normal))),
+                              if (bonnes.contains('E')) pw.Text(' CORRECT', style: pw.TextStyle(fontSize: 8, color: successColor, fontWeight: pw.FontWeight.bold)),
+                            ]),
+                          ].map((w) => pw.Padding(padding: const pw.EdgeInsets.only(bottom: 3), child: w)).toList()),
+                          pw.SizedBox(height: 5),
+                          // Explication (toujours affichée)
+                          pw.Container(
+                            padding: const pw.EdgeInsets.all(6),
+                            decoration: pw.BoxDecoration(
+                              color: PdfColors.white,
+                              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(5)),
+                              border: pw.Border.all(color: borderColor, width: 0.5),
                             ),
-                          ],
+                            child: pw.Row(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.Text('Expl. : ', style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, color: greyDark)),
+                                pw.Expanded(
+                                  child: pw.Text(
+                                    explicationFinale,
+                                    style: pw.TextStyle(
+                                      fontSize: 9,
+                                      color: greyDark,
+                                      fontStyle: pw.FontStyle.italic,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ),

@@ -1,5 +1,7 @@
 // ══════════════════════════════════════════════════════════════
-// ENTRAIDE v5.0 — Questions/Réponses avec réponses admin
+// ENTRAIDE v6.1 — Questions/Réponses avec réponses admin
+// ⚡ SANS migration SQL:
+//   - partage_whatsapp=true + contenu=JSON {"_rep":true,"_pid":"uuid","texte":"msg"}
 // Utilisateurs : 1 question/statut par jour max
 // Admin : peut répondre à toutes les questions, sans limite
 // ══════════════════════════════════════════════════════════════
@@ -19,73 +21,77 @@ async function requireAuth(c, next) {
     context.isAdmin = p.is_admin === true;
     await next();
 }
+// Décode un message (question normale ou réponse admin)
+function decodeMessage(m) {
+    if (m.partage_whatsapp !== true) {
+        return { isReponse: false, parentId: null, texte: m.contenu ?? '' };
+    }
+    // Essayer de décoder comme JSON réponse admin
+    try {
+        const parsed = JSON.parse(m.contenu);
+        if (parsed._rep === true && parsed._pid) {
+            return { isReponse: true, parentId: parsed._pid, texte: parsed.texte ?? '' };
+        }
+    }
+    catch (_) { }
+    // partage_whatsapp=true mais pas format JSON → message normal (ancienne entraide)
+    return { isReponse: false, parentId: null, texte: m.contenu ?? '' };
+}
 // ── GET /api/entraide — Messages récents avec réponses ──────────
 entraide.get('/', requireAuth, async (c) => {
     const db = getDB(c.env);
-    // Récupérer les questions (messages parents = pas de parent_id)
-    const { data: messages, error } = await db
+    // Récupérer TOUS les messages actifs
+    const { data: allMessages, error } = await db
         .from('messages_entraide')
         .select('id, contenu, partage_whatsapp, telephone_partage, created_at, user_id, actif')
         .eq('actif', true)
-        .is('parent_id', null)
         .order('created_at', { ascending: false })
-        .limit(100);
-    if (error) {
-        // Fallback si la colonne parent_id n'existe pas encore
-        const { data: allMessages, error: err2 } = await db
-            .from('messages_entraide')
-            .select('id, contenu, partage_whatsapp, telephone_partage, created_at, user_id')
-            .eq('actif', true)
-            .order('created_at', { ascending: false })
-            .limit(100);
-        if (err2)
-            return c.json({ error: err2.message }, 500);
-        // Enrichir avec les profils
-        const enriched = [];
-        for (const m of (allMessages ?? [])) {
-            const { data: profile } = await db.from('profiles')
-                .select('nom, prenom, is_admin')
-                .eq('id', m.user_id).single();
-            enriched.push({
-                ...m,
-                prenom: profile?.prenom ?? 'Utilisateur',
-                nom: profile?.nom ?? '',
-                is_admin: profile?.is_admin ?? false,
-                reponses: [],
-            });
+        .limit(300);
+    if (error)
+        return c.json({ error: error.message }, 500);
+    // Séparer questions et réponses admin
+    const questions = [];
+    const reponsesByParent = {};
+    for (const m of (allMessages ?? [])) {
+        const decoded = decodeMessage(m);
+        if (decoded.isReponse && decoded.parentId) {
+            if (!reponsesByParent[decoded.parentId])
+                reponsesByParent[decoded.parentId] = [];
+            reponsesByParent[decoded.parentId].push({ ...m, _texte: decoded.texte, _parentId: decoded.parentId });
         }
-        return c.json({ success: true, messages: enriched });
+        else {
+            questions.push(m);
+        }
     }
-    // Enrichir avec les profils + réponses
+    // Enrichir avec les profils
     const enriched = [];
-    for (const m of (messages ?? [])) {
+    for (const m of questions) {
         const { data: profile } = await db.from('profiles')
             .select('nom, prenom, is_admin')
             .eq('id', m.user_id).single();
-        // Récupérer les réponses à ce message
-        let reponses = [];
-        try {
-            const { data: reps } = await db
-                .from('messages_entraide')
-                .select('id, contenu, created_at, user_id')
-                .eq('parent_id', m.id)
-                .eq('actif', true)
-                .order('created_at', { ascending: true });
-            for (const r of (reps ?? [])) {
-                const { data: repProfile } = await db.from('profiles')
-                    .select('nom, prenom, is_admin')
-                    .eq('id', r.user_id).single();
-                reponses.push({
-                    ...r,
-                    prenom: repProfile?.prenom ?? 'Admin',
-                    nom: repProfile?.nom ?? '',
-                    is_admin: repProfile?.is_admin ?? false,
-                });
-            }
+        const rawReponses = reponsesByParent[m.id] ?? [];
+        const reponses = [];
+        for (const r of rawReponses.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())) {
+            const { data: repProfile } = await db.from('profiles')
+                .select('nom, prenom, is_admin')
+                .eq('id', r.user_id).single();
+            reponses.push({
+                id: r.id,
+                contenu: r._texte,
+                created_at: r.created_at,
+                user_id: r.user_id,
+                prenom: repProfile?.prenom ?? 'Admin',
+                nom: repProfile?.nom ?? '',
+                is_admin: repProfile?.is_admin ?? true,
+            });
         }
-        catch (_) { }
         enriched.push({
-            ...m,
+            id: m.id,
+            contenu: m.contenu,
+            created_at: m.created_at,
+            user_id: m.user_id,
+            actif: m.actif,
+            parent_id: null,
             prenom: profile?.prenom ?? 'Utilisateur',
             nom: profile?.nom ?? '',
             is_admin: profile?.is_admin ?? false,
@@ -95,22 +101,19 @@ entraide.get('/', requireAuth, async (c) => {
     return c.json({ success: true, messages: enriched });
 });
 // ── POST /api/entraide — Publier un message/question ────────────
-// Limite 1 message/24h pour les non-admins
 entraide.post('/', requireAuth, async (c) => {
     const context = c;
     const userId = context.userId;
     const isAdmin = context.isAdmin;
     const body = await c.req.json().catch(() => ({}));
-    const { contenu, partage_whatsapp, telephone_partage } = body;
+    const { contenu } = body;
     if (!contenu || String(contenu).trim().length < 3) {
         return c.json({ error: 'Message trop court (minimum 3 caractères).' }, 400);
     }
     const db = getDB(c.env);
-    // Vérifier le profil pour avoir is_admin
     const { data: profile } = await db.from('profiles')
         .select('is_admin').eq('id', userId).single();
     const userIsAdmin = isAdmin || profile?.is_admin === true;
-    // Limite 1 message/24h UNIQUEMENT pour les non-admins
     if (!userIsAdmin) {
         const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
         const { data: existing } = await db
@@ -118,7 +121,7 @@ entraide.post('/', requireAuth, async (c) => {
             .select('id')
             .eq('user_id', userId)
             .eq('actif', true)
-            .is('parent_id', null)
+            .eq('partage_whatsapp', false)
             .gte('created_at', cutoff)
             .limit(1);
         if (existing && existing.length > 0) {
@@ -128,24 +131,20 @@ entraide.post('/', requireAuth, async (c) => {
             }, 429);
         }
     }
-    const insertData = {
+    const { error } = await db.from('messages_entraide').insert({
         user_id: userId,
         contenu: String(contenu).trim().slice(0, 500),
-        partage_whatsapp: partage_whatsapp ?? false,
-        telephone_partage: partage_whatsapp ? telephone_partage : null,
+        partage_whatsapp: false,
+        telephone_partage: null,
         actif: true,
-    };
-    const { error } = await db.from('messages_entraide').insert(insertData);
+    });
     if (error) {
-        if (error.message.includes('does not exist') || error.code === '42P01') {
-            return c.json({ error: 'La table messages_entraide doit être créée dans Supabase.' }, 500);
-        }
         return c.json({ error: error.message }, 500);
     }
     return c.json({ success: true, message: 'Message publié !' });
 });
 // ── POST /api/entraide/:id/repondre — Admin répond à un message ──
-// SEUL L'ADMIN peut répondre (pas de limite de 1/jour pour les réponses)
+// ⚡ v6.1: contenu = JSON {"_rep":true,"_pid":"uuid-parent","texte":"réponse"}
 entraide.post('/:id/repondre', requireAuth, async (c) => {
     const context = c;
     const userId = context.userId;
@@ -157,7 +156,6 @@ entraide.post('/:id/repondre', requireAuth, async (c) => {
         return c.json({ error: 'La réponse ne peut pas être vide.' }, 400);
     }
     const db = getDB(c.env);
-    // Vérifier que c'est bien un admin
     const { data: profile } = await db.from('profiles')
         .select('is_admin').eq('id', userId).single();
     const userIsAdmin = isAdmin || profile?.is_admin === true;
@@ -174,35 +172,31 @@ entraide.post('/:id/repondre', requireAuth, async (c) => {
     if (!parent) {
         return c.json({ error: 'Message introuvable.' }, 404);
     }
-    // Insérer la réponse avec parent_id
+    // ⚡ Encoder la réponse comme JSON dans contenu
+    const reponseJson = JSON.stringify({
+        _rep: true,
+        _pid: parentId,
+        texte: String(contenu).trim().slice(0, 1000),
+    });
     const { error } = await db.from('messages_entraide').insert({
         user_id: userId,
-        contenu: String(contenu).trim().slice(0, 1000),
-        parent_id: parentId,
-        partage_whatsapp: false,
+        contenu: reponseJson,
+        partage_whatsapp: true, // true = réponse admin
+        telephone_partage: null,
         actif: true,
     });
     if (error) {
-        // Si la colonne parent_id n'existe pas, créer une réponse sans parent_id
-        if (error.message.includes('parent_id') || error.code === '42703') {
-            return c.json({
-                error: 'Migration requise: ALTER TABLE messages_entraide ADD COLUMN parent_id UUID REFERENCES messages_entraide(id);',
-                needs_migration: true
-            }, 500);
-        }
         return c.json({ error: error.message }, 500);
     }
     return c.json({ success: true, message: 'Réponse publiée !' });
 });
 // ── DELETE /api/entraide/:id — Supprimer message ──────────────────
-// L'admin peut supprimer n'importe quel message
 entraide.delete('/:id', requireAuth, async (c) => {
     const context = c;
     const userId = context.userId;
     const isAdmin = context.isAdmin;
     const id = c.req.param('id');
     const db = getDB(c.env);
-    // Vérifier si admin dans profiles
     const { data: profile } = await db.from('profiles')
         .select('is_admin').eq('id', userId).single();
     const userIsAdmin = isAdmin || profile?.is_admin === true;
@@ -217,26 +211,12 @@ entraide.delete('/:id', requireAuth, async (c) => {
     }
     return c.json({ success: true });
 });
-// ── GET /api/entraide/migration-sql — SQL à exécuter dans Supabase ──
-// Endpoint pour obtenir les SQLs de migration nécessaires
+// ── GET /api/entraide/migration-sql — Info migration ──
 entraide.get('/migration-sql', async (c) => {
-    const sql = `
--- Migration Entraide v5.0 : Ajout de la colonne parent_id pour les réponses admin
-ALTER TABLE public.messages_entraide 
-  ADD COLUMN IF NOT EXISTS parent_id UUID REFERENCES public.messages_entraide(id) ON DELETE CASCADE;
-
--- Index pour performance
-CREATE INDEX IF NOT EXISTS idx_messages_entraide_parent_id ON public.messages_entraide(parent_id);
-
--- Politique RLS pour les réponses admin
-DROP POLICY IF EXISTS "Admin peut inserer reponses" ON public.messages_entraide;
-CREATE POLICY "Admin peut inserer reponses" ON public.messages_entraide
-  FOR INSERT WITH CHECK (true);
-
-DROP POLICY IF EXISTS "Lire messages actifs" ON public.messages_entraide;
-CREATE POLICY "Lire messages actifs" ON public.messages_entraide
-  FOR SELECT USING (actif = true);
-  `;
-    return c.json({ success: true, sql: sql.trim() });
+    return c.json({
+        success: true,
+        note: 'Entraide v6.1 fonctionne sans migration SQL. Les réponses admin sont encodées en JSON dans le champ contenu.',
+        version: '6.1',
+    });
 });
 export default entraide;

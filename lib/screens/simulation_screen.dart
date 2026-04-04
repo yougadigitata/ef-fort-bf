@@ -2978,7 +2978,7 @@ class SimulationResultScreen extends StatelessWidget {
                             ),
                           );
                         }),
-                        if ((c['explication'] as String).isNotEmpty) ...[
+                        if ((c['explication'] as String).isNotEmpty || (c['bonne'] as String? ?? '').isNotEmpty) ...[
                           pw.SizedBox(height: 4),
                           pw.Container(
                             padding: const pw.EdgeInsets.all(5),
@@ -2990,8 +2990,12 @@ class SimulationResultScreen extends StatelessWidget {
                               crossAxisAlignment: pw.CrossAxisAlignment.start,
                               children: [
                                 pw.Expanded(
-                                  child: pw.Text('Explication : ${c["explication"]}',
-                                      style: pw.TextStyle(fontSize: 9.5, color: greyColor, fontStyle: pw.FontStyle.italic)),
+                                  child: pw.Text(
+                                    (c['explication'] as String).isNotEmpty
+                                        ? 'Explication : ${c["explication"]}'
+                                        : 'La bonne reponse est ${c["bonne"] ?? "?"}. Reportez-vous au cours correspondant pour approfondir cette notion.',
+                                    style: pw.TextStyle(fontSize: 9.5, color: greyColor, fontStyle: pw.FontStyle.italic),
+                                  ),
                                 ),
                               ],
                             ),

@@ -519,9 +519,9 @@ app.post('/api/exam-resultats', async (c) => {
 app.get('/api/health', (c) => c.json({
   status: 'ok',
   app: 'EF-FORT.BF API',
-  version: '9.2.0',
+  version: '10.0.0',
   timestamp: new Date().toISOString(),
-  features: ['18-matieres', '1629-questions', 'simulation-v3', 'examens-blancs', 'pdf-export', 'entraide', 'simulations-admin', 'freemium-v2', 'annonces-crud', 'admin-delete', 'parent_id-migration'],
+  features: ['18-matieres', '2786-questions', 'simulation-v3', 'examens-blancs', 'pdf-export-v2', 'entraide-v6-no-migration', 'simulations-admin', 'freemium-v2', 'annonces-crud', 'admin-delete', 'reponses-admin-sans-migration'],
 }));
 
 // ── POST /api/admin/migrate-parent-id — Migration parent_id entraide ──

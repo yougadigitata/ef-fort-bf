@@ -263,12 +263,8 @@ class _EntraideScreenState extends State<EntraideScreen>
           _showSnack('Réponse publiée !');
           await _loadMessages();
         } else {
-          final err = result['error']?.toString() ?? 'Erreur';
-          if (err.contains('needs_migration') || err.contains('Migration')) {
-            _showSnack('Migration requise : ajoutez la colonne parent_id dans Supabase', isError: true);
-          } else {
-            _showSnack(err, isError: true);
-          }
+          final err = result['error']?.toString() ?? 'Erreur lors de la publication';
+          _showSnack(err, isError: true);
         }
       }
     }
