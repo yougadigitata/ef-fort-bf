@@ -252,13 +252,101 @@ app.get('/api/examens', async (c) => {
 });
 
 // ── GET /api/examens/:id/questions — Questions pour un examen ──
-// Phase 3 : Puise dans les 3736 questions de la banque complète
-// Répartition par matière pour un examen équilibré
+// Phase 4 : Utilise les 50 questions fixes assignées à chaque examen type
+// Mapping exam_id → simulation_id (simulations_examens avec questions fixes)
 app.get('/api/examens/:id/questions', async (c) => {
   const examenId = c.req.param('id');
   const db = getDB(c.env);
 
-  // IDs des matières principales — avec noms explicites (jamais d'UUID affiché)
+  // Mapping des 10 examens types vers leurs IDs de simulation dans simulations_examens
+  const EXAMEN_SIMULATION_MAP: Record<string, number> = {
+    'exam_001': 66,  // Administration générale
+    'exam_002': 67,  // Justice & sécurité
+    'exam_003': 68,  // Économie & finances
+    'exam_004': 69,  // Concours de la santé
+    'exam_005': 70,  // Éducation & formation
+    'exam_006': 71,  // Concours techniques
+    'exam_007': 72,  // Agriculture & environnement
+    'exam_008': 73,  // Informatique & numérique
+    'exam_009': 74,  // Travaux publics & urbanisme
+    'exam_010': 75,  // Statistiques & planification
+  };
+
+  const EXAMEN_NOM_MAP: Record<string, string> = {
+    'exam_001': 'Administration générale',
+    'exam_002': 'Justice & sécurité',
+    'exam_003': 'Économie & finances',
+    'exam_004': 'Concours de la santé',
+    'exam_005': 'Éducation & formation',
+    'exam_006': 'Concours techniques',
+    'exam_007': 'Agriculture & environnement',
+    'exam_008': 'Informatique & numérique',
+    'exam_009': 'Travaux publics & urbanisme',
+    'exam_010': 'Statistiques & planification',
+  };
+
+  const examenNom = EXAMEN_NOM_MAP[examenId] ?? 'Examen Type';
+  const simId = EXAMEN_SIMULATION_MAP[examenId];
+
+  // Map UUID matière → nom
+  const matiereNomAll: Record<string, string> = {};
+  try {
+    const { data: allMatieres } = await db.from('matieres').select('id, nom');
+    (allMatieres ?? []).forEach((m: any) => { matiereNomAll[m.id] = m.nom; });
+  } catch (_) {}
+
+  // Si on a un mapping de simulation, utiliser les questions fixes
+  if (simId) {
+    try {
+      const { data: sim } = await db.from('simulations_examens')
+        .select('question_ids, titre')
+        .eq('id', simId)
+        .single();
+
+      if (sim && sim.question_ids && sim.question_ids.length > 0) {
+        const questionIds: string[] = sim.question_ids;
+
+        const { data: questionsData } = await db.from('questions')
+          .select('id, matiere_id, enonce, option_a, option_b, option_c, option_d, option_e, bonne_reponse, explication, difficulte')
+          .in('id', questionIds)
+          .limit(50);
+
+        if (questionsData && questionsData.length > 0) {
+          // Respecter l'ordre des question_ids
+          const qMap: Record<string, any> = {};
+          questionsData.forEach((q: any) => { qMap[q.id] = q; });
+
+          const finalQuestions = questionIds
+            .filter(id => qMap[id])
+            .slice(0, 50)
+            .map((id, idx) => {
+              const q = qMap[id];
+              return {
+                id: q.id,
+                examen_id: examenId,
+                examen_nom: examenNom,
+                numero: idx + 1,
+                enonce: q.enonce,
+                option_a: q.option_a,
+                option_b: q.option_b,
+                option_c: q.option_c,
+                option_d: q.option_d,
+                option_e: q.option_e ?? null,
+                bonne_reponse: q.bonne_reponse,
+                explication: q.explication,
+                difficulte: q.difficulte ?? 'moyen',
+                matiere: matiereNomAll[q.matiere_id] ?? 'Culture Générale',
+                matiere_id: q.matiere_id,
+              };
+            });
+
+          return c.json({ success: true, questions: finalQuestions, source: 'fixe' });
+        }
+      }
+    } catch (_) {}
+  }
+
+  // Fallback : génération aléatoire depuis la banque de questions
   const MATIERES_EXAMEN = [
     { id: '54f53d06-2d5d-4d82-91bc-4bfff904c12b', nom: 'Psychotechnique',   quota: 10 },
     { id: '104f51e4-be6e-4ce8-961e-56e604818670', nom: 'Figure Africaine',  quota: 10 },
@@ -267,41 +355,22 @@ app.get('/api/examens/:id/questions', async (c) => {
     { id: '9497ca2c-dc1b-43dd-8b7a-af11dde7039d', nom: 'Droit',             quota: 10 },
   ];
 
-  // Map UUID → nom de matière pour éviter d'afficher des UUIDs
-  const matiereNomMap: Record<string, string> = {};
-  MATIERES_EXAMEN.forEach(m => { matiereNomMap[m.id] = m.nom; });
-
-  // Récupérer le vrai nom de l'examen depuis la table si disponible
-  let examenNom = 'Examen Blanc';
-  try {
-    const { data: exData } = await db.from('examens').select('nom').eq('id', examenId).maybeSingle();
-    if (exData?.nom) examenNom = exData.nom;
-  } catch (_) {}
-
   const allSelected: any[] = [];
-
   for (const mat of MATIERES_EXAMEN) {
-    // Récupérer des questions réelles de la matière (pas inventées)
     const { data: matData, error: matErr } = await db
       .from('questions')
       .select('id, matiere_id, enonce, option_a, option_b, option_c, option_d, option_e, bonne_reponse, explication, difficulte')
       .eq('matiere_id', mat.id)
-      .limit(200);  // Large pool pour le shuffle
+      .limit(200);
 
     if (!matErr && matData && matData.length > 0) {
-      // Attacher le nom de la matière à chaque question
       const withNom = matData.map(q => ({ ...q, matiere_nom: mat.nom }));
       const shuffledMat = withNom.sort(() => Math.random() - 0.5).slice(0, mat.quota);
       allSelected.push(...shuffledMat);
     }
   }
 
-  // Si pas assez de questions, compléter depuis d'autres matières avec leur vrai nom
   if (allSelected.length < 50) {
-    const { data: allMatieres } = await db.from('matieres').select('id, nom');
-    const matiereNomAll: Record<string, string> = {};
-    (allMatieres ?? []).forEach((m: any) => { matiereNomAll[m.id] = m.nom; });
-
     const { data: extra } = await db
       .from('questions')
       .select('id, matiere_id, enonce, option_a, option_b, option_c, option_d, option_e, bonne_reponse, explication, difficulte')
@@ -316,8 +385,6 @@ app.get('/api/examens/:id/questions', async (c) => {
     }
   }
 
-  // Mélanger l'ensemble final — groupé par matière pour affichage propre
-  // Tri par matière d'abord, puis numérotation
   const grouped = allSelected.sort((a, b) => (a.matiere_nom || '').localeCompare(b.matiere_nom || ''));
   const finalQuestions = grouped
     .slice(0, 50)
@@ -335,11 +402,11 @@ app.get('/api/examens/:id/questions', async (c) => {
       bonne_reponse: q.bonne_reponse,
       explication: q.explication,
       difficulte: q.difficulte ?? 'moyen',
-      matiere: q.matiere_nom ?? matiereNomMap[q.matiere_id] ?? 'Culture Générale',
+      matiere: q.matiere_nom ?? matiereNomAll[q.matiere_id] ?? 'Culture Générale',
       matiere_id: q.matiere_id,
     }));
 
-  return c.json({ success: true, questions: finalQuestions });
+  return c.json({ success: true, questions: finalQuestions, source: 'aleatoire' });
 });
 
 // ── TÂCHE 4 : GET /api/user/stats — Stats dashboard utilisateur ──
