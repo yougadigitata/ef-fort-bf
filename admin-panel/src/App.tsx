@@ -16,7 +16,7 @@ import EntraidePage from './pages/EntraidePage';
 import {
   LayoutDashboard, FileQuestion, Upload, BookOpen, Target,
   Flag, History, LogOut, Menu, X, Newspaper, Layers, KeyRound,
-  CreditCard, MessageCircle
+  CreditCard, MessageCircle, Shield
 } from 'lucide-react';
 
 // ── Context Auth ─────────────────────────────────────────────
@@ -41,10 +41,18 @@ export default function App() {
 
   useEffect(() => { if (!getToken()) setUser(null); }, []);
 
-  if (!user || !getToken()) {
+  // Vérification sécurité : token doit exister ET user doit être admin
+  if (!user || !getToken() || !user.is_admin) {
     return (
       <AuthContext.Provider value={{ user, setUser, logout }}>
-        <LoginPage onLogin={(u) => { setUser(u); localStorage.setItem('admin_user', JSON.stringify(u)); }} />
+        <LoginPage onLogin={(u) => {
+          if (!u.is_admin) {
+            clearToken();
+            return;
+          }
+          setUser(u);
+          localStorage.setItem('admin_user', JSON.stringify(u));
+        }} />
       </AuthContext.Provider>
     );
   }
@@ -81,34 +89,40 @@ export default function App() {
               }}>EF</div>
               <div>
                 <div style={{ fontWeight: 700, color: '#f1f5f9', fontSize: 14 }}>EF-FORT.BF</div>
-                <div style={{ color: '#64748b', fontSize: 11 }}>Panel Administration v8.0</div>
+                <div style={{ color: '#64748b', fontSize: 11 }}>Panel Admin v9.0</div>
               </div>
             </div>
           </div>
 
           {/* Navigation */}
           <nav style={{ flex: 1, padding: '10px 8px' }}>
+            {/* Tableau de bord */}
             <NavItem icon={<LayoutDashboard size={18} />} label="Tableau de bord" active={currentPage === 'dashboard'} onClick={() => navigate('dashboard')} />
 
+            {/* Paiements */}
             <NavSection label="Paiements & Abonnements" />
             <NavItem icon={<CreditCard size={18} />} label="Valider les paiements" active={currentPage === 'paiements'} onClick={() => navigate('paiements')} badge="!" />
 
-            <NavSection label="Contenu QCM" />
+            {/* CMS QCM */}
+            <NavSection label="CMS QCM" />
             <NavItem icon={<FileQuestion size={18} />} label="Gérer les Questions" active={currentPage === 'questions'} onClick={() => navigate('questions')} />
             <NavItem icon={<Upload size={18} />} label="Import QCM (txt/MD/PDF)" active={currentPage === 'bulk-import'} onClick={() => navigate('bulk-import')} />
             <NavItem icon={<BookOpen size={18} />} label="Séries & Matières" active={currentPage === 'series'} onClick={() => navigate('series')} />
-            <NavItem icon={<Target size={18} />} label="Simulations & Examens" active={currentPage === 'simulations'} onClick={() => navigate('simulations')} />
+            <NavItem icon={<Target size={18} />} label="Examens Types" active={currentPage === 'simulations'} onClick={() => navigate('simulations')} />
             <NavItem icon={<Layers size={18} />} label="Générateur d'Examens" active={currentPage === 'exam-generator'} onClick={() => navigate('exam-generator')} />
 
+            {/* Annonces */}
             <NavSection label="Communication" />
-            <NavItem icon={<Newspaper size={18} />} label="Publier une Annonce" active={currentPage === 'annonces'} onClick={() => navigate('annonces')} />
+            <NavItem icon={<Newspaper size={18} />} label="Annonces" active={currentPage === 'annonces'} onClick={() => navigate('annonces')} />
             <NavItem icon={<MessageCircle size={18} />} label="Entraide — Répondre" active={currentPage === 'entraide'} onClick={() => navigate('entraide')} />
 
-            <NavSection label="Modération & Audit" />
+            {/* Modération */}
+            <NavSection label="Modération & Sécurité" />
             <NavItem icon={<Flag size={18} />} label="Signalements" active={currentPage === 'flags'} onClick={() => navigate('flags')} />
             <NavItem icon={<History size={18} />} label="Audit Log" active={currentPage === 'audit-log'} onClick={() => navigate('audit-log')} />
 
-            <NavSection label="Compte" />
+            {/* Compte */}
+            <NavSection label="Compte Admin" />
             <NavItem icon={<KeyRound size={18} />} label="Changer mot de passe" active={currentPage === 'change-password'} onClick={() => navigate('change-password')} />
           </nav>
 
@@ -125,7 +139,9 @@ export default function App() {
                 <div style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {user?.prenom} {user?.nom}
                 </div>
-                <div style={{ color: '#64748b', fontSize: 11 }}>Administrateur</div>
+                <div style={{ color: '#4ade80', fontSize: 11, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <Shield size={10} /> Administrateur
+                </div>
               </div>
               <button onClick={logout} title="Déconnexion" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: 4, borderRadius: 4, display: 'flex' }}>
                 <LogOut size={16} />
@@ -149,7 +165,10 @@ export default function App() {
               {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
             <div style={{ flex: 1, color: '#94a3b8', fontSize: 13 }}>{getPageTitle(currentPage)}</div>
-            <div style={{ color: '#4ade80', fontSize: 12, fontWeight: 600 }}>🟢 LIVE</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Shield size={14} style={{ color: '#4ade80' }} />
+              <div style={{ color: '#4ade80', fontSize: 12, fontWeight: 600 }}>🟢 SÉCURISÉ</div>
+            </div>
           </div>
 
           {/* Page Content */}
@@ -203,28 +222,28 @@ function getPageTitle(page: Page): string {
   const titles: Record<Page, string> = {
     'dashboard': '📊 Tableau de bord',
     'paiements': '💳 Validation des paiements',
-    'questions': '❓ Gestion des questions QCM',
+    'questions': '❓ CMS QCM — Gestion des questions',
     'create-question': '✚ Créer une question',
     'edit-question': '✏️ Modifier la question',
-    'bulk-import': '📤 Import QCM en masse (txt / MD / PDF)',
-    'series': '📚 Séries & Matières',
-    'simulations': '🎯 Simulations & Examens Types',
-    'exam-generator': '🧩 Générateur d\'Examens Composites',
+    'bulk-import': '📤 CMS QCM — Import en masse',
+    'series': '📚 CMS QCM — Séries & Matières',
+    'simulations': '🎯 Examens Types (10 matières × 2 séries + Examens Blancs)',
+    'exam-generator': '🧩 Générateur d\'Examens',
     'flags': '🚨 Signalements',
     'audit-log': '📜 Audit & Historique',
-    'annonces': '📢 Publier une annonce',
-    'entraide': '🤝 Entraide — Répondre aux Questions',
+    'annonces': '📢 Annonces',
+    'entraide': '🤝 Entraide — Répondre',
     'change-password': '🔑 Changer le mot de passe',
   };
   return titles[page] ?? 'Admin';
 }
 
-// ── Page Paiements (inline) ───────────────────────────────────
-import { getAdminStats } from './api';
+// ── Page Paiements ─────────────────────────────────────────────
+import { getToken } from './api';
 function PaiementsPage({ onNavigate: _n }: { onNavigate: (p: Page) => void }) {
   const [demandes, setDemandes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'EN_ATTENTE' | 'VALIDE' | 'TOUS'>('EN_ATTENTE');
+  const [filter, setFilter] = useState<'EN_ATTENTE' | 'VALIDE' | 'REJETE' | 'TOUS'>('EN_ATTENTE');
 
   const BASE_URL = window.location.hostname === 'localhost'
     ? 'http://localhost:8787'
@@ -237,6 +256,7 @@ function PaiementsPage({ onNavigate: _n }: { onNavigate: (p: Page) => void }) {
       const res = await fetch(`${BASE_URL}/api/admin/demandes-abonnement`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      if (!res.ok) throw new Error(`Erreur ${res.status}`);
       const d = await res.json();
       setDemandes(d.demandes ?? d ?? []);
     } catch { setDemandes([]); } finally { setLoading(false); }
@@ -264,6 +284,8 @@ function PaiementsPage({ onNavigate: _n }: { onNavigate: (p: Page) => void }) {
 
   const filtered = filter === 'TOUS' ? demandes : demandes.filter(d => d.statut === filter);
   const enAttente = demandes.filter(d => d.statut === 'EN_ATTENTE').length;
+  const valides = demandes.filter(d => d.statut === 'VALIDE').length;
+  const rejetes = demandes.filter(d => d.statut === 'REJETE').length;
 
   return (
     <div>
@@ -271,7 +293,9 @@ function PaiementsPage({ onNavigate: _n }: { onNavigate: (p: Page) => void }) {
         <div>
           <h2 style={{ color: '#f1f5f9', fontSize: 22, fontWeight: 700, margin: 0 }}>💳 Validation des Paiements</h2>
           <p style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>
-            {enAttente > 0 ? <span style={{ color: '#f59e0b' }}>⚠️ {enAttente} demande(s) en attente de validation</span> : '✅ Aucune demande en attente'}
+            {enAttente > 0
+              ? <span style={{ color: '#f59e0b' }}>⚠️ {enAttente} demande(s) en attente de validation</span>
+              : '✅ Aucune demande en attente'}
           </p>
         </div>
         <button onClick={load} style={{ background: '#1A5C38', color: 'white', border: 'none', padding: '8px 16px', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}>
@@ -279,22 +303,33 @@ function PaiementsPage({ onNavigate: _n }: { onNavigate: (p: Page) => void }) {
         </button>
       </div>
 
+      {/* Résumé stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 20 }}>
+        <StatCard label="En attente" value={enAttente} color="#f59e0b" icon="⏳" />
+        <StatCard label="Validés" value={valides} color="#22c55e" icon="✅" />
+        <StatCard label="Rejetés" value={rejetes} color="#ef4444" icon="❌" />
+      </div>
+
       {/* Filtres */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-        {(['EN_ATTENTE', 'VALIDE', 'TOUS'] as const).map(f => (
+      <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
+        {(['EN_ATTENTE', 'VALIDE', 'REJETE', 'TOUS'] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)} style={{
             padding: '6px 16px', borderRadius: 20, border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: 13,
-            background: filter === f ? (f === 'EN_ATTENTE' ? '#f59e0b' : f === 'VALIDE' ? '#22c55e' : '#3b82f6') : '#1e293b',
+            background: filter === f
+              ? (f === 'EN_ATTENTE' ? '#f59e0b' : f === 'VALIDE' ? '#22c55e' : f === 'REJETE' ? '#ef4444' : '#3b82f6')
+              : '#1e293b',
             color: filter === f ? 'white' : '#64748b',
           }}>
-            {f === 'EN_ATTENTE' ? '⏳ En attente' : f === 'VALIDE' ? '✅ Validés' : '📋 Tous'}
-            {f === 'EN_ATTENTE' && enAttente > 0 && <span style={{ marginLeft: 6, background: '#ef4444', color: 'white', borderRadius: '50%', padding: '1px 6px', fontSize: 11 }}>{enAttente}</span>}
+            {f === 'EN_ATTENTE' ? '⏳ En attente' : f === 'VALIDE' ? '✅ Validés' : f === 'REJETE' ? '❌ Rejetés' : '📋 Tous'}
+            {f === 'EN_ATTENTE' && enAttente > 0 && (
+              <span style={{ marginLeft: 6, background: 'rgba(255,255,255,0.3)', color: 'white', borderRadius: '50%', padding: '1px 6px', fontSize: 11 }}>{enAttente}</span>
+            )}
           </button>
         ))}
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: 60, color: '#64748b' }}>Chargement...</div>
+        <div style={{ textAlign: 'center', padding: 60, color: '#64748b' }}>⏳ Chargement...</div>
       ) : filtered.length === 0 ? (
         <div style={{ textAlign: 'center', padding: 60, color: '#64748b', background: '#1e293b', borderRadius: 12 }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>📭</div>
@@ -310,17 +345,18 @@ function PaiementsPage({ onNavigate: _n }: { onNavigate: (p: Page) => void }) {
             }}>
               <div style={{
                 width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
-                background: d.statut === 'EN_ATTENTE' ? 'rgba(245,158,11,0.15)' : 'rgba(34,197,94,0.15)',
+                background: d.statut === 'EN_ATTENTE' ? 'rgba(245,158,11,0.15)' : d.statut === 'VALIDE' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20,
               }}>
-                {d.statut === 'EN_ATTENTE' ? '⏳' : '✅'}
+                {d.statut === 'EN_ATTENTE' ? '⏳' : d.statut === 'VALIDE' ? '✅' : '❌'}
               </div>
               <div style={{ flex: 1, minWidth: 200 }}>
                 <div style={{ color: '#f1f5f9', fontWeight: 700, fontSize: 15 }}>{d.nom_complet ?? `${d.prenom ?? ''} ${d.nom ?? ''}`}</div>
                 <div style={{ color: '#94a3b8', fontSize: 13, marginTop: 2 }}>📞 {d.telephone}</div>
                 <div style={{ color: '#64748b', fontSize: 12, marginTop: 2 }}>
-                  💳 {d.moyen_paiement} · {d.created_at ? new Date(d.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
+                  💳 {d.moyen_paiement} · {d.montant ? `${d.montant} FCFA ·` : ''} {d.created_at ? new Date(d.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
                 </div>
+                {d.reference && <div style={{ color: '#475569', fontSize: 11, marginTop: 2 }}>Réf: {d.reference}</div>}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{
@@ -347,6 +383,16 @@ function PaiementsPage({ onNavigate: _n }: { onNavigate: (p: Page) => void }) {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function StatCard({ label, value, color, icon }: { label: string; value: number; color: string; icon: string }) {
+  return (
+    <div style={{ background: '#1e293b', borderRadius: 10, padding: '14px 16px', border: `1px solid ${color}33` }}>
+      <div style={{ fontSize: 20, marginBottom: 6 }}>{icon}</div>
+      <div style={{ color, fontSize: 24, fontWeight: 800 }}>{value}</div>
+      <div style={{ color: '#94a3b8', fontSize: 12, marginTop: 2 }}>{label}</div>
     </div>
   );
 }
