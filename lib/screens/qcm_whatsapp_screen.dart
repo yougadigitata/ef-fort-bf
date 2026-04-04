@@ -1539,7 +1539,7 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
                             border: pw.Border.all(color: borderGreen, width: 0.8),
                           ),
                           child: pw.Text(
-                            'Resultats ${cleanText(widget.label)}  •  ef-fort-bf.pages.dev',
+                            'Resultats ${cleanText(widget.label)}  —  Correction Detaillee',
                             style: pw.TextStyle(fontSize: 9, color: primaryColor, fontWeight: pw.FontWeight.bold),
                           ),
                         ),
@@ -1694,10 +1694,10 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
             child: pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
-                pw.Text('EF-FORT.BF  •  Chaque effort te rapproche de ton admission',
+                pw.Text('Ne lache rien — la reussite est au bout du chemin',
                     style: pw.TextStyle(fontSize: 8, color: greyColor)),
-                pw.Text('ef-fort-bf.pages.dev  |  Page ${ctx.pageNumber}/${ctx.pagesCount}',
-                    style: pw.TextStyle(fontSize: 8, color: greyColor)),
+                pw.Text('Page ${ctx.pageNumber}/${ctx.pagesCount}',
+                    style: pw.TextStyle(fontSize: 8, color: greyColor, fontStyle: pw.FontStyle.italic)),
               ],
             ),
           ),
@@ -1945,7 +1945,7 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
                 border: pw.Border.all(color: borderGreen, width: 0.8),
               ),
               child: pw.Text(
-                'EF-FORT.BF  •  Chaque effort te rapproche de ton admission finale  •  ef-fort-bf.pages.dev',
+                'Ne lache rien, la reussite est au bout du chemin — EF-FORT.BF',
                 textAlign: pw.TextAlign.center,
                 style: pw.TextStyle(fontSize: 10, color: primaryColor, fontStyle: pw.FontStyle.italic),
               ),

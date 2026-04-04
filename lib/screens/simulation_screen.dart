@@ -2492,9 +2492,9 @@ class SimulationResultScreen extends StatelessWidget {
           child: pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             children: [
-              pw.Text('EF-FORT.BF  •  Plateforme N1 des Concours au Burkina Faso',
-                  style: pw.TextStyle(font: font, fontSize: 11, color: PdfColors.grey600)),
-              pw.Text('ef-fort-bf.pages.dev  |  Page ${context.pageNumber}/${context.pagesCount}',
+              pw.Text('Ne lache rien \u2014 la reussite est au bout du chemin',
+                  style: pw.TextStyle(font: font, fontSize: 11, color: PdfColors.grey600, fontStyle: pw.FontStyle.italic)),
+              pw.Text('Page \${context.pageNumber}/\${context.pagesCount}',
                   style: pw.TextStyle(font: font, fontSize: 11, color: PdfColors.grey600)),
             ],
           ),
@@ -2808,7 +2808,7 @@ class SimulationResultScreen extends StatelessWidget {
                           borderRadius: const pw.BorderRadius.all(pw.Radius.circular(5)),
                           border: pw.Border.all(color: borderGreen, width: 0.8),
                         ),
-                        child: pw.Text('RESULTATS EXAMEN BLANC  •  ef-fort-bf.pages.dev',
+                        child: pw.Text('RESULTATS EXAMEN \u2014 CORRECTION DETAILLEE',
                             style: pw.TextStyle(fontSize: 13, color: primaryColor, fontWeight: pw.FontWeight.bold)),
                       ),
                     ],
@@ -2926,9 +2926,9 @@ class SimulationResultScreen extends StatelessWidget {
           child: pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             children: [
-              pw.Text('EF-FORT.BF  •  Chaque effort te rapproche de ton admission',
-                  style: pw.TextStyle(fontSize: 11, color: greyColor)),
-              pw.Text('ef-fort-bf.pages.dev  |  Page ${context.pageNumber}/${context.pagesCount}',
+              pw.Text('Ne lache rien \u2014 la reussite est au bout du chemin',
+                  style: pw.TextStyle(fontSize: 11, color: greyColor, fontStyle: pw.FontStyle.italic)),
+              pw.Text('Page \${context.pageNumber}/\${context.pagesCount}',
                   style: pw.TextStyle(fontSize: 11, color: greyColor)),
             ],
           ),
@@ -3103,7 +3103,7 @@ class SimulationResultScreen extends StatelessWidget {
               border: pw.Border.all(color: borderGreen, width: 0.8),
             ),
             child: pw.Text(
-              'EF-FORT.BF  •  Chaque effort te rapproche de ton admission finale  •  ef-fort-bf.pages.dev',
+              'Ne lache rien, la reussite est au bout du chemin \u2014 EF-FORT.BF',
               textAlign: pw.TextAlign.center,
               style: pw.TextStyle(fontSize: 14, color: primaryColor, fontStyle: pw.FontStyle.italic),
             ),

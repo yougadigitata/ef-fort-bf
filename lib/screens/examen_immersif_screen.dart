@@ -40,6 +40,17 @@ const Map<int, Map<String, dynamic>> _kSimToExam = {
   83: {'exam_id': 'exam_008', 'serie': 2},
   84: {'exam_id': 'exam_009', 'serie': 2},
   85: {'exam_id': 'exam_010', 'serie': 2},
+  // Examens Blancs — 11e matière (IDs 97–106)
+  97:  {'exam_id': 'exam_blanc_01', 'serie': 3},
+  98:  {'exam_id': 'exam_blanc_02', 'serie': 3},
+  99:  {'exam_id': 'exam_blanc_03', 'serie': 3},
+  100: {'exam_id': 'exam_blanc_04', 'serie': 3},
+  101: {'exam_id': 'exam_blanc_05', 'serie': 3},
+  102: {'exam_id': 'exam_blanc_06', 'serie': 3},
+  103: {'exam_id': 'exam_blanc_07', 'serie': 3},
+  104: {'exam_id': 'exam_blanc_08', 'serie': 3},
+  105: {'exam_id': 'exam_blanc_09', 'serie': 3},
+  106: {'exam_id': 'exam_blanc_10', 'serie': 3},
 };
 
 // ─── Couleurs par catégorie d'examen ───────────────────────────────────
@@ -64,6 +75,17 @@ const Map<int, Color> _kExamColors = {
   83: Color(0xFF2471A3),
   84: Color(0xFF7D3C98),
   85: Color(0xFF4A5568),
+  // Examens Blancs — couleur verte EF-FORT
+  97:  Color(0xFF1A5C38),
+  98:  Color(0xFF1A5C38),
+  99:  Color(0xFF1A5C38),
+  100: Color(0xFF1A5C38),
+  101: Color(0xFF1A5C38),
+  102: Color(0xFF1A5C38),
+  103: Color(0xFF1A5C38),
+  104: Color(0xFF1A5C38),
+  105: Color(0xFF1A5C38),
+  106: Color(0xFF1A5C38),
 };
 
 // ─── Messages du surveillant virtuel ────────────────────────────────
@@ -114,6 +136,17 @@ class _ExamenImmersifAccueilScreenState
     {'id': 83, 'nom': 'Informatique & numérique', 'serie': 2, 'icone': '💻', 'description': 'Techniciens informatiques, développement'},
     {'id': 84, 'nom': 'Travaux publics & urbanisme', 'serie': 2, 'icone': '🏗️', 'description': 'BTP, urbanisme, infrastructures'},
     {'id': 85, 'nom': 'Statistiques & planification', 'serie': 2, 'icone': '📊', 'description': 'Statisticiens, analyse de données'},
+    // Examens Blancs — 11e matière (série 3)
+    {'id': 97,  'nom': 'Examens Blancs', 'serie': 3, 'icone': '📝', 'description': 'Histoire-Géo & Culture Générale'},
+    {'id': 98,  'nom': 'Examens Blancs', 'serie': 3, 'icone': '📝', 'description': 'Sciences & Culture Générale'},
+    {'id': 99,  'nom': 'Examens Blancs', 'serie': 3, 'icone': '📝', 'description': 'Géopolitique & Organisations'},
+    {'id': 100, 'nom': 'Examens Blancs', 'serie': 3, 'icone': '📝', 'description': 'Institutions & Littérature'},
+    {'id': 101, 'nom': 'Examens Blancs', 'serie': 3, 'icone': '📝', 'description': 'Orthographe & Culture Diversifiée'},
+    {'id': 102, 'nom': 'Examens Blancs', 'serie': 3, 'icone': '📝', 'description': 'Droit Foncier & Administration'},
+    {'id': 103, 'nom': 'Examens Blancs', 'serie': 3, 'icone': '📝', 'description': 'Actualités & Langue Française'},
+    {'id': 104, 'nom': 'Examens Blancs', 'serie': 3, 'icone': '📝', 'description': 'Économie, Géographie & Culture'},
+    {'id': 105, 'nom': 'Examens Blancs', 'serie': 3, 'icone': '📝', 'description': 'Mathématiques, Logique & Sciences'},
+    {'id': 106, 'nom': 'Examens Blancs', 'serie': 3, 'icone': '📝', 'description': 'Culture Générale & Langue Française'},
   ];
 
   int _selectedSerieTab = 0;
@@ -143,8 +176,13 @@ class _ExamenImmersifAccueilScreenState
       _kExamensTypes.where((e) => e['serie'] == 1).toList();
   List<Map<String, dynamic>> get _serie2 =>
       _kExamensTypes.where((e) => e['serie'] == 2).toList();
-  List<Map<String, dynamic>> get _currentList =>
-      _selectedSerieTab == 0 ? _serie1 : _serie2;
+  List<Map<String, dynamic>> get _serieBlanche =>
+      _kExamensTypes.where((e) => e['serie'] == 3).toList();
+  List<Map<String, dynamic>> get _currentList {
+    if (_selectedSerieTab == 0) return _serie1;
+    if (_selectedSerieTab == 1) return _serie2;
+    return _serieBlanche;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -228,7 +266,7 @@ class _ExamenImmersifAccueilScreenState
                   ),
                 ),
                 Text(
-                  '20 séries · 50 questions · 1h30 · Conditions réelles',
+                  '30 séries · 50 questions · 1h30 · Conditions réelles',
                   style: TextStyle(fontSize: 11, color: Colors.white70),
                 ),
               ],
@@ -379,8 +417,9 @@ class _ExamenImmersifAccueilScreenState
       padding: const EdgeInsets.all(4),
       child: Row(
         children: [
-          _buildSerieTab(0, 'Série 1', '10 examens (IDs 66–75)'),
-          _buildSerieTab(1, 'Série 2', '10 examens (IDs 76–85)'),
+          _buildSerieTab(0, 'Série 1', '10 examens'),
+          _buildSerieTab(1, 'Série 2', '10 examens'),
+          _buildSerieTab(2, 'Blancs', '10 séries'),
         ],
       ),
     );
@@ -444,7 +483,11 @@ class _ExamenImmersifAccueilScreenState
   Widget _buildExamenCard(Map<String, dynamic> examen, int index) {
     final id = examen['id'] as int;
     final color = _kExamColors[id] ?? const Color(0xFF1A5C38);
-    final nom = examen['nom'] as String;
+    final rawNom = examen['nom'] as String;
+    // Pour les Examens Blancs (série 3), afficher "Série N" au lieu de "Examens Blancs"
+    final nom = (examen['serie'] == 3)
+        ? 'Série ${index + 1}'
+        : rawNom;
     final icone = examen['icone'] as String;
     final desc = examen['description'] as String;
     final isSelected = _selectedExamen?['id'] == id;
