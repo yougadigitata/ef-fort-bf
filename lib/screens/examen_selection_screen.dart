@@ -3,6 +3,7 @@ import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
 import 'simulation_screen.dart';
 import 'examen_screen.dart';
+import 'examen_immersif_screen.dart';
 
 /// v7.0 — Écran de sélection des examens — Nouveau design coloré
 class ExamenSelectionScreen extends StatefulWidget {
@@ -15,9 +16,7 @@ class ExamenSelectionScreen extends StatefulWidget {
 class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  List<dynamic> _examens = [];
   List<dynamic> _simulationsAdmin = [];
-  bool _loading = true;
   bool _loadingSimulations = true;
 
   // Couleurs par catégorie pour le design coloré
@@ -61,27 +60,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
   }
 
   Future<void> _loadAll() async {
-    await Future.wait([_loadExamens(), _loadSimulationsAdmin()]);
-  }
-
-  Future<void> _loadExamens() async {
-    setState(() { _loading = true; });
-    try {
-      final data = await ApiService.getExamens();
-      if (mounted) {
-        setState(() {
-          _examens = data.isNotEmpty ? data : _fallbackExamens;
-          _loading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _examens = _fallbackExamens;
-          _loading = false;
-        });
-      }
-    }
+    await _loadSimulationsAdmin();
   }
 
   Future<void> _loadSimulationsAdmin() async {
@@ -433,24 +412,140 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
     );
   }
 
-  // ─── ONGLET EXAMENS TYPES ────────────────────────────────────
+  // ─── ONGLET EXAMENS TYPES — Nouvelle interface immersive ─────
   Widget _buildExamensTypesTab() {
-    if (_loading) {
-      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
-    }
-    return RefreshIndicator(
-      onRefresh: _loadExamens,
-      color: AppColors.primary,
-      child: GridView.builder(
-        padding: const EdgeInsets.fromLTRB(14, 16, 14, 20),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: 14,
-          crossAxisSpacing: 14,
-          childAspectRatio: 0.82,
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Illustration
+            Container(
+              width: 90,
+              height: 90,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppColors.primary, AppColors.primaryDark],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(22),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.3),
+                    blurRadius: 14,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: const Center(
+                child: Text('📋', style: TextStyle(fontSize: 42)),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Titre
+            const Text(
+              'Examens Types Immersifs',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+                color: AppColors.textDark,
+                fontFamily: 'Poppins',
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              '20 séries officielles · Interface vraie feuille\n50 questions · 1h30 · Correction détaillée',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13,
+                color: AppColors.textLight,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Badges caractéristiques
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              alignment: WrapAlignment.center,
+              children: [
+                _buildFeatureBadge('🔔 Cloches officielles', AppColors.primary),
+                _buildFeatureBadge('📄 Feuille 2 colonnes', const Color(0xFF2980B9)),
+                _buildFeatureBadge('⏱️ Timer 1h30', const Color(0xFFE67E22)),
+                _buildFeatureBadge('📊 Correction + PDF', const Color(0xFF27AE60)),
+                _buildFeatureBadge('🔒 Soumission après 30min', const Color(0xFF8E44AD)),
+              ],
+            ),
+            const SizedBox(height: 28),
+
+            // Bouton
+            SizedBox(
+              width: double.infinity,
+              height: 54,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const ExamenImmersifAccueilScreen(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.play_circle_filled_rounded, size: 26),
+                label: const Text(
+                  'ACCÉDER AUX EXAMENS TYPES',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.3,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  elevation: 4,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '10 concours × 2 séries = 20 examens types disponibles',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 11,
+                color: AppColors.textLight.withValues(alpha: 0.7),
+              ),
+            ),
+          ],
         ),
-        itemCount: _examens.length,
-        itemBuilder: (ctx, i) => _buildExamenCard(_examens[i], i),
+      ),
+    );
+  }
+
+  Widget _buildFeatureBadge(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 1.2),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          color: color,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
