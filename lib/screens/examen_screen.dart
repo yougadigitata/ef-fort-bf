@@ -8,12 +8,14 @@ class ExamenScreen extends StatefulWidget {
   final String examenId;
   final String nomExamen;
   final Color couleur;
+  final int serie;
 
   const ExamenScreen({
     super.key,
     required this.examenId,
     required this.nomExamen,
     this.couleur = const Color(0xFF1A5C38),
+    this.serie = 1,
   });
 
   @override
@@ -50,7 +52,7 @@ class _ExamenScreenState extends State<ExamenScreen> {
   Future<void> _loadQuestions() async {
     setState(() { _loading = true; _error = null; });
     try {
-      final data = await ApiService.getExamenQuestions(widget.examenId);
+      final data = await ApiService.getExamenQuestions(widget.examenId, serie: widget.serie);
       if (mounted) {
         setState(() {
           _questions = data;

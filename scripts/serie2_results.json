@@ -1,0 +1,52 @@
+[
+  {
+    "sim_id": 76,
+    "titre": "Examen Type — Administration générale — Série 2",
+    "nb_questions": 50
+  },
+  {
+    "sim_id": 77,
+    "titre": "Examen Type — Justice & sécurité — Série 2",
+    "nb_questions": 50
+  },
+  {
+    "sim_id": 78,
+    "titre": "Examen Type — Économie & finances — Série 2",
+    "nb_questions": 50
+  },
+  {
+    "sim_id": 79,
+    "titre": "Examen Type — Concours de la santé — Série 2",
+    "nb_questions": 50
+  },
+  {
+    "sim_id": 80,
+    "titre": "Examen Type — Éducation & formation — Série 2",
+    "nb_questions": 50
+  },
+  {
+    "sim_id": 81,
+    "titre": "Examen Type — Concours techniques — Série 2",
+    "nb_questions": 50
+  },
+  {
+    "sim_id": 82,
+    "titre": "Examen Type — Agriculture & environnement — Série 2",
+    "nb_questions": 50
+  },
+  {
+    "sim_id": 83,
+    "titre": "Examen Type — Informatique & numérique — Série 2",
+    "nb_questions": 50
+  },
+  {
+    "sim_id": 84,
+    "titre": "Examen Type — Travaux publics & urbanisme — Série 2",
+    "nb_questions": 50
+  },
+  {
+    "sim_id": 85,
+    "titre": "Examen Type — Statistiques & planification — Série 2",
+    "nb_questions": 50
+  }
+]

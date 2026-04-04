@@ -175,10 +175,10 @@ class ApiService {
     }
   }
 
-  static Future<List<dynamic>> getExamenQuestions(String examenId) async {
+  static Future<List<dynamic>> getExamenQuestions(String examenId, {int serie = 1}) async {
     try {
       final response = await http.get(
-        Uri.parse('$apiBase/examens/$examenId/questions'),
+        Uri.parse('$apiBase/examens/$examenId/questions?serie=$serie'),
         headers: _headers,
       ).timeout(const Duration(seconds: 15));
       final data = jsonDecode(response.body);

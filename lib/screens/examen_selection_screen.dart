@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
 import 'simulation_screen.dart';
+import 'examen_screen.dart';
 
 /// v7.0 — Écran de sélection des examens — Nouveau design coloré
 class ExamenSelectionScreen extends StatefulWidget {
@@ -464,108 +465,157 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
     final dureeStr = duree >= 60
         ? '${duree ~/ 60}h${duree % 60 > 0 ? (duree % 60).toString().padLeft(2, '0') : ''}'
         : '${duree}min';
+    final examenId = examen['id'] as String? ?? '';
 
-    return GestureDetector(
-      onTap: () {
-        final user = ApiService.currentUser;
-        final nomCandidat = user != null
-            ? '${user['prenom'] ?? ''} ${user['nom'] ?? ''}'.trim()
-            : 'Candidat';
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ExamWelcomeSlide(
-              candidatName: nomCandidat.isNotEmpty ? nomCandidat : 'Candidat',
-              examenNom: nom,
+    void lancerSerie(int serie) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ExamenScreen(
+            examenId: examenId,
+            nomExamen: serie == 2 ? '$nom — Série 2' : nom,
+            couleur: color,
+            serie: serie,
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: color.withValues(alpha: 0.22),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.13),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(10, 14, 10, 10),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // ── Icône sur pastille colorée ─────────────────
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.13),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: color.withValues(alpha: 0.3),
+                  width: 1.5,
+                ),
+              ),
+              child: Center(
+                child: Text(icone, style: const TextStyle(fontSize: 24)),
+              ),
             ),
-          ),
-        );
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: color.withValues(alpha: 0.22),
-            width: 1.5,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: 0.13),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+            const SizedBox(height: 7),
+
+            // ── Nom du concours ────────────────────────────
+            Text(
+              nom,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w800,
+                color: color,
+                height: 1.2,
+              ),
+            ),
+            const SizedBox(height: 3),
+
+            // ── Description ────────────────────────────────
+            Text(
+              description,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 9.5,
+                color: Colors.black45,
+                height: 1.3,
+              ),
+            ),
+
+            const Spacer(),
+
+            // ── Badges pilules ─────────────────────────────
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildPillBadge('$nbQ q.', color),
+                const SizedBox(width: 5),
+                _buildPillBadge(
+                  dureeStr,
+                  color,
+                  icon: Icons.access_time_rounded,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+
+            // ── 2 boutons Série 1 & Série 2 ───────────────
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => lancerSerie(1),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 7),
+                      decoration: BoxDecoration(
+                        color: color,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Text(
+                        'Série 1',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => lancerSerie(2),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 7),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: color, width: 1.5),
+                      ),
+                      child: Text(
+                        'Série 2',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          color: color,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(10, 16, 10, 12),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // ── Icône sur pastille colorée ─────────────────
-              Container(
-                width: 66,
-                height: 66,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.13),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: color.withValues(alpha: 0.3),
-                    width: 1.5,
-                  ),
-                ),
-                child: Center(
-                  child: Text(icone, style: const TextStyle(fontSize: 28)),
-                ),
-              ),
-              const SizedBox(height: 10),
-
-              // ── Nom du concours ────────────────────────────
-              Text(
-                nom,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w800,
-                  color: color,
-                  height: 1.2,
-                ),
-              ),
-              const SizedBox(height: 5),
-
-              // ── Description ────────────────────────────────
-              Text(
-                description,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 10.5,
-                  color: Colors.black45,
-                  height: 1.3,
-                ),
-              ),
-
-              const Spacer(),
-
-              // ── Badges pilules ─────────────────────────────
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildPillBadge('$nbQ q.', color),
-                  const SizedBox(width: 6),
-                  _buildPillBadge(
-                    dureeStr,
-                    color,
-                    icon: Icons.access_time_rounded,
-                  ),
-                ],
-              ),
-            ],
-          ),
         ),
       ),
     );

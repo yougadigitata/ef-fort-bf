@@ -253,24 +253,32 @@ app.get('/api/examens', async (c) => {
 
 // ── GET /api/examens/:id/questions — Questions pour un examen ──
 // Phase 4 : Utilise les 50 questions fixes assignées à chaque examen type
+// Supporte le paramètre query ?serie=1 (défaut) ou ?serie=2
 // Mapping exam_id → simulation_id (simulations_examens avec questions fixes)
 app.get('/api/examens/:id/questions', async (c) => {
   const examenId = c.req.param('id');
+  const serieParam = c.req.query('serie') ?? '1';
+  const serieNum = parseInt(serieParam, 10) === 2 ? 2 : 1;
   const db = getDB(c.env);
 
   // Mapping des 10 examens types vers leurs IDs de simulation dans simulations_examens
-  const EXAMEN_SIMULATION_MAP: Record<string, number> = {
-    'exam_001': 66,  // Administration générale
-    'exam_002': 67,  // Justice & sécurité
-    'exam_003': 68,  // Économie & finances
-    'exam_004': 69,  // Concours de la santé
-    'exam_005': 70,  // Éducation & formation
-    'exam_006': 71,  // Concours techniques
-    'exam_007': 72,  // Agriculture & environnement
-    'exam_008': 73,  // Informatique & numérique
-    'exam_009': 74,  // Travaux publics & urbanisme
-    'exam_010': 75,  // Statistiques & planification
+  // Série 1 (IDs 66-75) et Série 2 (IDs 76-85)
+  const EXAMEN_SIMULATION_MAP: Record<string, { serie1: number; serie2: number }> = {
+    'exam_001': { serie1: 66, serie2: 76 },  // Administration générale
+    'exam_002': { serie1: 67, serie2: 77 },  // Justice & sécurité
+    'exam_003': { serie1: 68, serie2: 78 },  // Économie & finances
+    'exam_004': { serie1: 69, serie2: 79 },  // Concours de la santé
+    'exam_005': { serie1: 70, serie2: 80 },  // Éducation & formation
+    'exam_006': { serie1: 71, serie2: 81 },  // Concours techniques
+    'exam_007': { serie1: 72, serie2: 82 },  // Agriculture & environnement
+    'exam_008': { serie1: 73, serie2: 83 },  // Informatique & numérique
+    'exam_009': { serie1: 74, serie2: 84 },  // Travaux publics & urbanisme
+    'exam_010': { serie1: 75, serie2: 85 },  // Statistiques & planification
   };
+
+  const simId = EXAMEN_SIMULATION_MAP[examenId]
+    ? (serieNum === 2 ? EXAMEN_SIMULATION_MAP[examenId].serie2 : EXAMEN_SIMULATION_MAP[examenId].serie1)
+    : undefined;
 
   const EXAMEN_NOM_MAP: Record<string, string> = {
     'exam_001': 'Administration générale',
@@ -285,8 +293,10 @@ app.get('/api/examens/:id/questions', async (c) => {
     'exam_010': 'Statistiques & planification',
   };
 
-  const examenNom = EXAMEN_NOM_MAP[examenId] ?? 'Examen Type';
-  const simId = EXAMEN_SIMULATION_MAP[examenId];
+  const examenNomBase = EXAMEN_NOM_MAP[examenId] ?? 'Examen Type';
+  const examenNom = serieNum === 2
+    ? `${examenNomBase} — Série 2`
+    : examenNomBase;
 
   // Map UUID matière → nom
   const matiereNomAll: Record<string, string> = {};
