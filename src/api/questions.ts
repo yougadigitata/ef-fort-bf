@@ -84,6 +84,45 @@ questions.get('/questions', async (c) => {
 
   const db = getDB(c.env);
 
+  // ── MISSION 7 : ANTI-FRAUDE — Vérification abonnement si serie_id fourni ──
+  if (serieId) {
+    let isAbonne = false;
+    let isAdmin = false;
+    const authHeader = c.req.header('Authorization');
+    if (authHeader?.startsWith('Bearer ')) {
+      try {
+        const { verifyJWT } = await import('../lib/auth');
+        const payload = await verifyJWT(authHeader.slice(7));
+        if (payload) {
+          const { data: profile } = await db.from('profiles')
+            .select('abonnement_actif, is_admin')
+            .eq('id', payload['id'])
+            .single();
+          isAbonne = profile?.abonnement_actif === true;
+          isAdmin = profile?.is_admin === true || payload['is_admin'] === true;
+        }
+      } catch (_) {}
+    }
+
+    // Vérifier si la série demandée est gratuite (est_demo) ou payante
+    if (!isAbonne && !isAdmin) {
+      try {
+        const { data: serieInfo } = await db.from('series_qcm')
+          .select('est_demo, numero')
+          .eq('id', serieId)
+          .single();
+        // Bloquer si série payante (ni demo ni première de la matière par numéro = 1)
+        if (serieInfo && !serieInfo.est_demo && serieInfo.numero !== 1) {
+          return c.json({
+            error: 'Accès réservé aux abonnés Premium.',
+            code: 'PREMIUM_REQUIRED',
+            message: 'Abonnez-vous pour accéder à cette série.',
+          }, 403);
+        }
+      } catch (_) {}
+    }
+  }
+
   // Charger la map ID → nom des matières pour éviter d'afficher des UUIDs
   const matiereNomMap: Record<string, string> = {};
   try {

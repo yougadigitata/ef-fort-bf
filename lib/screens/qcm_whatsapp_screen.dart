@@ -2089,7 +2089,7 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
                           fontWeight: FontWeight.w800,
                           color: Colors.white,
                           fontSize: 14)),
-                  Text('500+ QCM par matière · Corrections · Timer',
+                  Text('10 000+ QCM par matière · Corrections · Timer',
                       style: TextStyle(color: Colors.white70, fontSize: 12)),
                 ],
               ),

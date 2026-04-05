@@ -261,6 +261,32 @@ app.get('/api/examens/:id/questions', async (c) => {
   const serieNum = parseInt(serieParam, 10) === 2 ? 2 : 1;
   const db = getDB(c.env);
 
+  // ── MISSION 7 : ANTI-FRAUDE — Les examens types sont réservés aux abonnés ──
+  const authHeaderExam = c.req.header('Authorization');
+  let isAbonneExam = false;
+  let isAdminExam = false;
+  if (authHeaderExam?.startsWith('Bearer ')) {
+    try {
+      const payloadExam = await verifyJWT(authHeaderExam.slice(7));
+      if (payloadExam) {
+        const { data: profileExam } = await db.from('profiles')
+          .select('abonnement_actif, is_admin')
+          .eq('id', payloadExam['id'])
+          .single();
+        isAbonneExam = profileExam?.abonnement_actif === true;
+        isAdminExam = profileExam?.is_admin === true || payloadExam['is_admin'] === true;
+      }
+    } catch (_) {}
+  }
+  if (!isAbonneExam && !isAdminExam) {
+    return c.json({
+      error: 'Accès réservé aux abonnés Premium.',
+      code: 'PREMIUM_REQUIRED',
+      message: 'Les examens types sont réservés aux abonnés. Abonnez-vous pour y accéder.',
+    }, 403);
+  }
+
+
   // Mapping des 10 examens types vers leurs IDs de simulation dans simulations_examens
   // Série 1 (IDs 66-75) et Série 2 (IDs 76-85)
   const EXAMEN_SIMULATION_MAP: Record<string, { serie1: number; serie2: number }> = {
@@ -704,6 +730,21 @@ app.post('/api/simulations-admin/:id/demarrer', async (c) => {
   const simulationId = c.req.param('id');
 
   const db = getDB(c.env);
+
+  // ── MISSION 7 : ANTI-FRAUDE — Vérifier abonnement avant démarrage simulation ──
+  const { data: profileSim } = await db.from('profiles')
+    .select('abonnement_actif, is_admin')
+    .eq('id', userId)
+    .single();
+  const isAbonneSim = profileSim?.abonnement_actif === true;
+  const isAdminSim = profileSim?.is_admin === true || payload['is_admin'] === true;
+  if (!isAbonneSim && !isAdminSim) {
+    return c.json({
+      error: 'Accès réservé aux abonnés Premium.',
+      code: 'PREMIUM_REQUIRED',
+      message: 'Les simulations d\'examen sont réservées aux abonnés. Abonnez-vous pour y accéder.',
+    }, 403);
+  }
 
   // Récupérer la simulation
   const { data: sim, error: simErr } = await db.from('simulations_examens')

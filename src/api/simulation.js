@@ -151,7 +151,9 @@ simulation.post('/terminer', requireAuth, async (c) => {
             .filter(Boolean);
         if (userReps.length === 0) {
             points = 0;
-        } else {
+        }
+        else {
+            // Vérifier si l'utilisateur a exactement les bonnes réponses
             const userSet = new Set(userReps);
             const bonneSet = new Set(bonnesReps);
             const isExact = userSet.size === bonneSet.size &&
@@ -160,7 +162,8 @@ simulation.post('/terminer', requireAuth, async (c) => {
                 points = 1;
                 correct = true;
                 scoreParMatiere[mat].correct++;
-            } else {
+            }
+            else {
                 points = -1;
             }
         }

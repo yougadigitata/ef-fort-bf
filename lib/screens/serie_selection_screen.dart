@@ -437,7 +437,7 @@ class _SerieSelectionScreenState extends State<SerieSelectionScreen> {
           ],
         ),
         content: const Text(
-          'Cette série est réservée aux abonnés Premium.\n\nPassez à Premium pour accéder à toutes les séries et les 2500 QCM disponibles.',
+          'Cette série est réservée aux abonnés Premium.\n\nPassez à Premium pour accéder à toutes les séries et les 10 000 QCM disponibles.',
           style: TextStyle(fontSize: 13, height: 1.5),
         ),
         actions: [

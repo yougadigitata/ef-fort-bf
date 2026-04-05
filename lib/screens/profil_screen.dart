@@ -292,7 +292,7 @@ class _ProfilScreenState extends State<ProfilScreen>
                       const _CountdownWidget(),
                       const SizedBox(height: 12),
                       const Text(
-                        'Accès illimité à +250 QCM\nSimulations d\'examen illimitées\nCorrections détaillées',
+                        'Accès illimité à +10 000 QCM\nSimulations d\'examen illimitées\nCorrections détaillées',
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 13, color: AppColors.white, height: 1.6),
                       ),

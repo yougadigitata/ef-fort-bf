@@ -1,40 +1,25 @@
 {
-    "name": "EF-FORT.BF — Concours Burkina Faso",
-    "short_name": "EF-FORT.BF",
-    "description": "Préparation aux concours directs de la Fonction Publique du Burkina Faso. QCM, Examens Types, Entraide.",
-    "start_url": "/",
-    "scope": "/",
-    "id": "ef-fort-bf-app",
+    "name": "EF-FORT.BF - Concours Burkina Faso",
+    "short_name": "EF-FORT",
+    "description": "Preparation aux concours de la Fonction Publique du Burkina Faso",
+    "start_url": ".",
     "display": "standalone",
-    "display_override": ["window-controls-overlay", "standalone", "minimal-ui", "browser"],
-    "background_color": "#0E3D24",
+    "background_color": "#1A5C38",
     "theme_color": "#1A5C38",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "lang": "fr-BF",
-    "dir": "ltr",
-    "categories": ["education", "productivity"],
-    "screenshots": [
-        {
-            "src": "icons/Icon-512.png",
-            "sizes": "512x512",
-            "type": "image/png",
-            "form_factor": "narrow",
-            "label": "Accueil EF-FORT.BF"
-        }
-    ],
+    "categories": ["education"],
     "icons": [
         {
             "src": "icons/Icon-192.png",
             "sizes": "192x192",
-            "type": "image/png",
-            "purpose": "any"
+            "type": "image/png"
         },
         {
             "src": "icons/Icon-512.png",
             "sizes": "512x512",
-            "type": "image/png",
-            "purpose": "any"
+            "type": "image/png"
         },
         {
             "src": "icons/Icon-maskable-192.png",
@@ -48,24 +33,5 @@
             "type": "image/png",
             "purpose": "maskable"
         }
-    ],
-    "shortcuts": [
-        {
-            "name": "Examens Types",
-            "short_name": "Examens",
-            "description": "Accéder aux Examens Types",
-            "url": "/?page=examens",
-            "icons": [{ "src": "icons/Icon-192.png", "sizes": "192x192" }]
-        },
-        {
-            "name": "Matières QCM",
-            "short_name": "QCM",
-            "description": "Accéder aux séries QCM",
-            "url": "/?page=matieres",
-            "icons": [{ "src": "icons/Icon-192.png", "sizes": "192x192" }]
-        }
-    ],
-    "related_applications": [],
-    "protocol_handlers": [],
-    "file_handlers": []
+    ]
 }
