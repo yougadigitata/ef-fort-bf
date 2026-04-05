@@ -684,8 +684,32 @@ class ApiService {
     if (token != null && userData != null) {
       _token = token;
       _currentUser = jsonDecode(userData) as Map<String, dynamic>;
+      // MISSION 4 : Rafraîchir le profil depuis le serveur pour avoir
+      // le vrai statut d'abonnement (évite les données obsolètes en cache)
+      await refreshUserProfile();
       return true;
     }
     return false;
+  }
+
+  /// Rafraîchit le profil utilisateur depuis le serveur (statut abonnement à jour)
+  static Future<void> refreshUserProfile() async {
+    if (_token == null) return;
+    try {
+      final response = await http.get(
+        Uri.parse('$apiBase/auth/me'),
+        headers: _headers,
+      ).timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        if (data['success'] == true && data['user'] != null) {
+          _currentUser = data['user'] as Map<String, dynamic>;
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('user_data', jsonEncode(_currentUser));
+        }
+      }
+    } catch (_) {
+      // Silencieux : on garde les données locales si pas de réseau
+    }
   }
 }
