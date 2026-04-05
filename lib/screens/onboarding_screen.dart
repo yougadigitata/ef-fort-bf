@@ -3,6 +3,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../core/theme/app_colors.dart';
 import 'bienvenue_screen.dart';
 
+// ══════════════════════════════════════════════════════════════════════
+// ONBOARDING SCREEN — 5 SLIDES PÉDAGOGIQUES — EF-FORT.BF
+// POSITION FIGÉE DANS LE FLUX :
+//   APRÈS SplashScreen → AVANT BienvenueScreen
+// Le retour arrière est désactivé pour forcer le parcours complet.
+// ══════════════════════════════════════════════════════════════════════
+
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -119,10 +126,13 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    // PopScope bloque le retour arrière — l'utilisateur DOIT parcourir les slides
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
       body: Stack(
         children: [
-          // Slides
+          // Slides (5 slides pédagogiques — ORDRE FIGÉ)
           PageView.builder(
             controller: _pageController,
             onPageChanged: (index) => setState(() => _currentPage = index),
@@ -381,6 +391,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           ),
         ],
       ),
-    );
+    )); // PopScope + Scaffold fermés
   }
 }

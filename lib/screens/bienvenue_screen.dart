@@ -6,9 +6,11 @@ import 'login_screen.dart';
 
 // ══════════════════════════════════════════════════════════════════════
 // PAGE D'ACCUEIL DE BIENVENUE PREMIUM — EF-FORT.BF v2.0
-// Affichée après le Onboarding, avant le Dashboard
+// POSITION FIGÉE DANS LE FLUX :
+//   APRÈS OnboardingScreen (5 slides) → AVANT LoginScreen
 // Son de bienvenue + message chaleureux + animations premium
 // Design: Vert forêt + Or / "Le savoir est une arme"
+// Le retour arrière est désactivé — parcours d'accueil non contournable.
 // ══════════════════════════════════════════════════════════════════════
 
 class BienvenueScreen extends StatefulWidget {
@@ -184,7 +186,10 @@ class _BienvenueScreenState extends State<BienvenueScreen>
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    return Scaffold(
+    // PopScope bloque le retour arrière vers l'Onboarding
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
       body: Stack(
         children: [
           // ── Fond dégradé premium ────────────────────────────────────
@@ -254,7 +259,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
           ),
         ],
       ),
-    );
+    )); // PopScope + Scaffold fermés
   }
 
   // ── Fond dégradé ─────────────────────────────────────────────────────

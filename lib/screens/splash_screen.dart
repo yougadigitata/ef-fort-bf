@@ -2,10 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
+import '../services/bell_service.dart';
 import '../widgets/logo_widget.dart';
 import 'onboarding_screen.dart';
 import 'bienvenue_screen.dart';
 import 'home_screen.dart';
+
+// ══════════════════════════════════════════════════════════════════════
+// SPLASH SCREEN — EF-FORT.BF
+// FLUX FIGÉ (verrouillé) :
+//   1. SplashScreen    → Animation logo + SON d'intro
+//   2. OnboardingScreen → 5 slides pédagogiques
+//   3. BienvenueScreen  → Animation bienvenue premium + SON
+//   4. LoginScreen      → Authentification
+//   5. Dashboard        → Espace utilisateur
+// NE PAS MODIFIER L'ORDRE DE CES ÉTAPES
+// ══════════════════════════════════════════════════════════════════════
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -38,7 +50,21 @@ class _SplashScreenState extends State<SplashScreen>
           curve: const Interval(0.0, 0.6, curve: Curves.elasticOut)),
     );
     _controller.forward();
+    // ── Son d'introduction de la première animation ──────────────────
+    _playIntroSound();
     _checkAuth();
+  }
+
+  /// Joue le son d'intro au lancement du Splash Screen (première animation)
+  Future<void> _playIntroSound() async {
+    // Petit délai pour laisser l'animation démarrer avant le son
+    await Future.delayed(const Duration(milliseconds: 400));
+    if (!mounted) return;
+    try {
+      await BellService.playStart();
+    } catch (_) {
+      // Silencieux en cas d'erreur
+    }
   }
 
   Future<void> _checkAuth() async {
