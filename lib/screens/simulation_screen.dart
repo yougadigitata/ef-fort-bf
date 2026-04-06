@@ -1211,6 +1211,9 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
 
     if (!mounted) return;
 
+    // Rafraîchir le profil utilisateur pour mettre à jour les stats du dashboard
+    await ApiService.refreshUserProfile();
+
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(

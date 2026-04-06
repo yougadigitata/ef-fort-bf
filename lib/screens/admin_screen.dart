@@ -30,7 +30,6 @@ class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStat
   final List<_AdminTab> _tabs = const [
     _AdminTab(icon: Icons.dashboard_rounded, label: 'Tableau de bord'),
     _AdminTab(icon: Icons.credit_card_rounded, label: 'Paiements'),
-    _AdminTab(icon: Icons.quiz_rounded, label: 'CMS QCM'),
     _AdminTab(icon: Icons.newspaper_rounded, label: 'Annonces'),
     _AdminTab(icon: Icons.key_rounded, label: 'Sécurité'),
   ];
@@ -40,6 +39,17 @@ class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStat
     super.initState();
     _tabController = TabController(length: _tabs.length, vsync: this);
     _loadData();
+    // Rafraîchissement automatique toutes les 60 secondes
+    _startAutoRefresh();
+  }
+
+  void _startAutoRefresh() {
+    Future.delayed(const Duration(seconds: 60), () {
+      if (mounted) {
+        _loadData();
+        _startAutoRefresh();
+      }
+    });
   }
 
   Future<void> _loadData() async {
@@ -98,7 +108,6 @@ class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStat
         children: [
           _DashboardTab(stats: _stats, demandes: _demandes, loading: _loadingStats, onRefresh: _loadData),
           _PaiementsTab(demandes: _demandes, loading: _loadingDemandes, onRefresh: _loadData),
-          const CmsQcmTab(),
           const _AnnoncesTab(),
           const _ChangePasswordTab(),
         ],
@@ -485,7 +494,7 @@ class _PaiementsTabState extends State<_PaiementsTab> {
 }
 
 // ══════════════════════════════════════════════════════════════
-// ONGLET 3 — CMS QCM (avec sous-navigation)
+// ONGLET CMS QCM — EN COURS DE REFONTE (non affiché dans le menu)
 // ══════════════════════════════════════════════════════════════
 class CmsQcmTab extends StatefulWidget {
   const CmsQcmTab({super.key});
