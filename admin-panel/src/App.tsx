@@ -2,6 +2,10 @@ import { useState, useEffect, createContext, useContext } from 'react';
 import { getToken, clearToken } from './api';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
+import MatieresPage from './pages/MatieresPage';
+import ExamensTypesPage from './pages/ExamensTypesPage';
+import ImportExportPage from './pages/ImportExportPage';
+import PaiementsPage from './pages/PaiementsPage';
 import QuestionsPage from './pages/QuestionsPage';
 import CreateQuestionPage from './pages/CreateQuestionPage';
 import BulkImportPage from './pages/BulkImportPage';
@@ -14,9 +18,10 @@ import ExamGeneratorPage from './pages/ExamGeneratorPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
 import EntraidePage from './pages/EntraidePage';
 import {
-  LayoutDashboard, FileQuestion, Upload, BookOpen, Target,
-  Flag, History, LogOut, Menu, X, Newspaper, Layers, KeyRound,
-  CreditCard, MessageCircle, Shield
+  LayoutDashboard, BookOpen, Target, Upload,
+  FileQuestion, Flag, History, LogOut, Menu, X,
+  Newspaper, Layers, KeyRound, CreditCard, MessageCircle, Shield,
+  FileUp, ArrowUpDown
 } from 'lucide-react';
 
 // ── Context Auth ─────────────────────────────────────────────
@@ -25,9 +30,19 @@ const AuthContext = createContext<AuthContextType>({ user: null, setUser: () => 
 export const useAuth = () => useContext(AuthContext);
 
 export type Page =
-  | 'dashboard' | 'questions' | 'create-question' | 'edit-question'
-  | 'bulk-import' | 'series' | 'simulations' | 'flags' | 'audit-log'
-  | 'annonces' | 'exam-generator' | 'change-password' | 'paiements' | 'entraide';
+  | 'dashboard'
+  | 'matieres'
+  | 'examens-types'
+  | 'import-export'
+  | 'paiements'
+  | 'annonces'
+  | 'entraide'
+  | 'flags'
+  | 'audit-log'
+  // Pages héritées (accessibles via navigation avancée)
+  | 'questions' | 'create-question' | 'edit-question'
+  | 'bulk-import' | 'series' | 'simulations' | 'exam-generator'
+  | 'change-password';
 
 export default function App() {
   const [user, setUser] = useState<any>(() => {
@@ -36,20 +51,40 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   const [editQuestionId, setEditQuestionId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [lastActivity, setLastActivity] = useState(Date.now());
 
-  const logout = () => { clearToken(); setUser(null); };
+  const logout = () => {
+    clearToken();
+    localStorage.removeItem('admin_user');
+    setUser(null);
+  };
 
   useEffect(() => { if (!getToken()) setUser(null); }, []);
 
-  // Vérification sécurité : token doit exister ET user doit être admin
+  // Auto-logout après 2h d'inactivité
+  useEffect(() => {
+    const TIMEOUT = 2 * 60 * 60 * 1000; // 2h
+    const handler = () => setLastActivity(Date.now());
+    window.addEventListener('mousemove', handler);
+    window.addEventListener('keydown', handler);
+    window.addEventListener('click', handler);
+    const check = setInterval(() => {
+      if (Date.now() - lastActivity > TIMEOUT) logout();
+    }, 60000);
+    return () => {
+      window.removeEventListener('mousemove', handler);
+      window.removeEventListener('keydown', handler);
+      window.removeEventListener('click', handler);
+      clearInterval(check);
+    };
+  }, [lastActivity]);
+
+  // Page de connexion
   if (!user || !getToken() || !user.is_admin) {
     return (
       <AuthContext.Provider value={{ user, setUser, logout }}>
         <LoginPage onLogin={(u) => {
-          if (!u.is_admin) {
-            clearToken();
-            return;
-          }
+          if (!u.is_admin) { clearToken(); return; }
           setUser(u);
           localStorage.setItem('admin_user', JSON.stringify(u));
         }} />
@@ -63,15 +98,40 @@ export default function App() {
     if (window.innerWidth < 768) setSidebarOpen(false);
   };
 
+  // ── Navigation principale (onglets demandés) ────────────────
+  const mainNav = [
+    { page: 'dashboard' as Page, icon: <LayoutDashboard size={17} />, label: 'Tableau de bord', section: null },
+    // Séparateur
+    { page: 'matieres' as Page, icon: <BookOpen size={17} />, label: 'Matières & QCM', section: 'Contenu pédagogique' },
+    { page: 'examens-types' as Page, icon: <Target size={17} />, label: 'Examens Types', section: null },
+    { page: 'import-export' as Page, icon: <ArrowUpDown size={17} />, label: 'Import / Export', section: null },
+    // Séparateur
+    { page: 'paiements' as Page, icon: <CreditCard size={17} />, label: 'Paiements', section: 'Communauté', badge: true },
+    { page: 'annonces' as Page, icon: <Newspaper size={17} />, label: 'Annonces', section: null },
+    { page: 'entraide' as Page, icon: <MessageCircle size={17} />, label: 'Modération Entraide', section: null },
+    // Séparateur
+    { page: 'flags' as Page, icon: <Flag size={17} />, label: 'Signalements', section: 'Sécurité' },
+    { page: 'audit-log' as Page, icon: <History size={17} />, label: 'Logs des actions', section: null },
+    // Séparateur
+    { page: 'questions' as Page, icon: <FileQuestion size={17} />, label: 'Toutes les questions', section: 'Outils avancés' },
+    { page: 'bulk-import' as Page, icon: <Upload size={17} />, label: 'Import QCM avancé', section: null },
+    { page: 'series' as Page, icon: <Layers size={17} />, label: 'Séries avancées', section: null },
+    { page: 'simulations' as Page, icon: <Target size={17} />, label: 'Simulations', section: null },
+    { page: 'exam-generator' as Page, icon: <FileUp size={17} />, label: 'Générateur d\'examens', section: null },
+    // Compte
+    { page: 'change-password' as Page, icon: <KeyRound size={17} />, label: 'Changer mot de passe', section: 'Compte' },
+  ];
+
   return (
     <AuthContext.Provider value={{ user, setUser, logout }}>
       <div style={{ display: 'flex', minHeight: '100vh', background: '#0f172a' }}>
+        {/* Overlay mobile */}
         {sidebarOpen && window.innerWidth < 768 && (
           <div onClick={() => setSidebarOpen(false)}
             style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 40 }} />
         )}
 
-        {/* Sidebar */}
+        {/* ════════════════ SIDEBAR ══════════════════════════ */}
         <div style={{
           position: 'fixed', left: sidebarOpen ? 0 : '-260px', top: 0, bottom: 0,
           width: 260, zIndex: 50, transition: 'left 0.3s ease',
@@ -79,51 +139,46 @@ export default function App() {
           borderRight: '1px solid #334155', display: 'flex', flexDirection: 'column', overflowY: 'auto',
         }}>
           {/* Logo */}
-          <div style={{ padding: '18px 16px', borderBottom: '1px solid #334155', flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ padding: '16px 14px', borderBottom: '1px solid #334155', flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{
-                width: 42, height: 42, borderRadius: 10,
+                width: 40, height: 40, borderRadius: 10,
                 background: 'linear-gradient(135deg, #1A5C38, #D4A017)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontWeight: 'bold', fontSize: 15, color: 'white', flexShrink: 0,
+                fontWeight: 'bold', fontSize: 14, color: 'white', flexShrink: 0,
               }}>EF</div>
               <div>
                 <div style={{ fontWeight: 700, color: '#f1f5f9', fontSize: 14 }}>EF-FORT.BF</div>
-                <div style={{ color: '#64748b', fontSize: 11 }}>Panel Admin v9.0</div>
+                <div style={{ color: '#4ade80', fontSize: 10, fontWeight: 600 }}>🔐 Panel Admin CMS</div>
               </div>
             </div>
           </div>
 
           {/* Navigation */}
-          <nav style={{ flex: 1, padding: '10px 8px' }}>
-            {/* Tableau de bord */}
-            <NavItem icon={<LayoutDashboard size={18} />} label="Tableau de bord" active={currentPage === 'dashboard'} onClick={() => navigate('dashboard')} />
-
-            {/* Paiements */}
-            <NavSection label="Paiements & Abonnements" />
-            <NavItem icon={<CreditCard size={18} />} label="Valider les paiements" active={currentPage === 'paiements'} onClick={() => navigate('paiements')} badge="!" />
-
-            {/* CMS QCM */}
-            <NavSection label="CMS QCM" />
-            <NavItem icon={<FileQuestion size={18} />} label="Gérer les Questions" active={currentPage === 'questions'} onClick={() => navigate('questions')} />
-            <NavItem icon={<Upload size={18} />} label="Import QCM (txt/MD/PDF)" active={currentPage === 'bulk-import'} onClick={() => navigate('bulk-import')} />
-            <NavItem icon={<BookOpen size={18} />} label="Séries & Matières" active={currentPage === 'series'} onClick={() => navigate('series')} />
-            <NavItem icon={<Target size={18} />} label="Examens Types" active={currentPage === 'simulations'} onClick={() => navigate('simulations')} />
-            <NavItem icon={<Layers size={18} />} label="Générateur d'Examens" active={currentPage === 'exam-generator'} onClick={() => navigate('exam-generator')} />
-
-            {/* Annonces */}
-            <NavSection label="Communication" />
-            <NavItem icon={<Newspaper size={18} />} label="Annonces" active={currentPage === 'annonces'} onClick={() => navigate('annonces')} />
-            <NavItem icon={<MessageCircle size={18} />} label="Entraide — Répondre" active={currentPage === 'entraide'} onClick={() => navigate('entraide')} />
-
-            {/* Modération */}
-            <NavSection label="Modération & Sécurité" />
-            <NavItem icon={<Flag size={18} />} label="Signalements" active={currentPage === 'flags'} onClick={() => navigate('flags')} />
-            <NavItem icon={<History size={18} />} label="Audit Log" active={currentPage === 'audit-log'} onClick={() => navigate('audit-log')} />
-
-            {/* Compte */}
-            <NavSection label="Compte Admin" />
-            <NavItem icon={<KeyRound size={18} />} label="Changer mot de passe" active={currentPage === 'change-password'} onClick={() => navigate('change-password')} />
+          <nav style={{ flex: 1, padding: '8px 6px', overflowY: 'auto' }}>
+            {(() => {
+              let lastSection: string | null = undefined as any;
+              return mainNav.map((item, idx) => {
+                const sectionChanged = item.section !== undefined && item.section !== lastSection;
+                if (sectionChanged) lastSection = item.section;
+                return (
+                  <div key={item.page + idx}>
+                    {sectionChanged && item.section && (
+                      <div style={{ color: '#475569', fontSize: 10, fontWeight: 700, padding: '12px 8px 4px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                        {item.section}
+                      </div>
+                    )}
+                    <NavItem
+                      icon={item.icon}
+                      label={item.label}
+                      active={currentPage === item.page}
+                      onClick={() => navigate(item.page)}
+                      badge={item.badge}
+                    />
+                  </div>
+                );
+              });
+            })()}
           </nav>
 
           {/* User footer */}
@@ -139,22 +194,25 @@ export default function App() {
                 <div style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {user?.prenom} {user?.nom}
                 </div>
-                <div style={{ color: '#4ade80', fontSize: 11, display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <Shield size={10} /> Administrateur
+                <div style={{ color: '#4ade80', fontSize: 10, display: 'flex', alignItems: 'center', gap: 3 }}>
+                  <Shield size={9} /> Administrateur
                 </div>
               </div>
-              <button onClick={logout} title="Déconnexion" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: 4, borderRadius: 4, display: 'flex' }}>
+              <button onClick={logout} title="Déconnexion" style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: '#ef4444', padding: 6, borderRadius: 6, display: 'flex',
+              }}>
                 <LogOut size={16} />
               </button>
             </div>
           </div>
         </div>
 
-        {/* Main Content */}
+        {/* ════════════════ MAIN ═════════════════════════════ */}
         <div style={{ flex: 1, marginLeft: sidebarOpen ? 260 : 0, transition: 'margin-left 0.3s ease', minWidth: 0 }}>
           {/* Top Bar */}
           <div style={{
-            height: 56, background: '#1e293b', borderBottom: '1px solid #334155',
+            height: 54, background: '#1e293b', borderBottom: '1px solid #334155',
             display: 'flex', alignItems: 'center', padding: '0 16px', gap: 12,
             position: 'sticky', top: 0, zIndex: 30,
           }}>
@@ -164,28 +222,41 @@ export default function App() {
             }}>
               {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
+
             <div style={{ flex: 1, color: '#94a3b8', fontSize: 13 }}>{getPageTitle(currentPage)}</div>
+
+            {/* Badges top */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Shield size={14} style={{ color: '#4ade80' }} />
-              <div style={{ color: '#4ade80', fontSize: 12, fontWeight: 600 }}>🟢 SÉCURISÉ</div>
+              <div style={{
+                background: '#065f46', color: '#4ade80', fontSize: 11, fontWeight: 700,
+                padding: '3px 10px', borderRadius: 20, display: 'flex', alignItems: 'center', gap: 4,
+              }}>
+                <Shield size={11} /> SÉCURISÉ
+              </div>
             </div>
           </div>
 
-          {/* Page Content */}
-          <div style={{ padding: 24, maxWidth: 1400 }}>
-            {currentPage === 'dashboard' && <DashboardPage onNavigate={navigate} />}
-            {currentPage === 'paiements' && <PaiementsPage onNavigate={navigate} />}
-            {currentPage === 'questions' && <QuestionsPage onNavigate={navigate} onEdit={(id) => { setEditQuestionId(id); navigate('edit-question'); }} />}
-            {(currentPage === 'create-question' || currentPage === 'edit-question') && <CreateQuestionPage questionId={currentPage === 'edit-question' ? editQuestionId : null} onNavigate={navigate} />}
-            {currentPage === 'bulk-import' && <BulkImportPage onNavigate={navigate} />}
-            {currentPage === 'series' && <SeriesPage onNavigate={navigate} />}
-            {currentPage === 'simulations' && <SimulationsPage onNavigate={navigate} />}
-            {currentPage === 'exam-generator' && <ExamGeneratorPage onNavigate={navigate} />}
-            {currentPage === 'flags' && <FlagsPage onNavigate={navigate} />}
-            {currentPage === 'audit-log' && <AuditLogPage onNavigate={navigate} />}
-            {currentPage === 'annonces' && <AnnoncesPage onNavigate={navigate} />}
-            {currentPage === 'entraide' && <EntraidePage onNavigate={navigate} />}
-            {currentPage === 'change-password' && <ChangePasswordPage onNavigate={navigate} />}
+          {/* ═══ Pages ════════════════════════════════════════ */}
+          <div style={{ padding: 24, maxWidth: 1500 }}>
+            {currentPage === 'dashboard'     && <DashboardPage onNavigate={navigate} />}
+            {currentPage === 'matieres'      && <MatieresPage onNavigate={navigate} />}
+            {currentPage === 'examens-types' && <ExamensTypesPage onNavigate={navigate} />}
+            {currentPage === 'import-export' && <ImportExportPage onNavigate={navigate} />}
+            {currentPage === 'paiements'     && <PaiementsPage onNavigate={navigate} />}
+            {currentPage === 'annonces'      && <AnnoncesPage onNavigate={navigate} />}
+            {currentPage === 'entraide'      && <EntraidePage onNavigate={navigate} />}
+            {currentPage === 'flags'         && <FlagsPage onNavigate={navigate} />}
+            {currentPage === 'audit-log'     && <AuditLogPage onNavigate={navigate} />}
+            {/* Outils avancés */}
+            {currentPage === 'questions'     && <QuestionsPage onNavigate={navigate} onEdit={(id) => { setEditQuestionId(id); navigate('edit-question'); }} />}
+            {(currentPage === 'create-question' || currentPage === 'edit-question') && (
+              <CreateQuestionPage questionId={currentPage === 'edit-question' ? editQuestionId : null} onNavigate={navigate} />
+            )}
+            {currentPage === 'bulk-import'   && <BulkImportPage onNavigate={navigate} />}
+            {currentPage === 'series'        && <SeriesPage onNavigate={navigate} />}
+            {currentPage === 'simulations'   && <SimulationsPage onNavigate={navigate} />}
+            {currentPage === 'exam-generator'&& <ExamGeneratorPage onNavigate={navigate} />}
+            {currentPage === 'change-password'&&<ChangePasswordPage onNavigate={navigate} />}
           </div>
         </div>
       </div>
@@ -193,206 +264,54 @@ export default function App() {
   );
 }
 
-function NavSection({ label }: { label: string }) {
-  return <div style={{ color: '#475569', fontSize: 10, fontWeight: 700, padding: '10px 8px 3px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</div>;
-}
-
-function NavItem({ icon, label, active, onClick, badge }: { icon: React.ReactNode; label: string; active: boolean; onClick: () => void; badge?: string }) {
+// ── Composants navigation ───────────────────────────────────────
+function NavItem({ icon, label, active, onClick, badge }: {
+  icon: React.ReactNode; label: string; active: boolean;
+  onClick: () => void; badge?: boolean;
+}) {
   return (
     <button onClick={onClick} style={{
-      width: '100%', display: 'flex', alignItems: 'center', gap: 10,
-      padding: '8px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
-      background: active ? 'rgba(26,92,56,0.25)' : 'transparent',
+      width: '100%', display: 'flex', alignItems: 'center', gap: 9,
+      padding: '7px 10px', borderRadius: 7, border: 'none', cursor: 'pointer',
+      background: active ? 'rgba(26,92,56,0.3)' : 'transparent',
       color: active ? '#4ade80' : '#94a3b8',
       fontSize: 13, fontWeight: active ? 600 : 400,
-      transition: 'all 0.15s', marginBottom: 2,
+      transition: 'all 0.15s', marginBottom: 1,
       borderLeft: active ? '2px solid #1A5C38' : '2px solid transparent',
+      textAlign: 'left',
     }}
     onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'; }}
     onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
     >
-      {icon}
-      <span style={{ flex: 1, textAlign: 'left' }}>{label}</span>
-      {badge && <span style={{ background: '#ef4444', color: 'white', fontSize: 10, fontWeight: 700, width: 18, height: 18, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{badge}</span>}
+      <span style={{ flexShrink: 0, opacity: active ? 1 : 0.7 }}>{icon}</span>
+      <span style={{ flex: 1, textAlign: 'left', lineHeight: 1.2 }}>{label}</span>
+      {badge && (
+        <span style={{ background: '#f59e0b', color: '#000', fontSize: 9, fontWeight: 800, width: 16, height: 16, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>!</span>
+      )}
     </button>
   );
 }
 
+// ── Titres des pages ────────────────────────────────────────────
 function getPageTitle(page: Page): string {
   const titles: Record<Page, string> = {
-    'dashboard': '📊 Tableau de bord',
-    'paiements': '💳 Validation des paiements',
-    'questions': '❓ CMS QCM — Gestion des questions',
+    'dashboard': '📊 Tableau de bord — Vue globale',
+    'matieres': '📚 Matières & Séries QCM — Gestion du contenu',
+    'examens-types': '🎯 Examens Types — Création et gestion',
+    'import-export': '📤 Import / Export — Gestion en masse',
+    'paiements': '💳 Paiements & Abonnements',
+    'annonces': '📢 Annonces officielles',
+    'entraide': '🤝 Modération de l\'Entraide',
+    'flags': '🚨 Signalements & Modération',
+    'audit-log': '📜 Journal des actions administratives',
+    'questions': '❓ Toutes les questions (vue avancée)',
     'create-question': '✚ Créer une question',
-    'edit-question': '✏️ Modifier la question',
-    'bulk-import': '📤 CMS QCM — Import en masse',
-    'series': '📚 CMS QCM — Séries & Matières',
-    'simulations': '🎯 Examens Types (10 matières × 2 séries + Examens Blancs)',
-    'exam-generator': '🧩 Générateur d\'Examens',
-    'flags': '🚨 Signalements',
-    'audit-log': '📜 Audit & Historique',
-    'annonces': '📢 Annonces',
-    'entraide': '🤝 Entraide — Répondre',
+    'edit-question': '✏️ Modifier une question',
+    'bulk-import': '📤 Import QCM avancé',
+    'series': '📋 Séries — Gestion avancée',
+    'simulations': '🎯 Simulations & Examens',
+    'exam-generator': '🧩 Générateur d\'Examens composites',
     'change-password': '🔑 Changer le mot de passe',
   };
   return titles[page] ?? 'Admin';
-}
-
-// ── Page Paiements ─────────────────────────────────────────────
-import { getToken } from './api';
-function PaiementsPage({ onNavigate: _n }: { onNavigate: (p: Page) => void }) {
-  const [demandes, setDemandes] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'EN_ATTENTE' | 'VALIDE' | 'REJETE' | 'TOUS'>('EN_ATTENTE');
-
-  const BASE_URL = window.location.hostname === 'localhost'
-    ? 'http://localhost:8787'
-    : 'https://ef-fort-bf.yembuaro29.workers.dev';
-
-  async function load() {
-    setLoading(true);
-    try {
-      const token = getToken();
-      const res = await fetch(`${BASE_URL}/api/admin/demandes-abonnement`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (!res.ok) throw new Error(`Erreur ${res.status}`);
-      const d = await res.json();
-      setDemandes(d.demandes ?? d ?? []);
-    } catch { setDemandes([]); } finally { setLoading(false); }
-  }
-
-  async function valider(id: string) {
-    const token = getToken();
-    await fetch(`${BASE_URL}/api/admin/valider-abonnement/${id}`, {
-      method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ statut: 'VALIDE' }),
-    });
-    load();
-  }
-
-  async function rejeter(id: string) {
-    const token = getToken();
-    await fetch(`${BASE_URL}/api/admin/valider-abonnement/${id}`, {
-      method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ statut: 'REJETE' }),
-    });
-    load();
-  }
-
-  useEffect(() => { load(); }, []);
-
-  const filtered = filter === 'TOUS' ? demandes : demandes.filter(d => d.statut === filter);
-  const enAttente = demandes.filter(d => d.statut === 'EN_ATTENTE').length;
-  const valides = demandes.filter(d => d.statut === 'VALIDE').length;
-  const rejetes = demandes.filter(d => d.statut === 'REJETE').length;
-
-  return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <div>
-          <h2 style={{ color: '#f1f5f9', fontSize: 22, fontWeight: 700, margin: 0 }}>💳 Validation des Paiements</h2>
-          <p style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>
-            {enAttente > 0
-              ? <span style={{ color: '#f59e0b' }}>⚠️ {enAttente} demande(s) en attente de validation</span>
-              : '✅ Aucune demande en attente'}
-          </p>
-        </div>
-        <button onClick={load} style={{ background: '#1A5C38', color: 'white', border: 'none', padding: '8px 16px', borderRadius: 8, cursor: 'pointer', fontWeight: 600 }}>
-          🔄 Rafraîchir
-        </button>
-      </div>
-
-      {/* Résumé stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 20 }}>
-        <StatCard label="En attente" value={enAttente} color="#f59e0b" icon="⏳" />
-        <StatCard label="Validés" value={valides} color="#22c55e" icon="✅" />
-        <StatCard label="Rejetés" value={rejetes} color="#ef4444" icon="❌" />
-      </div>
-
-      {/* Filtres */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
-        {(['EN_ATTENTE', 'VALIDE', 'REJETE', 'TOUS'] as const).map(f => (
-          <button key={f} onClick={() => setFilter(f)} style={{
-            padding: '6px 16px', borderRadius: 20, border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: 13,
-            background: filter === f
-              ? (f === 'EN_ATTENTE' ? '#f59e0b' : f === 'VALIDE' ? '#22c55e' : f === 'REJETE' ? '#ef4444' : '#3b82f6')
-              : '#1e293b',
-            color: filter === f ? 'white' : '#64748b',
-          }}>
-            {f === 'EN_ATTENTE' ? '⏳ En attente' : f === 'VALIDE' ? '✅ Validés' : f === 'REJETE' ? '❌ Rejetés' : '📋 Tous'}
-            {f === 'EN_ATTENTE' && enAttente > 0 && (
-              <span style={{ marginLeft: 6, background: 'rgba(255,255,255,0.3)', color: 'white', borderRadius: '50%', padding: '1px 6px', fontSize: 11 }}>{enAttente}</span>
-            )}
-          </button>
-        ))}
-      </div>
-
-      {loading ? (
-        <div style={{ textAlign: 'center', padding: 60, color: '#64748b' }}>⏳ Chargement...</div>
-      ) : filtered.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: 60, color: '#64748b', background: '#1e293b', borderRadius: 12 }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>📭</div>
-          <div>Aucune demande {filter !== 'TOUS' ? `avec statut "${filter}"` : ''}</div>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {filtered.map((d: any) => (
-            <div key={d.id} style={{
-              background: '#1e293b', borderRadius: 12, padding: '16px 20px',
-              border: d.statut === 'EN_ATTENTE' ? '1px solid #f59e0b44' : '1px solid #334155',
-              display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap',
-            }}>
-              <div style={{
-                width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
-                background: d.statut === 'EN_ATTENTE' ? 'rgba(245,158,11,0.15)' : d.statut === 'VALIDE' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20,
-              }}>
-                {d.statut === 'EN_ATTENTE' ? '⏳' : d.statut === 'VALIDE' ? '✅' : '❌'}
-              </div>
-              <div style={{ flex: 1, minWidth: 200 }}>
-                <div style={{ color: '#f1f5f9', fontWeight: 700, fontSize: 15 }}>{d.nom_complet ?? `${d.prenom ?? ''} ${d.nom ?? ''}`}</div>
-                <div style={{ color: '#94a3b8', fontSize: 13, marginTop: 2 }}>📞 {d.telephone}</div>
-                <div style={{ color: '#64748b', fontSize: 12, marginTop: 2 }}>
-                  💳 {d.moyen_paiement} · {d.montant ? `${d.montant} FCFA ·` : ''} {d.created_at ? new Date(d.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
-                </div>
-                {d.reference && <div style={{ color: '#475569', fontSize: 11, marginTop: 2 }}>Réf: {d.reference}</div>}
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{
-                  padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700,
-                  background: d.statut === 'EN_ATTENTE' ? 'rgba(245,158,11,0.2)' : d.statut === 'VALIDE' ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)',
-                  color: d.statut === 'EN_ATTENTE' ? '#f59e0b' : d.statut === 'VALIDE' ? '#22c55e' : '#ef4444',
-                }}>
-                  {d.statut}
-                </span>
-                {d.statut === 'EN_ATTENTE' && (
-                  <>
-                    <button onClick={() => valider(d.id)} style={{
-                      background: '#22c55e', color: 'white', border: 'none', padding: '7px 16px',
-                      borderRadius: 8, cursor: 'pointer', fontWeight: 700, fontSize: 13,
-                    }}>✅ Valider</button>
-                    <button onClick={() => rejeter(d.id)} style={{
-                      background: '#ef4444', color: 'white', border: 'none', padding: '7px 14px',
-                      borderRadius: 8, cursor: 'pointer', fontWeight: 700, fontSize: 13,
-                    }}>❌ Rejeter</button>
-                  </>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function StatCard({ label, value, color, icon }: { label: string; value: number; color: string; icon: string }) {
-  return (
-    <div style={{ background: '#1e293b', borderRadius: 10, padding: '14px 16px', border: `1px solid ${color}33` }}>
-      <div style={{ fontSize: 20, marginBottom: 6 }}>{icon}</div>
-      <div style={{ color, fontSize: 24, fontWeight: 800 }}>{value}</div>
-      <div style={{ color: '#94a3b8', fontSize: 12, marginTop: 2 }}>{label}</div>
-    </div>
-  );
 }
