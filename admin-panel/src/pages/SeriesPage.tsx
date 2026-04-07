@@ -164,7 +164,7 @@ export default function SeriesPage({ onNavigate }: { onNavigate: (page: Page) =>
           position: 'fixed', top: 70, right: 20, padding: '12px 18px',
           background: toastType === 'error' ? '#7f1d1d' : '#1e293b',
           border: `1px solid ${toastType === 'error' ? '#dc2626' : '#334155'}`,
-          borderRadius: 8, color: '#e2e8f0', fontSize: 14, zIndex: 1000,
+          borderRadius: 8, color: '#e2e8f0', fontSize: 17, zIndex: 1000,
           boxShadow: '0 4px 20px rgba(0,0,0,0.3)', maxWidth: 380,
         }}>{toast}</div>
       )}
@@ -173,7 +173,7 @@ export default function SeriesPage({ onNavigate }: { onNavigate: (page: Page) =>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
         <div>
           <h2 style={{ color: '#f1f5f9', fontSize: 20, fontWeight: 700, marginBottom: 4 }}>📚 Gestion des séries QCM</h2>
-          <p style={{ color: '#64748b', fontSize: 13 }}>
+          <p style={{ color: '#64748b', fontSize: 16 }}>
             {series.length} série(s) {selectedMatiere ? 'pour cette matière' : ''}
           </p>
         </div>
@@ -185,7 +185,7 @@ export default function SeriesPage({ onNavigate }: { onNavigate: (page: Page) =>
             style={{
               padding: '8px 14px', background: selectedMatiere ? '#3b82f6' : '#334155',
               border: 'none', borderRadius: 8, color: 'white',
-              cursor: selectedMatiere ? 'pointer' : 'not-allowed', fontSize: 13, fontWeight: 600,
+              cursor: selectedMatiere ? 'pointer' : 'not-allowed', fontSize: 16, fontWeight: 600,
             }}
           >
             🤖 Série auto (20Q)
@@ -198,14 +198,14 @@ export default function SeriesPage({ onNavigate }: { onNavigate: (page: Page) =>
               padding: '8px 14px',
               background: selectedMatiere ? 'linear-gradient(135deg, #d97706, #f59e0b)' : '#334155',
               border: 'none', borderRadius: 8, color: 'white',
-              cursor: selectedMatiere ? 'pointer' : 'not-allowed', fontSize: 13, fontWeight: 600,
+              cursor: selectedMatiere ? 'pointer' : 'not-allowed', fontSize: 16, fontWeight: 600,
             }}
           >
             ⚡ Harmoniser séries
           </button>
           <button
             onClick={() => { setShowCreate(true); setShowQuestionPicker(false); setSelectedQuestionIds(new Set()); }}
-            style={{ padding: '8px 14px', background: '#1A5C38', border: 'none', borderRadius: 8, color: 'white', cursor: 'pointer', fontSize: 13, fontWeight: 700 }}
+            style={{ padding: '8px 14px', background: '#1A5C38', border: 'none', borderRadius: 8, color: 'white', cursor: 'pointer', fontSize: 16, fontWeight: 700 }}
           >
             ✚ Créer série (manuel)
           </button>
@@ -214,7 +214,7 @@ export default function SeriesPage({ onNavigate }: { onNavigate: (page: Page) =>
 
       {/* Info box */}
       <div style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 10, padding: '10px 14px', marginBottom: 16 }}>
-        <p style={{ color: '#93c5fd', fontSize: 13, margin: 0 }}>
+        <p style={{ color: '#93c5fd', fontSize: 16, margin: 0 }}>
           💡 <strong>Comment créer une série :</strong> Sélectionnez une matière → Cliquez "Créer série (manuel)" → Choisissez les questions dans le sélecteur → Sauvegardez. 
           La série sera <strong>immédiatement visible</strong> par les utilisateurs dans la matière désignée.
         </p>
@@ -299,7 +299,7 @@ export default function SeriesPage({ onNavigate }: { onNavigate: (page: Page) =>
                     <button
                       type="button"
                       onClick={() => setShowQuestionPicker(!showQuestionPicker)}
-                      style={{ padding: '5px 12px', background: '#3b82f6', border: 'none', borderRadius: 6, color: 'white', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}
+                      style={{ padding: '5px 12px', background: '#3b82f6', border: 'none', borderRadius: 6, color: 'white', cursor: 'pointer', fontSize: 15, fontWeight: 600 }}
                     >
                       {showQuestionPicker ? '▲ Masquer' : '▼ Ouvrir le sélecteur'}
                     </button>
@@ -307,7 +307,7 @@ export default function SeriesPage({ onNavigate }: { onNavigate: (page: Page) =>
                       <button
                         type="button"
                         onClick={deselectAll}
-                        style={{ padding: '5px 10px', background: '#ef4444', border: 'none', borderRadius: 6, color: 'white', cursor: 'pointer', fontSize: 12 }}
+                        style={{ padding: '7px 14px', background: '#ef4444', border: 'none', borderRadius: 6, color: 'white', cursor: 'pointer', fontSize: 15 }}
                       >
                         Tout déselectionner
                       </button>
@@ -328,7 +328,7 @@ export default function SeriesPage({ onNavigate }: { onNavigate: (page: Page) =>
                       <button
                         type="button"
                         onClick={selectAll}
-                        style={{ padding: '5px 10px', background: '#1A5C38', border: 'none', borderRadius: 6, color: 'white', cursor: 'pointer', fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}
+                        style={{ padding: '7px 14px', background: '#1A5C38', border: 'none', borderRadius: 6, color: 'white', cursor: 'pointer', fontSize: 15, fontWeight: 600, whiteSpace: 'nowrap' }}
                       >
                         ✅ Tout ({filteredQuestions.length})
                       </button>
@@ -339,7 +339,7 @@ export default function SeriesPage({ onNavigate }: { onNavigate: (page: Page) =>
                     ) : filteredQuestions.length === 0 ? (
                       <div style={{ padding: 30, textAlign: 'center', color: '#64748b' }}>
                         Aucune question trouvée pour cette matière.<br />
-                        <span style={{ fontSize: 12 }}>Créez d'abord des questions dans la section Questions.</span>
+                        <span style={{ fontSize: 15 }}>Créez d'abord des questions dans la section Questions.</span>
                       </div>
                     ) : (
                       <div style={{ maxHeight: 350, overflowY: 'auto' }}>
@@ -366,16 +366,16 @@ export default function SeriesPage({ onNavigate }: { onNavigate: (page: Page) =>
                                 border: `1px solid ${isSelected ? '#4ade80' : '#475569'}`,
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                               }}>
-                                {isSelected && <span style={{ color: 'white', fontSize: 12, fontWeight: 700 }}>✓</span>}
+                                {isSelected && <span style={{ color: 'white', fontSize: 15, fontWeight: 700 }}>✓</span>}
                               </div>
                               <div style={{ flex: 1 }}>
-                                <div style={{ color: '#e2e8f0', fontSize: 13, lineHeight: 1.4 }}>
+                                <div style={{ color: '#e2e8f0', fontSize: 16, lineHeight: 1.4 }}>
                                   {q.enonce?.substring(0, 120)}{q.enonce?.length > 120 ? '...' : ''}
                                 </div>
                                 <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-                                  <span style={{ color: '#4ade80', fontSize: 11 }}>✓ {q.bonne_reponse}</span>
-                                  <span style={{ color: '#64748b', fontSize: 11 }}>{q.difficulte ?? 'MOYEN'}</span>
-                                  {q.serie_id && <span style={{ color: '#F59E0B', fontSize: 11 }}>⚠️ Déjà dans une série</span>}
+                                  <span style={{ color: '#4ade80', fontSize: 14 }}>✓ {q.bonne_reponse}</span>
+                                  <span style={{ color: '#64748b', fontSize: 14 }}>{q.difficulte ?? 'MOYEN'}</span>
+                                  {q.serie_id && <span style={{ color: '#F59E0B', fontSize: 14 }}>⚠️ Déjà dans une série</span>}
                                 </div>
                               </div>
                             </div>
@@ -384,7 +384,7 @@ export default function SeriesPage({ onNavigate }: { onNavigate: (page: Page) =>
                       </div>
                     )}
 
-                    <div style={{ padding: '8px 12px', borderTop: '1px solid #334155', background: '#1e293b', fontSize: 12, color: '#64748b' }}>
+                    <div style={{ padding: '8px 12px', borderTop: '1px solid #334155', background: '#1e293b', fontSize: 15, color: '#64748b' }}>
                       {selectedQuestionIds.size} question(s) sélectionnée(s) •
                       <span style={{ color: '#F59E0B', marginLeft: 4 }}>⚠️ = déjà assignée à une autre série</span>
                     </div>
@@ -398,7 +398,7 @@ export default function SeriesPage({ onNavigate }: { onNavigate: (page: Page) =>
                 type="submit"
                 style={{
                   padding: '10px 24px', background: '#1A5C38', border: 'none', borderRadius: 8,
-                  color: 'white', cursor: 'pointer', fontWeight: 700, fontSize: 14,
+                  color: 'white', cursor: 'pointer', fontWeight: 700, fontSize: 17,
                 }}
               >
                 ✅ Créer la série
@@ -410,7 +410,7 @@ export default function SeriesPage({ onNavigate }: { onNavigate: (page: Page) =>
               >
                 Annuler
               </button>
-              <span style={{ color: '#64748b', fontSize: 12, alignSelf: 'center', marginLeft: 8 }}>
+              <span style={{ color: '#64748b', fontSize: 15, alignSelf: 'center', marginLeft: 8 }}>
                 {selectedQuestionIds.size === 0 ? 'Aucune question sélectionnée (série vide possible)' : `${selectedQuestionIds.size} question(s) seront assignées`}
               </span>
             </div>
@@ -424,13 +424,13 @@ export default function SeriesPage({ onNavigate }: { onNavigate: (page: Page) =>
       ) : !selectedMatiere ? (
         <div style={{ background: '#1e293b', borderRadius: 12, padding: 40, textAlign: 'center', border: '1px solid #334155' }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>📚</div>
-          <div style={{ color: '#64748b', fontSize: 14 }}>Sélectionner une matière pour voir ses séries</div>
+          <div style={{ color: '#64748b', fontSize: 17 }}>Sélectionner une matière pour voir ses séries</div>
         </div>
       ) : series.length === 0 ? (
         <div style={{ background: '#1e293b', borderRadius: 12, padding: 40, textAlign: 'center', border: '1px solid #334155' }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>📭</div>
           <div style={{ color: '#f1f5f9', fontSize: 16, fontWeight: 600, marginBottom: 8 }}>Aucune série pour cette matière</div>
-          <div style={{ color: '#64748b', fontSize: 13, marginBottom: 16 }}>Créez une série manuellement en sélectionnant des questions, ou utilisez la génération automatique</div>
+          <div style={{ color: '#64748b', fontSize: 16, marginBottom: 16 }}>Créez une série manuellement en sélectionnant des questions, ou utilisez la génération automatique</div>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
             <button
               onClick={() => { setShowCreate(true); setShowQuestionPicker(false); }}
@@ -449,13 +449,13 @@ export default function SeriesPage({ onNavigate }: { onNavigate: (page: Page) =>
       ) : (
         <div style={{ background: '#1e293b', borderRadius: 12, border: '1px solid #334155', overflow: 'hidden' }}>
           <div style={{ padding: '10px 16px', borderBottom: '1px solid #334155', background: '#0f172a', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ color: '#94a3b8', fontSize: 13 }}>{series.length} série(s) · Les séries <span style={{ color: '#4ade80' }}>actives</span> sont visibles par les utilisateurs</span>
+            <span style={{ color: '#94a3b8', fontSize: 16 }}>{series.length} série(s) · Les séries <span style={{ color: '#4ade80' }}>actives</span> sont visibles par les utilisateurs</span>
           </div>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: '#0f172a' }}>
                 {['N°', 'Titre', 'Questions', 'Durée', 'Statut', 'Actions'].map(h => (
-                  <th key={h} style={{ padding: '10px 12px', color: '#64748b', fontSize: 12, fontWeight: 600, textAlign: 'left', textTransform: 'uppercase' }}>{h}</th>
+                  <th key={h} style={{ padding: '10px 12px', color: '#64748b', fontSize: 15, fontWeight: 600, textAlign: 'left', textTransform: 'uppercase' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -463,16 +463,16 @@ export default function SeriesPage({ onNavigate }: { onNavigate: (page: Page) =>
               {series.map((s, idx) => (
                 <tr key={s.id} style={{ borderTop: '1px solid #334155', background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}>
                   <td style={{ padding: '10px 12px', color: '#D4A017', fontWeight: 700 }}>#{s.numero}</td>
-                  <td style={{ padding: '10px 12px', color: '#e2e8f0', fontSize: 13 }}>{s.titre}</td>
-                  <td style={{ padding: '10px 12px', color: '#4ade80', fontSize: 13, fontWeight: 600 }}>{s.nb_questions} Q</td>
-                  <td style={{ padding: '10px 12px', color: '#64748b', fontSize: 12 }}>{s.duree_minutes} min</td>
+                  <td style={{ padding: '10px 12px', color: '#e2e8f0', fontSize: 16 }}>{s.titre}</td>
+                  <td style={{ padding: '10px 12px', color: '#4ade80', fontSize: 16, fontWeight: 600 }}>{s.nb_questions} Q</td>
+                  <td style={{ padding: '10px 12px', color: '#64748b', fontSize: 15 }}>{s.duree_minutes} min</td>
                   <td style={{ padding: '10px 12px' }}>
                     <button
                       onClick={() => handleToggle(s)}
                       style={{
                         background: s.actif ? 'rgba(74,222,128,0.1)' : 'rgba(239,68,68,0.1)',
                         border: 'none', color: s.actif ? '#4ade80' : '#ef4444',
-                        padding: '3px 10px', borderRadius: 10, cursor: 'pointer', fontSize: 12, fontWeight: 600,
+                        padding: '3px 10px', borderRadius: 10, cursor: 'pointer', fontSize: 15, fontWeight: 600,
                       }}
                     >
                       {s.actif ? '✅ Publiée' : '🔴 Masquée'}
@@ -497,6 +497,6 @@ export default function SeriesPage({ onNavigate }: { onNavigate: (page: Page) =>
   );
 }
 
-const lbl: React.CSSProperties = { display: 'block', color: '#94a3b8', fontSize: 12, marginBottom: 4, fontWeight: 500 };
-const inp: React.CSSProperties = { padding: '8px 10px', background: '#0f172a', border: '1px solid #334155', borderRadius: 6, color: '#e2e8f0', fontSize: 14 };
-const sel: React.CSSProperties = { padding: '8px 10px', background: '#0f172a', border: '1px solid #334155', borderRadius: 6, color: '#e2e8f0', fontSize: 14 };
+const lbl: React.CSSProperties = { display: 'block', color: '#94a3b8', fontSize: 15, marginBottom: 4, fontWeight: 500 };
+const inp: React.CSSProperties = { padding: '8px 10px', background: '#0f172a', border: '1px solid #334155', borderRadius: 6, color: '#e2e8f0', fontSize: 17 };
+const sel: React.CSSProperties = { padding: '8px 10px', background: '#0f172a', border: '1px solid #334155', borderRadius: 6, color: '#e2e8f0', fontSize: 17 };

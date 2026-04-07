@@ -84,7 +84,7 @@ export default function AnnoncesPage({ onNavigate }: { onNavigate: (page: Page) 
         <div style={{
           position: 'fixed', top: 16, right: 16, zIndex: 9999,
           background: toast.startsWith('✅') ? '#10b981' : '#ef4444',
-          color: 'white', padding: '10px 18px', borderRadius: 10, fontWeight: 600, fontSize: 14,
+          color: 'white', padding: '10px 18px', borderRadius: 10, fontWeight: 600, fontSize: 17,
           boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
         }}>{toast}</div>
       )}
@@ -92,15 +92,15 @@ export default function AnnoncesPage({ onNavigate }: { onNavigate: (page: Page) 
       <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h2 style={{ color: '#f1f5f9', fontSize: 22, fontWeight: 700 }}>Gestion des annonces</h2>
-          <p style={{ color: '#64748b', fontSize: 14 }}>{annonces.length} annonce(s) publiée(s)</p>
+          <p style={{ color: '#64748b', fontSize: 17 }}>{annonces.length} annonce(s) publiée(s)</p>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={loadAnnonces} style={{ background: '#334155', color: '#94a3b8', border: 'none', padding: '8px 16px', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}>
+          <button onClick={loadAnnonces} style={{ background: '#334155', color: '#94a3b8', border: 'none', padding: '8px 16px', borderRadius: 8, cursor: 'pointer', fontSize: 16 }}>
             🔄 Actualiser
           </button>
           <button onClick={() => setShowForm(!showForm)} style={{
             background: '#1A5C38', color: 'white', border: 'none',
-            padding: '8px 16px', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600,
+            padding: '8px 16px', borderRadius: 8, cursor: 'pointer', fontSize: 16, fontWeight: 600,
           }}>
             {showForm ? '✕ Fermer' : '✚ Nouvelle annonce'}
           </button>
@@ -114,34 +114,34 @@ export default function AnnoncesPage({ onNavigate }: { onNavigate: (page: Page) 
           <form onSubmit={handleCreate}>
             <div style={{ display: 'grid', gap: 14 }}>
               <div>
-                <label style={{ color: '#94a3b8', fontSize: 13, display: 'block', marginBottom: 6 }}>Titre *</label>
+                <label style={{ color: '#94a3b8', fontSize: 16, display: 'block', marginBottom: 6 }}>Titre *</label>
                 <input value={titre} onChange={e => setTitre(e.target.value)} required
-                  style={{ width: '100%', background: '#0f172a', border: '1px solid #334155', color: '#f1f5f9', padding: '10px 14px', borderRadius: 8, fontSize: 14, boxSizing: 'border-box' }}
+                  style={{ width: '100%', background: '#0f172a', border: '1px solid #334155', color: '#f1f5f9', padding: '10px 14px', borderRadius: 8, fontSize: 17, boxSizing: 'border-box' }}
                   placeholder="Titre de l'annonce..." />
               </div>
               <div>
-                <label style={{ color: '#94a3b8', fontSize: 13, display: 'block', marginBottom: 6 }}>Contenu *</label>
+                <label style={{ color: '#94a3b8', fontSize: 16, display: 'block', marginBottom: 6 }}>Contenu *</label>
                 <textarea value={contenu} onChange={e => setContenu(e.target.value)} required rows={4}
-                  style={{ width: '100%', background: '#0f172a', border: '1px solid #334155', color: '#f1f5f9', padding: '10px 14px', borderRadius: 8, fontSize: 14, resize: 'vertical', boxSizing: 'border-box' }}
+                  style={{ width: '100%', background: '#0f172a', border: '1px solid #334155', color: '#f1f5f9', padding: '10px 14px', borderRadius: 8, fontSize: 17, resize: 'vertical', boxSizing: 'border-box' }}
                   placeholder="Contenu de l'annonce..." />
               </div>
               <div>
-                <label style={{ color: '#94a3b8', fontSize: 13, display: 'block', marginBottom: 6 }}>Catégorie</label>
+                <label style={{ color: '#94a3b8', fontSize: 16, display: 'block', marginBottom: 6 }}>Catégorie</label>
                 <select value={categorie} onChange={e => setCategorie(e.target.value)}
-                  style={{ background: '#0f172a', border: '1px solid #334155', color: '#f1f5f9', padding: '10px 14px', borderRadius: 8, fontSize: 14 }}>
+                  style={{ background: '#0f172a', border: '1px solid #334155', color: '#f1f5f9', padding: '10px 14px', borderRadius: 8, fontSize: 17 }}>
                   {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div style={{ display: 'flex', gap: 10 }}>
                 <button type="submit" disabled={submitting} style={{
                   background: '#1A5C38', color: 'white', border: 'none',
-                  padding: '10px 24px', borderRadius: 8, cursor: 'pointer', fontSize: 14, fontWeight: 600,
+                  padding: '10px 24px', borderRadius: 8, cursor: 'pointer', fontSize: 17, fontWeight: 600,
                 }}>
                   {submitting ? '⏳ Publication...' : '📢 Publier'}
                 </button>
                 <button type="button" onClick={() => setShowForm(false)} style={{
                   background: '#334155', color: '#94a3b8', border: 'none',
-                  padding: '10px 20px', borderRadius: 8, cursor: 'pointer', fontSize: 14,
+                  padding: '10px 20px', borderRadius: 8, cursor: 'pointer', fontSize: 17,
                 }}>Annuler</button>
               </div>
             </div>
@@ -177,20 +177,20 @@ export default function AnnoncesPage({ onNavigate }: { onNavigate: (page: Page) 
                 }}>📢</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 6 }}>
-                    <span style={{ color: '#f1f5f9', fontWeight: 700, fontSize: 15 }}>{a.titre}</span>
+                    <span style={{ color: '#f1f5f9', fontWeight: 700, fontSize: 18 }}>{a.titre}</span>
                     <span style={{
                       background: catColor + '22', color: catColor,
-                      padding: '2px 8px', borderRadius: 12, fontSize: 11, fontWeight: 600,
+                      padding: '2px 8px', borderRadius: 12, fontSize: 14, fontWeight: 600,
                     }}>{a.categorie}</span>
-                    {!a.actif && <span style={{ background: '#ef444422', color: '#ef4444', padding: '2px 8px', borderRadius: 12, fontSize: 11 }}>MASQUÉE</span>}
+                    {!a.actif && <span style={{ background: '#ef444422', color: '#ef4444', padding: '2px 8px', borderRadius: 12, fontSize: 14 }}>MASQUÉE</span>}
                   </div>
-                  <p style={{ color: '#94a3b8', fontSize: 13, lineHeight: 1.6, margin: '0 0 8px 0' }}>{a.contenu}</p>
-                  <div style={{ color: '#475569', fontSize: 12 }}>📅 {formatDate(a.created_at)}</div>
+                  <p style={{ color: '#94a3b8', fontSize: 16, lineHeight: 1.6, margin: '0 0 8px 0' }}>{a.contenu}</p>
+                  <div style={{ color: '#475569', fontSize: 15 }}>📅 {formatDate(a.created_at)}</div>
                 </div>
                 <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
                   <button onClick={() => handleDelete(a.id, a.titre)} style={{
                     background: '#ef444422', color: '#ef4444', border: 'none',
-                    padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 13,
+                    padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 16,
                     display: 'flex', alignItems: 'center', gap: 4,
                   }}>🗑 Suppr.</button>
                 </div>

@@ -89,7 +89,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
           builder: (ctx) => AlertDialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             title: const Row(children: [Text('⌛', style: TextStyle(fontSize: 24)), SizedBox(width: 10), Text('Demande en cours', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700))]),
-            content: const Text('Votre demande est déjà en cours de traitement.\nNotre équipe vous contacte très prochainement.', style: TextStyle(height: 1.5, fontSize: 14)),
+            content: const Text('Votre demande est déjà en cours de traitement.\nNotre équipe vous contacte très prochainement.', style: TextStyle(height: 1.5, fontSize: 17)),
             actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('OK', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700)))],
           ),
         );
@@ -146,7 +146,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                               children: [
                                 Icon(Icons.local_fire_department_rounded, color: Colors.white, size: 14),
                                 SizedBox(width: 4),
-                                Text('OFFRE LIMITÉE', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w900)),
+                                Text('OFFRE LIMITÉE', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w900)),
                               ],
                             ),
                           ),
@@ -177,7 +177,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                             'Les candidats EF-FORT.BF arrivent PRÉPARÉS.\nIls connaissent les questions. Ils maîtrisent les matières.\nIls réussissent là où les autres échouent.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 13,
+                              fontSize: 16,
                               color: Colors.white70,
                               height: 1.5,
                             ),
@@ -233,7 +233,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                         children: [
                           Text('⭐', style: TextStyle(fontSize: 18)),
                           SizedBox(width: 8),
-                          Text('ACCÈS COMPLET EF-FORT.BF', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Color(0xFF1A5C38))),
+                          Text('ACCÈS COMPLET EF-FORT.BF', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: Color(0xFF1A5C38))),
                           SizedBox(width: 8),
                           Text('⭐', style: TextStyle(fontSize: 18)),
                         ],
@@ -284,7 +284,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                         ),
                         child: const Text(
                           '🔥 Offre spéciale valable jusqu\'au 3 mai 2026 — Ne ratez pas cette chance !',
-                          style: TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w700),
+                          style: TextStyle(fontSize: 15, color: AppColors.success, fontWeight: FontWeight.w700),
                         ),
                       ),
                     ],
@@ -374,7 +374,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                     const SizedBox(height: 12),
                     const Text(
                       'Chaque question traitée génère une copie PDF avec :',
-                      style: TextStyle(fontSize: 13, color: Colors.white70, height: 1.4),
+                      style: TextStyle(fontSize: 16, color: Colors.white70, height: 1.4),
                     ),
                     const SizedBox(height: 10),
                     ...[
@@ -391,10 +391,10 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                           Container(
                             width: 20, height: 20,
                             decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), shape: BoxShape.circle),
-                            child: const Center(child: Text('✓', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w900))),
+                            child: const Center(child: Text('✓', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w900))),
                           ),
                           const SizedBox(width: 8),
-                          Expanded(child: Text(item, style: const TextStyle(fontSize: 13, color: Colors.white, height: 1.4))),
+                          Expanded(child: Text(item, style: const TextStyle(fontSize: 16, color: Colors.white, height: 1.4))),
                         ],
                       ),
                     )),
@@ -407,7 +407,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                       ),
                       child: const Text(
                         '💡 Ces PDF deviennent votre bibliothèque personnelle ! Révisez même hors connexion, partagez-les, imprimez-les.',
-                        style: TextStyle(fontSize: 12, color: Colors.white, height: 1.5, fontStyle: FontStyle.italic),
+                        style: TextStyle(fontSize: 15, color: Colors.white, height: 1.5, fontStyle: FontStyle.italic),
                       ),
                     ),
                   ],
@@ -535,7 +535,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                           SizedBox(width: 10),
                           Text(
                             'J\'AI PAYÉ — ENVOYER LA PREUVE',
-                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, letterSpacing: 0.3),
+                            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, letterSpacing: 0.3),
                           ),
                         ],
                       ),
@@ -557,7 +557,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                         ),
                         child: const Text(
                           "J'AI DÉJÀ PAYÉ — SOUMETTRE MA DEMANDE",
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                         ),
                       ),
                     ),
@@ -586,7 +586,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                                 children: [
                                   Text('🟠', style: TextStyle(fontSize: 20)),
                                   SizedBox(width: 10),
-                                  Text('Orange Money', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: Color(0xFFFF7900))),
+                                  Text('Orange Money', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17, color: Color(0xFFFF7900))),
                                 ],
                               ),
                             ),
@@ -637,8 +637,8 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Autre moyen de paiement ?', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.textDark)),
-                            Text('Contactez notre équipe WhatsApp.', style: TextStyle(fontSize: 12, color: AppColors.textLight)),
+                            const Text('Autre moyen de paiement ?', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: AppColors.textDark)),
+                            Text('Contactez notre équipe WhatsApp.', style: TextStyle(fontSize: 15, color: AppColors.textLight)),
                           ],
                         ),
                       ),
@@ -666,7 +666,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                     Expanded(
                       child: Text(
                         'Paiement 100% sécurisé via Orange Money. Chaque transaction est vérifiée manuellement par notre équipe avant activation.',
-                        style: TextStyle(fontSize: 11.5, color: AppColors.textDark, height: 1.5),
+                        style: TextStyle(fontSize: 141.5, color: AppColors.textDark, height: 1.5),
                       ),
                     ),
                   ],
@@ -695,7 +695,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
           children: [
             Text(valeur, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Color(0xFFD4A017))),
             const SizedBox(height: 2),
-            Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 10, color: Colors.white70, fontWeight: FontWeight.w500)),
+            Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: Colors.white70, fontWeight: FontWeight.w500)),
           ],
         ),
       ),
@@ -736,9 +736,9 @@ class _AbonnementScreenState extends State<AbonnementScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(titre, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                  Text(titre, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.textDark)),
                   const SizedBox(height: 2),
-                  Text(desc, style: const TextStyle(fontSize: 12, color: AppColors.textLight, height: 1.4)),
+                  Text(desc, style: const TextStyle(fontSize: 15, color: AppColors.textLight, height: 1.4)),
                 ],
               ),
             ),
@@ -786,8 +786,8 @@ class _AbonnementScreenState extends State<AbonnementScreen>
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(t['nom']!, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textDark)),
-                  Text('📍 ${t['ville'] ?? 'Burkina Faso'}  ${t['note']!}', style: const TextStyle(fontSize: 11)),
+                  Text(t['nom']!, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                  Text('📍 ${t['ville'] ?? 'Burkina Faso'}  ${t['note']!}', style: const TextStyle(fontSize: 14)),
                 ],
               ),
             ],
@@ -795,7 +795,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
           const SizedBox(height: 8),
           Text(
             '"${t['texte']}"',
-            style: const TextStyle(fontSize: 12.5, color: AppColors.textDark, height: 1.5, fontStyle: FontStyle.italic),
+            style: const TextStyle(fontSize: 142.5, color: AppColors.textDark, height: 1.5, fontStyle: FontStyle.italic),
           ),
         ],
       ),
@@ -825,9 +825,9 @@ class _AbonnementScreenState extends State<AbonnementScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(titre, style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                Text(titre, style: const TextStyle(fontSize: 143.5, fontWeight: FontWeight.w700, color: AppColors.textDark)),
                 const SizedBox(height: 3),
-                Text(description, style: const TextStyle(fontSize: 11.5, color: AppColors.textLight, height: 1.4)),
+                Text(description, style: const TextStyle(fontSize: 141.5, color: AppColors.textLight, height: 1.4)),
                 if (action != null) ...[const SizedBox(height: 10), action],
               ],
             ),
@@ -887,7 +887,7 @@ class _OffreCountdownWidgetState extends State<OffreCountdownWidget> {
       return Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.red.shade200)),
-        child: const Text('⏰ Offre expirée', style: TextStyle(color: Colors.red, fontWeight: FontWeight.w700, fontSize: 14), textAlign: TextAlign.center),
+        child: const Text('⏰ Offre expirée', style: TextStyle(color: Colors.red, fontWeight: FontWeight.w700, fontSize: 17), textAlign: TextAlign.center),
       );
     }
 
@@ -902,7 +902,7 @@ class _OffreCountdownWidgetState extends State<OffreCountdownWidget> {
         children: [
           const Text(
             '⏰ OFFRE LIMITÉE — EXPIRE DANS :',
-            style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: 1.0),
+            style: TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w600, letterSpacing: 1.0),
           ),
           const SizedBox(height: 10),
           Row(
@@ -923,7 +923,7 @@ class _OffreCountdownWidgetState extends State<OffreCountdownWidget> {
             decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(20)),
             child: const Text(
               '🔥 12 000 FCFA au lieu de 25 000 FCFA — Économisez 13 000 FCFA !',
-              style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700),
+              style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700),
               textAlign: TextAlign.center,
             ),
           ),
@@ -941,7 +941,7 @@ class _OffreCountdownWidgetState extends State<OffreCountdownWidget> {
           child: Text(value, style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900, fontFamily: 'monospace')),
         ),
         const SizedBox(height: 4),
-        Text(label, style: const TextStyle(color: Colors.white60, fontSize: 10, fontWeight: FontWeight.w600, letterSpacing: 0.5)),
+        Text(label, style: const TextStyle(color: Colors.white60, fontSize: 14, fontWeight: FontWeight.w600, letterSpacing: 0.5)),
       ],
     );
   }

@@ -357,7 +357,7 @@ export default function MatieresPage({ onNavigate }: { onNavigate: (page: Page) 
           position: 'fixed', top: 70, right: 20, padding: '12px 20px',
           background: toastType === 'success' ? '#065f46' : '#7f1d1d',
           border: `1px solid ${toastType === 'success' ? '#4ade80' : '#ef4444'}`,
-          borderRadius: 10, color: '#fff', fontSize: 14, zIndex: 9999,
+          borderRadius: 10, color: '#fff', fontSize: 17, zIndex: 9999,
           boxShadow: '0 4px 20px rgba(0,0,0,0.4)', maxWidth: 380,
         }}>{toast}</div>
       )}
@@ -367,7 +367,7 @@ export default function MatieresPage({ onNavigate }: { onNavigate: (page: Page) 
         <h2 style={{ color: S.text, fontSize: 22, fontWeight: 700, marginBottom: 4 }}>
           📚 Gestion des Matières & Séries QCM
         </h2>
-        <p style={{ color: S.muted, fontSize: 13 }}>
+        <p style={{ color: S.muted, fontSize: 16 }}>
           Sélectionnez une matière → une série → gérez les questions (manuel ou import)
         </p>
       </div>
@@ -377,12 +377,12 @@ export default function MatieresPage({ onNavigate }: { onNavigate: (page: Page) 
         {/* ── Colonne 1 : Matières ─────────────────────────────── */}
         <div style={{ background: S.card, borderRadius: 12, border: `1px solid ${S.border}`, overflow: 'hidden' }}>
           <div style={{ padding: '14px 16px', borderBottom: `1px solid ${S.border}`, background: '#0f172a' }}>
-            <h3 style={{ color: S.text, fontSize: 14, fontWeight: 700, margin: 0 }}>
+            <h3 style={{ color: S.text, fontSize: 17, fontWeight: 700, margin: 0 }}>
               🗂 Matières ({matieres.length})
             </h3>
           </div>
           {loading ? (
-            <div style={{ padding: 20, textAlign: 'center', color: S.muted, fontSize: 13 }}>Chargement…</div>
+            <div style={{ padding: 20, textAlign: 'center', color: S.muted, fontSize: 16 }}>Chargement…</div>
           ) : (
             <div style={{ maxHeight: 600, overflowY: 'auto' }}>
               {matieres.map(m => (
@@ -396,8 +396,8 @@ export default function MatieresPage({ onNavigate }: { onNavigate: (page: Page) 
                     transition: 'all 0.2s',
                   }}
                 >
-                  <div style={{ color: S.text, fontSize: 13, fontWeight: 600 }}>{m.nom}</div>
-                  <div style={{ color: S.muted, fontSize: 11, marginTop: 2 }}>
+                  <div style={{ color: S.text, fontSize: 16, fontWeight: 600 }}>{m.nom}</div>
+                  <div style={{ color: S.muted, fontSize: 14, marginTop: 2 }}>
                     {m.total_questions ?? m.nb_questions ?? '?'} questions
                     {m.nb_series ? ` · ${m.nb_series} séries` : ''}
                   </div>
@@ -410,27 +410,27 @@ export default function MatieresPage({ onNavigate }: { onNavigate: (page: Page) 
         {/* ── Colonne 2 : Séries ────────────────────────────────── */}
         <div style={{ background: S.card, borderRadius: 12, border: `1px solid ${S.border}`, overflow: 'hidden' }}>
           <div style={{ padding: '14px 16px', borderBottom: `1px solid ${S.border}`, background: '#0f172a', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3 style={{ color: S.text, fontSize: 14, fontWeight: 700, margin: 0 }}>
+            <h3 style={{ color: S.text, fontSize: 17, fontWeight: 700, margin: 0 }}>
               📋 Séries {selectedMatiere ? `(${series.length})` : ''}
             </h3>
             {selectedMatiere && (
               <button onClick={() => setShowCreateSerie(true)} style={{
                 background: S.green, color: '#fff', border: 'none', borderRadius: 6,
-                padding: '4px 10px', fontSize: 12, cursor: 'pointer', fontWeight: 600,
+                padding: '6px 14px', fontSize: 15, cursor: 'pointer', fontWeight: 600,
               }}>+ Nouvelle</button>
             )}
           </div>
 
           {!selectedMatiere ? (
-            <div style={{ padding: 20, textAlign: 'center', color: S.muted, fontSize: 13 }}>
+            <div style={{ padding: 20, textAlign: 'center', color: S.muted, fontSize: 16 }}>
               ← Choisissez une matière
             </div>
           ) : loadingSeries ? (
-            <div style={{ padding: 20, textAlign: 'center', color: S.muted, fontSize: 13 }}>Chargement…</div>
+            <div style={{ padding: 20, textAlign: 'center', color: S.muted, fontSize: 16 }}>Chargement…</div>
           ) : series.length === 0 ? (
-            <div style={{ padding: 20, textAlign: 'center', color: S.muted, fontSize: 13 }}>
+            <div style={{ padding: 20, textAlign: 'center', color: S.muted, fontSize: 16 }}>
               Aucune série.<br />
-              <span style={{ color: S.green, cursor: 'pointer', fontSize: 12 }}
+              <span style={{ color: S.green, cursor: 'pointer', fontSize: 15 }}
                 onClick={() => setShowCreateSerie(true)}>+ Créer la première série</span>
             </div>
           ) : (
@@ -447,8 +447,8 @@ export default function MatieresPage({ onNavigate }: { onNavigate: (page: Page) 
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div onClick={() => selectSerie(s)} style={{ flex: 1 }}>
-                      <div style={{ color: S.text, fontSize: 13, fontWeight: 600 }}>{s.titre}</div>
-                      <div style={{ color: S.muted, fontSize: 11, marginTop: 2 }}>
+                      <div style={{ color: S.text, fontSize: 16, fontWeight: 600 }}>{s.titre}</div>
+                      <div style={{ color: S.muted, fontSize: 14, marginTop: 2 }}>
                         {s.nb_questions ?? s.count ?? '?'} questions · {s.niveau ?? 'Intermédiaire'}
                       </div>
                     </div>
@@ -468,23 +468,23 @@ export default function MatieresPage({ onNavigate }: { onNavigate: (page: Page) 
         <div style={{ background: S.card, borderRadius: 12, border: `1px solid ${S.border}`, overflow: 'hidden' }}>
           <div style={{ padding: '14px 16px', borderBottom: `1px solid ${S.border}`, background: '#0f172a' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-              <h3 style={{ color: S.text, fontSize: 14, fontWeight: 700, margin: 0 }}>
+              <h3 style={{ color: S.text, fontSize: 17, fontWeight: 700, margin: 0 }}>
                 ❓ Questions {selectedSerie ? `(${filteredQuestions.length}/${questions.length})` : ''}
               </h3>
               {selectedSerie && (
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   <button onClick={() => setShowCreateQuestion(true)} style={{
                     background: S.green, color: '#fff', border: 'none', borderRadius: 6,
-                    padding: '4px 10px', fontSize: 12, cursor: 'pointer', fontWeight: 600,
+                    padding: '6px 14px', fontSize: 15, cursor: 'pointer', fontWeight: 600,
                   }}>+ Manuel</button>
                   <button onClick={() => setShowImport(true)} style={{
                     background: S.purple, color: '#fff', border: 'none', borderRadius: 6,
-                    padding: '4px 10px', fontSize: 12, cursor: 'pointer', fontWeight: 600,
+                    padding: '6px 14px', fontSize: 15, cursor: 'pointer', fontWeight: 600,
                   }}>📤 Import</button>
                   {questions.length > 0 && (
                     <button onClick={handleExport} style={{
                       background: '#0f172a', color: S.text, border: `1px solid ${S.border}`, borderRadius: 6,
-                      padding: '4px 10px', fontSize: 12, cursor: 'pointer',
+                      padding: '6px 14px', fontSize: 15, cursor: 'pointer',
                     }}>⬇ CSV</button>
                   )}
                 </div>
@@ -498,20 +498,20 @@ export default function MatieresPage({ onNavigate }: { onNavigate: (page: Page) 
                 style={{
                   marginTop: 10, width: '100%', padding: '7px 12px',
                   background: S.input, border: `1px solid ${S.border}`, borderRadius: 6,
-                  color: S.text, fontSize: 13, boxSizing: 'border-box',
+                  color: S.text, fontSize: 16, boxSizing: 'border-box',
                 }}
               />
             )}
           </div>
 
           {!selectedSerie ? (
-            <div style={{ padding: 40, textAlign: 'center', color: S.muted, fontSize: 13 }}>
+            <div style={{ padding: 40, textAlign: 'center', color: S.muted, fontSize: 16 }}>
               ← Choisissez une série pour voir ses questions
             </div>
           ) : loadingQuestions ? (
             <div style={{ padding: 40, textAlign: 'center', color: S.muted }}>⏳ Chargement…</div>
           ) : filteredQuestions.length === 0 ? (
-            <div style={{ padding: 40, textAlign: 'center', color: S.muted, fontSize: 13 }}>
+            <div style={{ padding: 40, textAlign: 'center', color: S.muted, fontSize: 16 }}>
               Aucune question.{' '}
               <span style={{ color: S.green, cursor: 'pointer' }} onClick={() => setShowCreateQuestion(true)}>
                 + Ajouter
@@ -525,22 +525,22 @@ export default function MatieresPage({ onNavigate }: { onNavigate: (page: Page) 
                   display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8,
                 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ color: S.muted, fontSize: 11, marginBottom: 4 }}>#{i + 1}</div>
-                    <div style={{ color: S.text, fontSize: 13, lineHeight: 1.4, wordBreak: 'break-word' }}>
+                    <div style={{ color: S.muted, fontSize: 14, marginBottom: 4 }}>#{i + 1}</div>
+                    <div style={{ color: S.text, fontSize: 16, lineHeight: 1.4, wordBreak: 'break-word' }}>
                       {q.enonce?.substring(0, 120)}{q.enonce?.length > 120 ? '…' : ''}
                     </div>
-                    <div style={{ color: S.success, fontSize: 11, marginTop: 4 }}>
+                    <div style={{ color: S.success, fontSize: 14, marginTop: 4 }}>
                       ✓ Réponse : {q.bonne_reponse} · {q.difficulte}
                     </div>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     <button onClick={() => setEditQuestion({ ...q })} style={{
                       background: S.blue, color: '#fff', border: 'none', borderRadius: 5,
-                      padding: '3px 8px', fontSize: 11, cursor: 'pointer',
+                      padding: '3px 8px', fontSize: 14, cursor: 'pointer',
                     }}>✏️</button>
                     <button onClick={() => handleDeleteQuestion(q)} style={{
                       background: '#7f1d1d', color: '#fff', border: 'none', borderRadius: 5,
-                      padding: '3px 8px', fontSize: 11, cursor: 'pointer',
+                      padding: '3px 8px', fontSize: 14, cursor: 'pointer',
                     }}>🗑</button>
                   </div>
                 </div>
@@ -692,10 +692,10 @@ export default function MatieresPage({ onNavigate }: { onNavigate: (page: Page) 
                 marginBottom: 12, cursor: 'pointer', background: '#0f172a',
               }} onClick={() => fileInputRef.current?.click()}>
                 <div style={{ fontSize: 28, marginBottom: 8 }}>📎</div>
-                <div style={{ color: S.text, fontSize: 14, fontWeight: 600 }}>
+                <div style={{ color: S.text, fontSize: 17, fontWeight: 600 }}>
                   {importFile ? importFile.name : 'Cliquer pour choisir un fichier'}
                 </div>
-                <div style={{ color: S.muted, fontSize: 12, marginTop: 4 }}>
+                <div style={{ color: S.muted, fontSize: 15, marginTop: 4 }}>
                   Formats acceptés : .csv, .json, .txt, .md, .markdown
                 </div>
                 <input ref={fileInputRef} type="file" accept=".csv,.json,.txt,.md,.markdown,.xlsx"
@@ -704,10 +704,10 @@ export default function MatieresPage({ onNavigate }: { onNavigate: (page: Page) 
             </div>
           ) : (
             <div>
-              <div style={{ color: S.muted, fontSize: 12, marginBottom: 8 }}>
+              <div style={{ color: S.muted, fontSize: 15, marginBottom: 8 }}>
                 Format attendu (coller vos questions) :
               </div>
-              <div style={{ background: '#0f172a', borderRadius: 6, padding: 10, marginBottom: 10, border: `1px solid ${S.border}`, fontSize: 11, color: '#94a3b8', fontFamily: 'monospace' }}>
+              <div style={{ background: '#0f172a', borderRadius: 6, padding: 10, marginBottom: 10, border: `1px solid ${S.border}`, fontSize: 14, color: '#94a3b8', fontFamily: 'monospace' }}>
                 Question : Quelle est la capitale du Burkina Faso ?<br />
                 A) Bobo-Dioulasso<br />
                 B) Ouagadougou<br />
@@ -718,25 +718,25 @@ export default function MatieresPage({ onNavigate }: { onNavigate: (page: Page) 
               </div>
               <textarea value={importText} onChange={e => handleTextChange(e.target.value)}
                 placeholder="Collez ici vos questions au format ci-dessus…"
-                rows={8} style={{ ...inputStyle, width: '100%', resize: 'vertical', fontSize: 12, fontFamily: 'monospace' }} />
+                rows={8} style={{ ...inputStyle, width: '100%', resize: 'vertical', fontSize: 15, fontFamily: 'monospace' }} />
             </div>
           )}
 
           {/* Prévisualisation */}
           {importPreview.length > 0 && (
             <div style={{ marginTop: 12 }}>
-              <div style={{ color: S.success, fontSize: 13, fontWeight: 600, marginBottom: 8 }}>
+              <div style={{ color: S.success, fontSize: 16, fontWeight: 600, marginBottom: 8 }}>
                 ✅ {importPreview.length} questions détectées :
               </div>
               <div style={{ maxHeight: 180, overflowY: 'auto', background: '#0f172a', borderRadius: 8, padding: 10, border: `1px solid ${S.border}` }}>
                 {importPreview.slice(0, 5).map((q, i) => (
                   <div key={i} style={{ borderBottom: i < 4 ? `1px solid #1e293b` : 'none', paddingBottom: 6, marginBottom: 6 }}>
-                    <div style={{ color: S.text, fontSize: 12 }}>{i + 1}. {q.enonce?.substring(0, 80)}</div>
-                    <div style={{ color: S.success, fontSize: 11 }}>→ Réponse : {q.bonne_reponse}</div>
+                    <div style={{ color: S.text, fontSize: 15 }}>{i + 1}. {q.enonce?.substring(0, 80)}</div>
+                    <div style={{ color: S.success, fontSize: 14 }}>→ Réponse : {q.bonne_reponse}</div>
                   </div>
                 ))}
                 {importPreview.length > 5 && (
-                  <div style={{ color: S.muted, fontSize: 11, textAlign: 'center' }}>…et {importPreview.length - 5} autres questions</div>
+                  <div style={{ color: S.muted, fontSize: 14, textAlign: 'center' }}>…et {importPreview.length - 5} autres questions</div>
                 )}
               </div>
             </div>
@@ -745,7 +745,7 @@ export default function MatieresPage({ onNavigate }: { onNavigate: (page: Page) 
           {/* Résultat import */}
           {importResult && (
             <div style={{ marginTop: 12, padding: 12, background: '#065f46', borderRadius: 8, border: '1px solid #4ade80' }}>
-              <div style={{ color: S.success, fontWeight: 700, fontSize: 14 }}>
+              <div style={{ color: S.success, fontWeight: 700, fontSize: 17 }}>
                 ✅ Import terminé : {importResult.success}/{importResult.total} questions importées
                 {importResult.errors > 0 && ` (${importResult.errors} erreurs)`}
               </div>
@@ -793,7 +793,7 @@ function Modal({ title, onClose, children, wide = false }: {
 function FormField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label style={{ display: 'block', color: '#94a3b8', fontSize: 12, fontWeight: 600, marginBottom: 5 }}>{label}</label>
+      <label style={{ display: 'block', color: '#94a3b8', fontSize: 15, fontWeight: 600, marginBottom: 5 }}>{label}</label>
       {children}
     </div>
   );
@@ -802,15 +802,15 @@ function FormField({ label, children }: { label: string; children: React.ReactNo
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '8px 12px', background: '#0f172a',
   border: '1px solid #334155', borderRadius: 6, color: '#e2e8f0',
-  fontSize: 13, boxSizing: 'border-box',
+  fontSize: 16, boxSizing: 'border-box',
 };
 
 const btnPrimary: React.CSSProperties = {
   background: '#1A5C38', color: '#fff', border: 'none', borderRadius: 7,
-  padding: '8px 18px', fontSize: 13, cursor: 'pointer', fontWeight: 600,
+  padding: '8px 18px', fontSize: 16, cursor: 'pointer', fontWeight: 600,
 };
 
 const btnSecondary: React.CSSProperties = {
   background: '#1e293b', color: '#e2e8f0', border: '1px solid #334155',
-  borderRadius: 7, padding: '8px 18px', fontSize: 13, cursor: 'pointer',
+  borderRadius: 7, padding: '8px 18px', fontSize: 16, cursor: 'pointer',
 };

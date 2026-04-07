@@ -344,7 +344,7 @@ Explication : L'ANFP organise les concours de la fonction publique.`;
           position: 'fixed', top: 70, right: 20, padding: '12px 20px',
           background: toastType === 'success' ? '#065f46' : '#7f1d1d',
           border: `1px solid ${toastType === 'success' ? S.success : S.red}`,
-          borderRadius: 10, color: '#fff', fontSize: 14, zIndex: 9999,
+          borderRadius: 10, color: '#fff', fontSize: 17, zIndex: 9999,
           boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
         }}>{toast}</div>
       )}
@@ -354,7 +354,7 @@ Explication : L'ANFP organise les concours de la fonction publique.`;
         <h2 style={{ color: S.text, fontSize: 22, fontWeight: 700, marginBottom: 4 }}>
           📤 Import / Export de QCM
         </h2>
-        <p style={{ color: S.muted, fontSize: 13 }}>
+        <p style={{ color: S.muted, fontSize: 16 }}>
           Importez vos questions en masse ou exportez pour sauvegarde. Formats : CSV, JSON, Markdown/Texte
         </p>
       </div>
@@ -371,7 +371,7 @@ Explication : L'ANFP organise les concours de la fonction publique.`;
             borderBottom: activeTab === tab.key ? `2px solid ${S.green}` : '2px solid transparent',
             color: activeTab === tab.key ? S.text : S.muted,
             fontWeight: activeTab === tab.key ? 700 : 400,
-            cursor: 'pointer', fontSize: 14,
+            cursor: 'pointer', fontSize: 17,
           }}>
             {tab.icon} {tab.label}
           </button>
@@ -385,7 +385,7 @@ Explication : L'ANFP organise les concours de la fonction publique.`;
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {/* Destination */}
             <div style={{ background: S.card, borderRadius: 12, border: `1px solid ${S.border}`, padding: 18 }}>
-              <h4 style={{ color: S.text, fontSize: 14, fontWeight: 700, marginBottom: 14 }}>📌 Destination</h4>
+              <h4 style={{ color: S.text, fontSize: 17, fontWeight: 700, marginBottom: 14 }}>📌 Destination</h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div>
                   <label style={labelStyle}>Matière cible *</label>
@@ -402,7 +402,7 @@ Explication : L'ANFP organise les concours de la fonction publique.`;
                   <div>
                     <label style={labelStyle}>Série (optionnel)</label>
                     {loadingSeries ? (
-                      <div style={{ color: S.muted, fontSize: 12 }}>Chargement…</div>
+                      <div style={{ color: S.muted, fontSize: 15 }}>Chargement…</div>
                     ) : (
                       <select value={selectedSerie} onChange={e => setSelectedSerie(e.target.value)} style={inputStyle}>
                         <option value="">— Sans série —</option>
@@ -416,7 +416,7 @@ Explication : L'ANFP organise les concours de la fonction publique.`;
 
             {/* Mode saisie */}
             <div style={{ background: S.card, borderRadius: 12, border: `1px solid ${S.border}`, padding: 18 }}>
-              <h4 style={{ color: S.text, fontSize: 14, fontWeight: 700, marginBottom: 14 }}>📄 Source des données</h4>
+              <h4 style={{ color: S.text, fontSize: 17, fontWeight: 700, marginBottom: 14 }}>📄 Source des données</h4>
               <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
                 {[
                   { key: 'file', label: '📁 Fichier' },
@@ -427,7 +427,7 @@ Explication : L'ANFP organise les concours de la fonction publique.`;
                     border: `1px solid ${inputMode === m.key ? S.green : S.border}`,
                     background: inputMode === m.key ? `${S.green}30` : '#0f172a',
                     color: inputMode === m.key ? S.success : S.muted,
-                    cursor: 'pointer', fontSize: 13, fontWeight: inputMode === m.key ? 700 : 400,
+                    cursor: 'pointer', fontSize: 16, fontWeight: inputMode === m.key ? 700 : 400,
                   }}>{m.label}</button>
                 ))}
               </div>
@@ -438,10 +438,10 @@ Explication : L'ANFP organise les concours de la fonction publique.`;
                   padding: '20px 16px', textAlign: 'center', cursor: 'pointer', background: '#0f172a',
                 }}>
                   <div style={{ fontSize: 30, marginBottom: 8 }}>{file ? '✅' : '📎'}</div>
-                  <div style={{ color: S.text, fontSize: 13, fontWeight: 600 }}>
+                  <div style={{ color: S.text, fontSize: 16, fontWeight: 600 }}>
                     {file ? file.name : 'Cliquer pour choisir'}
                   </div>
-                  <div style={{ color: S.muted, fontSize: 11, marginTop: 4 }}>
+                  <div style={{ color: S.muted, fontSize: 14, marginTop: 4 }}>
                     .csv, .json, .txt, .md, .markdown
                   </div>
                   <input ref={fileRef} type="file" accept=".csv,.json,.txt,.md,.markdown"
@@ -450,7 +450,7 @@ Explication : L'ANFP organise les concours de la fonction publique.`;
               ) : (
                 <textarea value={textInput} onChange={e => handleTextChange(e.target.value)}
                   placeholder={`Question : Quelle est la capitale du Burkina Faso ?\nA) Bobo-Dioulasso\nB) Ouagadougou\nC) Koudougou\nD) Banfora\nBonne réponse : B\nExplication : Ouagadougou est la capitale.`}
-                  rows={8} style={{ ...inputStyle, resize: 'vertical', fontSize: 12, fontFamily: 'monospace' }} />
+                  rows={8} style={{ ...inputStyle, resize: 'vertical', fontSize: 15, fontFamily: 'monospace' }} />
               )}
             </div>
 
@@ -458,7 +458,7 @@ Explication : L'ANFP organise les concours de la fonction publique.`;
             {parsed.length > 0 && (
               <div style={{ background: '#0f2a1a', borderRadius: 12, border: `1px solid ${S.success}`, padding: 16 }}>
                 <div style={{ color: S.success, fontWeight: 700, fontSize: 18 }}>{parsed.length}</div>
-                <div style={{ color: S.muted, fontSize: 12 }}>questions prêtes à importer</div>
+                <div style={{ color: S.muted, fontSize: 15 }}>questions prêtes à importer</div>
                 <button onClick={handleImport} disabled={importing || !selectedMatiere}
                   style={{ ...btnPrimary, marginTop: 12, width: '100%', opacity: !selectedMatiere ? 0.5 : 1 }}>
                   {importing ? '⏳ Import en cours…' : `✅ Importer ${parsed.length} questions`}
@@ -468,10 +468,10 @@ Explication : L'ANFP organise les concours de la fonction publique.`;
 
             {importResult && (
               <div style={{ background: '#065f46', borderRadius: 10, border: `1px solid ${S.success}`, padding: 14 }}>
-                <div style={{ color: S.success, fontWeight: 700, fontSize: 14 }}>
+                <div style={{ color: S.success, fontWeight: 700, fontSize: 17 }}>
                   ✅ Import terminé !
                 </div>
-                <div style={{ color: S.text, fontSize: 13, marginTop: 6 }}>
+                <div style={{ color: S.text, fontSize: 16, marginTop: 6 }}>
                   {importResult.success} importées · {importResult.errors} erreurs · {importResult.total} total
                 </div>
               </div>
@@ -481,12 +481,12 @@ Explication : L'ANFP organise les concours de la fonction publique.`;
           {/* Prévisualisation droite */}
           <div style={{ background: S.card, borderRadius: 12, border: `1px solid ${S.border}`, overflow: 'hidden' }}>
             <div style={{ padding: '12px 16px', background: '#0f172a', borderBottom: `1px solid ${S.border}` }}>
-              <h4 style={{ color: S.text, fontSize: 14, fontWeight: 700, margin: 0 }}>
+              <h4 style={{ color: S.text, fontSize: 17, fontWeight: 700, margin: 0 }}>
                 👁 Prévisualisation ({parsed.length} questions)
               </h4>
             </div>
             {parsed.length === 0 ? (
-              <div style={{ padding: 40, textAlign: 'center', color: S.muted, fontSize: 13 }}>
+              <div style={{ padding: 40, textAlign: 'center', color: S.muted, fontSize: 16 }}>
                 <div style={{ fontSize: 40, marginBottom: 12 }}>📂</div>
                 Chargez un fichier ou saisissez vos questions pour prévisualiser
               </div>
@@ -494,10 +494,10 @@ Explication : L'ANFP organise les concours de la fonction publique.`;
               <div style={{ maxHeight: 560, overflowY: 'auto' }}>
                 {parsed.map((q, i) => (
                   <div key={i} style={{ padding: '12px 16px', borderBottom: `1px solid #1e293b` }}>
-                    <div style={{ color: S.muted, fontSize: 11, marginBottom: 4 }}>
+                    <div style={{ color: S.muted, fontSize: 14, marginBottom: 4 }}>
                       #{i + 1} · Difficulté : {q.difficulte}
                     </div>
-                    <div style={{ color: S.text, fontSize: 13, fontWeight: 600, lineHeight: 1.4, marginBottom: 6 }}>
+                    <div style={{ color: S.text, fontSize: 16, fontWeight: 600, lineHeight: 1.4, marginBottom: 6 }}>
                       {q.enonce}
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
@@ -508,18 +508,18 @@ Explication : L'ANFP organise les concours de la fonction publique.`;
                         ...(q.option_d ? [{ k: 'D', v: q.option_d }] : []),
                       ].map(({ k, v }) => (
                         <div key={k} style={{
-                          padding: '4px 8px', borderRadius: 5,
+                          padding: '6px 12px', borderRadius: 5,
                           background: q.bonne_reponse === k ? '#065f46' : '#0f172a',
                           border: `1px solid ${q.bonne_reponse === k ? S.success : S.border}`,
                           color: q.bonne_reponse === k ? S.success : S.muted,
-                          fontSize: 12,
+                          fontSize: 15,
                         }}>
                           <strong>{k})</strong> {v}
                         </div>
                       ))}
                     </div>
                     {q.explication && (
-                      <div style={{ color: S.muted, fontSize: 11, marginTop: 6, fontStyle: 'italic' }}>
+                      <div style={{ color: S.muted, fontSize: 14, marginTop: 6, fontStyle: 'italic' }}>
                         💡 {q.explication}
                       </div>
                     )}
@@ -535,7 +535,7 @@ Explication : L'ANFP organise les concours de la fonction publique.`;
       {activeTab === 'export' && (
         <div style={{ maxWidth: 500 }}>
           <div style={{ background: S.card, borderRadius: 12, border: `1px solid ${S.border}`, padding: 24 }}>
-            <h4 style={{ color: S.text, fontSize: 15, fontWeight: 700, marginBottom: 20 }}>
+            <h4 style={{ color: S.text, fontSize: 18, fontWeight: 700, marginBottom: 20 }}>
               📤 Exporter des questions
             </h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -572,7 +572,7 @@ Explication : L'ANFP organise les concours de la fonction publique.`;
                       border: `1px solid ${exportFormat === f.k ? S.green : S.border}`,
                       background: exportFormat === f.k ? `${S.green}30` : '#0f172a',
                       color: exportFormat === f.k ? S.success : S.muted,
-                      cursor: 'pointer', fontSize: 13, fontWeight: exportFormat === f.k ? 700 : 400,
+                      cursor: 'pointer', fontSize: 16, fontWeight: exportFormat === f.k ? 700 : 400,
                     }}>{f.label}</button>
                   ))}
                 </div>
@@ -590,7 +590,7 @@ Explication : L'ANFP organise les concours de la fonction publique.`;
       {/* ══ TAB : TEMPLATES ═══════════════════════════════════ */}
       {activeTab === 'template' && (
         <div>
-          <div style={{ marginBottom: 16, color: S.text, fontSize: 14 }}>
+          <div style={{ marginBottom: 16, color: S.text, fontSize: 17 }}>
             Téléchargez un modèle de fichier pour préparer vos questions à importer.
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
@@ -623,10 +623,10 @@ Explication : L'ANFP organise les concours de la fonction publique.`;
               <div key={t.format} style={{ background: S.card, borderRadius: 12, border: `1px solid ${S.border}`, padding: 20 }}>
                 <div style={{ fontSize: 36, marginBottom: 12 }}>{t.icon}</div>
                 <div style={{ display: 'flex', gap: 8, marginBottom: 10, alignItems: 'center' }}>
-                  <h4 style={{ color: S.text, fontSize: 15, fontWeight: 700, margin: 0 }}>{t.title}</h4>
-                  <span style={{ background: t.badgeColor, color: '#fff', fontSize: 10, padding: '2px 7px', borderRadius: 4, fontWeight: 600 }}>{t.badge}</span>
+                  <h4 style={{ color: S.text, fontSize: 18, fontWeight: 700, margin: 0 }}>{t.title}</h4>
+                  <span style={{ background: t.badgeColor, color: '#fff', fontSize: 13, padding: '2px 7px', borderRadius: 4, fontWeight: 600 }}>{t.badge}</span>
                 </div>
-                <p style={{ color: S.muted, fontSize: 12, lineHeight: 1.5, marginBottom: 16 }}>{t.desc}</p>
+                <p style={{ color: S.muted, fontSize: 15, lineHeight: 1.5, marginBottom: 16 }}>{t.desc}</p>
                 <button onClick={() => downloadTemplate(t.format)} style={btnPrimary}>
                   ⬇ Télécharger le modèle
                 </button>
@@ -636,11 +636,11 @@ Explication : L'ANFP organise les concours de la fonction publique.`;
 
           {/* Format attendu */}
           <div style={{ background: S.card, borderRadius: 12, border: `1px solid ${S.border}`, padding: 20, marginTop: 20 }}>
-            <h4 style={{ color: S.text, fontSize: 14, fontWeight: 700, marginBottom: 14 }}>
+            <h4 style={{ color: S.text, fontSize: 17, fontWeight: 700, marginBottom: 14 }}>
               📋 Format Markdown attendu (reconnu automatiquement)
             </h4>
             <pre style={{
-              background: '#0f172a', borderRadius: 8, padding: 16, fontSize: 12,
+              background: '#0f172a', borderRadius: 8, padding: 16, fontSize: 15,
               color: '#94a3b8', fontFamily: 'monospace', lineHeight: 1.7, overflowX: 'auto',
               border: `1px solid ${S.border}`,
             }}>{`Question : Quelle est la capitale du Burkina Faso ?
@@ -669,14 +669,14 @@ Explication : Direction Générale des Ressources Humaines.`}</pre>
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '8px 12px', background: '#0f172a',
   border: '1px solid #334155', borderRadius: 6, color: '#e2e8f0',
-  fontSize: 13, boxSizing: 'border-box',
+  fontSize: 16, boxSizing: 'border-box',
 };
 
 const labelStyle: React.CSSProperties = {
-  display: 'block', color: '#94a3b8', fontSize: 12, fontWeight: 600, marginBottom: 5,
+  display: 'block', color: '#94a3b8', fontSize: 15, fontWeight: 600, marginBottom: 5,
 };
 
 const btnPrimary: React.CSSProperties = {
   background: '#1A5C38', color: '#fff', border: 'none', borderRadius: 7,
-  padding: '8px 18px', fontSize: 13, cursor: 'pointer', fontWeight: 600,
+  padding: '8px 18px', fontSize: 16, cursor: 'pointer', fontWeight: 600,
 };

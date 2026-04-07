@@ -227,7 +227,7 @@ export default function ExamensTypesPage({ onNavigate }: { onNavigate: (page: Pa
           position: 'fixed', top: 70, right: 20, padding: '12px 20px',
           background: toastType === 'success' ? '#065f46' : '#7f1d1d',
           border: `1px solid ${toastType === 'success' ? S.success : S.red}`,
-          borderRadius: 10, color: '#fff', fontSize: 14, zIndex: 9999,
+          borderRadius: 10, color: '#fff', fontSize: 17, zIndex: 9999,
           boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
         }}>{toast}</div>
       )}
@@ -239,7 +239,7 @@ export default function ExamensTypesPage({ onNavigate }: { onNavigate: (page: Pa
             <h2 style={{ color: S.text, fontSize: 22, fontWeight: 700, marginBottom: 4 }}>
               🎯 Examens Types
             </h2>
-            <p style={{ color: S.muted, fontSize: 13 }}>
+            <p style={{ color: S.muted, fontSize: 16 }}>
               {examens.length} examen(s) — Créez des examens composés automatiquement ou manuellement
             </p>
           </div>
@@ -247,18 +247,18 @@ export default function ExamensTypesPage({ onNavigate }: { onNavigate: (page: Pa
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={() => setActiveView('create-auto')} style={{
                 background: S.green, color: '#fff', border: 'none', borderRadius: 8,
-                padding: '9px 16px', fontSize: 13, cursor: 'pointer', fontWeight: 600,
+                padding: '9px 16px', fontSize: 16, cursor: 'pointer', fontWeight: 600,
               }}>🤖 Créer automatiquement</button>
               <button onClick={() => setActiveView('create-manual')} style={{
                 background: S.blue, color: '#fff', border: 'none', borderRadius: 8,
-                padding: '9px 16px', fontSize: 13, cursor: 'pointer', fontWeight: 600,
+                padding: '9px 16px', fontSize: 16, cursor: 'pointer', fontWeight: 600,
               }}>✋ Sélection manuelle</button>
             </div>
           )}
           {activeView !== 'list' && (
             <button onClick={() => { setActiveView('list'); setPreview([]); }} style={{
               background: S.card, color: S.text, border: `1px solid ${S.border}`,
-              borderRadius: 8, padding: '8px 16px', fontSize: 13, cursor: 'pointer',
+              borderRadius: 8, padding: '8px 16px', fontSize: 16, cursor: 'pointer',
             }}>← Retour à la liste</button>
           )}
         </div>
@@ -278,7 +278,7 @@ export default function ExamensTypesPage({ onNavigate }: { onNavigate: (page: Pa
           ) : filteredExamens.length === 0 ? (
             <div style={{ background: S.card, borderRadius: 12, padding: 40, textAlign: 'center', border: `1px solid ${S.border}` }}>
               <div style={{ fontSize: 40, marginBottom: 12 }}>🎯</div>
-              <div style={{ color: S.muted, fontSize: 15 }}>Aucun examen type créé</div>
+              <div style={{ color: S.muted, fontSize: 18 }}>Aucun examen type créé</div>
               <div style={{ marginTop: 16, display: 'flex', justifyContent: 'center', gap: 10 }}>
                 <button onClick={() => setActiveView('create-auto')} style={btnPrimary}>🤖 Créer automatiquement</button>
                 <button onClick={() => setActiveView('create-manual')} style={{ ...btnPrimary, background: S.blue }}>✋ Sélection manuelle</button>
@@ -297,29 +297,29 @@ export default function ExamensTypesPage({ onNavigate }: { onNavigate: (page: Pa
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                   }}>
                     <div style={{
-                      padding: '3px 8px', borderRadius: 5, fontSize: 11, fontWeight: 700,
+                      padding: '3px 8px', borderRadius: 5, fontSize: 14, fontWeight: 700,
                       background: exam.published ? '#065f46' : '#374151',
                       color: exam.published ? S.success : S.muted,
                     }}>
                       {exam.published ? '🟢 Publié' : '⚪ Brouillon'}
                     </div>
-                    <div style={{ color: S.muted, fontSize: 11 }}>
+                    <div style={{ color: S.muted, fontSize: 14 }}>
                       {exam.type_examen || 'TYPE'}
                     </div>
                   </div>
                   <div style={{ padding: '14px 16px' }}>
-                    <div style={{ color: S.text, fontWeight: 700, fontSize: 14, marginBottom: 8, lineHeight: 1.3 }}>
+                    <div style={{ color: S.text, fontWeight: 700, fontSize: 17, marginBottom: 8, lineHeight: 1.3 }}>
                       {exam.titre}
                     </div>
                     <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
-                      <span style={{ color: S.muted, fontSize: 12 }}>
+                      <span style={{ color: S.muted, fontSize: 15 }}>
                         ❓ {exam.nb_questions ?? exam.question_ids?.length ?? '?'} questions
                       </span>
-                      <span style={{ color: S.muted, fontSize: 12 }}>
+                      <span style={{ color: S.muted, fontSize: 15 }}>
                         ⏱ {exam.duree_minutes ?? 90} min
                       </span>
                       {exam.matiere_nom && (
-                        <span style={{ color: S.muted, fontSize: 12 }}>📚 {exam.matiere_nom}</span>
+                        <span style={{ color: S.muted, fontSize: 15 }}>📚 {exam.matiere_nom}</span>
                       )}
                     </div>
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -328,18 +328,18 @@ export default function ExamensTypesPage({ onNavigate }: { onNavigate: (page: Pa
                         style={{
                           background: exam.published ? '#374151' : '#065f46',
                           color: '#fff', border: 'none', borderRadius: 6,
-                          padding: '5px 10px', fontSize: 11, cursor: 'pointer',
+                          padding: '7px 14px', fontSize: 14, cursor: 'pointer',
                         }}>
                         {exam.published ? '⏸ Dépublier' : '▶ Publier'}
                       </button>
                       <button
                         onClick={() => { setSelectedExamen(exam); setActiveView('detail'); }}
-                        style={{ background: S.blue, color: '#fff', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 11, cursor: 'pointer' }}>
+                        style={{ background: S.blue, color: '#fff', border: 'none', borderRadius: 6, padding: '7px 14px', fontSize: 14, cursor: 'pointer' }}>
                         👁 Détails
                       </button>
                       <button
                         onClick={() => handleDeleteExamen(exam)}
-                        style={{ background: '#7f1d1d', color: '#fff', border: 'none', borderRadius: 6, padding: '5px 10px', fontSize: 11, cursor: 'pointer' }}>
+                        style={{ background: '#7f1d1d', color: '#fff', border: 'none', borderRadius: 6, padding: '7px 14px', fontSize: 14, cursor: 'pointer' }}>
                         🗑 Supprimer
                       </button>
                     </div>
@@ -357,7 +357,7 @@ export default function ExamensTypesPage({ onNavigate }: { onNavigate: (page: Pa
           <div>
             {/* Titre + durée */}
             <div style={{ background: S.card, borderRadius: 12, border: `1px solid ${S.border}`, padding: 20, marginBottom: 16 }}>
-              <h3 style={{ color: S.text, fontSize: 15, fontWeight: 700, marginBottom: 16 }}>
+              <h3 style={{ color: S.text, fontSize: 18, fontWeight: 700, marginBottom: 16 }}>
                 🤖 Création automatique d'examen
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -377,10 +377,10 @@ export default function ExamensTypesPage({ onNavigate }: { onNavigate: (page: Pa
             {/* Sélection matières */}
             <div style={{ background: S.card, borderRadius: 12, border: `1px solid ${S.border}`, overflow: 'hidden' }}>
               <div style={{ padding: '12px 16px', background: '#0f172a', borderBottom: `1px solid ${S.border}` }}>
-                <div style={{ color: S.text, fontWeight: 700, fontSize: 14 }}>
+                <div style={{ color: S.text, fontWeight: 700, fontSize: 17 }}>
                   📚 Matières sources — Total : {totalAuto} questions
                 </div>
-                <div style={{ color: S.muted, fontSize: 12, marginTop: 4 }}>
+                <div style={{ color: S.muted, fontSize: 15, marginTop: 4 }}>
                   Cliquez sur une matière pour l'ajouter à l'examen
                 </div>
               </div>
@@ -394,20 +394,20 @@ export default function ExamensTypesPage({ onNavigate }: { onNavigate: (page: Pa
                       background: existing ? '#0f2a1a' : 'transparent', cursor: 'pointer',
                     }} onClick={() => !existing && addAlloc(m)}>
                       <div>
-                        <div style={{ color: S.text, fontSize: 13 }}>{m.nom}</div>
-                        <div style={{ color: S.muted, fontSize: 11 }}>{m.total_questions ?? '?'} questions dispo</div>
+                        <div style={{ color: S.text, fontSize: 16 }}>{m.nom}</div>
+                        <div style={{ color: S.muted, fontSize: 14 }}>{m.total_questions ?? '?'} questions dispo</div>
                       </div>
                       {existing ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                             <button onClick={e => { e.stopPropagation(); updateAllocCount(m.id, existing.count - 5); }}
-                              style={{ background: '#374151', color: '#fff', border: 'none', borderRadius: 4, padding: '2px 7px', cursor: 'pointer', fontSize: 14 }}>−</button>
-                            <span style={{ color: S.success, fontWeight: 700, fontSize: 14, minWidth: 28, textAlign: 'center' }}>{existing.count}</span>
+                              style={{ background: '#374151', color: '#fff', border: 'none', borderRadius: 4, padding: '2px 7px', cursor: 'pointer', fontSize: 17 }}>−</button>
+                            <span style={{ color: S.success, fontWeight: 700, fontSize: 17, minWidth: 28, textAlign: 'center' }}>{existing.count}</span>
                             <button onClick={e => { e.stopPropagation(); updateAllocCount(m.id, existing.count + 5); }}
-                              style={{ background: '#374151', color: '#fff', border: 'none', borderRadius: 4, padding: '2px 7px', cursor: 'pointer', fontSize: 14 }}>+</button>
+                              style={{ background: '#374151', color: '#fff', border: 'none', borderRadius: 4, padding: '2px 7px', cursor: 'pointer', fontSize: 17 }}>+</button>
                           </div>
                           <button onClick={e => { e.stopPropagation(); removeAlloc(m.id); }}
-                            style={{ background: '#7f1d1d', color: '#fff', border: 'none', borderRadius: 4, padding: '2px 7px', cursor: 'pointer', fontSize: 11 }}>✕</button>
+                            style={{ background: '#7f1d1d', color: '#fff', border: 'none', borderRadius: 4, padding: '2px 7px', cursor: 'pointer', fontSize: 14 }}>✕</button>
                         </div>
                       ) : (
                         <span style={{ color: S.green, fontSize: 18 }}>+</span>
@@ -435,27 +435,27 @@ export default function ExamensTypesPage({ onNavigate }: { onNavigate: (page: Pa
           <div>
             <div style={{ background: S.card, borderRadius: 12, border: `1px solid ${S.border}`, overflow: 'hidden' }}>
               <div style={{ padding: '12px 16px', background: '#0f172a', borderBottom: `1px solid ${S.border}` }}>
-                <div style={{ color: S.text, fontWeight: 700, fontSize: 14 }}>
+                <div style={{ color: S.text, fontWeight: 700, fontSize: 17 }}>
                   👁 Prévisualisation ({preview.length} questions)
                 </div>
               </div>
               {preview.length === 0 ? (
-                <div style={{ padding: 40, textAlign: 'center', color: S.muted, fontSize: 13 }}>
+                <div style={{ padding: 40, textAlign: 'center', color: S.muted, fontSize: 16 }}>
                   Configurez l'examen et cliquez sur « Prévisualiser »
                 </div>
               ) : (
                 <div style={{ maxHeight: 520, overflowY: 'auto' }}>
                   {preview.slice(0, 20).map((q, i) => (
                     <div key={q.id} style={{ padding: '10px 14px', borderBottom: `1px solid #1e293b` }}>
-                      <div style={{ color: S.muted, fontSize: 10, marginBottom: 3 }}>#{i + 1} · {q.matiere_nom || q.matiere}</div>
-                      <div style={{ color: S.text, fontSize: 12, lineHeight: 1.4 }}>
+                      <div style={{ color: S.muted, fontSize: 13, marginBottom: 3 }}>#{i + 1} · {q.matiere_nom || q.matiere}</div>
+                      <div style={{ color: S.text, fontSize: 15, lineHeight: 1.4 }}>
                         {q.enonce?.substring(0, 100)}{q.enonce?.length > 100 ? '…' : ''}
                       </div>
-                      <div style={{ color: S.success, fontSize: 10, marginTop: 3 }}>→ {q.bonne_reponse}</div>
+                      <div style={{ color: S.success, fontSize: 13, marginTop: 3 }}>→ {q.bonne_reponse}</div>
                     </div>
                   ))}
                   {preview.length > 20 && (
-                    <div style={{ padding: 10, textAlign: 'center', color: S.muted, fontSize: 12 }}>
+                    <div style={{ padding: 10, textAlign: 'center', color: S.muted, fontSize: 15 }}>
                       … et {preview.length - 20} autres questions
                     </div>
                   )}
@@ -472,7 +472,7 @@ export default function ExamensTypesPage({ onNavigate }: { onNavigate: (page: Pa
           <div style={{ display: 'grid', gridTemplateColumns: '340px 1fr', gap: 16 }}>
             {/* Panneau gauche : config */}
             <div style={{ background: S.card, borderRadius: 12, border: `1px solid ${S.border}`, padding: 20 }}>
-              <h3 style={{ color: S.text, fontSize: 15, fontWeight: 700, marginBottom: 16 }}>✋ Sélection manuelle</h3>
+              <h3 style={{ color: S.text, fontSize: 18, fontWeight: 700, marginBottom: 16 }}>✋ Sélection manuelle</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div>
                   <label style={labelStyle}>Titre de l'examen *</label>
@@ -504,7 +504,7 @@ export default function ExamensTypesPage({ onNavigate }: { onNavigate: (page: Pa
                 </div>
                 <div style={{ background: '#0f172a', borderRadius: 8, padding: 12, border: `1px solid ${S.border}` }}>
                   <div style={{ color: S.success, fontWeight: 700, fontSize: 16 }}>{selectedManualQIds.size}</div>
-                  <div style={{ color: S.muted, fontSize: 12 }}>questions sélectionnées</div>
+                  <div style={{ color: S.muted, fontSize: 15 }}>questions sélectionnées</div>
                 </div>
                 <button type="submit" disabled={creatingManual || selectedManualQIds.size === 0}
                   style={{ ...btnPrimary, opacity: selectedManualQIds.size === 0 ? 0.5 : 1 }}>
@@ -517,11 +517,11 @@ export default function ExamensTypesPage({ onNavigate }: { onNavigate: (page: Pa
             <div style={{ background: S.card, borderRadius: 12, border: `1px solid ${S.border}`, overflow: 'hidden' }}>
               <div style={{ padding: '12px 16px', background: '#0f172a', borderBottom: `1px solid ${S.border}` }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                  <div style={{ color: S.text, fontWeight: 700, fontSize: 14 }}>
+                  <div style={{ color: S.text, fontWeight: 700, fontSize: 17 }}>
                     Questions disponibles ({filteredManualQ.length})
                   </div>
                   {manualMatiereQuestions.length > 0 && (
-                    <button type="button" onClick={selectAllManual} style={{ ...btnSecondary, fontSize: 11, padding: '4px 10px' }}>
+                    <button type="button" onClick={selectAllManual} style={{ ...btnSecondary, fontSize: 14, padding: '6px 14px' }}>
                       Tout sélectionner
                     </button>
                   )}
@@ -530,13 +530,13 @@ export default function ExamensTypesPage({ onNavigate }: { onNavigate: (page: Pa
                   placeholder="🔍 Filtrer les questions…" style={inputStyle} />
               </div>
               {!manualForm.matiere_id ? (
-                <div style={{ padding: 40, textAlign: 'center', color: S.muted, fontSize: 13 }}>
+                <div style={{ padding: 40, textAlign: 'center', color: S.muted, fontSize: 16 }}>
                   ← Choisissez une matière pour voir les questions
                 </div>
               ) : loadingManualQ ? (
                 <div style={{ padding: 40, textAlign: 'center', color: S.muted }}>⏳ Chargement…</div>
               ) : filteredManualQ.length === 0 ? (
-                <div style={{ padding: 40, textAlign: 'center', color: S.muted, fontSize: 13 }}>
+                <div style={{ padding: 40, textAlign: 'center', color: S.muted, fontSize: 16 }}>
                   Aucune question trouvée
                 </div>
               ) : (
@@ -556,14 +556,14 @@ export default function ExamensTypesPage({ onNavigate }: { onNavigate: (page: Pa
                           border: `2px solid ${checked ? S.success : S.border}`,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                         }}>
-                          {checked && <span style={{ color: '#fff', fontSize: 11 }}>✓</span>}
+                          {checked && <span style={{ color: '#fff', fontSize: 14 }}>✓</span>}
                         </div>
                         <div style={{ flex: 1 }}>
-                          <div style={{ color: S.muted, fontSize: 10, marginBottom: 2 }}>#{i + 1} · {q.difficulte}</div>
-                          <div style={{ color: S.text, fontSize: 12, lineHeight: 1.4 }}>
+                          <div style={{ color: S.muted, fontSize: 13, marginBottom: 2 }}>#{i + 1} · {q.difficulte}</div>
+                          <div style={{ color: S.text, fontSize: 15, lineHeight: 1.4 }}>
                             {q.enonce?.substring(0, 120)}{q.enonce?.length > 120 ? '…' : ''}
                           </div>
-                          <div style={{ color: S.success, fontSize: 10, marginTop: 3 }}>→ Réponse : {q.bonne_reponse}</div>
+                          <div style={{ color: S.success, fontSize: 13, marginTop: 3 }}>→ Réponse : {q.bonne_reponse}</div>
                         </div>
                       </div>
                     );
@@ -580,7 +580,7 @@ export default function ExamensTypesPage({ onNavigate }: { onNavigate: (page: Pa
         <div style={{ background: S.card, borderRadius: 12, border: `1px solid ${S.border}`, overflow: 'hidden' }}>
           <div style={{ padding: '16px 20px', background: '#0f172a', borderBottom: `1px solid ${S.border}` }}>
             <h3 style={{ color: S.text, fontSize: 16, fontWeight: 700, margin: 0 }}>{selectedExamen.titre}</h3>
-            <div style={{ color: S.muted, fontSize: 13, marginTop: 6 }}>
+            <div style={{ color: S.muted, fontSize: 16, marginTop: 6 }}>
               ❓ {selectedExamen.nb_questions ?? '?'} questions ·
               ⏱ {selectedExamen.duree_minutes ?? 90} min ·
               {selectedExamen.published ? '🟢 Publié' : '⚪ Brouillon'}
@@ -603,19 +603,19 @@ export default function ExamensTypesPage({ onNavigate }: { onNavigate: (page: Pa
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '8px 12px', background: '#0f172a',
   border: '1px solid #334155', borderRadius: 6, color: '#e2e8f0',
-  fontSize: 13, boxSizing: 'border-box',
+  fontSize: 16, boxSizing: 'border-box',
 };
 
 const labelStyle: React.CSSProperties = {
-  display: 'block', color: '#94a3b8', fontSize: 12, fontWeight: 600, marginBottom: 5,
+  display: 'block', color: '#94a3b8', fontSize: 15, fontWeight: 600, marginBottom: 5,
 };
 
 const btnPrimary: React.CSSProperties = {
   background: '#1A5C38', color: '#fff', border: 'none', borderRadius: 7,
-  padding: '8px 18px', fontSize: 13, cursor: 'pointer', fontWeight: 600,
+  padding: '8px 18px', fontSize: 16, cursor: 'pointer', fontWeight: 600,
 };
 
 const btnSecondary: React.CSSProperties = {
   background: '#1e293b', color: '#e2e8f0', border: '1px solid #334155',
-  borderRadius: 7, padding: '8px 18px', fontSize: 13, cursor: 'pointer',
+  borderRadius: 7, padding: '8px 18px', fontSize: 16, cursor: 'pointer',
 };

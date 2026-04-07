@@ -121,7 +121,7 @@ export default function ExamensImportPage({ onNavigate }: { onNavigate: (page: P
         <div style={{
           position: 'fixed', top: 70, right: 20, padding: '14px 20px',
           background: '#1e293b', border: '1px solid #334155', borderRadius: 10,
-          color: '#e2e8f0', fontSize: 14, zIndex: 1000, maxWidth: 400,
+          color: '#e2e8f0', fontSize: 17, zIndex: 1000, maxWidth: 400,
           boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
         }}>{toast}</div>
       )}
@@ -129,18 +129,18 @@ export default function ExamensImportPage({ onNavigate }: { onNavigate: (page: P
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <h2 style={{ color: '#f1f5f9', fontSize: 22, fontWeight: 700 }}>📝 Import Examens / Simulations</h2>
-        <p style={{ color: '#64748b', fontSize: 13, marginTop: 4 }}>
+        <p style={{ color: '#64748b', fontSize: 16, marginTop: 4 }}>
           Importez des questions d'examens blancs (50 questions) — CSV, JSON, Markdown ou TXT
         </p>
       </div>
 
       {/* Zone d'import */}
       <div style={{ background: '#1e293b', borderRadius: 12, padding: 24, border: '1px solid #334155', marginBottom: 24 }}>
-        <h3 style={{ color: '#f1f5f9', fontSize: 15, fontWeight: 600, marginBottom: 16 }}>📤 Importer un nouvel examen</h3>
+        <h3 style={{ color: '#f1f5f9', fontSize: 18, fontWeight: 600, marginBottom: 16 }}>📤 Importer un nouvel examen</h3>
 
         {/* Titre */}
         <div style={{ marginBottom: 16 }}>
-          <label style={{ color: '#94a3b8', fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 6 }}>
+          <label style={{ color: '#94a3b8', fontSize: 15, fontWeight: 600, display: 'block', marginBottom: 6 }}>
             TITRE DE L'EXAMEN *
           </label>
           <input
@@ -151,14 +151,14 @@ export default function ExamensImportPage({ onNavigate }: { onNavigate: (page: P
             style={{
               width: '100%', padding: '10px 14px',
               background: '#0f172a', border: '1px solid #334155',
-              borderRadius: 8, color: '#f1f5f9', fontSize: 14,
+              borderRadius: 8, color: '#f1f5f9', fontSize: 17,
               boxSizing: 'border-box',
             }}
           />
         </div>
 
         {/* Formats acceptés */}
-        <div style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#10b981' }}>
+        <div style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 16, color: '#10b981' }}>
           ✅ <strong>Formats acceptés :</strong> CSV (.csv), JSON (.json), Markdown (.md), Texte (.txt)<br/>
           ✅ <strong>Recommandé :</strong> 50 questions pour un examen blanc officiel
         </div>
@@ -177,13 +177,13 @@ export default function ExamensImportPage({ onNavigate }: { onNavigate: (page: P
           {file ? (
             <div>
               <div style={{ fontSize: 36, marginBottom: 8 }}>📂</div>
-              <div style={{ color: '#4ade80', fontWeight: 700, fontSize: 15 }}>{file.name}</div>
-              <div style={{ color: '#64748b', fontSize: 13, marginTop: 4 }}>
+              <div style={{ color: '#4ade80', fontWeight: 700, fontSize: 18 }}>{file.name}</div>
+              <div style={{ color: '#64748b', fontSize: 16, marginTop: 4 }}>
                 {(file.size / 1024).toFixed(1)} KB
               </div>
               <button
                 onClick={e => { e.stopPropagation(); setFile(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
-                style={{ marginTop: 8, padding: '4px 12px', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444', borderRadius: 6, cursor: 'pointer', fontSize: 12 }}
+                style={{ marginTop: 8, padding: '6px 14px', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444', borderRadius: 6, cursor: 'pointer', fontSize: 15 }}
               >
                 🗑️ Changer
               </button>
@@ -191,8 +191,8 @@ export default function ExamensImportPage({ onNavigate }: { onNavigate: (page: P
           ) : (
             <div>
               <div style={{ fontSize: 36, marginBottom: 8 }}>📝</div>
-              <div style={{ color: '#94a3b8', fontSize: 15, fontWeight: 600 }}>Cliquer pour uploader</div>
-              <div style={{ color: '#475569', fontSize: 12, marginTop: 4 }}>CSV, JSON, .md, .txt — Max 20 MB</div>
+              <div style={{ color: '#94a3b8', fontSize: 18, fontWeight: 600 }}>Cliquer pour uploader</div>
+              <div style={{ color: '#475569', fontSize: 15, marginTop: 4 }}>CSV, JSON, .md, .txt — Max 20 MB</div>
             </div>
           )}
           <input ref={fileInputRef} type="file" accept=".csv,.json,.md,.txt,.markdown" onChange={handleFileSelect} style={{ display: 'none' }} />
@@ -223,14 +223,14 @@ export default function ExamensImportPage({ onNavigate }: { onNavigate: (page: P
             <StatCard label="⏱ Durée" value={`${importResult.duration_seconds}s`} color="#D4A017" />
           </div>
           {importResult.simulation_id && (
-            <div style={{ marginTop: 12, padding: '8px 14px', background: 'rgba(26,92,56,0.15)', borderRadius: 8, color: '#4ade80', fontSize: 13 }}>
+            <div style={{ marginTop: 12, padding: '8px 14px', background: 'rgba(26,92,56,0.15)', borderRadius: 8, color: '#4ade80', fontSize: 16 }}>
               🎯 Simulation créée avec ID: <strong>{importResult.simulation_id}</strong><br/>
               ⚠️ L'examen est <strong>non publié</strong> par défaut — publiez-le ci-dessous quand prêt.
             </div>
           )}
           <button
             onClick={() => { setStep('list'); setFile(null); setTitre(''); setImportResult(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
-            style={{ marginTop: 12, padding: '8px 16px', background: '#334155', border: 'none', color: '#94a3b8', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}
+            style={{ marginTop: 12, padding: '8px 16px', background: '#334155', border: 'none', color: '#94a3b8', borderRadius: 8, cursor: 'pointer', fontSize: 16 }}
           >
             ← Retour
           </button>
@@ -240,10 +240,10 @@ export default function ExamensImportPage({ onNavigate }: { onNavigate: (page: P
       {/* Liste des examens */}
       <div style={{ background: '#1e293b', borderRadius: 12, padding: 20, border: '1px solid #334155' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <h3 style={{ color: '#f1f5f9', fontSize: 15, fontWeight: 600 }}>📋 Examens existants ({examens.length})</h3>
+          <h3 style={{ color: '#f1f5f9', fontSize: 18, fontWeight: 600 }}>📋 Examens existants ({examens.length})</h3>
           <button
             onClick={loadExamens}
-            style={{ background: '#334155', border: 'none', color: '#94a3b8', padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 12 }}
+            style={{ background: '#334155', border: 'none', color: '#94a3b8', padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 15 }}
           >
             🔄 Actualiser
           </button>
@@ -263,19 +263,19 @@ export default function ExamensImportPage({ onNavigate }: { onNavigate: (page: P
                 display: 'flex', alignItems: 'center', gap: 12,
               }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ color: '#f1f5f9', fontWeight: 600, fontSize: 14 }}>{ex.titre}</div>
-                  <div style={{ color: '#64748b', fontSize: 12, marginTop: 2 }}>
+                  <div style={{ color: '#f1f5f9', fontWeight: 600, fontSize: 17 }}>{ex.titre}</div>
+                  <div style={{ color: '#64748b', fontSize: 15, marginTop: 2 }}>
                     {ex.nb_questions_examen ?? ex.score_max ?? '?'} questions
                     &nbsp;·&nbsp; {ex.duree_minutes} min
                     &nbsp;·&nbsp; Créé le {new Date(ex.created_at).toLocaleDateString('fr-FR')}
                   </div>
                   {ex.description && (
-                    <div style={{ color: '#475569', fontSize: 11, marginTop: 2 }}>{ex.description}</div>
+                    <div style={{ color: '#475569', fontSize: 14, marginTop: 2 }}>{ex.description}</div>
                   )}
                 </div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <span style={{
-                    padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700,
+                    padding: '3px 10px', borderRadius: 20, fontSize: 14, fontWeight: 700,
                     background: ex.published ? 'rgba(26,92,56,0.2)' : 'rgba(100,116,139,0.2)',
                     color: ex.published ? '#4ade80' : '#94a3b8',
                     border: `1px solid ${ex.published ? 'rgba(26,92,56,0.4)' : '#334155'}`,
@@ -285,7 +285,7 @@ export default function ExamensImportPage({ onNavigate }: { onNavigate: (page: P
                   <button
                     onClick={() => togglePublish(ex)}
                     style={{
-                      padding: '5px 12px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 12,
+                      padding: '5px 12px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 15,
                       background: ex.published ? 'rgba(239,68,68,0.15)' : 'rgba(26,92,56,0.2)',
                       color: ex.published ? '#ef4444' : '#4ade80',
                     }}
@@ -294,7 +294,7 @@ export default function ExamensImportPage({ onNavigate }: { onNavigate: (page: P
                   </button>
                   <button
                     onClick={() => handleDelete(ex.id, ex.titre)}
-                    style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.1)', color: '#ef4444', cursor: 'pointer', fontSize: 12 }}
+                    style={{ padding: '7px 14px', borderRadius: 6, border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.1)', color: '#ef4444', cursor: 'pointer', fontSize: 15 }}
                   >
                     🗑️
                   </button>
@@ -312,7 +312,7 @@ function StatCard({ label, value, color }: { label: string; value: any; color: s
   return (
     <div style={{ padding: '12px 16px', background: '#0f172a', borderRadius: 8, border: `1px solid ${color}33`, textAlign: 'center' }}>
       <div style={{ color, fontSize: 22, fontWeight: 800 }}>{value}</div>
-      <div style={{ color: '#64748b', fontSize: 11, marginTop: 2 }}>{label}</div>
+      <div style={{ color: '#64748b', fontSize: 14, marginTop: 2 }}>{label}</div>
     </div>
   );
 }

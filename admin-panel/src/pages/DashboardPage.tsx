@@ -135,22 +135,22 @@ export default function DashboardPage({ onNavigate }: { onNavigate: (page: Page)
           <h2 style={{ color: '#f1f5f9', fontSize: 24, fontWeight: 700, margin: 0 }}>
             📊 Tableau de bord
           </h2>
-          <p style={{ color: '#64748b', fontSize: 14, marginTop: 6 }}>
+          <p style={{ color: '#64748b', fontSize: 17, marginTop: 6 }}>
             Vue consolidée EF-FORT.BF — Données temps réel
           </p>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ color: refreshing ? '#D4A017' : '#475569', fontSize: 11, marginBottom: 2 }}>
+            <div style={{ color: refreshing ? '#D4A017' : '#475569', fontSize: 14, marginBottom: 2 }}>
               {refreshing ? '🔄 Actualisation...' : `⏱ ${lastRefresh.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`}
             </div>
-            <div style={{ color: '#334155', fontSize: 10 }}>Auto-refresh 30s</div>
+            <div style={{ color: '#334155', fontSize: 13 }}>Auto-refresh 30s</div>
           </div>
           <button
             onClick={() => { setLoading(true); loadStats(); setLastRefresh(new Date()); }}
             style={{
               background: '#1e293b', border: '1px solid #334155', color: '#94a3b8',
-              padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 13,
+              padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 16,
               display: 'flex', alignItems: 'center', gap: 6,
             }}
           >
@@ -188,17 +188,17 @@ export default function DashboardPage({ onNavigate }: { onNavigate: (page: Page)
                 position: 'absolute', top: 12, right: 12,
                 background: COLORS.red, color: 'white', borderRadius: '50%',
                 width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 12, fontWeight: 900, animation: 'pulse 1.5s ease-in-out infinite',
+                fontSize: 15, fontWeight: 900, animation: 'pulse 1.5s ease-in-out infinite',
               }}>!</div>
             )}
             <div style={{ fontSize: 30, marginBottom: 10 }}>{card.icon}</div>
             <div style={{ color: card.color, fontSize: 30, fontWeight: 800, lineHeight: 1 }}>
               {card.value.toLocaleString('fr-FR')}
             </div>
-            <div style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 600, marginTop: 6 }}>{card.label}</div>
-            <div style={{ color: '#475569', fontSize: 11, marginTop: 4 }}>{card.sub}</div>
+            <div style={{ color: '#e2e8f0', fontSize: 16, fontWeight: 600, marginTop: 6 }}>{card.label}</div>
+            <div style={{ color: '#475569', fontSize: 14, marginTop: 4 }}>{card.sub}</div>
             {card.page && (
-              <div style={{ color: card.color, fontSize: 11, marginTop: 8, opacity: 0.7 }}>
+              <div style={{ color: card.color, fontSize: 14, marginTop: 8, opacity: 0.7 }}>
                 → Cliquer pour accéder
               </div>
             )}
@@ -210,12 +210,12 @@ export default function DashboardPage({ onNavigate }: { onNavigate: (page: Page)
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16, marginBottom: 32 }}>
         {/* Conversion */}
         <div style={{ background: '#1e293b', borderRadius: 14, padding: 20, border: '1px solid #334155' }}>
-          <div style={{ color: '#64748b', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', marginBottom: 14 }}>
+          <div style={{ color: '#64748b', fontSize: 15, fontWeight: 600, textTransform: 'uppercase', marginBottom: 14 }}>
             📈 Taux de conversion
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
             <div style={{ color: '#D4A017', fontSize: 36, fontWeight: 800 }}>{tauxConversion}%</div>
-            <div style={{ color: '#64748b', fontSize: 13 }}>inscrits → abonnés</div>
+            <div style={{ color: '#64748b', fontSize: 16 }}>inscrits → abonnés</div>
           </div>
           <div style={{ marginTop: 12, height: 6, background: '#334155', borderRadius: 3, overflow: 'hidden' }}>
             <div style={{
@@ -223,30 +223,30 @@ export default function DashboardPage({ onNavigate }: { onNavigate: (page: Page)
               width: `${Math.min(parseFloat(tauxConversion), 100)}%`, borderRadius: 3, transition: 'width 1s ease',
             }} />
           </div>
-          <div style={{ color: '#475569', fontSize: 11, marginTop: 6 }}>
+          <div style={{ color: '#475569', fontSize: 14, marginTop: 6 }}>
             {totalUsers - abonnes} utilisateurs non abonnés
           </div>
         </div>
 
         {/* Revenus estimés */}
         <div style={{ background: '#1e293b', borderRadius: 14, padding: 20, border: '1px solid rgba(26,92,56,0.4)' }}>
-          <div style={{ color: '#64748b', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', marginBottom: 14 }}>
+          <div style={{ color: '#64748b', fontSize: 15, fontWeight: 600, textTransform: 'uppercase', marginBottom: 14 }}>
             💰 Revenus estimés
           </div>
           <div style={{ color: '#4ade80', fontSize: 28, fontWeight: 800 }}>
             {revenuEstime.toLocaleString('fr-FR')} FCFA
           </div>
-          <div style={{ color: '#64748b', fontSize: 12, marginTop: 6 }}>
+          <div style={{ color: '#64748b', fontSize: 15, marginTop: 6 }}>
             {abonnes} × 12 000 FCFA
           </div>
-          <div style={{ marginTop: 10, padding: '6px 10px', background: 'rgba(26,92,56,0.15)', borderRadius: 6, fontSize: 12, color: '#4ade80' }}>
+          <div style={{ marginTop: 10, padding: '6px 10px', background: 'rgba(26,92,56,0.15)', borderRadius: 6, fontSize: 15, color: '#4ade80' }}>
             Accès illimité jusqu'au 31/12/2028
           </div>
         </div>
 
         {/* État du contenu */}
         <div style={{ background: '#1e293b', borderRadius: 14, padding: 20, border: '1px solid #334155' }}>
-          <div style={{ color: '#64748b', fontSize: 12, fontWeight: 600, textTransform: 'uppercase', marginBottom: 14 }}>
+          <div style={{ color: '#64748b', fontSize: 15, fontWeight: 600, textTransform: 'uppercase', marginBottom: 14 }}>
             📚 État du contenu
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -260,7 +260,7 @@ export default function DashboardPage({ onNavigate }: { onNavigate: (page: Page)
 
       {/* ── Quick Actions — PRIORITAIRES ────────────────────────── */}
       <div style={{ marginBottom: 28 }}>
-        <div style={{ color: '#94a3b8', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>
+        <div style={{ color: '#94a3b8', fontSize: 15, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>
           ⚡ Actions rapides
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
@@ -313,7 +313,7 @@ export default function DashboardPage({ onNavigate }: { onNavigate: (page: Page)
             </h3>
             <button onClick={() => onNavigate('series')} style={{
               background: 'rgba(26,92,56,0.2)', border: '1px solid rgba(26,92,56,0.4)',
-              color: '#4ade80', padding: '5px 12px', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600,
+              color: '#4ade80', padding: '5px 12px', borderRadius: 6, cursor: 'pointer', fontSize: 15, fontWeight: 600,
             }}>
               Gérer les séries →
             </button>
@@ -323,7 +323,7 @@ export default function DashboardPage({ onNavigate }: { onNavigate: (page: Page)
               const pct = totalQuestions > 0 ? Math.round((m.nb_questions / totalQuestions) * 100) : 0;
               return (
                 <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 160, color: '#94a3b8', fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                  <div style={{ width: 160, color: '#94a3b8', fontSize: 16, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 0 }}>
                     {m.icone ?? '📚'} {m.nom}
                   </div>
                   <div style={{ flex: 1, height: 8, background: '#334155', borderRadius: 4, overflow: 'hidden' }}>
@@ -334,7 +334,7 @@ export default function DashboardPage({ onNavigate }: { onNavigate: (page: Page)
                       transition: 'width 0.8s ease',
                     }} />
                   </div>
-                  <div style={{ color: '#4ade80', fontSize: 12, fontWeight: 700, width: 50, textAlign: 'right', flexShrink: 0 }}>
+                  <div style={{ color: '#4ade80', fontSize: 15, fontWeight: 700, width: 50, textAlign: 'right', flexShrink: 0 }}>
                     {m.nb_questions}
                   </div>
                 </div>
@@ -348,22 +348,22 @@ export default function DashboardPage({ onNavigate }: { onNavigate: (page: Page)
       {stats?.recent_flags?.length > 0 && (
         <div style={{ background: '#1e293b', borderRadius: 14, padding: 20, marginBottom: 24, border: '1px solid rgba(239,68,68,0.3)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-            <h3 style={{ color: '#ef4444', fontSize: 15, fontWeight: 700, margin: 0 }}>🚨 Signalements récents</h3>
+            <h3 style={{ color: '#ef4444', fontSize: 18, fontWeight: 700, margin: 0 }}>🚨 Signalements récents</h3>
             <button onClick={() => onNavigate('flags')} style={{
               background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
-              color: '#ef4444', padding: '5px 12px', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600,
+              color: '#ef4444', padding: '5px 12px', borderRadius: 6, cursor: 'pointer', fontSize: 15, fontWeight: 600,
             }}>
               Voir tous ({pendingFlags}) →
             </button>
           </div>
           {stats.recent_flags.slice(0, 5).map((f: any) => (
             <div key={f.id} style={{ padding: '8px 0', borderBottom: '1px solid #1e293b', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-              <span style={{ color: '#ef4444', fontSize: 14, flexShrink: 0 }}>⚠️</span>
+              <span style={{ color: '#ef4444', fontSize: 17, flexShrink: 0 }}>⚠️</span>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ color: '#e2e8f0', fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ color: '#e2e8f0', fontSize: 16, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   Q#{f.question_id?.substring(0, 8)} — {f.reason}
                 </div>
-                <div style={{ color: '#64748b', fontSize: 11 }}>{new Date(f.created_at).toLocaleDateString('fr-FR')}</div>
+                <div style={{ color: '#64748b', fontSize: 14 }}>{new Date(f.created_at).toLocaleDateString('fr-FR')}</div>
               </div>
             </div>
           ))}
@@ -374,10 +374,10 @@ export default function DashboardPage({ onNavigate }: { onNavigate: (page: Page)
       {stats?.recent_imports?.length > 0 && (
         <div style={{ background: '#1e293b', borderRadius: 14, padding: 20, marginBottom: 24, border: '1px solid #334155' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-            <h3 style={{ color: '#f1f5f9', fontSize: 15, fontWeight: 700, margin: 0 }}>📤 Derniers imports QCM</h3>
+            <h3 style={{ color: '#f1f5f9', fontSize: 18, fontWeight: 700, margin: 0 }}>📤 Derniers imports QCM</h3>
             <button onClick={() => onNavigate('bulk-import')} style={{
               background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.4)',
-              color: '#3b82f6', padding: '5px 12px', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600,
+              color: '#3b82f6', padding: '5px 12px', borderRadius: 6, cursor: 'pointer', fontSize: 15, fontWeight: 600,
             }}>
               Nouvel import →
             </button>
@@ -385,13 +385,13 @@ export default function DashboardPage({ onNavigate }: { onNavigate: (page: Page)
           {stats.recent_imports.map((imp: any) => (
             <div key={imp.id} style={{ padding: '8px 0', borderBottom: '1px solid #334155', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ color: '#e2e8f0', fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ color: '#e2e8f0', fontSize: 16, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   📄 {imp.filename ?? 'Import'}
                 </div>
-                <div style={{ color: '#64748b', fontSize: 11 }}>{new Date(imp.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}</div>
+                <div style={{ color: '#64748b', fontSize: 14 }}>{new Date(imp.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}</div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-                <span style={{ color: '#4ade80', fontSize: 13, fontWeight: 700 }}>{imp.imported_count} Q</span>
+                <span style={{ color: '#4ade80', fontSize: 16, fontWeight: 700 }}>{imp.imported_count} Q</span>
                 <StatusBadge status={imp.status} />
               </div>
             </div>
@@ -401,8 +401,8 @@ export default function DashboardPage({ onNavigate }: { onNavigate: (page: Page)
 
       {/* ── Vérification CMS ──────────────────────────────────── */}
       <div style={{ background: '#1e293b', borderRadius: 14, padding: 20, border: '1px solid #334155' }}>
-        <h3 style={{ color: '#f1f5f9', fontSize: 15, fontWeight: 600, marginBottom: 8 }}>🔧 Vérification des Tables CMS</h3>
-        <p style={{ color: '#64748b', fontSize: 13, marginBottom: 14 }}>
+        <h3 style={{ color: '#f1f5f9', fontSize: 18, fontWeight: 600, marginBottom: 8 }}>🔧 Vérification des Tables CMS</h3>
+        <p style={{ color: '#64748b', fontSize: 16, marginBottom: 14 }}>
           Vérifier et créer les tables CMS si nécessaire (première installation ou mise à jour)
         </p>
         <button
@@ -413,7 +413,7 @@ export default function DashboardPage({ onNavigate }: { onNavigate: (page: Page)
             background: migrating ? '#334155' : '#1A5C38',
             border: 'none', borderRadius: 8, color: 'white',
             cursor: migrating ? 'not-allowed' : 'pointer',
-            fontSize: 14, fontWeight: 500,
+            fontSize: 17, fontWeight: 500,
           }}
         >
           {migrating ? '⏳ Vérification...' : '🔍 Vérifier les tables CMS'}
@@ -421,11 +421,11 @@ export default function DashboardPage({ onNavigate }: { onNavigate: (page: Page)
         {migrationStatus && (
           <div style={{ marginTop: 12 }}>
             {migrationStatus.error ? (
-              <div style={{ color: '#ef4444', fontSize: 13 }}>❌ {migrationStatus.error}</div>
+              <div style={{ color: '#ef4444', fontSize: 16 }}>❌ {migrationStatus.error}</div>
             ) : (
               <div>
-                <div style={{ color: '#4ade80', fontSize: 13, marginBottom: 8 }}>✅ Vérification terminée</div>
-                <div style={{ background: '#0f172a', borderRadius: 8, padding: 12, fontSize: 12, fontFamily: 'monospace', color: '#94a3b8' }}>
+                <div style={{ color: '#4ade80', fontSize: 16, marginBottom: 8 }}>✅ Vérification terminée</div>
+                <div style={{ background: '#0f172a', borderRadius: 8, padding: 12, fontSize: 15, fontFamily: 'monospace', color: '#94a3b8' }}>
                   {Object.entries(migrationStatus.tables_status ?? {}).map(([table, status]) => (
                     <div key={table}>{status === 'OK' ? '✅' : '❌'} {table}: {status as string}</div>
                   ))}
@@ -449,8 +449,8 @@ export default function DashboardPage({ onNavigate }: { onNavigate: (page: Page)
 function ContentStat({ label, value, color }: { label: string; value: any; color: string }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <span style={{ color: '#94a3b8', fontSize: 13 }}>{label}</span>
-      <span style={{ color, fontSize: 15, fontWeight: 700 }}>{typeof value === 'number' ? value.toLocaleString('fr-FR') : value}</span>
+      <span style={{ color: '#94a3b8', fontSize: 16 }}>{label}</span>
+      <span style={{ color, fontSize: 18, fontWeight: 700 }}>{typeof value === 'number' ? value.toLocaleString('fr-FR') : value}</span>
     </div>
   );
 }
@@ -479,8 +479,8 @@ function QuickAction({ icon, title, desc, color, onClick, urgent }: any) {
     >
       <span style={{ fontSize: 22 }}>{icon}</span>
       <div>
-        <div style={{ color: '#f1f5f9', fontSize: 14, fontWeight: 600 }}>{title}</div>
-        <div style={{ color: urgent ? color : '#64748b', fontSize: 12, marginTop: 3 }}>{desc}</div>
+        <div style={{ color: '#f1f5f9', fontSize: 17, fontWeight: 600 }}>{title}</div>
+        <div style={{ color: urgent ? color : '#64748b', fontSize: 15, marginTop: 3 }}>{desc}</div>
       </div>
     </button>
   );
@@ -496,7 +496,7 @@ function StatusBadge({ status }: { status: string }) {
   };
   const c = colors[status] ?? colors.pending;
   return (
-    <span style={{ background: c.bg, color: c.color, padding: '2px 8px', borderRadius: 12, fontSize: 11, fontWeight: 600 }}>
+    <span style={{ background: c.bg, color: c.color, padding: '2px 8px', borderRadius: 12, fontSize: 14, fontWeight: 600 }}>
       {c.label}
     </span>
   );
@@ -510,7 +510,7 @@ function LoadingSpinner() {
         borderTop: '3px solid #1A5C38', borderRadius: '50%',
         animation: 'spin 1s linear infinite',
       }} />
-      <div style={{ color: '#64748b', fontSize: 13 }}>Chargement des statistiques...</div>
+      <div style={{ color: '#64748b', fontSize: 16 }}>Chargement des statistiques...</div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );

@@ -145,11 +145,11 @@ export default function App() {
                 width: 40, height: 40, borderRadius: 10,
                 background: 'linear-gradient(135deg, #1A5C38, #D4A017)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontWeight: 'bold', fontSize: 14, color: 'white', flexShrink: 0,
+                fontWeight: 'bold', fontSize: 17, color: 'white', flexShrink: 0,
               }}>EF</div>
               <div>
-                <div style={{ fontWeight: 700, color: '#f1f5f9', fontSize: 14 }}>EF-FORT.BF</div>
-                <div style={{ color: '#4ade80', fontSize: 10, fontWeight: 600 }}>🔐 Panel Admin CMS</div>
+                <div style={{ fontWeight: 700, color: '#f1f5f9', fontSize: 17 }}>EF-FORT.BF</div>
+                <div style={{ color: '#4ade80', fontSize: 13, fontWeight: 600 }}>🔐 Panel Admin CMS</div>
               </div>
             </div>
           </div>
@@ -164,7 +164,7 @@ export default function App() {
                 return (
                   <div key={item.page + idx}>
                     {sectionChanged && item.section && (
-                      <div style={{ color: '#475569', fontSize: 10, fontWeight: 700, padding: '12px 8px 4px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                      <div style={{ color: '#475569', fontSize: 13, fontWeight: 700, padding: '12px 8px 4px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                         {item.section}
                       </div>
                     )}
@@ -188,13 +188,13 @@ export default function App() {
                 width: 34, height: 34, borderRadius: '50%',
                 background: 'linear-gradient(135deg, #1A5C38, #2d9966)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'white', fontSize: 13, fontWeight: 700, flexShrink: 0,
+                color: 'white', fontSize: 16, fontWeight: 700, flexShrink: 0,
               }}>{user?.prenom?.[0]?.toUpperCase() ?? 'A'}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ color: '#e2e8f0', fontSize: 16, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {user?.prenom} {user?.nom}
                 </div>
-                <div style={{ color: '#4ade80', fontSize: 10, display: 'flex', alignItems: 'center', gap: 3 }}>
+                <div style={{ color: '#4ade80', fontSize: 13, display: 'flex', alignItems: 'center', gap: 3 }}>
                   <Shield size={9} /> Administrateur
                 </div>
               </div>
@@ -223,12 +223,12 @@ export default function App() {
               {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
 
-            <div style={{ flex: 1, color: '#94a3b8', fontSize: 13 }}>{getPageTitle(currentPage)}</div>
+            <div style={{ flex: 1, color: '#94a3b8', fontSize: 16 }}>{getPageTitle(currentPage)}</div>
 
             {/* Badges top */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{
-                background: '#065f46', color: '#4ade80', fontSize: 11, fontWeight: 700,
+                background: '#065f46', color: '#4ade80', fontSize: 14, fontWeight: 700,
                 padding: '3px 10px', borderRadius: 20, display: 'flex', alignItems: 'center', gap: 4,
               }}>
                 <Shield size={11} /> SÉCURISÉ
@@ -275,7 +275,7 @@ function NavItem({ icon, label, active, onClick, badge }: {
       padding: '7px 10px', borderRadius: 7, border: 'none', cursor: 'pointer',
       background: active ? 'rgba(26,92,56,0.3)' : 'transparent',
       color: active ? '#4ade80' : '#94a3b8',
-      fontSize: 13, fontWeight: active ? 600 : 400,
+      fontSize: 16, fontWeight: active ? 600 : 400,
       transition: 'all 0.15s', marginBottom: 1,
       borderLeft: active ? '2px solid #1A5C38' : '2px solid transparent',
       textAlign: 'left',
@@ -286,7 +286,7 @@ function NavItem({ icon, label, active, onClick, badge }: {
       <span style={{ flexShrink: 0, opacity: active ? 1 : 0.7 }}>{icon}</span>
       <span style={{ flex: 1, textAlign: 'left', lineHeight: 1.2 }}>{label}</span>
       {badge && (
-        <span style={{ background: '#f59e0b', color: '#000', fontSize: 9, fontWeight: 800, width: 16, height: 16, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>!</span>
+        <span style={{ background: '#f59e0b', color: '#000', fontSize: 13, fontWeight: 800, width: 16, height: 16, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>!</span>
       )}
     </button>
   );

@@ -87,14 +87,14 @@ class _SerieSelectionScreenState extends State<SerieSelectionScreen> {
                   Text(
                     widget.matiereNom,
                     style: const TextStyle(
-                      fontSize: 15,
+                      fontSize: 17,
                       fontWeight: FontWeight.w700,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
                     '${_series.length} séries disponibles',
-                    style: const TextStyle(fontSize: 11, color: Colors.white70),
+                    style: const TextStyle(fontSize: 14, color: Colors.white70),
                   ),
                 ],
               ),
@@ -120,7 +120,7 @@ class _SerieSelectionScreenState extends State<SerieSelectionScreen> {
           Text(
             'Aucune série disponible\npour ${widget.matiereNom}.',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.textLight, fontSize: 15),
+            style: const TextStyle(color: AppColors.textLight, fontSize: 17),
           ),
           const SizedBox(height: 20),
           // Mode direct sans série
@@ -177,14 +177,14 @@ class _SerieSelectionScreenState extends State<SerieSelectionScreen> {
                     Text(
                       '${_series.length} séries · 20 questions chacune',
                       style: const TextStyle(
-                        fontSize: 13,
+                        fontSize: 16,
                         fontWeight: FontWeight.w700,
                         color: _waDarkGreen,
                       ),
                     ),
                     const Text(
                       '📖 Entraînement par série — Comprenez vos forces et faiblesses',
-                      style: TextStyle(fontSize: 11, color: Colors.grey),
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                   ],
                 ),
@@ -221,7 +221,7 @@ class _SerieSelectionScreenState extends State<SerieSelectionScreen> {
           child: Text(
             '${_series.length} séries disponibles dans ${widget.matiereNom}',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.grey, fontSize: 12),
+            style: const TextStyle(color: Colors.grey, fontSize: 15),
           ),
         ),
       ],
@@ -326,7 +326,7 @@ class _SerieSelectionScreenState extends State<SerieSelectionScreen> {
                         child: Text(
                           titre,
                           style: const TextStyle(
-                            fontSize: 13.5,
+                            fontSize: 143.5,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF1A1A1A),
                           ),
@@ -345,7 +345,7 @@ class _SerieSelectionScreenState extends State<SerieSelectionScreen> {
                           child: const Text(
                             'GRATUIT',
                             style: TextStyle(
-                              fontSize: 9,
+                              fontSize: 14,
                               fontWeight: FontWeight.w800,
                               color: _waDarkGreen,
                             ),
@@ -368,7 +368,7 @@ class _SerieSelectionScreenState extends State<SerieSelectionScreen> {
                           child: const Text(
                             '🔥 Populaire',
                             style: TextStyle(
-                              fontSize: 8,
+                              fontSize: 14,
                               fontWeight: FontWeight.w800,
                               color: Color(0xFFE65100),
                             ),
@@ -417,7 +417,7 @@ class _SerieSelectionScreenState extends State<SerieSelectionScreen> {
         const SizedBox(width: 3),
         Text(
           label,
-          style: TextStyle(fontSize: 11, color: c),
+          style: TextStyle(fontSize: 14, color: c),
         ),
       ],
     );
@@ -438,7 +438,7 @@ class _SerieSelectionScreenState extends State<SerieSelectionScreen> {
         ),
         content: const Text(
           'Cette série est réservée aux abonnés Premium.\n\nPassez à Premium pour accéder à toutes les séries et les 10 000 QCM disponibles.',
-          style: TextStyle(fontSize: 13, height: 1.5),
+          style: TextStyle(fontSize: 16, height: 1.5),
         ),
         actions: [
           TextButton(

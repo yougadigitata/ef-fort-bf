@@ -111,7 +111,7 @@ export default function CreateQuestionPage({ questionId, onNavigate }: Props) {
           position: 'fixed', top: 70, right: 20, padding: '12px 18px',
           background: toast.type === 'success' ? 'rgba(26,92,56,0.95)' : 'rgba(239,68,68,0.95)',
           border: `1px solid ${toast.type === 'success' ? '#1A5C38' : '#ef4444'}`,
-          borderRadius: 8, color: 'white', fontSize: 14, zIndex: 1000,
+          borderRadius: 8, color: 'white', fontSize: 17, zIndex: 1000,
           boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
         }}>
           {toast.msg}
@@ -123,16 +123,16 @@ export default function CreateQuestionPage({ questionId, onNavigate }: Props) {
           <h2 style={{ color: '#f1f5f9', fontSize: 20, fontWeight: 700 }}>
             {isEdit ? '✏️ Modifier la question' : '✚ Créer une question'}
           </h2>
-          {isEdit && <p style={{ color: '#64748b', fontSize: 13 }}>Les modifications sont appliquées LIVE à tous les utilisateurs</p>}
+          {isEdit && <p style={{ color: '#64748b', fontSize: 16 }}>Les modifications sont appliquées LIVE à tous les utilisateurs</p>}
         </div>
-        <button onClick={() => onNavigate('questions')} style={{ background: '#334155', border: 'none', color: '#94a3b8', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 14 }}>
+        <button onClick={() => onNavigate('questions')} style={{ background: '#334155', border: 'none', color: '#94a3b8', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 17 }}>
           ← Retour liste
         </button>
       </div>
 
       <form onSubmit={handleSubmit}>
         <div style={{ background: '#1e293b', borderRadius: 12, padding: 24, border: '1px solid #334155', marginBottom: 16 }}>
-          <h3 style={{ color: '#94a3b8', fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 20 }}>Informations générales</h3>
+          <h3 style={{ color: '#94a3b8', fontSize: 16, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 20 }}>Informations générales</h3>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
             <div>
@@ -150,7 +150,7 @@ export default function CreateQuestionPage({ questionId, onNavigate }: Props) {
                 {DIFFICULTES.map(d => (
                   <button key={d} type="button" onClick={() => setField('difficulte', d)} style={{
                     flex: 1, padding: '8px 4px', border: 'none', borderRadius: 8, cursor: 'pointer',
-                    fontSize: 12, fontWeight: 600,
+                    fontSize: 15, fontWeight: 600,
                     background: form.difficulte === d ? diffColors[d].bg : '#0f172a',
                     color: form.difficulte === d ? diffColors[d].color : '#64748b',
                     outline: form.difficulte === d ? `2px solid ${diffColors[d].color}` : 'none',
@@ -173,14 +173,14 @@ export default function CreateQuestionPage({ questionId, onNavigate }: Props) {
 
         {/* Propositions */}
         <div style={{ background: '#1e293b', borderRadius: 12, padding: 24, border: '1px solid #334155', marginBottom: 16 }}>
-          <h3 style={{ color: '#94a3b8', fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 20 }}>
+          <h3 style={{ color: '#94a3b8', fontSize: 16, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 20 }}>
             Propositions — cocher la bonne réponse
           </h3>
 
           {(['A', 'B', 'C', 'D', 'E'] as const).map(letter => (
             <div key={letter} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
               <button type="button" onClick={() => setField('bonne_reponse', letter)} style={{
-                width: 36, height: 36, borderRadius: '50%', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 14,
+                width: 36, height: 36, borderRadius: '50%', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 17,
                 flexShrink: 0, transition: 'all 0.2s',
                 background: form.bonne_reponse === letter ? '#1A5C38' : '#334155',
                 color: form.bonne_reponse === letter ? 'white' : '#64748b',
@@ -199,14 +199,14 @@ export default function CreateQuestionPage({ questionId, onNavigate }: Props) {
               )}
             </div>
           ))}
-          <p style={{ color: '#475569', fontSize: 12, marginTop: 8 }}>
+          <p style={{ color: '#475569', fontSize: 15, marginTop: 8 }}>
             Cliquez sur la lettre (A/B/C/D/E) pour définir la bonne réponse
           </p>
         </div>
 
         {/* Explications */}
         <div style={{ background: '#1e293b', borderRadius: 12, padding: 24, border: '1px solid #334155', marginBottom: 16 }}>
-          <h3 style={{ color: '#94a3b8', fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 20 }}>Informations complémentaires</h3>
+          <h3 style={{ color: '#94a3b8', fontSize: 16, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 20 }}>Informations complémentaires</h3>
 
           <div style={{ marginBottom: 16 }}>
             <label style={lbl}>Explication détaillée</label>
@@ -235,21 +235,21 @@ export default function CreateQuestionPage({ questionId, onNavigate }: Props) {
         <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
           <button type="button" onClick={() => onNavigate('questions')} style={{
             padding: '12px 24px', background: '#334155', border: 'none', borderRadius: 8,
-            color: '#94a3b8', cursor: 'pointer', fontSize: 15, fontWeight: 500,
+            color: '#94a3b8', cursor: 'pointer', fontSize: 18, fontWeight: 500,
           }}>
             Annuler
           </button>
           <button type="submit" disabled={saving} style={{
             padding: '12px 32px', background: saving ? '#334155' : 'linear-gradient(135deg, #1A5C38, #2d9966)',
             border: 'none', borderRadius: 8, color: 'white',
-            cursor: saving ? 'not-allowed' : 'pointer', fontSize: 15, fontWeight: 600,
+            cursor: saving ? 'not-allowed' : 'pointer', fontSize: 18, fontWeight: 600,
           }}>
             {saving ? '⏳ Sauvegarde...' : isEdit ? '💾 Sauvegarder & Publier LIVE' : '🚀 Créer & Publier LIVE'}
           </button>
         </div>
 
         {/* Validation en temps réel */}
-        <div style={{ marginTop: 12, padding: '10px 14px', background: '#0f172a', borderRadius: 8, fontSize: 12, color: '#64748b' }}>
+        <div style={{ marginTop: 12, padding: '10px 14px', background: '#0f172a', borderRadius: 8, fontSize: 15, color: '#64748b' }}>
           <span style={{ color: form.enonce ? '#4ade80' : '#ef4444' }}>{form.enonce ? '✅' : '❌'}</span> Énoncé &nbsp;
           <span style={{ color: form.option_a ? '#4ade80' : '#ef4444' }}>{form.option_a ? '✅' : '❌'}</span> Option A &nbsp;
           <span style={{ color: form.option_b ? '#4ade80' : '#ef4444' }}>{form.option_b ? '✅' : '❌'}</span> Option B &nbsp;
@@ -262,9 +262,9 @@ export default function CreateQuestionPage({ questionId, onNavigate }: Props) {
   );
 }
 
-const lbl: React.CSSProperties = { display: 'block', color: '#94a3b8', fontSize: 13, marginBottom: 6, fontWeight: 500 };
-const sel: React.CSSProperties = { width: '100%', padding: '10px 12px', background: '#0f172a', border: '1px solid #334155', borderRadius: 8, color: '#e2e8f0', fontSize: 14 };
-const inp: React.CSSProperties = { padding: '10px 12px', background: '#0f172a', border: '1px solid #334155', borderRadius: 8, color: '#e2e8f0', fontSize: 14 };
+const lbl: React.CSSProperties = { display: 'block', color: '#94a3b8', fontSize: 16, marginBottom: 6, fontWeight: 500 };
+const sel: React.CSSProperties = { width: '100%', padding: '10px 12px', background: '#0f172a', border: '1px solid #334155', borderRadius: 8, color: '#e2e8f0', fontSize: 17 };
+const inp: React.CSSProperties = { padding: '10px 12px', background: '#0f172a', border: '1px solid #334155', borderRadius: 8, color: '#e2e8f0', fontSize: 17 };
 const diffColors: Record<string, any> = {
   FACILE: { bg: 'rgba(74,222,128,0.15)', color: '#4ade80' },
   MOYEN: { bg: 'rgba(251,191,36,0.15)', color: '#fbbf24' },

@@ -1451,7 +1451,7 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                 child: Text(
                   'Lisez attentivement chaque question et ses propositions avant de répondre.',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 15,
                     color: AppColors.primary,
                     fontStyle: FontStyle.italic,
                     height: 1.4,
@@ -1503,7 +1503,7 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                         '─────── ${matiereLabel.toUpperCase()} ───────',
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                          fontSize: 12,
+                          fontSize: 15,
                           fontWeight: FontWeight.w800,
                           color: AppColors.primary,
                           letterSpacing: 1,
@@ -1516,8 +1516,8 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
 
                   // Carte question
                   Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+                    margin: const EdgeInsets.only(bottom: 14),
+                    padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(10),
@@ -1538,8 +1538,8 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              width: 26,
-                              height: 26,
+                              width: 34,
+                              height: 34,
                               decoration: const BoxDecoration(
                                 color: AppColors.primary,
                                 shape: BoxShape.circle,
@@ -1549,7 +1549,7 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                                   '${i + 1}',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w800,
-                                    fontSize: 12,
+                                    fontSize: 15,
                                     color: Colors.white,
                                   ),
                                 ),
@@ -1560,13 +1560,13 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                               child: MathTextWidget(
                                 text: texte,
                                 textStyle: const TextStyle(
-                                  fontSize: 13.5,
+                                  fontSize: 17,
                                   fontFamily: 'Georgia',
-                                  height: 1.5,
+                                  height: 1.6,
                                   color: AppColors.textDark,
                                   fontWeight: FontWeight.w600,
                                 ),
-                                mathSize: 13.5,
+                                mathSize: 17.0,
                                 mathColor: AppColors.textDark,
                               ),
                             ),
@@ -1579,16 +1579,16 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                           const SizedBox(height: 6),
                           ...options.map((opt) {
                             return Padding(
-                              padding: const EdgeInsets.only(bottom: 5),
+                              padding: const EdgeInsets.only(bottom: 7),
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Container(
-                                    width: 22,
-                                    height: 22,
+                                    width: 28,
+                                    height: 28,
                                     decoration: BoxDecoration(
                                       color: AppColors.primary.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(5),
+                                      borderRadius: BorderRadius.circular(6),
                                       border: Border.all(
                                         color: AppColors.primary.withValues(alpha: 0.3),
                                         width: 1,
@@ -1599,7 +1599,7 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                                         opt.key,
                                         style: const TextStyle(
                                           fontWeight: FontWeight.w800,
-                                          fontSize: 11,
+                                          fontSize: 14,
                                           color: AppColors.primary,
                                         ),
                                       ),
@@ -1610,12 +1610,12 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                                     child: MathTextWidget(
                                       text: opt.value,
                                       textStyle: const TextStyle(
-                                        fontSize: 12.5,
+                                        fontSize: 16,
                                         fontFamily: 'Georgia',
-                                        height: 1.45,
+                                        height: 1.55,
                                         color: AppColors.textDark,
                                       ),
-                                      mathSize: 12.5,
+                                      mathSize: 16.0,
                                       mathColor: AppColors.textDark,
                                     ),
                                   ),
@@ -1768,8 +1768,8 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                         child: GestureDetector(
                           onTap: () => _toggleAnswer(i, letter),
                           child: Container(
-                            height: 36,
-                            margin: const EdgeInsets.all(2),
+                            height: 42,
+                            margin: const EdgeInsets.all(3),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: isSelected
@@ -1793,7 +1793,7 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                               child: Text(
                                 letter,
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 15,
                                   fontWeight: FontWeight.w800,
                                   color: isSelected ? Colors.white : Colors.grey.shade500,
                                 ),
@@ -1860,7 +1860,7 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                 ],
                 SizedBox(
                   width: double.infinity,
-                  height: 52,
+                  height: 60,
                   child: ElevatedButton(
                     onPressed: () => _showConfirmSubmit(answeredCount),
                     style: ElevatedButton.styleFrom(
@@ -1871,7 +1871,7 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                     ),
                     child: const Text(
                       'SOUMETTRE MA COPIE',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, fontFamily: 'Poppins'),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, fontFamily: 'Poppins'),
                     ),
                   ),
                 ),
@@ -1891,7 +1891,7 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                     'Soumission disponible dans ${_secondsBeforeCanSubmit ~/ 60}min ${_secondsBeforeCanSubmit % 60}s',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                      fontSize: 13,
+                      fontSize: 15,
                       color: AppColors.textLight,
                       fontWeight: FontWeight.w600,
                     ),
@@ -2174,19 +2174,19 @@ class SimulationResultScreen extends StatelessWidget {
                       children: [
                         Text(
                           'Q${i + 1}.',
-                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: AppColors.primary),
+                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: AppColors.primary),
                         ),
                         const SizedBox(width: 6),
                         Icon(
                           noAns ? Icons.remove_circle_outline : (correct ? Icons.check_circle_outline : Icons.cancel_outlined),
-                          size: 16,
+                          size: 22,
                           color: noAns ? Colors.grey : (correct ? AppColors.success : AppColors.error),
                         ),
                         const Spacer(),
                         Text(
                           noAns ? 'Non répondu' : (correct ? 'Correct' : 'Incorrect'),
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 15,
                             fontWeight: FontWeight.w600,
                             color: noAns ? Colors.grey : (correct ? AppColors.success : AppColors.error),
                           ),
@@ -2196,8 +2196,8 @@ class SimulationResultScreen extends StatelessWidget {
                     const SizedBox(height: 6),
                     MathTextWidget(
                       text: (q['enonce'] ?? q['question'] ?? '').toString(),
-                      textStyle: const TextStyle(fontSize: 13, fontFamily: 'Georgia', height: 1.5, fontWeight: FontWeight.w500),
-                      mathSize: 13,
+                      textStyle: const TextStyle(fontSize: 17, fontFamily: 'Georgia', height: 1.6, fontWeight: FontWeight.w500),
+                      mathSize: 17,
                       mathColor: AppColors.textDark,
                     ),
                     const SizedBox(height: 8),
@@ -2224,24 +2224,24 @@ class SimulationResultScreen extends StatelessWidget {
                               style: TextStyle(
                                 fontWeight: FontWeight.w700,
                                 color: isBonne ? AppColors.success : AppColors.error,
-                                fontSize: 13,
+                                fontSize: 16,
                               ),
                             ),
                             Expanded(
                               child: MathTextWidget(
                                 text: t,
                                 textStyle: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 15,
                                   color: isBonne ? AppColors.success : AppColors.error,
                                   fontFamily: 'Georgia',
                                 ),
-                                mathSize: 12,
+                                mathSize: 15,
                                 mathColor: isBonne ? AppColors.success : AppColors.error,
                               ),
                             ),
                             Icon(
                               isBonne ? Icons.check : Icons.close,
-                              size: 14,
+                              size: 18,
                               color: isBonne ? AppColors.success : AppColors.error,
                             ),
                           ],
@@ -2259,12 +2259,12 @@ class SimulationResultScreen extends StatelessWidget {
                         child: MathTextWidget(
                           text: q['explication'].toString(),
                           textStyle: const TextStyle(
-                            fontSize: 12,
+                            fontSize: 15,
                             fontStyle: FontStyle.italic,
-                            height: 1.5,
+                            height: 1.6,
                             color: AppColors.textDark,
                           ),
-                          mathSize: 12,
+                          mathSize: 15,
                           mathColor: AppColors.textDark,
                         ),
                       ),
@@ -2280,11 +2280,11 @@ class SimulationResultScreen extends StatelessWidget {
               children: [
                 Expanded(
                   child: SizedBox(
-                    height: 50,
+                    height: 56,
                     child: ElevatedButton.icon(
                       onPressed: () => _exportPDF(context),
-                      icon: const Icon(Icons.assignment_turned_in_rounded, size: 18),
-                      label: const Text('Corrigé PDF', style: TextStyle(fontSize: 13)),
+                      icon: const Icon(Icons.assignment_turned_in_rounded, size: 20),
+                      label: const Text('Corrigé PDF', style: TextStyle(fontSize: 15)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF27AE60),
                         foregroundColor: AppColors.white,
@@ -2296,11 +2296,11 @@ class SimulationResultScreen extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: SizedBox(
-                    height: 50,
+                    height: 56,
                     child: ElevatedButton.icon(
                       onPressed: () => _exportPDFSujetVierge(context),
-                      icon: const Icon(Icons.print_rounded, size: 18),
-                      label: const Text('Sujet vierge', style: TextStyle(fontSize: 13)),
+                      icon: const Icon(Icons.print_rounded, size: 20),
+                      label: const Text('Sujet vierge', style: TextStyle(fontSize: 15)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF2980B9),
                         foregroundColor: AppColors.white,
@@ -2314,11 +2314,11 @@ class SimulationResultScreen extends StatelessWidget {
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 56,
               child: ElevatedButton.icon(
                 onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.home_rounded),
-                label: const Text('Retour au tableau de bord'),
+                icon: const Icon(Icons.home_rounded, size: 20),
+                label: const Text('Retour au tableau de bord', style: TextStyle(fontSize: 16)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: AppColors.white,
@@ -2538,36 +2538,36 @@ class SimulationResultScreen extends StatelessWidget {
 
           // ── Grille de réponses ──
           pw.Text('GRILLE DE REPONSES :',
-              style: pw.TextStyle(font: fontBold, fontSize: 15, color: primaryColor)),
-          pw.SizedBox(height: 8),
+              style: pw.TextStyle(font: fontBold, fontSize: 17, color: primaryColor)),
+          pw.SizedBox(height: 10),
           pw.Table(
             border: pw.TableBorder.all(color: PdfColor.fromHex('BDBDBD'), width: 0.6),
             children: [
               pw.TableRow(
                 decoration: pw.BoxDecoration(color: PdfColor.fromHex('E8F5E9')),
                 children: ['N°', 'A', 'B', 'C', 'D'].map((h) => pw.Padding(
-                  padding: const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                  child: pw.Text(h, style: pw.TextStyle(font: fontBold, fontSize: 14, color: primaryColor), textAlign: pw.TextAlign.center),
+                  padding: const pw.EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                  child: pw.Text(h, style: pw.TextStyle(font: fontBold, fontSize: 16, color: primaryColor), textAlign: pw.TextAlign.center),
                 )).toList(),
               ),
               ...List.generate(questions.length, (i) => pw.TableRow(
                 decoration: i % 2 == 0 ? const pw.BoxDecoration(color: PdfColors.white) : pw.BoxDecoration(color: PdfColor.fromHex('F5F5F5')),
                 children: [
                   pw.Padding(
-                    padding: const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                    child: pw.Text('${i + 1}', style: pw.TextStyle(font: fontBold, fontSize: 14), textAlign: pw.TextAlign.center),
+                    padding: const pw.EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                    child: pw.Text('${i + 1}', style: pw.TextStyle(font: fontBold, fontSize: 16), textAlign: pw.TextAlign.center),
                   ),
                   ...[' A ', ' B ', ' C ', ' D '].map((l) => pw.Padding(
                     padding: const pw.EdgeInsets.symmetric(vertical: 5, horizontal: 8),
                     child: pw.Container(
-                      width: 22, height: 22,
+                      width: 26, height: 26,
                       decoration: pw.BoxDecoration(
                         shape: pw.BoxShape.circle,
                         border: pw.Border.all(color: PdfColor.fromHex('9E9E9E'), width: 0.8),
                       ),
                       child: pw.Center(
                         child: pw.Text(l.trim(),
-                            style: pw.TextStyle(font: font, fontSize: 12, color: PdfColor.fromHex('9E9E9E')),
+                            style: pw.TextStyle(font: font, fontSize: 14, color: PdfColor.fromHex('9E9E9E')),
                             textAlign: pw.TextAlign.center),
                       ),
                     ),
@@ -2580,8 +2580,8 @@ class SimulationResultScreen extends StatelessWidget {
 
           // ── Questions ──
           pw.Text('QUESTIONS :',
-              style: pw.TextStyle(font: fontBold, fontSize: 15, color: primaryColor)),
-          pw.SizedBox(height: 12),
+              style: pw.TextStyle(font: fontBold, fontSize: 17, color: primaryColor)),
+          pw.SizedBox(height: 14),
           ...List.generate(questions.length, (i) {
             final q = questions[i] as Map<String, dynamic>;
             final enonce = _cleanLatexForPdf((q['enonce'] ?? q['question'] ?? '').toString());
@@ -2592,8 +2592,8 @@ class SimulationResultScreen extends StatelessWidget {
               'D': _cleanLatexForPdf((q['option_d'] ?? '').toString()),
             };
             return pw.Container(
-              margin: const pw.EdgeInsets.only(bottom: 14),
-              padding: const pw.EdgeInsets.fromLTRB(14, 10, 14, 10),
+              margin: const pw.EdgeInsets.only(bottom: 16),
+              padding: const pw.EdgeInsets.fromLTRB(16, 12, 16, 12),
               decoration: pw.BoxDecoration(
                 color: PdfColors.white,
                 border: pw.Border.all(color: PdfColor.fromHex('D0D0D0'), width: 0.7),
@@ -2606,41 +2606,41 @@ class SimulationResultScreen extends StatelessWidget {
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
                       pw.Container(
-                        width: 26, height: 26,
+                        width: 30, height: 30,
                         decoration: pw.BoxDecoration(color: primaryColor, shape: pw.BoxShape.circle),
                         child: pw.Center(
                           child: pw.Text('${i + 1}',
-                              style: pw.TextStyle(font: fontBold, fontSize: 12, color: PdfColors.white)),
+                              style: pw.TextStyle(font: fontBold, fontSize: 14, color: PdfColors.white)),
                         ),
                       ),
                       pw.SizedBox(width: 10),
                       pw.Expanded(
                         child: pw.Text(enonce,
-                            style: pw.TextStyle(font: fontBold, fontSize: 14, lineSpacing: 4)),
+                            style: pw.TextStyle(font: fontBold, fontSize: 16, lineSpacing: 5)),
                       ),
                     ],
                   ),
                   pw.SizedBox(height: 8),
                   ...opts.entries.where((e) => e.value.isNotEmpty).map((e) => pw.Padding(
-                    padding: const pw.EdgeInsets.only(left: 36, bottom: 5),
+                    padding: const pw.EdgeInsets.only(left: 40, bottom: 7),
                     child: pw.Row(
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
                         pw.Container(
-                          width: 20, height: 20,
+                          width: 24, height: 24,
                           decoration: pw.BoxDecoration(
                             shape: pw.BoxShape.circle,
                             border: pw.Border.all(color: PdfColor.fromHex('757575'), width: 0.8),
                           ),
                           child: pw.Center(
                             child: pw.Text(e.key,
-                                style: pw.TextStyle(font: fontBold, fontSize: 11, color: PdfColor.fromHex('424242'))),
+                                style: pw.TextStyle(font: fontBold, fontSize: 13, color: PdfColor.fromHex('424242'))),
                           ),
                         ),
                         pw.SizedBox(width: 8),
                         pw.Expanded(
                           child: pw.Text(e.value,
-                              style: pw.TextStyle(font: font, fontSize: 14, lineSpacing: 3)),
+                              style: pw.TextStyle(font: font, fontSize: 15, lineSpacing: 4)),
                         ),
                       ],
                     ),
@@ -2812,7 +2812,7 @@ class SimulationResultScreen extends StatelessWidget {
                           border: pw.Border.all(color: borderGreen, width: 0.8),
                         ),
                         child: pw.Text('RESULTATS EXAMEN \u2014 CORRECTION DETAILLEE',
-                            style: pw.TextStyle(fontSize: 13, color: primaryColor, fontWeight: pw.FontWeight.bold)),
+                            style: pw.TextStyle(fontSize: 15, color: primaryColor, fontWeight: pw.FontWeight.bold)),
                       ),
                     ],
                   ),
@@ -2991,7 +2991,7 @@ class SimulationResultScreen extends StatelessWidget {
                           decoration: pw.BoxDecoration(color: circleColor, shape: pw.BoxShape.circle),
                           child: pw.Center(
                             child: pw.Text('Q${c["num"]}',
-                                style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
+                                style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
                           ),
                         ),
                         pw.SizedBox(width: 10),
@@ -3007,7 +3007,7 @@ class SimulationResultScreen extends StatelessWidget {
                             borderRadius: const pw.BorderRadius.all(pw.Radius.circular(5)),
                           ),
                           child: pw.Text(statusText,
-                              style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
+                              style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
                         ),
                       ],
                     ),
@@ -3048,7 +3048,7 @@ class SimulationResultScreen extends StatelessWidget {
                                   ),
                                   child: pw.Center(
                                     child: pw.Text(l,
-                                        style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
+                                        style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
                                   ),
                                 ),
                                 pw.SizedBox(width: 8),
@@ -3082,7 +3082,7 @@ class SimulationResultScreen extends StatelessWidget {
                                     (c['explication'] as String).isNotEmpty
                                         ? (c['explication'] as String)
                                         : 'La bonne reponse est ${c["bonne"] ?? "?"}. Reportez-vous au cours correspondant.',
-                                    style: pw.TextStyle(fontSize: 14, color: greyDark, lineSpacing: 3, fontStyle: pw.FontStyle.italic),
+                                    style: pw.TextStyle(fontSize: 15, color: greyDark, lineSpacing: 4, fontStyle: pw.FontStyle.italic),
                                   ),
                                 ),
                               ],
@@ -3108,7 +3108,7 @@ class SimulationResultScreen extends StatelessWidget {
             child: pw.Text(
               'Ne lache rien, la reussite est au bout du chemin \u2014 EF-FORT.BF',
               textAlign: pw.TextAlign.center,
-              style: pw.TextStyle(fontSize: 14, color: primaryColor, fontStyle: pw.FontStyle.italic),
+              style: pw.TextStyle(fontSize: 15, color: primaryColor, fontStyle: pw.FontStyle.italic),
             ),
           ),
         ],
@@ -3204,7 +3204,7 @@ class SimulationResultScreen extends StatelessWidget {
         child: Column(
           children: [
             Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: color)),
-            Text(label, style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w600)),
+            Text(label, style: TextStyle(fontSize: 15, color: color, fontWeight: FontWeight.w600)),
           ],
         ),
       ),

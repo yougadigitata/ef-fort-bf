@@ -74,7 +74,7 @@ class _InscriptionScreenState extends State<InscriptionScreen> {
         Text(
           label,
           style: TextStyle(
-            fontSize: 13,
+            fontSize: 16,
             fontWeight: FontWeight.w600,
             color: AppColors.white.withValues(alpha: 0.9),
           ),
@@ -121,7 +121,7 @@ class _InscriptionScreenState extends State<InscriptionScreen> {
                   Text(
                     'Rejoignez la communaute EF-FORT',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 17,
                       color: AppColors.white.withValues(alpha: 0.7),
                     ),
                   ),
@@ -131,7 +131,7 @@ class _InscriptionScreenState extends State<InscriptionScreen> {
                     TextFormField(
                       controller: _nomController,
                       textCapitalization: TextCapitalization.characters,
-                      style: const TextStyle(fontSize: 15, color: AppColors.textDark),
+                      style: const TextStyle(fontSize: 17, color: AppColors.textDark),
                       decoration: const InputDecoration(
                         hintText: 'Ex: KONE',
                         prefixIcon: Icon(Icons.person_outline, size: 20),
@@ -144,7 +144,7 @@ class _InscriptionScreenState extends State<InscriptionScreen> {
                     TextFormField(
                       controller: _prenomController,
                       textCapitalization: TextCapitalization.words,
-                      style: const TextStyle(fontSize: 15, color: AppColors.textDark),
+                      style: const TextStyle(fontSize: 17, color: AppColors.textDark),
                       decoration: const InputDecoration(
                         hintText: 'Ex: Seydou',
                         prefixIcon: Icon(Icons.person_outline, size: 20),
@@ -158,7 +158,7 @@ class _InscriptionScreenState extends State<InscriptionScreen> {
                       controller: _phoneController,
                       keyboardType: TextInputType.phone,
                       maxLength: 8,
-                      style: const TextStyle(fontSize: 15, color: AppColors.textDark),
+                      style: const TextStyle(fontSize: 17, color: AppColors.textDark),
                       decoration: InputDecoration(
                         hintText: '7X XX XX XX',
                         counterText: '',
@@ -167,7 +167,7 @@ class _InscriptionScreenState extends State<InscriptionScreen> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Text('+226', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textLight)),
+                              const Text('+226', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textLight)),
                               Container(height: 20, width: 1, margin: const EdgeInsets.only(left: 6), color: AppColors.textLight.withValues(alpha: 0.3)),
                             ],
                           ),
@@ -192,7 +192,7 @@ class _InscriptionScreenState extends State<InscriptionScreen> {
                       child: DropdownButtonFormField<String>(
                         initialValue: _selectedNiveau,
                         dropdownColor: AppColors.white,
-                        style: const TextStyle(fontSize: 15, color: AppColors.textDark),
+                        style: const TextStyle(fontSize: 17, color: AppColors.textDark),
                         decoration: const InputDecoration(
                           border: InputBorder.none,
                           enabledBorder: InputBorder.none,
@@ -208,7 +208,7 @@ class _InscriptionScreenState extends State<InscriptionScreen> {
                     TextFormField(
                       controller: _passwordController,
                       obscureText: _obscurePassword,
-                      style: const TextStyle(fontSize: 15, color: AppColors.textDark),
+                      style: const TextStyle(fontSize: 17, color: AppColors.textDark),
                       decoration: InputDecoration(
                         hintText: 'Min. 6 caracteres',
                         prefixIcon: const Icon(Icons.lock_outline, size: 20),
@@ -229,7 +229,7 @@ class _InscriptionScreenState extends State<InscriptionScreen> {
                     TextFormField(
                       controller: _confirmPasswordController,
                       obscureText: _obscureConfirm,
-                      style: const TextStyle(fontSize: 15, color: AppColors.textDark),
+                      style: const TextStyle(fontSize: 17, color: AppColors.textDark),
                       decoration: InputDecoration(
                         hintText: 'Repetez le mot de passe',
                         prefixIcon: const Icon(Icons.lock_outline, size: 20),
@@ -256,7 +256,7 @@ class _InscriptionScreenState extends State<InscriptionScreen> {
                       ),
                       child: Text(
                         _errorMessage!,
-                        style: const TextStyle(color: AppColors.secondary, fontWeight: FontWeight.w600, fontSize: 13),
+                        style: const TextStyle(color: AppColors.secondary, fontWeight: FontWeight.w600, fontSize: 16),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -281,10 +281,10 @@ class _InscriptionScreenState extends State<InscriptionScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('Deja un compte ? ', style: TextStyle(color: AppColors.white.withValues(alpha: 0.7), fontSize: 14)),
+                      Text('Deja un compte ? ', style: TextStyle(color: AppColors.white.withValues(alpha: 0.7), fontSize: 17)),
                       GestureDetector(
                         onTap: () => Navigator.pop(context),
-                        child: const Text('Se connecter', style: TextStyle(color: AppColors.secondary, fontWeight: FontWeight.w700, fontSize: 14)),
+                        child: const Text('Se connecter', style: TextStyle(color: AppColors.secondary, fontWeight: FontWeight.w700, fontSize: 17)),
                       ),
                     ],
                   ),

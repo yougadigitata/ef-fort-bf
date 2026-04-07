@@ -152,7 +152,7 @@ export default function SimulationsPage({ onNavigate }: { onNavigate: (page: Pag
           <h2 style={{ color: '#f1f5f9', fontSize: 22, fontWeight: 700, margin: 0 }}>
             🎯 Examens Types
           </h2>
-          <p style={{ color: '#64748b', fontSize: 13, marginTop: 4 }}>
+          <p style={{ color: '#64748b', fontSize: 16, marginTop: 4 }}>
             Structure : <strong style={{ color: '#94a3b8' }}>10 matières × 2 séries + Examens Blancs (11e)</strong>
           </p>
         </div>
@@ -161,7 +161,7 @@ export default function SimulationsPage({ onNavigate }: { onNavigate: (page: Pag
           style={{
             background: 'linear-gradient(135deg, #1A5C38, #2d9966)',
             color: 'white', border: 'none', padding: '10px 20px',
-            borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 14,
+            borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 17,
           }}
         >
           ✚ Créer un Examen
@@ -188,7 +188,7 @@ export default function SimulationsPage({ onNavigate }: { onNavigate: (page: Pag
       <div style={{
         background: activeTab === 'examen_type' ? 'rgba(59,130,246,0.08)' : 'rgba(212,160,23,0.08)',
         border: `1px solid ${activeTab === 'examen_type' ? 'rgba(59,130,246,0.2)' : 'rgba(212,160,23,0.2)'}`,
-        borderRadius: 10, padding: '12px 16px', marginBottom: 20, fontSize: 13,
+        borderRadius: 10, padding: '12px 16px', marginBottom: 20, fontSize: 16,
         color: '#94a3b8',
       }}>
         {activeTab === 'examen_type' ? (
@@ -304,13 +304,13 @@ export default function SimulationsPage({ onNavigate }: { onNavigate: (page: Pag
               {/* Questions par matière */}
               <div style={{ marginBottom: 20 }}>
                 <label style={labelStyle}>Questions par matière</label>
-                <div style={{ color: '#475569', fontSize: 12, marginBottom: 10 }}>
+                <div style={{ color: '#475569', fontSize: 15, marginBottom: 10 }}>
                   Total sélectionné : <strong style={{ color: totalSelected > 0 ? '#4ade80' : '#94a3b8' }}>{totalSelected} question(s)</strong>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 280, overflowY: 'auto' }}>
                   {form.config.map((c, i) => (
                     <div key={c.matiere_id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <span style={{ color: '#94a3b8', fontSize: 13, width: 200, flexShrink: 0 }}>{c.matiere_nom}</span>
+                      <span style={{ color: '#94a3b8', fontSize: 16, width: 200, flexShrink: 0 }}>{c.matiere_nom}</span>
                       <input
                         type="number" min="0" max="100"
                         value={c.count}
@@ -321,7 +321,7 @@ export default function SimulationsPage({ onNavigate }: { onNavigate: (page: Pag
                         }}
                         style={{ ...inputStyle, width: 80, padding: '6px 10px', textAlign: 'center' as const }}
                       />
-                      <span style={{ color: '#475569', fontSize: 12 }}>questions</span>
+                      <span style={{ color: '#475569', fontSize: 15 }}>questions</span>
                     </div>
                   ))}
                 </div>
@@ -329,11 +329,11 @@ export default function SimulationsPage({ onNavigate }: { onNavigate: (page: Pag
 
               {/* Options */}
               <div style={{ display: 'flex', gap: 16, marginBottom: 20, flexWrap: 'wrap' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#94a3b8', fontSize: 13, cursor: 'pointer' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#94a3b8', fontSize: 16, cursor: 'pointer' }}>
                   <input type="checkbox" checked={form.show_corrections} onChange={e => setForm(f => ({ ...f, show_corrections: e.target.checked }))} />
                   Afficher les corrections
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#94a3b8', fontSize: 13, cursor: 'pointer' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#94a3b8', fontSize: 16, cursor: 'pointer' }}>
                   <input type="checkbox" checked={form.show_score_after} onChange={e => setForm(f => ({ ...f, show_score_after: e.target.checked }))} />
                   Afficher le score
                 </label>
@@ -362,7 +362,7 @@ export default function SimulationsPage({ onNavigate }: { onNavigate: (page: Pag
       {toast && (
         <div style={{
           position: 'fixed', bottom: 24, right: 24, background: toast.includes('❌') ? '#ef4444' : '#1A5C38',
-          color: 'white', padding: '12px 20px', borderRadius: 10, fontSize: 14, fontWeight: 600,
+          color: 'white', padding: '12px 20px', borderRadius: 10, fontSize: 17, fontWeight: 600,
           zIndex: 200, boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
         }}>{toast}</div>
       )}
@@ -379,24 +379,24 @@ function ExamCard({ sim, onDelete, onTogglePublish }: { sim: any; onDelete: () =
     }}>
       <div style={{ flex: 1, minWidth: 200 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-          <span style={{ color: '#f1f5f9', fontWeight: 700, fontSize: 15 }}>{sim.titre}</span>
+          <span style={{ color: '#f1f5f9', fontWeight: 700, fontSize: 18 }}>{sim.titre}</span>
           {sim.serie_label && (
-            <span style={{ background: 'rgba(59,130,246,0.15)', color: '#3b82f6', fontSize: 11, padding: '2px 8px', borderRadius: 12, fontWeight: 600 }}>
+            <span style={{ background: 'rgba(59,130,246,0.15)', color: '#3b82f6', fontSize: 14, padding: '2px 8px', borderRadius: 12, fontWeight: 600 }}>
               {sim.serie_label}
             </span>
           )}
         </div>
-        <div style={{ color: '#64748b', fontSize: 12, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+        <div style={{ color: '#64748b', fontSize: 15, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
           <span>⏱ {sim.duree_minutes} min</span>
           <span>📊 {sim.score_max ?? '?'} points</span>
           {sim.nb_questions && <span>❓ {sim.nb_questions} questions</span>}
           {sim.nb_passages && <span>👥 {sim.nb_passages} passages</span>}
         </div>
-        {sim.description && <div style={{ color: '#475569', fontSize: 12, marginTop: 4 }}>{sim.description}</div>}
+        {sim.description && <div style={{ color: '#475569', fontSize: 15, marginTop: 4 }}>{sim.description}</div>}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <span style={{
-          padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700,
+          padding: '6px 14px', borderRadius: 20, fontSize: 15, fontWeight: 700,
           background: sim.published ? 'rgba(74,222,128,0.15)' : 'rgba(100,116,139,0.15)',
           color: sim.published ? '#4ade80' : '#64748b',
         }}>
@@ -408,7 +408,7 @@ function ExamCard({ sim, onDelete, onTogglePublish }: { sim: any; onDelete: () =
             background: sim.published ? 'rgba(239,68,68,0.1)' : 'rgba(74,222,128,0.1)',
             border: `1px solid ${sim.published ? 'rgba(239,68,68,0.3)' : 'rgba(74,222,128,0.3)'}`,
             color: sim.published ? '#ef4444' : '#4ade80',
-            padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600,
+            padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 15, fontWeight: 600,
           }}
         >
           {sim.published ? '🔒 Masquer' : '✅ Publier'}
@@ -417,7 +417,7 @@ function ExamCard({ sim, onDelete, onTogglePublish }: { sim: any; onDelete: () =
           onClick={onDelete}
           style={{
             background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)',
-            color: '#ef4444', padding: '6px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 13,
+            color: '#ef4444', padding: '6px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 16,
           }}
         >
           🗑️
@@ -433,7 +433,7 @@ function TabBtn({ active, onClick, label, color }: { active: boolean; onClick: (
       padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer',
       background: active ? color : 'transparent',
       color: active ? 'white' : '#64748b',
-      fontSize: 13, fontWeight: active ? 600 : 400,
+      fontSize: 16, fontWeight: active ? 600 : 400,
       transition: 'all 0.15s',
     }}>{label}</button>
   );
@@ -442,7 +442,7 @@ function TabBtn({ active, onClick, label, color }: { active: boolean; onClick: (
 function FilterBtn({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
   return (
     <button onClick={onClick} style={{
-      padding: '4px 12px', borderRadius: 16, border: 'none', cursor: 'pointer', fontSize: 12,
+      padding: '6px 14px', borderRadius: 16, border: 'none', cursor: 'pointer', fontSize: 15,
       background: active ? 'rgba(26,92,56,0.25)' : '#1e293b',
       color: active ? '#4ade80' : '#64748b', fontWeight: active ? 600 : 400,
     }}>{label}</button>
@@ -472,11 +472,11 @@ function LoadingSpinner() {
 }
 
 const labelStyle: React.CSSProperties = {
-  display: 'block', color: '#94a3b8', fontSize: 13, marginBottom: 6, fontWeight: 500,
+  display: 'block', color: '#94a3b8', fontSize: 16, marginBottom: 6, fontWeight: 500,
 };
 
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '10px 14px', background: '#0f172a',
   border: '1px solid #334155', borderRadius: 8, color: '#e2e8f0',
-  fontSize: 14, outline: 'none', boxSizing: 'border-box' as const,
+  fontSize: 17, outline: 'none', boxSizing: 'border-box' as const,
 };

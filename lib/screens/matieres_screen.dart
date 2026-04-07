@@ -180,7 +180,7 @@ class _MatieresScreenState extends State<MatieresScreen> {
           const SizedBox(height: 16),
           const Text(
             'Impossible de charger les matières',
-            style: TextStyle(fontSize: 15, color: AppColors.textLight),
+            style: TextStyle(fontSize: 17, color: AppColors.textLight),
           ),
           const SizedBox(height: 16),
           ElevatedButton.icon(
@@ -208,7 +208,7 @@ class _MatieresScreenState extends State<MatieresScreen> {
           const Text(
             'Aucune matière disponible\npour le moment.',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 15, color: AppColors.textLight),
+            style: TextStyle(fontSize: 17, color: AppColors.textLight),
           ),
           const SizedBox(height: 16),
           ElevatedButton.icon(
@@ -351,7 +351,7 @@ class _MatieresScreenState extends State<MatieresScreen> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 13,
+                      fontSize: 16,
                       fontWeight: FontWeight.w800,
                       color: Color(0xFF1A1A2E),
                       height: 1.25,
@@ -376,7 +376,7 @@ class _MatieresScreenState extends State<MatieresScreen> {
                         Text(
                           isSeriesMode ? 'Séries QCM' : 'QCM',
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: color,
                           ),
@@ -407,7 +407,7 @@ class _MatieresScreenState extends State<MatieresScreen> {
                 child: Text(
                   badgeLabel,
                   style: const TextStyle(
-                    fontSize: 9,
+                    fontSize: 14,
                     fontWeight: FontWeight.w900,
                     color: Colors.white,
                     letterSpacing: 0.5,

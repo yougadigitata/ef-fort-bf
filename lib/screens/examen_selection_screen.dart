@@ -106,7 +106,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
                 Text(
                   'Choisir votre domaine de concours',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 15,
                     color: Colors.white.withValues(alpha: 0.75),
                     fontWeight: FontWeight.w500,
                   ),
@@ -116,7 +116,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
                 Text(
                   '11 matières · 30 séries · 50 questions · 1h30',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 15,
                     color: Colors.white.withValues(alpha: 0.75),
                     fontWeight: FontWeight.w500,
                   ),
@@ -184,7 +184,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
               '20 séries officielles · Interface vraie feuille\n50 questions · 1h30 · Correction détaillée',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 16,
                 color: AppColors.textLight,
                 height: 1.5,
               ),
@@ -223,7 +223,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
                 label: const Text(
                   'ACCÉDER AUX EXAMENS TYPES',
                   style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 17,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.3,
                     fontFamily: 'Poppins',
@@ -244,7 +244,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
               '10 concours × 2 séries = 20 examens types disponibles',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 14,
                 color: AppColors.textLight.withValues(alpha: 0.7),
               ),
             ),
@@ -265,7 +265,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
       child: Text(
         label,
         style: TextStyle(
-          fontSize: 11,
+          fontSize: 14,
           color: color,
           fontWeight: FontWeight.w700,
         ),
@@ -346,7 +346,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 11.5,
+                fontSize: 141.5,
                 fontWeight: FontWeight.w800,
                 color: color,
                 height: 1.2,
@@ -400,7 +400,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
                         'Série 1',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: 14,
                           fontWeight: FontWeight.w800,
                           color: Colors.white,
                         ),
@@ -423,7 +423,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
                         'Série 2',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: 14,
                           fontWeight: FontWeight.w800,
                           color: color,
                         ),
@@ -458,7 +458,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
           Text(
             label,
             style: TextStyle(
-              fontSize: 10,
+              fontSize: 14,
               color: color,
               fontWeight: FontWeight.w700,
             ),
@@ -483,7 +483,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
         ),
         content: const Text(
           'Les examens blancs sont réservés aux abonnés Premium.\n\nAbonnez-vous pour y accéder et pratiquer dans des conditions réelles.',
-          style: TextStyle(fontSize: 13, height: 1.5),
+          style: TextStyle(fontSize: 16, height: 1.5),
         ),
         actions: [
           TextButton(

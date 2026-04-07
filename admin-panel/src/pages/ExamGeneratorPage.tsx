@@ -99,7 +99,7 @@ export default function ExamGeneratorPage({ onNavigate }: { onNavigate: (p: Page
     <div>
       <div style={{ marginBottom: 24 }}>
         <h2 style={{ color: '#f1f5f9', fontSize: 22, fontWeight: 700, margin: 0 }}>🧩 Générateur d'Examens Composites</h2>
-        <p style={{ color: '#64748b', fontSize: 14, marginTop: 6 }}>
+        <p style={{ color: '#64748b', fontSize: 17, marginTop: 6 }}>
           Composez un examen en puisant des questions dans plusieurs matières. L'examen créé apparaîtra automatiquement dans la section Simulations & Examens.
         </p>
       </div>
@@ -107,7 +107,7 @@ export default function ExamGeneratorPage({ onNavigate }: { onNavigate: (p: Page
       {result && (
         <div style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid #22c55e44', borderRadius: 12, padding: 20, marginBottom: 24 }}>
           <div style={{ color: '#22c55e', fontWeight: 700, fontSize: 16, marginBottom: 8 }}>✅ Examen créé avec succès !</div>
-          <div style={{ color: '#94a3b8', fontSize: 14 }}>
+          <div style={{ color: '#94a3b8', fontSize: 17 }}>
             <strong style={{ color: '#f1f5f9' }}>{result.titre ?? titre}</strong> — {result.total_questions ?? totalQuestions} questions QCM avec explications
           </div>
           <div style={{ marginTop: 12, display: 'flex', gap: 10 }}>
@@ -126,35 +126,35 @@ export default function ExamGeneratorPage({ onNavigate }: { onNavigate: (p: Page
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* Titre */}
           <div style={{ background: '#1e293b', borderRadius: 12, padding: 20, border: '1px solid #334155' }}>
-            <div style={{ color: '#94a3b8', fontSize: 12, fontWeight: 600, marginBottom: 10, textTransform: 'uppercase' }}>Informations de l'examen</div>
+            <div style={{ color: '#94a3b8', fontSize: 15, fontWeight: 600, marginBottom: 10, textTransform: 'uppercase' }}>Informations de l'examen</div>
             <input
               value={titre}
               onChange={e => setTitre(e.target.value)}
               placeholder="Ex: Concours 2026 — Épreuve Générale"
               style={{
                 width: '100%', background: '#0f172a', border: '1px solid #334155', borderRadius: 8,
-                padding: '10px 12px', color: '#f1f5f9', fontSize: 14, marginBottom: 12, boxSizing: 'border-box',
+                padding: '10px 12px', color: '#f1f5f9', fontSize: 17, marginBottom: 12, boxSizing: 'border-box',
               }}
             />
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <label style={{ color: '#94a3b8', fontSize: 13, whiteSpace: 'nowrap' }}>Durée :</label>
+              <label style={{ color: '#94a3b8', fontSize: 16, whiteSpace: 'nowrap' }}>Durée :</label>
               <input type="number" min={10} max={480} value={dureeMinutes}
                 onChange={e => setDureeMinutes(parseInt(e.target.value) || 60)}
-                style={{ width: 80, background: '#0f172a', border: '1px solid #334155', borderRadius: 8, padding: '8px 10px', color: '#f1f5f9', fontSize: 14 }}
+                style={{ width: 80, background: '#0f172a', border: '1px solid #334155', borderRadius: 8, padding: '8px 10px', color: '#f1f5f9', fontSize: 17 }}
               />
-              <span style={{ color: '#64748b', fontSize: 13 }}>minutes</span>
+              <span style={{ color: '#64748b', fontSize: 16 }}>minutes</span>
             </div>
           </div>
 
           {/* Destination */}
           <div style={{ background: '#1e293b', borderRadius: 12, padding: 20, border: '1px solid #334155' }}>
-            <div style={{ color: '#94a3b8', fontSize: 12, fontWeight: 600, marginBottom: 12, textTransform: 'uppercase' }}>Destination</div>
+            <div style={{ color: '#94a3b8', fontSize: 15, fontWeight: 600, marginBottom: 12, textTransform: 'uppercase' }}>Destination</div>
             <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
               {(['simulation', 'serie'] as const).map(d => (
                 <button key={d} onClick={() => setDestination(d)} style={{
                   flex: 1, padding: '10px', borderRadius: 8, border: `1px solid ${destination === d ? '#1A5C38' : '#334155'}`,
                   background: destination === d ? 'rgba(26,92,56,0.2)' : 'transparent',
-                  color: destination === d ? '#4ade80' : '#64748b', cursor: 'pointer', fontWeight: 600, fontSize: 13,
+                  color: destination === d ? '#4ade80' : '#64748b', cursor: 'pointer', fontWeight: 600, fontSize: 16,
                 }}>
                   {d === 'simulation' ? '🎯 Simulation/Examen' : '📚 Nouvelle Série'}
                 </button>
@@ -162,7 +162,7 @@ export default function ExamGeneratorPage({ onNavigate }: { onNavigate: (p: Page
             </div>
             {destination === 'simulation' && (
               <select value={destSimId} onChange={e => setDestSimId(e.target.value)}
-                style={{ width: '100%', background: '#0f172a', border: '1px solid #334155', borderRadius: 8, padding: '9px 12px', color: '#f1f5f9', fontSize: 13, boxSizing: 'border-box' }}>
+                style={{ width: '100%', background: '#0f172a', border: '1px solid #334155', borderRadius: 8, padding: '9px 12px', color: '#f1f5f9', fontSize: 16, boxSizing: 'border-box' }}>
                 <option value="">— Créer une nouvelle simulation —</option>
                 {simulations.map((s: any) => <option key={s.id} value={s.id}>{s.titre}</option>)}
               </select>
@@ -172,23 +172,23 @@ export default function ExamGeneratorPage({ onNavigate }: { onNavigate: (p: Page
           {/* Allocations résumé */}
           <div style={{ background: '#1e293b', borderRadius: 12, padding: 20, border: '1px solid #334155' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <div style={{ color: '#94a3b8', fontSize: 12, fontWeight: 600, textTransform: 'uppercase' }}>Répartition des questions</div>
-              <div style={{ color: '#D4A017', fontWeight: 700, fontSize: 15 }}>{totalQuestions} QCM total</div>
+              <div style={{ color: '#94a3b8', fontSize: 15, fontWeight: 600, textTransform: 'uppercase' }}>Répartition des questions</div>
+              <div style={{ color: '#D4A017', fontWeight: 700, fontSize: 18 }}>{totalQuestions} QCM total</div>
             </div>
             {allocs.length === 0 ? (
-              <div style={{ color: '#475569', fontSize: 13, textAlign: 'center', padding: '20px 0' }}>
+              <div style={{ color: '#475569', fontSize: 16, textAlign: 'center', padding: '20px 0' }}>
                 Sélectionnez des matières ci-dessous →
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {allocs.map(a => (
                   <div key={a.matiereId} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ flex: 1, color: '#e2e8f0', fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.matiereName}</div>
+                    <div style={{ flex: 1, color: '#e2e8f0', fontSize: 16, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.matiereName}</div>
                     <input type="number" min={1} max={100} value={a.count}
                       onChange={e => updateCount(a.matiereId, parseInt(e.target.value) || 1)}
-                      style={{ width: 60, background: '#0f172a', border: '1px solid #475569', borderRadius: 6, padding: '5px 8px', color: '#f1f5f9', fontSize: 13, textAlign: 'center' }}
+                      style={{ width: 60, background: '#0f172a', border: '1px solid #475569', borderRadius: 6, padding: '5px 8px', color: '#f1f5f9', fontSize: 16, textAlign: 'center' }}
                     />
-                    <span style={{ color: '#64748b', fontSize: 12 }}>Q</span>
+                    <span style={{ color: '#64748b', fontSize: 15 }}>Q</span>
                     <button onClick={() => removeAlloc(a.matiereId)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: 4, display: 'flex', borderRadius: 4 }}>✕</button>
                   </div>
                 ))}
@@ -197,18 +197,18 @@ export default function ExamGeneratorPage({ onNavigate }: { onNavigate: (p: Page
           </div>
 
           {/* Actions */}
-          {error && <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: '10px 14px', color: '#ef4444', fontSize: 13 }}>{error}</div>}
+          {error && <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: '10px 14px', color: '#ef4444', fontSize: 16 }}>{error}</div>}
           <div style={{ display: 'flex', gap: 10 }}>
             <button onClick={handlePreview} disabled={previewing || allocs.length === 0} style={{
               flex: 1, background: '#334155', color: '#94a3b8', border: '1px solid #475569',
-              padding: '10px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13,
+              padding: '10px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 16,
               opacity: allocs.length === 0 ? 0.5 : 1,
             }}>
               {previewing ? '⏳ Aperçu...' : '👁 Aperçu des questions'}
             </button>
             <button onClick={handleGenerate} disabled={loading || allocs.length === 0 || !titre.trim()} style={{
               flex: 2, background: loading ? '#334155' : '#1A5C38', color: 'white', border: 'none',
-              padding: '10px', borderRadius: 8, cursor: 'pointer', fontWeight: 700, fontSize: 14,
+              padding: '10px', borderRadius: 8, cursor: 'pointer', fontWeight: 700, fontSize: 17,
               opacity: (loading || allocs.length === 0 || !titre.trim()) ? 0.6 : 1,
             }}>
               {loading ? '⏳ Génération...' : `🚀 Générer l'examen (${totalQuestions} QCM)`}
@@ -219,7 +219,7 @@ export default function ExamGeneratorPage({ onNavigate }: { onNavigate: (p: Page
         {/* Colonne droite: Sélection matières */}
         <div>
           <div style={{ background: '#1e293b', borderRadius: 12, padding: 20, border: '1px solid #334155' }}>
-            <div style={{ color: '#94a3b8', fontSize: 12, fontWeight: 600, marginBottom: 14, textTransform: 'uppercase' }}>
+            <div style={{ color: '#94a3b8', fontSize: 15, fontWeight: 600, marginBottom: 14, textTransform: 'uppercase' }}>
               Sélectionner des matières ({matieres.length} disponibles)
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -230,7 +230,7 @@ export default function ExamGeneratorPage({ onNavigate }: { onNavigate: (p: Page
                     style={{
                       padding: '7px 14px', borderRadius: 20, border: `1px solid ${isSelected ? '#1A5C38' : '#334155'}`,
                       background: isSelected ? 'rgba(26,92,56,0.3)' : 'transparent',
-                      color: isSelected ? '#4ade80' : '#94a3b8', cursor: 'pointer', fontSize: 12, fontWeight: isSelected ? 700 : 400,
+                      color: isSelected ? '#4ade80' : '#94a3b8', cursor: 'pointer', fontSize: 15, fontWeight: isSelected ? 700 : 400,
                       transition: 'all 0.15s',
                     }}>
                     {isSelected ? '✓ ' : ''}{mat.nom}
@@ -246,13 +246,13 @@ export default function ExamGeneratorPage({ onNavigate }: { onNavigate: (p: Page
             <div style={{ background: '#1e293b', borderRadius: 12, padding: 20, border: '1px solid #334155', marginTop: 16, maxHeight: 400, overflowY: 'auto' }}>
               <div style={{ color: '#f1f5f9', fontWeight: 700, marginBottom: 12 }}>👁 Aperçu — {preview.length} questions sélectionnées</div>
               {preview.slice(0, 10).map((q: any, i) => (
-                <div key={q.id} style={{ padding: '8px 0', borderBottom: '1px solid #334155', fontSize: 13 }}>
+                <div key={q.id} style={{ padding: '8px 0', borderBottom: '1px solid #334155', fontSize: 16 }}>
                   <span style={{ color: '#64748b', marginRight: 8 }}>{i + 1}.</span>
                   <span style={{ color: '#e2e8f0' }}>{q.question?.substring(0, 80)}...</span>
-                  <span style={{ color: '#475569', marginLeft: 8, fontSize: 11 }}>[{q.matiere}]</span>
+                  <span style={{ color: '#475569', marginLeft: 8, fontSize: 14 }}>[{q.matiere}]</span>
                 </div>
               ))}
-              {preview.length > 10 && <div style={{ color: '#64748b', fontSize: 12, paddingTop: 8 }}>... et {preview.length - 10} autres questions</div>}
+              {preview.length > 10 && <div style={{ color: '#64748b', fontSize: 15, paddingTop: 8 }}>... et {preview.length - 10} autres questions</div>}
             </div>
           )}
         </div>

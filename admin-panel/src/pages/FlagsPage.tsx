@@ -42,18 +42,18 @@ export default function FlagsPage({ onNavigate }: { onNavigate: (page: Page) => 
 
   return (
     <div>
-      {toast && <div style={{ position: 'fixed', top: 70, right: 20, padding: '10px 16px', background: '#1e293b', border: '1px solid #334155', borderRadius: 8, color: '#e2e8f0', fontSize: 14, zIndex: 1000 }}>{toast}</div>}
+      {toast && <div style={{ position: 'fixed', top: 70, right: 20, padding: '10px 16px', background: '#1e293b', border: '1px solid #334155', borderRadius: 8, color: '#e2e8f0', fontSize: 17, zIndex: 1000 }}>{toast}</div>}
 
       <div style={{ marginBottom: 20 }}>
         <h2 style={{ color: '#f1f5f9', fontSize: 20, fontWeight: 700 }}>🚨 Signalements utilisateurs</h2>
-        <p style={{ color: '#64748b', fontSize: 13 }}>Questions signalées comme incorrectes ou ambiguës</p>
+        <p style={{ color: '#64748b', fontSize: 16 }}>Questions signalées comme incorrectes ou ambiguës</p>
       </div>
 
       {/* Onglets */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
         {statuses.map(s => (
           <button key={s.key} onClick={() => setStatus(s.key)} style={{
-            padding: '8px 16px', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 14, fontWeight: 500,
+            padding: '8px 16px', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 17, fontWeight: 500,
             background: status === s.key ? `${s.color}22` : '#1e293b',
             color: status === s.key ? s.color : '#64748b',
             outline: status === s.key ? `1px solid ${s.color}44` : 'none',
@@ -72,7 +72,7 @@ export default function FlagsPage({ onNavigate }: { onNavigate: (page: Page) => 
               value={adminNote} onChange={e => setAdminNote(e.target.value)}
               placeholder="Note admin (ex: Explication améliorée, réponse corrigée...)"
               rows={3}
-              style={{ width: '100%', padding: '10px', background: '#0f172a', border: '1px solid #334155', borderRadius: 8, color: '#e2e8f0', fontSize: 14, resize: 'vertical', marginBottom: 16 }}
+              style={{ width: '100%', padding: '10px', background: '#0f172a', border: '1px solid #334155', borderRadius: 8, color: '#e2e8f0', fontSize: 17, resize: 'vertical', marginBottom: 16 }}
             />
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={() => handleResolve(resolveId)} style={{ padding: '10px 20px', background: '#1A5C38', border: 'none', borderRadius: 8, color: 'white', cursor: 'pointer', fontWeight: 600 }}>
@@ -93,7 +93,7 @@ export default function FlagsPage({ onNavigate }: { onNavigate: (page: Page) => 
         <div style={{ background: '#1e293b', borderRadius: 12, padding: 40, textAlign: 'center', border: '1px solid #334155' }}>
           <div style={{ fontSize: 32, marginBottom: 8 }}>✅</div>
           <div style={{ color: '#4ade80', fontSize: 16, fontWeight: 600 }}>Aucun signalement en attente</div>
-          <div style={{ color: '#64748b', fontSize: 13, marginTop: 4 }}>Tout est sous contrôle !</div>
+          <div style={{ color: '#64748b', fontSize: 16, marginTop: 4 }}>Tout est sous contrôle !</div>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -108,34 +108,34 @@ export default function FlagsPage({ onNavigate }: { onNavigate: (page: Page) => 
                     <span style={{
                       background: f.status === 'new' ? 'rgba(239,68,68,0.1)' : f.status === 'resolved' ? 'rgba(74,222,128,0.1)' : 'rgba(251,191,36,0.1)',
                       color: f.status === 'new' ? '#ef4444' : f.status === 'resolved' ? '#4ade80' : '#fbbf24',
-                      padding: '2px 8px', borderRadius: 10, fontSize: 11,
+                      padding: '2px 8px', borderRadius: 10, fontSize: 14,
                     }}>
                       {f.status === 'new' ? '🆕 Nouveau' : f.status === 'resolved' ? '✅ Résolu' : '👁️ En révision'}
                     </span>
-                    <span style={{ color: '#64748b', fontSize: 12 }}>
+                    <span style={{ color: '#64748b', fontSize: 15 }}>
                       Question #{String(f.question_id).substring(0, 8)}...
                     </span>
-                    <span style={{ color: '#64748b', fontSize: 12 }}>
+                    <span style={{ color: '#64748b', fontSize: 15 }}>
                       {new Date(f.created_at).toLocaleDateString('fr-FR')}
                     </span>
                   </div>
 
                   {/* Question préview */}
                   {f.questions?.enonce && (
-                    <div style={{ background: '#0f172a', borderRadius: 8, padding: '8px 12px', marginBottom: 10, fontSize: 13, color: '#e2e8f0' }}>
+                    <div style={{ background: '#0f172a', borderRadius: 8, padding: '8px 12px', marginBottom: 10, fontSize: 16, color: '#e2e8f0' }}>
                       ❓ {f.questions.enonce?.substring(0, 120)}...
                     </div>
                   )}
 
                   <div style={{ marginBottom: 6 }}>
-                    <span style={{ color: '#94a3b8', fontSize: 13 }}>Raison : </span>
-                    <span style={{ color: '#f1f5f9', fontSize: 13, fontWeight: 500 }}>{f.reason}</span>
+                    <span style={{ color: '#94a3b8', fontSize: 16 }}>Raison : </span>
+                    <span style={{ color: '#f1f5f9', fontSize: 16, fontWeight: 500 }}>{f.reason}</span>
                   </div>
                   {f.details && (
-                    <div style={{ color: '#64748b', fontSize: 13 }}>💬 {f.details}</div>
+                    <div style={{ color: '#64748b', fontSize: 16 }}>💬 {f.details}</div>
                   )}
                   {f.admin_response && (
-                    <div style={{ background: 'rgba(26,92,56,0.1)', border: '1px solid rgba(26,92,56,0.3)', borderRadius: 8, padding: '6px 10px', marginTop: 8, color: '#4ade80', fontSize: 13 }}>
+                    <div style={{ background: 'rgba(26,92,56,0.1)', border: '1px solid rgba(26,92,56,0.3)', borderRadius: 8, padding: '6px 10px', marginTop: 8, color: '#4ade80', fontSize: 16 }}>
                       📝 Note admin: {f.admin_response}
                     </div>
                   )}
@@ -143,10 +143,10 @@ export default function FlagsPage({ onNavigate }: { onNavigate: (page: Page) => 
 
                 {f.status !== 'resolved' && (
                   <div style={{ display: 'flex', gap: 8, marginLeft: 16, flexShrink: 0 }}>
-                    <button onClick={() => onNavigate('questions')} title="Voir et éditer la question" style={{ padding: '6px 12px', background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: 6, color: '#3b82f6', cursor: 'pointer', fontSize: 13 }}>
+                    <button onClick={() => onNavigate('questions')} title="Voir et éditer la question" style={{ padding: '6px 12px', background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: 6, color: '#3b82f6', cursor: 'pointer', fontSize: 16 }}>
                       ✏️ Éditer Q
                     </button>
-                    <button onClick={() => setResolveId(f.id)} style={{ padding: '6px 12px', background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.3)', borderRadius: 6, color: '#4ade80', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+                    <button onClick={() => setResolveId(f.id)} style={{ padding: '6px 12px', background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.3)', borderRadius: 6, color: '#4ade80', cursor: 'pointer', fontSize: 16, fontWeight: 600 }}>
                       ✅ Résoudre
                     </button>
                   </div>

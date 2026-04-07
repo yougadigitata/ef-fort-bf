@@ -67,7 +67,7 @@ export default function ChangePasswordPage({ onNavigate: _n }: { onNavigate: (p:
     <div style={{ maxWidth: 520, margin: '0 auto' }}>
       <div style={{ marginBottom: 28 }}>
         <h2 style={{ color: '#f1f5f9', fontSize: 22, fontWeight: 700, margin: 0 }}>🔑 Changer le Mot de Passe</h2>
-        <p style={{ color: '#64748b', fontSize: 14, marginTop: 6 }}>
+        <p style={{ color: '#64748b', fontSize: 17, marginTop: 6 }}>
           Pour votre sécurité, changez régulièrement votre mot de passe administrateur.
         </p>
       </div>
@@ -104,7 +104,7 @@ export default function ChangePasswordPage({ onNavigate: _n }: { onNavigate: (p:
                   <div key={i} style={{ flex: 1, height: 4, borderRadius: 2, background: i <= strength ? strengthColors[strength] : '#334155', transition: 'all 0.3s' }} />
                 ))}
               </div>
-              <div style={{ color: strengthColors[strength], fontSize: 12, fontWeight: 600 }}>{strengthLabels[strength]}</div>
+              <div style={{ color: strengthColors[strength], fontSize: 15, fontWeight: 600 }}>{strengthLabels[strength]}</div>
             </div>
           )}
 
@@ -121,7 +121,7 @@ export default function ChangePasswordPage({ onNavigate: _n }: { onNavigate: (p:
 
           {/* Critères */}
           <div style={{ background: '#0f172a', borderRadius: 8, padding: '12px 16px', marginTop: 4, marginBottom: 20 }}>
-            <div style={{ color: '#64748b', fontSize: 12, fontWeight: 600, marginBottom: 8 }}>Critères requis :</div>
+            <div style={{ color: '#64748b', fontSize: 15, fontWeight: 600, marginBottom: 8 }}>Critères requis :</div>
             {[
               { label: '8 caractères minimum', ok: newPassword.length >= 8 },
               { label: '1 lettre majuscule', ok: /[A-Z]/.test(newPassword) },
@@ -129,19 +129,19 @@ export default function ChangePasswordPage({ onNavigate: _n }: { onNavigate: (p:
               { label: 'Différent de l\'actuel', ok: newPassword.length > 0 && newPassword !== currentPassword },
             ].map(c => (
               <div key={c.label} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                <span style={{ color: c.ok ? '#22c55e' : '#475569', fontSize: 14 }}>{c.ok ? '✓' : '○'}</span>
-                <span style={{ color: c.ok ? '#94a3b8' : '#475569', fontSize: 13 }}>{c.label}</span>
+                <span style={{ color: c.ok ? '#22c55e' : '#475569', fontSize: 17 }}>{c.ok ? '✓' : '○'}</span>
+                <span style={{ color: c.ok ? '#94a3b8' : '#475569', fontSize: 16 }}>{c.label}</span>
               </div>
             ))}
           </div>
 
           {error && (
-            <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: '10px 14px', color: '#ef4444', fontSize: 13, marginBottom: 16 }}>
+            <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: '10px 14px', color: '#ef4444', fontSize: 16, marginBottom: 16 }}>
               ❌ {error}
             </div>
           )}
           {success && (
-            <div style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid #22c55e44', borderRadius: 8, padding: '10px 14px', color: '#22c55e', fontSize: 13, marginBottom: 16 }}>
+            <div style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid #22c55e44', borderRadius: 8, padding: '10px 14px', color: '#22c55e', fontSize: 16, marginBottom: 16 }}>
               {success}
             </div>
           )}
@@ -149,7 +149,7 @@ export default function ChangePasswordPage({ onNavigate: _n }: { onNavigate: (p:
           <button type="submit" disabled={loading} style={{
             width: '100%', background: loading ? '#334155' : '#1A5C38', color: 'white', border: 'none',
             padding: '12px', borderRadius: 10, cursor: loading ? 'not-allowed' : 'pointer',
-            fontWeight: 700, fontSize: 15, transition: 'all 0.2s',
+            fontWeight: 700, fontSize: 18, transition: 'all 0.2s',
           }}>
             {loading ? '⏳ Changement en cours...' : '🔑 Changer le mot de passe'}
           </button>
@@ -158,7 +158,7 @@ export default function ChangePasswordPage({ onNavigate: _n }: { onNavigate: (p:
 
       <div style={{ background: 'rgba(212,160,23,0.1)', border: '1px solid rgba(212,160,23,0.3)', borderRadius: 12, padding: 16, marginTop: 20 }}>
         <div style={{ color: '#D4A017', fontWeight: 700, marginBottom: 6 }}>💡 Conseils de sécurité</div>
-        <ul style={{ color: '#94a3b8', fontSize: 13, margin: 0, paddingLeft: 18, lineHeight: 1.8 }}>
+        <ul style={{ color: '#94a3b8', fontSize: 16, margin: 0, paddingLeft: 18, lineHeight: 1.8 }}>
           <li>Changez votre mot de passe après chaque déploiement</li>
           <li>N'utilisez pas votre mot de passe dans d'autres services</li>
           <li>Utilisez au moins 12 caractères avec des symboles spéciaux</li>
@@ -177,7 +177,7 @@ function PasswordField({ label, value, onChange, show, onToggle, placeholder, ma
   const noMatch = matchValue !== undefined && value.length > 0 && value !== matchValue;
   return (
     <div style={{ marginBottom: 16 }}>
-      <label style={{ color: '#94a3b8', fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 6 }}>{label}</label>
+      <label style={{ color: '#94a3b8', fontSize: 16, fontWeight: 600, display: 'block', marginBottom: 6 }}>{label}</label>
       <div style={{ position: 'relative' }}>
         <input
           type={show ? 'text' : 'password'}
@@ -186,7 +186,7 @@ function PasswordField({ label, value, onChange, show, onToggle, placeholder, ma
           placeholder={placeholder}
           style={{
             width: '100%', background: '#0f172a', border: `1px solid ${isMatch ? '#22c55e' : noMatch ? '#ef4444' : '#334155'}`,
-            borderRadius: 8, padding: '10px 44px 10px 12px', color: '#f1f5f9', fontSize: 14, boxSizing: 'border-box',
+            borderRadius: 8, padding: '10px 44px 10px 12px', color: '#f1f5f9', fontSize: 17, boxSizing: 'border-box',
             outline: 'none',
           }}
         />
@@ -197,8 +197,8 @@ function PasswordField({ label, value, onChange, show, onToggle, placeholder, ma
           {show ? '🙈' : '👁'}
         </button>
       </div>
-      {isMatch && <div style={{ color: '#22c55e', fontSize: 12, marginTop: 4 }}>✓ Les mots de passe correspondent</div>}
-      {noMatch && <div style={{ color: '#ef4444', fontSize: 12, marginTop: 4 }}>✗ Les mots de passe ne correspondent pas</div>}
+      {isMatch && <div style={{ color: '#22c55e', fontSize: 15, marginTop: 4 }}>✓ Les mots de passe correspondent</div>}
+      {noMatch && <div style={{ color: '#ef4444', fontSize: 15, marginTop: 4 }}>✗ Les mots de passe ne correspondent pas</div>}
     </div>
   );
 }

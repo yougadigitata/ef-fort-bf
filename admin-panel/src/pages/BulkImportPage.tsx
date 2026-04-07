@@ -339,7 +339,7 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
         <div style={{
           position: 'fixed', top: 70, right: 20, padding: '14px 20px',
           background: '#1e293b', border: '1px solid #334155', borderRadius: 10,
-          color: '#e2e8f0', fontSize: 14, zIndex: 1000, maxWidth: 420,
+          color: '#e2e8f0', fontSize: 17, zIndex: 1000, maxWidth: 420,
           boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
         }}>{toast}</div>
       )}
@@ -348,11 +348,11 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
           <h2 style={{ color: '#f1f5f9', fontSize: 22, fontWeight: 700 }}>📤 CMS QCM — Import en masse</h2>
-          <p style={{ color: '#64748b', fontSize: 13, marginTop: 4 }}>
+          <p style={{ color: '#64748b', fontSize: 16, marginTop: 4 }}>
             Importez des QCM matières · des Simulations (Examen Blanc) · ou des Examens Types
           </p>
         </div>
-        <button onClick={loadHistory} style={{ background: '#334155', border: 'none', color: '#94a3b8', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}>
+        <button onClick={loadHistory} style={{ background: '#334155', border: 'none', color: '#94a3b8', padding: '8px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 16 }}>
           📜 Historique
         </button>
       </div>
@@ -387,9 +387,9 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
         <>
           {/* Étape 0 : Sélection matière */}
           <div style={{ background: '#1e293b', borderRadius: 12, padding: 20, border: '1px solid #334155', marginBottom: 20 }}>
-            <h3 style={{ color: '#f1f5f9', fontSize: 15, fontWeight: 600, marginBottom: 16 }}>
+            <h3 style={{ color: '#f1f5f9', fontSize: 18, fontWeight: 600, marginBottom: 16 }}>
               0️⃣ Choisir la matière de destination
-              <span style={{ color: '#64748b', fontSize: 12, fontWeight: 400 }}> (recommandé — sinon, mettre matiere_id dans chaque ligne du fichier)</span>
+              <span style={{ color: '#64748b', fontSize: 15, fontWeight: 400 }}> (recommandé — sinon, mettre matiere_id dans chaque ligne du fichier)</span>
             </h3>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 12, alignItems: 'end' }}>
@@ -406,7 +406,7 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
               </div>
               <button onClick={() => setShowMatieres(!showMatieres)} style={{
                 background: '#334155', border: 'none', color: '#94a3b8',
-                padding: '9px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 13, whiteSpace: 'nowrap',
+                padding: '9px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 16, whiteSpace: 'nowrap',
               }}>
                 🗂️ Voir IDs
               </button>
@@ -414,7 +414,7 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
 
             {selectedMatiereInfo && (
               <div style={{ marginTop: 10, padding: '10px 14px', background: 'rgba(26,92,56,0.15)', borderRadius: 8, border: '1px solid rgba(26,92,56,0.3)' }}>
-                <span style={{ color: '#4ade80', fontSize: 13 }}>
+                <span style={{ color: '#4ade80', fontSize: 16 }}>
                   ✅ Destination : <strong>{selectedMatiereInfo.icone} {selectedMatiereInfo.nom}</strong>
                   &nbsp;— Toutes les questions seront ajoutées à la suite des <strong>{selectedMatiereInfo.nb_questions ?? 0}</strong> questions existantes.
                 </span>
@@ -423,16 +423,16 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
 
             {showMatieres && (
               <div style={{ marginTop: 16 }}>
-                <div style={{ color: '#94a3b8', fontSize: 12, marginBottom: 8 }}>Cliquez pour copier l'UUID de la matière :</div>
+                <div style={{ color: '#94a3b8', fontSize: 15, marginBottom: 8 }}>Cliquez pour copier l'UUID de la matière :</div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(270px, 1fr))', gap: 6 }}>
                   {matieres.map(m => (
                     <div key={m.id ?? m.matiere_id} onClick={() => copyMatiereId(m.matiere_id ?? m.id, m.nom)} style={{
                       padding: '6px 10px', background: '#0f172a', borderRadius: 6,
                       cursor: 'pointer', display: 'flex', justifyContent: 'space-between',
-                      border: '1px solid #334155', fontSize: 12,
+                      border: '1px solid #334155', fontSize: 15,
                     }} title="Cliquer pour copier l'ID">
                       <span style={{ color: '#e2e8f0', fontWeight: 600 }}>{m.icone ?? '📚'} {m.nom}</span>
-                      <span style={{ color: '#475569', fontFamily: 'monospace', fontSize: 10 }}>
+                      <span style={{ color: '#475569', fontFamily: 'monospace', fontSize: 13 }}>
                         {(m.matiere_id ?? m.id ?? '').substring(0, 12)}... 📋
                       </span>
                     </div>
@@ -442,7 +442,7 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
             )}
 
             {/* Note harmonisation séries */}
-            <div style={{ marginTop: 14, padding: '10px 14px', background: 'rgba(212,160,23,0.08)', border: '1px solid rgba(212,160,23,0.25)', borderRadius: 8, fontSize: 12, color: '#D4A017' }}>
+            <div style={{ marginTop: 14, padding: '10px 14px', background: 'rgba(212,160,23,0.08)', border: '1px solid rgba(212,160,23,0.25)', borderRadius: 8, fontSize: 15, color: '#D4A017' }}>
               <strong>📐 Règle des séries :</strong> Les nouvelles questions sont <strong>ajoutées à la suite</strong> des séries existantes.
               Chaque série contient <strong>exactement 20 questions</strong>. Si la dernière série est incomplète, elle sera complétée d'abord.
               Aucun doublon de série ne sera créé.
@@ -450,7 +450,7 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
 
             {/* Templates QCM */}
             <div style={{ marginTop: 16 }}>
-              <div style={{ color: '#94a3b8', fontSize: 12, marginBottom: 8, fontWeight: 600 }}>
+              <div style={{ color: '#94a3b8', fontSize: 15, marginBottom: 8, fontWeight: 600 }}>
                 📥 Télécharger un template :
                 {selectedMatiereInfo && <span style={{ color: '#4ade80' }}> (pré-rempli avec {selectedMatiereInfo.nom})</span>}
               </div>
@@ -470,7 +470,7 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
       {mode === 'simulation' && (
         <>
           <div style={{ background: '#1e293b', borderRadius: 12, padding: 20, border: '1px solid #2563eb40', marginBottom: 20 }}>
-            <h3 style={{ color: '#f1f5f9', fontSize: 15, fontWeight: 600, marginBottom: 16 }}>
+            <h3 style={{ color: '#f1f5f9', fontSize: 18, fontWeight: 600, marginBottom: 16 }}>
               📄 Configurer l'Examen Blanc (Simulation)
             </h3>
             <div style={{ marginBottom: 14 }}>
@@ -483,7 +483,7 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
               />
             </div>
 
-            <div style={{ background: 'rgba(37,99,235,0.08)', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 8, padding: '14px 16px', fontSize: 13 }}>
+            <div style={{ background: 'rgba(37,99,235,0.08)', border: '1px solid rgba(37,99,235,0.3)', borderRadius: 8, padding: '14px 16px', fontSize: 16 }}>
               <div style={{ color: '#93c5fd', fontWeight: 600, marginBottom: 8 }}>📄 Comment fonctionne l'Examen Blanc ?</div>
               <div style={{ color: '#bfdbfe', lineHeight: 1.7 }}>
                 ✅ Importez <strong>50 questions</strong> d'examen (CSV, JSON, Markdown ou TXT)<br/>
@@ -496,7 +496,7 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
             </div>
 
             <div style={{ marginTop: 16 }}>
-              <div style={{ color: '#94a3b8', fontSize: 12, marginBottom: 8, fontWeight: 600 }}>📥 Templates :</div>
+              <div style={{ color: '#94a3b8', fontSize: 15, marginBottom: 8, fontWeight: 600 }}>📥 Templates :</div>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                 <button onClick={downloadSimuMDTemplate} style={btnTemplate('#93c5fd', 'rgba(37,99,235,0.12)', 'rgba(37,99,235,0.4)')}>📝 Template Simulation 50 questions (MD)</button>
                 <button onClick={downloadMDTemplate} style={btnTemplate('#10b981', 'rgba(16,185,129,0.12)', 'rgba(16,185,129,0.4)')}>📄 Format Markdown court</button>
@@ -512,7 +512,7 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
       {mode === 'examen_type' && (
         <>
           <div style={{ background: '#1e293b', borderRadius: 12, padding: 20, border: '1px solid #7c3aed40', marginBottom: 20 }}>
-            <h3 style={{ color: '#f1f5f9', fontSize: 15, fontWeight: 600, marginBottom: 16 }}>
+            <h3 style={{ color: '#f1f5f9', fontSize: 18, fontWeight: 600, marginBottom: 16 }}>
               🏆 Configurer l'Examen Type (Vrai Sujet)
             </h3>
             <div style={{ marginBottom: 14 }}>
@@ -525,7 +525,7 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
               />
             </div>
 
-            <div style={{ background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 8, padding: '14px 16px', fontSize: 13 }}>
+            <div style={{ background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 8, padding: '14px 16px', fontSize: 16 }}>
               <div style={{ color: '#c4b5fd', fontWeight: 600, marginBottom: 8 }}>🏆 Comment fonctionne l'Examen Type ?</div>
               <div style={{ color: '#ddd6fe', lineHeight: 1.7 }}>
                 ✅ Importez un vrai sujet d'examen (nombre de questions libre)<br/>
@@ -538,7 +538,7 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
             </div>
 
             <div style={{ marginTop: 16 }}>
-              <div style={{ color: '#94a3b8', fontSize: 12, marginBottom: 8, fontWeight: 600 }}>📥 Templates :</div>
+              <div style={{ color: '#94a3b8', fontSize: 15, marginBottom: 8, fontWeight: 600 }}>📥 Templates :</div>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                 <button onClick={downloadExamenTypeMDTemplate} style={btnTemplate('#c4b5fd', 'rgba(124,58,237,0.12)', 'rgba(124,58,237,0.4)')}>📝 Template Examen Type (MD)</button>
                 <button onClick={downloadMDTemplate} style={btnTemplate('#10b981', 'rgba(16,185,129,0.12)', 'rgba(16,185,129,0.4)')}>📄 Format Markdown court</button>
@@ -556,9 +556,9 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
         border: `1px solid ${mode === 'qcm' ? '#334155' : mode === 'simulation' ? '#2563eb40' : '#7c3aed40'}`,
         marginBottom: 20,
       }}>
-        <h3 style={{ color: '#f1f5f9', fontSize: 15, fontWeight: 600, marginBottom: 16 }}>
+        <h3 style={{ color: '#f1f5f9', fontSize: 18, fontWeight: 600, marginBottom: 16 }}>
           1️⃣ Uploader le fichier
-          <span style={{ color: '#64748b', fontSize: 12, fontWeight: 400 }}> — CSV, JSON, Markdown (.md), TXT</span>
+          <span style={{ color: '#64748b', fontSize: 15, fontWeight: 400 }}> — CSV, JSON, Markdown (.md), TXT</span>
         </h3>
 
         <div
@@ -585,10 +585,10 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
           {!file ? (
             <>
               <div style={{ fontSize: 40, marginBottom: 12 }}>📂</div>
-              <div style={{ color: '#f1f5f9', fontSize: 15, fontWeight: 600, marginBottom: 6 }}>
+              <div style={{ color: '#f1f5f9', fontSize: 18, fontWeight: 600, marginBottom: 6 }}>
                 Glissez votre fichier ici ou cliquez pour choisir
               </div>
-              <div style={{ color: '#64748b', fontSize: 12 }}>
+              <div style={{ color: '#64748b', fontSize: 15 }}>
                 Formats supportés : <strong style={{ color: '#94a3b8' }}>CSV · JSON · Markdown (.md) · TXT</strong>
               </div>
             </>
@@ -597,8 +597,8 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
               <div style={{ fontSize: 32, marginBottom: 8 }}>
                 {file.name.endsWith('.csv') ? '📊' : file.name.endsWith('.json') ? '📄' : '📝'}
               </div>
-              <div style={{ color: '#4ade80', fontSize: 15, fontWeight: 700 }}>{file.name}</div>
-              <div style={{ color: '#64748b', fontSize: 12, marginTop: 4 }}>
+              <div style={{ color: '#4ade80', fontSize: 18, fontWeight: 700 }}>{file.name}</div>
+              <div style={{ color: '#64748b', fontSize: 15, marginTop: 4 }}>
                 {(file.size / 1024).toFixed(1)} Ko · {rawData.length} ligne(s) prévisualisées · Cliquez pour changer
               </div>
             </>
@@ -608,9 +608,9 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
         {/* Aperçu */}
         {rawData.length > 0 && step === 'upload' && (
           <div style={{ marginTop: 14 }}>
-            <div style={{ color: '#64748b', fontSize: 12, marginBottom: 6 }}>📋 Aperçu :</div>
+            <div style={{ color: '#64748b', fontSize: 15, marginBottom: 6 }}>📋 Aperçu :</div>
             {rawData.slice(0, 3).map((row: any, i: number) => (
-              <div key={i} style={{ padding: '6px 10px', background: '#0f172a', borderRadius: 6, marginBottom: 4, fontSize: 12, color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <div key={i} style={{ padding: '6px 10px', background: '#0f172a', borderRadius: 6, marginBottom: 4, fontSize: 15, color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {row.preview ?? JSON.stringify(row).substring(0, 100)}
               </div>
             ))}
@@ -621,7 +621,7 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
         {file && step === 'upload' && (
           <button onClick={handleValidate} disabled={loading} style={{
             marginTop: 16, width: '100%', padding: '12px 0', border: 'none', borderRadius: 8,
-            fontWeight: 700, fontSize: 14, cursor: loading ? 'wait' : 'pointer', color: 'white',
+            fontWeight: 700, fontSize: 17, cursor: loading ? 'wait' : 'pointer', color: 'white',
             background: mode === 'qcm' ? 'linear-gradient(135deg, #1A5C38, #2d9966)'
               : mode === 'simulation' ? 'linear-gradient(135deg, #1d4ed8, #3b82f6)'
               : 'linear-gradient(135deg, #7c3aed, #a855f7)',
@@ -635,7 +635,7 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
       {/* ── Étape 2 : Résultats validation ────────────────────────────────── */}
       {step === 'validate' && validation && (
         <div style={{ background: '#1e293b', borderRadius: 12, padding: 24, border: '1px solid #334155', marginBottom: 20 }}>
-          <h3 style={{ color: '#f1f5f9', fontSize: 15, fontWeight: 600, marginBottom: 20 }}>
+          <h3 style={{ color: '#f1f5f9', fontSize: 18, fontWeight: 600, marginBottom: 20 }}>
             2️⃣ Résultats de la validation
           </h3>
 
@@ -654,7 +654,7 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
             <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, padding: 14, marginBottom: 16 }}>
               <div style={{ color: '#ef4444', fontWeight: 600, marginBottom: 8 }}>❌ Erreurs détectées :</div>
               {(validation.errors ?? []).slice(0, 5).map((e: any, i: number) => (
-                <div key={i} style={{ color: '#fca5a5', fontSize: 12, marginBottom: 4 }}>
+                <div key={i} style={{ color: '#fca5a5', fontSize: 15, marginBottom: 4 }}>
                   • Ligne {e.line ?? i + 1} : {e.error ?? JSON.stringify(e)}
                 </div>
               ))}
@@ -662,7 +662,7 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
           )}
 
           {validation.total_valid > 0 && (
-            <div style={{ background: 'rgba(74,222,128,0.06)', border: '1px solid rgba(74,222,128,0.2)', borderRadius: 8, padding: 14, marginBottom: 16, fontSize: 13, color: '#86efac', lineHeight: 1.7 }}>
+            <div style={{ background: 'rgba(74,222,128,0.06)', border: '1px solid rgba(74,222,128,0.2)', borderRadius: 8, padding: 14, marginBottom: 16, fontSize: 16, color: '#86efac', lineHeight: 1.7 }}>
               {mode === 'qcm' ? (
                 <>
                   ✅ <strong>{validation.total_valid}</strong> questions prêtes à l'import<br/>
@@ -681,7 +681,7 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
           )}
 
           <div style={{ display: 'flex', gap: 12 }}>
-            <button onClick={resetAll} style={{ padding: '10px 18px', background: '#334155', border: 'none', borderRadius: 8, color: '#94a3b8', cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>
+            <button onClick={resetAll} style={{ padding: '10px 18px', background: '#334155', border: 'none', borderRadius: 8, color: '#94a3b8', cursor: 'pointer', fontWeight: 600, fontSize: 17 }}>
               ← Recommencer
             </button>
             {validation.ready_to_import && (
@@ -689,7 +689,7 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
                 onClick={mode === 'qcm' ? handleImportQCM : handleImportExamen}
                 disabled={loading}
                 style={{
-                  flex: 1, padding: '12px 0', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 15,
+                  flex: 1, padding: '12px 0', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 18,
                   cursor: loading ? 'wait' : 'pointer', color: 'white', opacity: loading ? 0.7 : 1,
                   background: mode === 'qcm' ? 'linear-gradient(135deg, #1A5C38, #2d9966)'
                     : mode === 'simulation' ? 'linear-gradient(135deg, #1d4ed8, #3b82f6)'
@@ -718,7 +718,7 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
           <div style={{ color: '#f1f5f9', fontSize: 18, fontWeight: 700 }}>
             {mode === 'qcm' ? 'Import QCM en cours...' : mode === 'simulation' ? 'Création de la Simulation...' : 'Création de l\'Examen Type...'}
           </div>
-          <div style={{ color: '#64748b', fontSize: 13, marginTop: 8 }}>
+          <div style={{ color: '#64748b', fontSize: 16, marginTop: 8 }}>
             {mode === 'qcm' ? 'Traitement par lots · Création des séries (20q) · Aucun doublon' : 'Génération de la feuille de réponses · Insertion des questions'}
           </div>
           <div style={{ height: 6, background: '#334155', borderRadius: 3, marginTop: 24, overflow: 'hidden', maxWidth: 400, margin: '24px auto 0' }}>
@@ -753,14 +753,14 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
           </div>
 
           {importResult._mode === 'qcm' ? (
-            <div style={{ background: 'rgba(74,222,128,0.06)', border: '1px solid rgba(74,222,128,0.2)', borderRadius: 10, padding: 16, marginBottom: 20, fontSize: 13, color: '#86efac', lineHeight: 1.8 }}>
+            <div style={{ background: 'rgba(74,222,128,0.06)', border: '1px solid rgba(74,222,128,0.2)', borderRadius: 10, padding: 16, marginBottom: 20, fontSize: 16, color: '#86efac', lineHeight: 1.8 }}>
               🎉 <strong>{importResult.imported}</strong> questions disponibles immédiatement !<br/>
               📁 Destination : <strong>{importResult._matiere ?? 'Matière définie dans le fichier'}</strong><br/>
               📚 <strong>{Math.ceil(importResult.imported / 20)}</strong> série(s) de 20 questions créées/complétées<br/>
               ✅ Toutes les séries ont exactement 20 questions (ou moins si quota insuffisant)
             </div>
           ) : (
-            <div style={{ background: importResult._mode === 'simulation' ? 'rgba(37,99,235,0.08)' : 'rgba(124,58,237,0.08)', border: importResult._mode === 'simulation' ? '1px solid rgba(37,99,235,0.3)' : '1px solid rgba(124,58,237,0.3)', borderRadius: 10, padding: 16, marginBottom: 20, fontSize: 13, lineHeight: 1.8 }}>
+            <div style={{ background: importResult._mode === 'simulation' ? 'rgba(37,99,235,0.08)' : 'rgba(124,58,237,0.08)', border: importResult._mode === 'simulation' ? '1px solid rgba(37,99,235,0.3)' : '1px solid rgba(124,58,237,0.3)', borderRadius: 10, padding: 16, marginBottom: 20, fontSize: 16, lineHeight: 1.8 }}>
               <div style={{ color: importResult._mode === 'simulation' ? '#93c5fd' : '#c4b5fd', fontWeight: 700, marginBottom: 6 }}>
                 {importResult._mode === 'simulation' ? '📄 Simulation créée !' : '🏆 Examen Type créé !'}
               </div>
@@ -768,7 +768,7 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
                 ✅ Titre : <strong>{importResult._titre}</strong><br/>
                 ✅ <strong>{importResult.imported}</strong> questions importées avec corrections<br/>
                 ✅ Feuille de réponses de <strong>{importResult.imported} cases</strong> générée automatiquement<br/>
-                ✅ Simulation ID : <code style={{ background: '#0f172a', padding: '2px 6px', borderRadius: 4, fontSize: 11 }}>{importResult.simulation_id}</code><br/>
+                ✅ Simulation ID : <code style={{ background: '#0f172a', padding: '2px 6px', borderRadius: 4, fontSize: 14 }}>{importResult.simulation_id}</code><br/>
                 ✅ État : <strong>Brouillon</strong> — Publiez depuis "Simulations & Examens"
               </div>
             </div>
@@ -781,7 +781,7 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
             <button
               onClick={() => onNavigate(importResult._mode === 'qcm' ? 'questions' : 'simulations')}
               style={{
-                flex: 1, padding: '10px 20px', border: 'none', borderRadius: 8, color: 'white', cursor: 'pointer', fontWeight: 700, fontSize: 14,
+                flex: 1, padding: '10px 20px', border: 'none', borderRadius: 8, color: 'white', cursor: 'pointer', fontWeight: 700, fontSize: 17,
                 background: importResult._mode === 'qcm' ? 'linear-gradient(135deg, #1A5C38, #2d9966)' : importResult._mode === 'simulation' ? 'linear-gradient(135deg, #1d4ed8, #3b82f6)' : 'linear-gradient(135deg, #7c3aed, #a855f7)',
               }}
             >
@@ -795,16 +795,16 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
       {showHistory && (
         <div style={{ background: '#1e293b', borderRadius: 12, padding: 20, border: '1px solid #334155', marginBottom: 20 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <h3 style={{ color: '#f1f5f9', fontSize: 15, fontWeight: 600 }}>📜 Historique des imports</h3>
+            <h3 style={{ color: '#f1f5f9', fontSize: 18, fontWeight: 600 }}>📜 Historique des imports</h3>
             <button onClick={() => setShowHistory(false)} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 18 }}>✕</button>
           </div>
           {history.length === 0 ? (
-            <p style={{ color: '#64748b', fontSize: 13 }}>Aucun import enregistré</p>
+            <p style={{ color: '#64748b', fontSize: 16 }}>Aucun import enregistré</p>
           ) : history.map((imp: any) => (
             <div key={imp.id} style={{ padding: '12px 0', borderBottom: '1px solid #334155', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <div style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 600 }}>{imp.filename ?? 'Import #' + imp.id}</div>
-                <div style={{ color: '#64748b', fontSize: 12, marginTop: 2 }}>
+                <div style={{ color: '#e2e8f0', fontSize: 16, fontWeight: 600 }}>{imp.filename ?? 'Import #' + imp.id}</div>
+                <div style={{ color: '#64748b', fontSize: 15, marginTop: 2 }}>
                   {new Date(imp.created_at).toLocaleString('fr-FR')} — {imp.imported_count ?? 0} questions
                   {imp.import_duration_seconds && ` en ${imp.import_duration_seconds}s`}
                 </div>
@@ -814,7 +814,7 @@ Explication: Le Franc CFA (XOF) est la monnaie de l'UEMOA.
                 {imp.status === 'success' && (
                   <button onClick={() => handleCancelImport(imp.id)} style={{
                     background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
-                    color: '#ef4444', padding: '4px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 12,
+                    color: '#ef4444', padding: '6px 14px', borderRadius: 6, cursor: 'pointer', fontSize: 15,
                   }}>🗑️ Annuler</button>
                 )}
               </div>
@@ -834,13 +834,13 @@ function ModeTab({ active, emoji, title, subtitle, color, onClick }: {
   return (
     <button onClick={onClick} style={{
       flex: 1, padding: '12px 10px', borderRadius: 8, border: 'none', cursor: 'pointer',
-      fontWeight: 700, fontSize: 13, transition: 'all 0.2s', textAlign: 'center',
+      fontWeight: 700, fontSize: 16, transition: 'all 0.2s', textAlign: 'center',
       background: active ? `linear-gradient(135deg, ${color}, ${color}cc)` : 'transparent',
       color: active ? 'white' : '#64748b',
     }}>
       <div style={{ fontSize: 20, marginBottom: 4 }}>{emoji}</div>
       {title}
-      <div style={{ fontSize: 11, fontWeight: 400, marginTop: 3, opacity: 0.85 }}>{subtitle}</div>
+      <div style={{ fontSize: 14, fontWeight: 400, marginTop: 3, opacity: 0.85 }}>{subtitle}</div>
     </button>
   );
 }
@@ -848,18 +848,18 @@ function ModeTab({ active, emoji, title, subtitle, color, onClick }: {
 function FormatGuide({ mode }: { mode: 'qcm' | 'examen' }) {
   return (
     <div style={{ background: '#1e293b', borderRadius: 12, padding: 20, border: '1px solid #334155', marginBottom: 20 }}>
-      <h3 style={{ color: '#f1f5f9', fontSize: 15, fontWeight: 600, marginBottom: 12 }}>
+      <h3 style={{ color: '#f1f5f9', fontSize: 18, fontWeight: 600, marginBottom: 12 }}>
         📋 Formats supportés {mode === 'examen' ? '(simulation/examen type)' : '(QCM matières)'}
       </h3>
-      <div style={{ background: 'rgba(212,160,23,0.1)', border: '1px solid rgba(212,160,23,0.3)', borderRadius: 8, padding: '10px 14px', marginBottom: 14, fontSize: 13, color: '#D4A017' }}>
+      <div style={{ background: 'rgba(212,160,23,0.1)', border: '1px solid rgba(212,160,23,0.3)', borderRadius: 8, padding: '10px 14px', marginBottom: 14, fontSize: 16, color: '#D4A017' }}>
         ⚡ <strong>Bonne réponse :</strong> A, B, C, D ou E (majuscule).
         Marquer avec <code>*</code> ou <code>✓</code> après l'option, ou ligne <code>Bonne réponse: B</code>.
         Difficulté = FACILE, MOYEN ou DIFFICILE.
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
         <div>
-          <div style={{ color: '#10b981', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>📝 Markdown / TXT (recommandé)</div>
-          <pre style={{ background: '#0f172a', borderRadius: 8, padding: 10, fontSize: 10, color: '#94a3b8', overflow: 'auto', whiteSpace: 'pre-wrap' }}>
+          <div style={{ color: '#10b981', fontSize: 16, fontWeight: 600, marginBottom: 6 }}>📝 Markdown / TXT (recommandé)</div>
+          <pre style={{ background: '#0f172a', borderRadius: 8, padding: 10, fontSize: 13, color: '#94a3b8', overflow: 'auto', whiteSpace: 'pre-wrap' }}>
 {`## Quelle est la capitale du BF ?
 A) Bobo-Dioulasso
 B) Ouagadougou *
@@ -876,8 +876,8 @@ Bonne réponse: B`}
           </pre>
         </div>
         <div>
-          <div style={{ color: '#D4A017', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>📊 CSV (séparateur ;)</div>
-          <pre style={{ background: '#0f172a', borderRadius: 8, padding: 10, fontSize: 10, color: '#94a3b8', overflow: 'auto', whiteSpace: 'pre-wrap' }}>
+          <div style={{ color: '#D4A017', fontSize: 16, fontWeight: 600, marginBottom: 6 }}>📊 CSV (séparateur ;)</div>
+          <pre style={{ background: '#0f172a', borderRadius: 8, padding: 10, fontSize: 13, color: '#94a3b8', overflow: 'auto', whiteSpace: 'pre-wrap' }}>
 {mode === 'qcm'
   ? `enonce;option_a;option_b;option_c;option_d;bonne_reponse;explication;difficulte;matiere_id
 Capitale BF?;Bobo;Ouaga;Koudo;Banfora;B;Ouaga...;FACILE;[UUID]`
@@ -886,8 +886,8 @@ Capitale BF?;Bobo;Ouaga;Koudo;Banfora;B;Ouaga est la capitale;FACILE`}
           </pre>
         </div>
         <div>
-          <div style={{ color: '#3b82f6', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>📄 JSON</div>
-          <pre style={{ background: '#0f172a', borderRadius: 8, padding: 10, fontSize: 10, color: '#94a3b8', overflow: 'auto', whiteSpace: 'pre-wrap' }}>
+          <div style={{ color: '#3b82f6', fontSize: 16, fontWeight: 600, marginBottom: 6 }}>📄 JSON</div>
+          <pre style={{ background: '#0f172a', borderRadius: 8, padding: 10, fontSize: 13, color: '#94a3b8', overflow: 'auto', whiteSpace: 'pre-wrap' }}>
 {`[{
   "enonce": "Capitale BF ?",
   "option_a": "Bobo",
@@ -907,7 +907,7 @@ function StatCard({ label, value, color }: { label: string; value: any; color: s
   return (
     <div style={{ background: '#0f172a', borderRadius: 10, padding: 14, textAlign: 'center' }}>
       <div style={{ color, fontSize: 22, fontWeight: 900 }}>{typeof value === 'number' ? value.toLocaleString() : value}</div>
-      <div style={{ color: '#64748b', fontSize: 12, marginTop: 4 }}>{label}</div>
+      <div style={{ color: '#64748b', fontSize: 15, marginTop: 4 }}>{label}</div>
     </div>
   );
 }
@@ -921,15 +921,15 @@ function StatusBadge({ status }: { status: string }) {
     cancelled: { bg: 'rgba(148,163,184,0.1)', color: '#94a3b8', label: '🚫 Annulé' },
   };
   const s = c[status] ?? c.pending;
-  return <span style={{ background: s.bg, color: s.color, padding: '3px 10px', borderRadius: 10, fontSize: 12, fontWeight: 600 }}>{s.label}</span>;
+  return <span style={{ background: s.bg, color: s.color, padding: '3px 10px', borderRadius: 10, fontSize: 15, fontWeight: 600 }}>{s.label}</span>;
 }
 
 function btnTemplate(color: string, bg: string, border: string): React.CSSProperties {
-  return { padding: '8px 14px', background: bg, border: `1px solid ${border}`, color, borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 };
+  return { padding: '8px 14px', background: bg, border: `1px solid ${border}`, color, borderRadius: 8, cursor: 'pointer', fontSize: 16, fontWeight: 600 };
 }
 
-const lbl: React.CSSProperties = { display: 'block', color: '#94a3b8', fontSize: 12, marginBottom: 6, fontWeight: 600 };
+const lbl: React.CSSProperties = { display: 'block', color: '#94a3b8', fontSize: 15, marginBottom: 6, fontWeight: 600 };
 const sel: React.CSSProperties = {
   width: '100%', padding: '10px 12px', background: '#0f172a',
-  border: '1px solid #334155', borderRadius: 8, color: '#e2e8f0', fontSize: 14,
+  border: '1px solid #334155', borderRadius: 8, color: '#e2e8f0', fontSize: 17,
 };

@@ -100,7 +100,7 @@ export default function PaiementsPage({ onNavigate }: { onNavigate: (page: Page)
           position: 'fixed', top: 70, right: 20, padding: '12px 20px',
           background: toastType === 'success' ? '#065f46' : '#7f1d1d',
           border: `1px solid ${toastType === 'success' ? S.success : S.red}`,
-          borderRadius: 10, color: '#fff', fontSize: 14, zIndex: 9999,
+          borderRadius: 10, color: '#fff', fontSize: 17, zIndex: 9999,
           boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
         }}>{toast}</div>
       )}
@@ -108,7 +108,7 @@ export default function PaiementsPage({ onNavigate }: { onNavigate: (page: Page)
       {/* Header */}
       <div style={{ marginBottom: 20 }}>
         <h2 style={{ color: S.text, fontSize: 22, fontWeight: 700, marginBottom: 4 }}>💳 Gestion des Paiements</h2>
-        <p style={{ color: S.muted, fontSize: 13 }}>Validation des abonnements, historique et statistiques</p>
+        <p style={{ color: S.muted, fontSize: 16 }}>Validation des abonnements, historique et statistiques</p>
       </div>
 
       {/* Stats rapides */}
@@ -122,7 +122,7 @@ export default function PaiementsPage({ onNavigate }: { onNavigate: (page: Page)
           <div key={i} style={{ background: S.card, borderRadius: 10, padding: '14px 16px', border: `1px solid ${S.border}` }}>
             <div style={{ fontSize: 22, marginBottom: 6 }}>{s.icon}</div>
             <div style={{ color: s.color, fontSize: 22, fontWeight: 800 }}>{s.value}</div>
-            <div style={{ color: S.muted, fontSize: 12 }}>{s.label}</div>
+            <div style={{ color: S.muted, fontSize: 15 }}>{s.label}</div>
           </div>
         ))}
       </div>
@@ -146,12 +146,12 @@ export default function PaiementsPage({ onNavigate }: { onNavigate: (page: Page)
               padding: '7px 12px', borderRadius: 7, border: `1px solid ${filter === f.key ? S.green : S.border}`,
               background: filter === f.key ? `${S.green}30` : S.card,
               color: filter === f.key ? S.success : S.muted,
-              fontSize: 12, cursor: 'pointer', fontWeight: filter === f.key ? 700 : 400,
+              fontSize: 15, cursor: 'pointer', fontWeight: filter === f.key ? 700 : 400,
               whiteSpace: 'nowrap',
             }}>{f.label}</button>
           ))}
         </div>
-        <button onClick={loadData} style={{ background: S.card, border: `1px solid ${S.border}`, color: S.text, borderRadius: 7, padding: '7px 14px', fontSize: 12, cursor: 'pointer' }}>
+        <button onClick={loadData} style={{ background: S.card, border: `1px solid ${S.border}`, color: S.text, borderRadius: 7, padding: '7px 14px', fontSize: 15, cursor: 'pointer' }}>
           🔄 Actualiser
         </button>
       </div>
@@ -170,7 +170,7 @@ export default function PaiementsPage({ onNavigate }: { onNavigate: (page: Page)
             <thead>
               <tr style={{ background: '#0f172a' }}>
                 {['Utilisateur', 'Téléphone', 'Montant', 'Méthode', 'Date demande', 'Statut', 'Actions'].map(h => (
-                  <th key={h} style={{ padding: '10px 14px', textAlign: 'left', color: S.muted, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>{h}</th>
+                  <th key={h} style={{ padding: '10px 14px', textAlign: 'left', color: S.muted, fontSize: 14, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -191,21 +191,21 @@ export default function PaiementsPage({ onNavigate }: { onNavigate: (page: Page)
 
                 return (
                   <tr key={d.id} style={{ borderBottom: `1px solid #1e293b`, background: i % 2 === 0 ? 'transparent' : '#0f172a20' }}>
-                    <td style={{ padding: '10px 14px', color: S.text, fontSize: 13, fontWeight: 600 }}>
+                    <td style={{ padding: '10px 14px', color: S.text, fontSize: 16, fontWeight: 600 }}>
                       {prenom} {nom}
                     </td>
-                    <td style={{ padding: '10px 14px', color: S.cyan ?? '#06b6d4', fontSize: 13, fontFamily: 'monospace' }}>
+                    <td style={{ padding: '10px 14px', color: S.cyan ?? '#06b6d4', fontSize: 16, fontFamily: 'monospace' }}>
                       {tel}
                     </td>
-                    <td style={{ padding: '10px 14px', color: S.gold, fontSize: 13, fontWeight: 700 }}>
+                    <td style={{ padding: '10px 14px', color: S.gold, fontSize: 16, fontWeight: 700 }}>
                       {montant !== '—' ? `${montant} FCFA` : '—'}
                     </td>
-                    <td style={{ padding: '10px 14px', color: S.muted, fontSize: 12 }}>{methode}</td>
-                    <td style={{ padding: '10px 14px', color: S.muted, fontSize: 11 }}>
+                    <td style={{ padding: '10px 14px', color: S.muted, fontSize: 15 }}>{methode}</td>
+                    <td style={{ padding: '10px 14px', color: S.muted, fontSize: 14 }}>
                       {formatDate(d.created_at ?? d.date_demande)}
                     </td>
                     <td style={{ padding: '10px 14px' }}>
-                      <span style={{ background: sc.bg, color: sc.color, padding: '3px 8px', borderRadius: 5, fontSize: 11, fontWeight: 700 }}>
+                      <span style={{ background: sc.bg, color: sc.color, padding: '3px 8px', borderRadius: 5, fontSize: 14, fontWeight: 700 }}>
                         {statut === 'VALIDE' ? '✅ Validé' : statut === 'REJETE' ? '❌ Rejeté' : '⏳ En attente'}
                       </span>
                     </td>
@@ -215,19 +215,19 @@ export default function PaiementsPage({ onNavigate }: { onNavigate: (page: Page)
                           <button
                             onClick={() => handleValider(d.id, `${prenom} ${nom}`)}
                             disabled={processingId === d.id}
-                            style={{ background: S.green, color: '#fff', border: 'none', borderRadius: 5, padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontWeight: 700 }}>
+                            style={{ background: S.green, color: '#fff', border: 'none', borderRadius: 5, padding: '6px 14px', fontSize: 14, cursor: 'pointer', fontWeight: 700 }}>
                             {processingId === d.id ? '⏳' : '✅ Valider'}
                           </button>
                           <button
                             onClick={() => handleRejeter(d.id, `${prenom} ${nom}`)}
                             disabled={processingId === d.id}
-                            style={{ background: '#7f1d1d', color: '#fff', border: 'none', borderRadius: 5, padding: '4px 10px', fontSize: 11, cursor: 'pointer' }}>
+                            style={{ background: '#7f1d1d', color: '#fff', border: 'none', borderRadius: 5, padding: '6px 14px', fontSize: 14, cursor: 'pointer' }}>
                             {processingId === d.id ? '⏳' : '❌'}
                           </button>
                         </div>
                       )}
                       {statut !== 'EN_ATTENTE' && (
-                        <span style={{ color: S.muted, fontSize: 11 }}>
+                        <span style={{ color: S.muted, fontSize: 14 }}>
                           {formatDate(d.updated_at ?? d.date_validation ?? '')}
                         </span>
                       )}
@@ -246,5 +246,5 @@ export default function PaiementsPage({ onNavigate }: { onNavigate: (page: Page)
 const inputStyle: React.CSSProperties = {
   padding: '8px 12px', background: '#1e293b',
   border: '1px solid #334155', borderRadius: 7, color: '#e2e8f0',
-  fontSize: 13, boxSizing: 'border-box' as const,
+  fontSize: 16, boxSizing: 'border-box' as const,
 };

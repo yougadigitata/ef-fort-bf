@@ -119,7 +119,7 @@ export default function EntraidePage({ onNavigate: _n }: { onNavigate: (p: Page)
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
           <h2 style={{ color: '#f1f5f9', fontSize: 22, fontWeight: 700, margin: 0 }}>🤝 Entraide — Questions Utilisateurs</h2>
-          <p style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>
+          <p style={{ color: '#64748b', fontSize: 17, marginTop: 4 }}>
             {messages.length} message(s) · Répondez aux questions de la communauté
           </p>
         </div>
@@ -131,23 +131,23 @@ export default function EntraidePage({ onNavigate: _n }: { onNavigate: (p: Page)
 
       {/* SQL Migration Info */}
       <div style={{ background: 'rgba(212,160,23,0.1)', border: '1px solid rgba(212,160,23,0.3)', borderRadius: 12, padding: 14, marginBottom: 20 }}>
-        <div style={{ color: '#D4A017', fontWeight: 700, marginBottom: 6, fontSize: 13 }}>⚠️ Migration requise pour les réponses</div>
-        <div style={{ color: '#94a3b8', fontSize: 12 }}>
+        <div style={{ color: '#D4A017', fontWeight: 700, marginBottom: 6, fontSize: 16 }}>⚠️ Migration requise pour les réponses</div>
+        <div style={{ color: '#94a3b8', fontSize: 15 }}>
           Pour activer les réponses, exécutez ce SQL dans Supabase Dashboard :
         </div>
-        <pre style={{ background: '#0f172a', color: '#4ade80', borderRadius: 8, padding: 12, fontSize: 11, marginTop: 8, overflow: 'auto' }}>{`ALTER TABLE public.messages_entraide 
+        <pre style={{ background: '#0f172a', color: '#4ade80', borderRadius: 8, padding: 12, fontSize: 14, marginTop: 8, overflow: 'auto' }}>{`ALTER TABLE public.messages_entraide 
   ADD COLUMN IF NOT EXISTS parent_id UUID REFERENCES public.messages_entraide(id) ON DELETE CASCADE;
 
 CREATE INDEX IF NOT EXISTS idx_messages_entraide_parent_id ON public.messages_entraide(parent_id);`}</pre>
       </div>
 
       {error && (
-        <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid #ef444444', borderRadius: 8, padding: 12, color: '#ef4444', fontSize: 13, marginBottom: 16 }}>
+        <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid #ef444444', borderRadius: 8, padding: 12, color: '#ef4444', fontSize: 16, marginBottom: 16 }}>
           ❌ {error}
         </div>
       )}
       {success && (
-        <div style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid #22c55e44', borderRadius: 8, padding: 12, color: '#22c55e', fontSize: 13, marginBottom: 16 }}>
+        <div style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid #22c55e44', borderRadius: 8, padding: 12, color: '#22c55e', fontSize: 16, marginBottom: 16 }}>
           ✅ {success}
         </div>
       )}
@@ -172,36 +172,36 @@ CREATE INDEX IF NOT EXISTS idx_messages_entraide_parent_id ON public.messages_en
                   width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
                   background: msg.is_admin ? '#1A5C38' : '#334155',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 14, fontWeight: 700, color: 'white',
+                  fontSize: 17, fontWeight: 700, color: 'white',
                 }}>
                   {msg.is_admin ? 'EF' : msg.prenom?.[0]?.toUpperCase() ?? 'U'}
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ color: '#f1f5f9', fontWeight: 700, fontSize: 14 }}>
+                    <span style={{ color: '#f1f5f9', fontWeight: 700, fontSize: 17 }}>
                       {msg.is_admin ? 'EF-FORT.BF' : `${msg.prenom ?? ''} ${msg.nom ?? ''}`}
                     </span>
                     {msg.is_admin && (
-                      <span style={{ background: '#1A5C38', color: 'white', fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4 }}>OFFICIEL</span>
+                      <span style={{ background: '#1A5C38', color: 'white', fontSize: 13, fontWeight: 700, padding: '2px 6px', borderRadius: 4 }}>OFFICIEL</span>
                     )}
                   </div>
-                  <div style={{ color: '#64748b', fontSize: 11 }}>{formatDate(msg.created_at)}</div>
+                  <div style={{ color: '#64748b', fontSize: 14 }}>{formatDate(msg.created_at)}</div>
                 </div>
                 <button onClick={() => supprimer(msg.id)} style={{
                   background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
-                  color: '#ef4444', padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 12,
+                  color: '#ef4444', padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 15,
                 }}>🗑 Supprimer</button>
               </div>
 
               {/* Contenu */}
-              <div style={{ color: '#e2e8f0', fontSize: 14, lineHeight: 1.6, marginBottom: 12 }}>
+              <div style={{ color: '#e2e8f0', fontSize: 17, lineHeight: 1.6, marginBottom: 12 }}>
                 {msg.contenu}
               </div>
 
               {/* Réponses existantes */}
               {(msg.reponses ?? []).length > 0 && (
                 <div style={{ marginBottom: 12 }}>
-                  <div style={{ color: '#22c55e', fontSize: 12, fontWeight: 700, marginBottom: 8 }}>
+                  <div style={{ color: '#22c55e', fontSize: 15, fontWeight: 700, marginBottom: 8 }}>
                     ✅ {msg.reponses!.length} réponse(s) officielle(s)
                   </div>
                   {msg.reponses!.map((rep) => (
@@ -210,10 +210,10 @@ CREATE INDEX IF NOT EXISTS idx_messages_entraide_parent_id ON public.messages_en
                       borderRadius: 10, padding: 12, marginBottom: 6,
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                        <span style={{ color: '#4ade80', fontSize: 12, fontWeight: 700 }}>🎯 {rep.prenom ?? 'Admin'}</span>
-                        <span style={{ color: '#64748b', fontSize: 11 }}>{formatDate(rep.created_at)}</span>
+                        <span style={{ color: '#4ade80', fontSize: 15, fontWeight: 700 }}>🎯 {rep.prenom ?? 'Admin'}</span>
+                        <span style={{ color: '#64748b', fontSize: 14 }}>{formatDate(rep.created_at)}</span>
                       </div>
-                      <div style={{ color: '#e2e8f0', fontSize: 13 }}>{rep.contenu}</div>
+                      <div style={{ color: '#e2e8f0', fontSize: 16 }}>{rep.contenu}</div>
                     </div>
                   ))}
                 </div>
@@ -222,7 +222,7 @@ CREATE INDEX IF NOT EXISTS idx_messages_entraide_parent_id ON public.messages_en
               {/* Zone de réponse admin */}
               {!msg.is_admin && (
                 <div style={{ borderTop: '1px solid #334155', paddingTop: 12 }}>
-                  <div style={{ color: '#64748b', fontSize: 12, marginBottom: 6 }}>💬 Répondre à ce message</div>
+                  <div style={{ color: '#64748b', fontSize: 15, marginBottom: 6 }}>💬 Répondre à ce message</div>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <textarea
                       value={replyTexts[msg.id] ?? ''}
@@ -231,7 +231,7 @@ CREATE INDEX IF NOT EXISTS idx_messages_entraide_parent_id ON public.messages_en
                       rows={3}
                       style={{
                         flex: 1, background: '#0f172a', border: '1px solid #334155',
-                        borderRadius: 8, padding: '8px 12px', color: '#f1f5f9', fontSize: 13,
+                        borderRadius: 8, padding: '8px 12px', color: '#f1f5f9', fontSize: 16,
                         resize: 'vertical', fontFamily: 'inherit',
                       }}
                     />
@@ -242,7 +242,7 @@ CREATE INDEX IF NOT EXISTS idx_messages_entraide_parent_id ON public.messages_en
                         background: sending === msg.id || !(replyTexts[msg.id] ?? '').trim() ? '#334155' : '#1A5C38',
                         color: 'white', border: 'none', padding: '8px 16px',
                         borderRadius: 8, cursor: sending === msg.id || !(replyTexts[msg.id] ?? '').trim() ? 'not-allowed' : 'pointer',
-                        fontWeight: 700, fontSize: 13, alignSelf: 'flex-end',
+                        fontWeight: 700, fontSize: 16, alignSelf: 'flex-end',
                       }}
                     >
                       {sending === msg.id ? '⏳' : '📤 Répondre'}

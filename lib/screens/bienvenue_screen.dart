@@ -367,7 +367,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
           _bannerMessages[_currentBannerIndex],
           textAlign: TextAlign.center,
           style: const TextStyle(
-            fontSize: 12.5,
+            fontSize: 142.5,
             color: Color(0xFFD4A017),
             fontWeight: FontWeight.w700,
             letterSpacing: 0.4,
@@ -479,7 +479,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
           child: const Text(
             '🏆 La Plateforme N°1 du Burkina Faso 🇧🇫',
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 15,
               color: Color(0xFFD4A017),
               fontWeight: FontWeight.w700,
               letterSpacing: 0.3,
@@ -531,7 +531,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
                   Text(
                     'Message de Bienvenue',
                     style: TextStyle(
-                      fontSize: 15,
+                      fontSize: 17,
                       fontWeight: FontWeight.w800,
                       color: Color(0xFFD4A017),
                     ),
@@ -539,7 +539,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
                   Text(
                     'EF-FORT.BF vous accueille',
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 14,
                       color: Colors.white54,
                     ),
                   ),
@@ -621,7 +621,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
                     'et que la réussite soit au rendez-vous ! '
                     'Bonne chance à vous. 🇧🇫',
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: 16,
                       color: Color(0xFF22C55E),
                       fontWeight: FontWeight.w600,
                       height: 1.55,
@@ -690,7 +690,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
                 Text(
                   s['value'] as String,
                   style: const TextStyle(
-                    fontSize: 14,
+                    fontSize: 17,
                     fontWeight: FontWeight.w900,
                     color: Colors.white,
                   ),
@@ -699,7 +699,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
                   s['label'] as String,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    fontSize: 10,
+                    fontSize: 14,
                     color: Colors.white60,
                   ),
                 ),
@@ -774,7 +774,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
                       Text(
                         p.$2,
                         style: const TextStyle(
-                          fontSize: 13.5,
+                          fontSize: 143.5,
                           color: Color(0xFFD4A017),
                           fontWeight: FontWeight.w700,
                         ),
@@ -782,7 +782,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
                       Text(
                         p.$3,
                         style: const TextStyle(
-                          fontSize: 12.5,
+                          fontSize: 142.5,
                           color: Colors.white60,
                           height: 1.4,
                         ),
@@ -832,7 +832,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
                   const Text(
                     'Accès Premium EF-FORT.BF',
                     style: TextStyle(
-                      fontSize: 14.5,
+                      fontSize: 144.5,
                       fontWeight: FontWeight.w900,
                       color: Color(0xFFD4A017),
                     ),
@@ -840,7 +840,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
                   Text(
                     'Un véritable cadeau pour les Burkinabè',
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 14,
                       color: Colors.white.withValues(alpha: 0.5),
                     ),
                   ),
@@ -886,7 +886,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 14)),
+          Text(emoji, style: const TextStyle(fontSize: 17)),
           const SizedBox(width: 8),
           Expanded(
             child: RichText(
@@ -897,14 +897,14 @@ class _BienvenueScreenState extends State<BienvenueScreen>
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
-                      fontSize: 13,
+                      fontSize: 16,
                     ),
                   ),
                   TextSpan(
                     text: desc,
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.65),
-                      fontSize: 12,
+                      fontSize: 15,
                     ),
                   ),
                 ],
@@ -927,7 +927,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
       child: Text(
         text,
         style: const TextStyle(
-          fontSize: 11,
+          fontSize: 14,
           color: Color(0xFFD4A017),
           fontWeight: FontWeight.w700,
         ),
@@ -989,7 +989,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
           '"Le savoir est la plus puissante des armes."',
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 13,
+            fontSize: 16,
             color: Color(0xFFD4A017),
             fontStyle: FontStyle.italic,
             fontWeight: FontWeight.w600,
@@ -1000,7 +1000,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
           'Prépare-toi · Bats-toi · Décroche-le 🏆',
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 12,
+            fontSize: 15,
             color: Colors.white.withValues(alpha: 0.5),
           ),
         ),
@@ -1016,7 +1016,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
               Text(
                 'Partagez EF-FORT.BF à vos proches',
                 style: TextStyle(
-                  fontSize: 11.5,
+                  fontSize: 141.5,
                   color: Colors.white.withValues(alpha: 0.4),
                   fontStyle: FontStyle.italic,
                 ),

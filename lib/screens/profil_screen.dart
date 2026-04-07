@@ -203,7 +203,7 @@ class _ProfilScreenState extends State<ProfilScreen>
                         Text(
                           telephone,
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 17,
                             color: Colors.white.withValues(alpha: 0.75),
                           ),
                         ),
@@ -285,7 +285,7 @@ class _ProfilScreenState extends State<ProfilScreen>
                         ),
                         child: const Text(
                           '🔥 OFFRE SPÉCIALE — Expire le 3 mai 2026',
-                          style: TextStyle(fontSize: 11, color: AppColors.white, fontWeight: FontWeight.w700),
+                          style: TextStyle(fontSize: 14, color: AppColors.white, fontWeight: FontWeight.w700),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -294,7 +294,7 @@ class _ProfilScreenState extends State<ProfilScreen>
                       const Text(
                         'Accès illimité à +10 000 QCM\nSimulations d\'examen illimitées\nCorrections détaillées',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 13, color: AppColors.white, height: 1.6),
+                        style: TextStyle(fontSize: 16, color: AppColors.white, height: 1.6),
                       ),
                       const SizedBox(height: 20),
                       Row(
@@ -351,7 +351,7 @@ class _ProfilScreenState extends State<ProfilScreen>
                       const Expanded(
                         child: Text(
                           'Paiement via Orange Money — 65 46 70 70\nActivation sous 24h après vérification',
-                          style: TextStyle(fontSize: 12, color: AppColors.textDark, height: 1.5),
+                          style: TextStyle(fontSize: 15, color: AppColors.textDark, height: 1.5),
                         ),
                       ),
                     ],
@@ -376,7 +376,7 @@ class _ProfilScreenState extends State<ProfilScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text('Abonnement actif', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.success)),
-                            Text('Accès illimité jusqu\'au 31/12/2028', style: TextStyle(fontSize: 12, color: AppColors.textLight)),
+                            Text('Accès illimité jusqu\'au 31/12/2028', style: TextStyle(fontSize: 15, color: AppColors.textLight)),
                           ],
                         ),
                       ),
@@ -433,7 +433,7 @@ class _ProfilScreenState extends State<ProfilScreen>
           const SizedBox(width: 4),
           Text(
             label,
-            style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.w700),
+            style: const TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.w700),
           ),
         ],
       ),
@@ -466,9 +466,9 @@ class _ProfilScreenState extends State<ProfilScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: AppColors.textDark)),
+                  Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 17, color: AppColors.textDark)),
                   const SizedBox(height: 2),
-                  Text(subtitle, style: TextStyle(fontSize: 12, color: AppColors.textLight)),
+                  Text(subtitle, style: TextStyle(fontSize: 15, color: AppColors.textLight)),
                 ],
               ),
             ),
@@ -495,7 +495,7 @@ class _ProfilScreenState extends State<ProfilScreen>
             const SizedBox(height: 6),
             Text(
               'Mode de paiement disponible',
-              style: TextStyle(fontSize: 13, color: AppColors.textLight),
+              style: TextStyle(fontSize: 16, color: AppColors.textLight),
             ),
             const SizedBox(height: 16),
             // Orange Money UNIQUEMENT
@@ -534,7 +534,7 @@ class _ProfilScreenState extends State<ProfilScreen>
                           const Text(
                             '*144*10*65 46 70 70*12000#',
                             style: TextStyle(
-                              fontSize: 13,
+                              fontSize: 16,
                               color: AppColors.textLight,
                               fontFamily: 'monospace',
                             ),
@@ -558,7 +558,7 @@ class _ProfilScreenState extends State<ProfilScreen>
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w700,
-                            fontSize: 12,
+                            fontSize: 15,
                           ),
                         ),
                       ),
@@ -572,7 +572,7 @@ class _ProfilScreenState extends State<ProfilScreen>
               child: Text(
                 'Tapez "Composer" pour lancer la composition automatique',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 11, color: AppColors.textLight),
+                style: TextStyle(fontSize: 14, color: AppColors.textLight),
               ),
             ),
             const SizedBox(height: 16),
@@ -917,7 +917,7 @@ class _AboutScreenState extends State<_AboutScreen>
                                                   children: [
                                                     Text('🎓', style: TextStyle(fontSize: 28)),
                                                     Text('EF-FORT', style: TextStyle(
-                                                      color: Colors.white, fontSize: 9,
+                                                      color: Colors.white, fontSize: 14,
                                                       fontWeight: FontWeight.w900,
                                                     )),
                                                   ],
@@ -986,7 +986,7 @@ class _AboutScreenState extends State<_AboutScreen>
                                     '🏆 Plateforme N°1 au Burkina Faso',
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 11,
+                                      fontSize: 14,
                                       fontWeight: FontWeight.w800,
                                     ),
                                   ),
@@ -1112,7 +1112,7 @@ class _AboutScreenState extends State<_AboutScreen>
                 label,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: isActive ? Colors.white : AppColors.primary,
                 ),
@@ -1183,7 +1183,7 @@ class _AboutScreenState extends State<_AboutScreen>
                       'd\'apprentissage et d\'éducation au Burkina Faso',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 12,
+                        fontSize: 15,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -1192,7 +1192,7 @@ class _AboutScreenState extends State<_AboutScreen>
                       '🇧🇫 Conçu par des Burkinabè, pour des Burkinabè',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 11,
+                        fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -1284,7 +1284,7 @@ class _AboutScreenState extends State<_AboutScreen>
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,
-                    fontSize: 15,
+                    fontSize: 17,
                   ),
                 ),
               ],
@@ -1313,7 +1313,7 @@ class _AboutScreenState extends State<_AboutScreen>
                 'La chance ne sourit pas au hasard, elle rencontre toujours un effort bien préparé.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 15,
+                  fontSize: 17,
                   fontWeight: FontWeight.w600,
                   fontStyle: FontStyle.italic,
                   color: AppColors.textDark,
@@ -1322,7 +1322,7 @@ class _AboutScreenState extends State<_AboutScreen>
               ),
               const SizedBox(height: 10),
               Text('— EF-FORT.BF',
-                style: TextStyle(fontSize: 13, color: AppColors.textLight, fontWeight: FontWeight.w600)),
+                style: TextStyle(fontSize: 16, color: AppColors.textLight, fontWeight: FontWeight.w600)),
             ],
           ),
         ),
@@ -1379,14 +1379,14 @@ class _AboutScreenState extends State<_AboutScreen>
                 ),
                 child: const Text(
                   'Le "Qui est Qui" de l\'Internet en Afrique',
-                  style: TextStyle(color: Color(0xFFE94560), fontSize: 11, fontWeight: FontWeight.w700),
+                  style: TextStyle(color: Color(0xFFE94560), fontSize: 14, fontWeight: FontWeight.w700),
                 ),
               ),
               const SizedBox(height: 14),
               Text(
                 'Comprendre, se protéger et contribuer à un numérique éthique',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 13, height: 1.5),
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 16, height: 1.5),
               ),
             ],
           ),
@@ -1408,7 +1408,7 @@ class _AboutScreenState extends State<_AboutScreen>
               Expanded(
                 child: Text(
                   'L\'éducation numérique est la meilleure arme contre la cybercriminalité. Lire pour se protéger !',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF856404)),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF856404)),
                 ),
               ),
             ],
@@ -1523,7 +1523,7 @@ class _AboutScreenState extends State<_AboutScreen>
                     child: Text(
                       'Chapitre 7 — L\'arnaque 5M au Burkina Faso (2023)',
                       style: TextStyle(
-                        fontSize: 15,
+                        fontSize: 17,
                         fontWeight: FontWeight.w800,
                         color: Color(0xFF7A5A00),
                       ),
@@ -1534,7 +1534,7 @@ class _AboutScreenState extends State<_AboutScreen>
               const SizedBox(height: 12),
               const Text(
                 'L\'affaire de la plateforme 5M au Burkina Faso en 2023 montre que les cybercriminels n\'ont aucune limite. Des milliers de Burkinabè — pères de famille, jeunes diplômés, commerçants — ont été attirés par une plateforme de "trading quantitatif" promettant 20-30% de rendement par mois.\n\n"À notre grande surprise, la plateforme s\'arrêta un certain vendredi 4 août 2023. Certains y avaient adhéré le même jour et n\'ont pu rien retirer." — Sylas Bagré, porte-parole des victimes.',
-                style: TextStyle(fontSize: 13, height: 1.6, color: Color(0xFF856404)),
+                style: TextStyle(fontSize: 16, height: 1.6, color: Color(0xFF856404)),
               ),
               const SizedBox(height: 12),
               Container(
@@ -1547,9 +1547,9 @@ class _AboutScreenState extends State<_AboutScreen>
                 child: const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('🚨 La règle d\'or anti-arnaque :', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Colors.red)),
+                    Text('🚨 La règle d\'or anti-arnaque :', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.red)),
                     SizedBox(height: 6),
-                    Text('• Si c\'est trop beau pour être vrai, c\'est que ce n\'est pas vrai.\n• Vérifiez si l\'entreprise a un siège physique\n• Vérifiez l\'enregistrement auprès des autorités financières\n• Comprendre comment ils gagnent l\'argent promis', style: TextStyle(fontSize: 12, height: 1.5, color: Color(0xFF7A0000))),
+                    Text('• Si c\'est trop beau pour être vrai, c\'est que ce n\'est pas vrai.\n• Vérifiez si l\'entreprise a un siège physique\n• Vérifiez l\'enregistrement auprès des autorités financières\n• Comprendre comment ils gagnent l\'argent promis', style: TextStyle(fontSize: 15, height: 1.5, color: Color(0xFF7A0000))),
                   ],
                 ),
               ),
@@ -1605,7 +1605,7 @@ class _AboutScreenState extends State<_AboutScreen>
                 SizedBox(width: 10),
                 Text(
                   'Une question sur la cybersécurité ? Contactez-nous',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13),
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16),
                 ),
               ],
             ),
@@ -1647,7 +1647,7 @@ class _AboutScreenState extends State<_AboutScreen>
               Text(
                 'Notre équipe répond dans les 24h',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white70, fontSize: 13),
+                style: TextStyle(color: Colors.white70, fontSize: 16),
               ),
             ],
           ),
@@ -1708,11 +1708,11 @@ class _AboutScreenState extends State<_AboutScreen>
                     children: [
                       const Text(
                         'Guide Cybersécurité gratuit',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 14),
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 17),
                       ),
                       Text(
                         'Lire notre guide : Cybercriminalité en Afrique →',
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 12),
+                        style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 15),
                       ),
                     ],
                   ),
@@ -1747,7 +1747,7 @@ class _AboutScreenState extends State<_AboutScreen>
                     children: [
                       Icon(Icons.share_rounded, color: Colors.white, size: 26),
                       SizedBox(height: 6),
-                      Text('Partager l\'app', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13)),
+                      Text('Partager l\'app', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
                     ],
                   ),
                 ),
@@ -1775,7 +1775,7 @@ class _AboutScreenState extends State<_AboutScreen>
                     children: [
                       Icon(Icons.star_rounded, color: AppColors.secondary, size: 26),
                       SizedBox(height: 6),
-                      Text('Noter l\'app', style: TextStyle(color: AppColors.secondary, fontWeight: FontWeight.w700, fontSize: 13)),
+                      Text('Noter l\'app', style: TextStyle(color: AppColors.secondary, fontWeight: FontWeight.w700, fontSize: 16)),
                     ],
                   ),
                 ),
@@ -1817,7 +1817,7 @@ class _AboutScreenState extends State<_AboutScreen>
           ),
           if (content.isNotEmpty) ...[
             const SizedBox(height: 12),
-            Text(content, style: const TextStyle(fontSize: 13, height: 1.65, color: AppColors.textDark)),
+            Text(content, style: const TextStyle(fontSize: 16, height: 1.65, color: AppColors.textDark)),
           ],
           if (widget != null) ...[
             const SizedBox(height: 12),
@@ -1847,13 +1847,13 @@ class _AboutScreenState extends State<_AboutScreen>
               Expanded(
                 child: Text(
                   title,
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.textDark),
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.textDark),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 10),
-          Text(content, style: const TextStyle(fontSize: 13, height: 1.65, color: AppColors.textDark)),
+          Text(content, style: const TextStyle(fontSize: 16, height: 1.65, color: AppColors.textDark)),
         ],
       ),
     );
@@ -1871,12 +1871,12 @@ class _AboutScreenState extends State<_AboutScreen>
         children: [
           Text(emoji, style: const TextStyle(fontSize: 28)),
           const SizedBox(height: 6),
-          Text(partNum, style: const TextStyle(color: AppColors.secondary, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 2)),
+          Text(partNum, style: const TextStyle(color: AppColors.secondary, fontSize: 14, fontWeight: FontWeight.w800, letterSpacing: 2)),
           const SizedBox(height: 4),
-          Text(partTitle, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w900)),
+          Text(partTitle, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w900)),
           if (quote.isNotEmpty) ...[
             const SizedBox(height: 8),
-            Text('$quote', textAlign: TextAlign.center, style: TextStyle(color: Colors.white.withValues(alpha: 0.65), fontSize: 12, fontStyle: FontStyle.italic)),
+            Text('$quote', textAlign: TextAlign.center, style: TextStyle(color: Colors.white.withValues(alpha: 0.65), fontSize: 15, fontStyle: FontStyle.italic)),
           ],
         ],
       ),
@@ -1894,8 +1894,8 @@ class _AboutScreenState extends State<_AboutScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textDark)),
-                Text(subtitle, style: const TextStyle(fontSize: 11, color: AppColors.textLight)),
+                Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                Text(subtitle, style: const TextStyle(fontSize: 14, color: AppColors.textLight)),
               ],
             ),
           ),
@@ -1918,7 +1918,7 @@ class _AboutScreenState extends State<_AboutScreen>
             Text(emoji, style: const TextStyle(fontSize: 20)),
             const SizedBox(height: 4),
             Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: AppColors.primary)),
-            Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 10, color: AppColors.textLight)),
+            Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: AppColors.textLight)),
           ],
         ),
       ),
@@ -1947,8 +1947,8 @@ class _AboutScreenState extends State<_AboutScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontSize: 12, color: AppColors.textLight)),
-                Text(subtitle, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textDark)),
+                Text(title, style: const TextStyle(fontSize: 15, color: AppColors.textLight)),
+                Text(subtitle, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textDark)),
               ],
             ),
           ),
@@ -2066,7 +2066,7 @@ class _CountdownWidgetState extends State<_CountdownWidget> {
   @override
   Widget build(BuildContext context) {
     if (_remaining == Duration.zero) {
-      return const Text('Offre expirée', style: TextStyle(color: Colors.white70, fontSize: 12));
+      return const Text('Offre expirée', style: TextStyle(color: Colors.white70, fontSize: 15));
     }
     final days = _remaining.inDays;
     final hours = _remaining.inHours % 24;
@@ -2094,7 +2094,7 @@ class _CountdownWidgetState extends State<_CountdownWidget> {
         child: Text(value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 20)),
       ),
       const SizedBox(height: 2),
-      Text(label, style: const TextStyle(color: Colors.white70, fontSize: 10)),
+      Text(label, style: const TextStyle(color: Colors.white70, fontSize: 14)),
     ]);
   }
 }
