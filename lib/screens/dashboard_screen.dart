@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
+import '../services/bell_service.dart';
 import '../widgets/logo_widget.dart';
 import '../widgets/actualites_status_widget.dart';
 import 'abonnement_screen.dart';
@@ -52,6 +53,10 @@ class _DashboardScreenState extends State<DashboardScreen>
       _loadData();
       _loadUserStats();
       _cardSlideController.forward();
+      // Son d'arrivée sur le dashboard (fanfare de succès)
+      Future.delayed(const Duration(milliseconds: 600), () {
+        if (mounted) BellService.playDashboard();
+      });
     });
   }
 

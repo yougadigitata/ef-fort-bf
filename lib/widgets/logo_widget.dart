@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 
+/// Widget logo EF-FORT.BF — v2.0 ombres améliorées
 class LogoWidget extends StatelessWidget {
   final double size;
   final double borderRadius;
   final bool showBackground;
+  final bool animate;
 
   const LogoWidget({
     super.key,
     this.size = 120,
     this.borderRadius = 20,
     this.showBackground = true,
+    this.animate = false,
   });
 
   @override
@@ -24,9 +27,14 @@ class LogoWidget extends StatelessWidget {
               borderRadius: BorderRadius.circular(borderRadius),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.15),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+                  color: AppColors.primary.withValues(alpha: 0.25),
+                  blurRadius: 18,
+                  offset: const Offset(0, 6),
+                ),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
                 ),
               ],
             )

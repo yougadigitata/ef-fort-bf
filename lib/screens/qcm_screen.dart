@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
+import '../services/bell_service.dart';
 import '../widgets/math_text_widget.dart';
 import 'abonnement_screen.dart';
 
@@ -59,6 +60,7 @@ class _QcmScreenState extends State<QcmScreen> {
 
   void _toggleAnswer(String letter) {
     if (_serieTerminee) return;
+    BellService.playClick();
     setState(() {
       _selectedAnswers.putIfAbsent(_currentIndex, () => {});
       final selected = _selectedAnswers[_currentIndex]!;
@@ -83,6 +85,20 @@ class _QcmScreenState extends State<QcmScreen> {
   }
 
   void _validerEtSuivre() {
+    // Son bonne/mauvaise réponse si une réponse est sélectionnée
+    if (!_serieTerminee && _selectedAnswers.containsKey(_currentIndex)) {
+      final q = _questions[_currentIndex] as Map<String, dynamic>;
+      final bonnes = _getBonnesReponses(q);
+      final choisies = _selectedAnswers[_currentIndex]!;
+      if (choisies.isNotEmpty) {
+        final correct = choisies.containsAll(bonnes) && bonnes.containsAll(choisies);
+        if (correct) {
+          BellService.playCorrect();
+        } else {
+          BellService.playWrong();
+        }
+      }
+    }
     if (_currentIndex < _questions.length - 1) {
       setState(() => _currentIndex++);
     } else {
@@ -92,6 +108,10 @@ class _QcmScreenState extends State<QcmScreen> {
 
   void _showCorrectionFin() {
     setState(() => _serieTerminee = true);
+    // Son applaudissements en fin de série
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) BellService.playApplause();
+    });
     // Scroll vers le haut et afficher la correction complète
   }
 

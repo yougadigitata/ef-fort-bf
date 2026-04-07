@@ -43,6 +43,11 @@
       background: white;
       padding: 8px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+      50% { transform: scale(1.04); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
     }
     .loading p {
       color: #D4A017;
@@ -71,17 +76,74 @@
     <p>Chargement...</p>
     <div class="spinner"></div>
   </div>
-  <!-- ════════════════════════════════════════════════════
-       EF-FORT.BF — Web Audio API : Cloche sonore examen
+
+  <!-- ══════════════════════════════════════════════════════════════
+       EF-FORT.BF — Web Audio API v2.0 — Sons immersifs complets
        Fonctions appelées depuis Flutter via js_interop
-       ════════════════════════════════════════════════════ -->
+       ══════════════════════════════════════════════════════════════ -->
   <script>
-    // ── Cloche sonore via Web Audio API ──
-    window.effortPlayBell = function(frequency, durationSec) {
+    // ════════════════════════════════════════════════════════
+    // GESTION GLOBALE DE L'AUDIO CONTEXT
+    // Résout le blocage navigateur (autoplay policy)
+    // ════════════════════════════════════════════════════════
+    var _effortAudioCtx = null;
+    var _audioUnlocked = false;
+    var _pendingSounds = [];
+
+    function _getAudioCtx() {
+      if (!_effortAudioCtx || _effortAudioCtx.state === 'closed') {
+        _effortAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      return _effortAudioCtx;
+    }
+
+    // Déverrouillage silencieux de l'AudioContext au premier geste
+    function _unlockAudio() {
+      if (_audioUnlocked) return;
       try {
-        var ctx = new (window.AudioContext || window.webkitAudioContext)();
+        var ctx = _getAudioCtx();
+        if (ctx.state === 'suspended') {
+          ctx.resume().then(function() {
+            _audioUnlocked = true;
+            // Rejouer les sons en attente
+            _pendingSounds.forEach(function(fn) { try { fn(); } catch(e) {} });
+            _pendingSounds = [];
+          });
+        } else {
+          _audioUnlocked = true;
+          _pendingSounds.forEach(function(fn) { try { fn(); } catch(e) {} });
+          _pendingSounds = [];
+        }
+      } catch(e) {}
+    }
+
+    // Écouter tout geste utilisateur pour déverrouiller l'audio
+    ['touchstart', 'touchend', 'mousedown', 'keydown', 'click'].forEach(function(evt) {
+      document.addEventListener(evt, _unlockAudio, { once: false, passive: true });
+    });
+
+    // ── Son avec queue si audio non déverrouillé ──
+    function _playOrQueue(fn) {
+      if (_audioUnlocked) {
+        try { fn(); } catch(e) { console.warn('EF-FORT audio error:', e); }
+      } else {
+        _unlockAudio();
+        _pendingSounds.push(fn);
+        // Réessayer après 500ms (cas où le geste est detecté rapidement)
+        setTimeout(function() {
+          if (_audioUnlocked) return;
+          try { fn(); } catch(e) {}
+        }, 500);
+      }
+    }
+
+    // ════════════════════════════════════════════════════════
+    // 1. CLOCHE SONORE (existante — non modifiée)
+    // ════════════════════════════════════════════════════════
+    window.effortPlayBell = function(frequency, durationSec) {
+      _playOrQueue(function() {
+        var ctx = _getAudioCtx();
         
-        // Oscillateur principal (fondamentale)
         var osc1 = ctx.createOscillator();
         var gainNode1 = ctx.createGain();
         osc1.type = 'sine';
@@ -91,7 +153,6 @@
         osc1.connect(gainNode1);
         gainNode1.connect(ctx.destination);
         
-        // Harmonique (octave supérieure pour la brillance)
         var osc2 = ctx.createOscillator();
         var gainNode2 = ctx.createGain();
         osc2.type = 'sine';
@@ -101,7 +162,6 @@
         osc2.connect(gainNode2);
         gainNode2.connect(ctx.destination);
 
-        // Harmonique tierce (couleur sonore)
         var osc3 = ctx.createOscillator();
         var gainNode3 = ctx.createGain();
         osc3.type = 'triangle';
@@ -117,55 +177,228 @@
         osc2.stop(ctx.currentTime + durationSec * 0.7);
         osc3.start(ctx.currentTime);
         osc3.stop(ctx.currentTime + durationSec * 0.5);
-        
-        // Libérer le contexte après la fin
-        setTimeout(function() { 
-          try { ctx.close(); } catch(e) {} 
-        }, (durationSec + 0.5) * 1000);
-        
-      } catch(e) {
-        console.warn('EF-FORT Bell error:', e);
-      }
+      });
     };
 
-    // ── Mélodie de bienvenue premium (3 notes ascendantes) ──
+    // ════════════════════════════════════════════════════════
+    // 2. MÉLODIE DE BIENVENUE PREMIUM (Splash Screen)
+    //    Do-Mi-Sol-Do ascendant — motivant et énergique
+    //    FIX : utilise le contexte global partagé
+    // ════════════════════════════════════════════════════════
     window.effortPlayWelcomeMelody = function() {
-      try {
-        var ctx = new (window.AudioContext || window.webkitAudioContext)();
+      _playOrQueue(function() {
+        var ctx = _getAudioCtx();
         var notes = [
-          { freq: 523.25, time: 0.0, dur: 0.35 },    // Do5
+          { freq: 523.25, time: 0.0,  dur: 0.35 },   // Do5
           { freq: 659.25, time: 0.25, dur: 0.35 },   // Mi5
           { freq: 783.99, time: 0.50, dur: 0.55 },   // Sol5
-          { freq: 1046.5, time: 0.85, dur: 1.2 },    // Do6 (finale)
+          { freq: 1046.5, time: 0.85, dur: 1.20 },   // Do6 (finale)
         ];
         notes.forEach(function(note) {
-          var osc = ctx.createOscillator();
+          var osc  = ctx.createOscillator();
           var gain = ctx.createGain();
           osc.type = 'sine';
           osc.frequency.setValueAtTime(note.freq, ctx.currentTime + note.time);
-          gain.gain.setValueAtTime(0.0, ctx.currentTime + note.time);
-          gain.gain.linearRampToValueAtTime(0.5, ctx.currentTime + note.time + 0.02);
+          gain.gain.setValueAtTime(0.0,  ctx.currentTime + note.time);
+          gain.gain.linearRampToValueAtTime(0.55, ctx.currentTime + note.time + 0.02);
           gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + note.time + note.dur);
           osc.connect(gain);
           gain.connect(ctx.destination);
           osc.start(ctx.currentTime + note.time);
-          osc.stop(ctx.currentTime + note.time + note.dur);
+          osc.stop(ctx.currentTime + note.time + note.dur + 0.05);
         });
-        setTimeout(function() { try { ctx.close(); } catch(e) {} }, 3000);
-      } catch(e) {
-        console.warn('EF-FORT Melody error:', e);
-      }
+      });
     };
 
-    // ── Double cloche (fin d'examen) ──
+    // ════════════════════════════════════════════════════════
+    // 3. DOUBLE CLOCHE (fin d'examen — existante)
+    // ════════════════════════════════════════════════════════
     window.effortPlayDoubleBell = function() {
       window.effortPlayBell(880, 1.5);
       setTimeout(function() { window.effortPlayBell(660, 2.0); }, 800);
     };
 
+    // ════════════════════════════════════════════════════════
+    // 4. SON DE CLIC BOUTON (nouveau — léger et discret)
+    // ════════════════════════════════════════════════════════
+    window.effortPlayClick = function() {
+      _playOrQueue(function() {
+        var ctx = _getAudioCtx();
+        var osc  = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1200, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(900, ctx.currentTime + 0.07);
+        gain.gain.setValueAtTime(0.18, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.10);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.12);
+      });
+    };
+
+    // ════════════════════════════════════════════════════════
+    // 5. SON BONNE RÉPONSE (nouveau — ding positif lumineux)
+    // ════════════════════════════════════════════════════════
+    window.effortPlayCorrect = function() {
+      _playOrQueue(function() {
+        var ctx = _getAudioCtx();
+        // Accord mineur ascendant rapide
+        var chords = [
+          { freq: 523.25, time: 0.0,  dur: 0.25 },  // Do5
+          { freq: 659.25, time: 0.08, dur: 0.30 },  // Mi5
+          { freq: 783.99, time: 0.16, dur: 0.40 },  // Sol5
+        ];
+        chords.forEach(function(c) {
+          var osc  = ctx.createOscillator();
+          var gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(c.freq, ctx.currentTime + c.time);
+          gain.gain.setValueAtTime(0.0,  ctx.currentTime + c.time);
+          gain.gain.linearRampToValueAtTime(0.35, ctx.currentTime + c.time + 0.01);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + c.time + c.dur);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + c.time);
+          osc.stop(ctx.currentTime + c.time + c.dur + 0.05);
+        });
+      });
+    };
+
+    // ════════════════════════════════════════════════════════
+    // 6. SON MAUVAISE RÉPONSE (nouveau — ploc doux discret)
+    // ════════════════════════════════════════════════════════
+    window.effortPlayWrong = function() {
+      _playOrQueue(function() {
+        var ctx = _getAudioCtx();
+        var osc  = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(110, ctx.currentTime + 0.25);
+        gain.gain.setValueAtTime(0.20, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.30);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.35);
+      });
+    };
+
+    // ════════════════════════════════════════════════════════
+    // 7. SON ARRIVÉE DASHBOARD (nouveau — succès / niveau atteint)
+    // ════════════════════════════════════════════════════════
+    window.effortPlayDashboard = function() {
+      _playOrQueue(function() {
+        var ctx = _getAudioCtx();
+        // Fanfare courte 3 notes Do-Sol-Do
+        var melody = [
+          { freq: 392.00, time: 0.0,  dur: 0.20 },  // Sol4
+          { freq: 523.25, time: 0.15, dur: 0.20 },  // Do5
+          { freq: 659.25, time: 0.30, dur: 0.20 },  // Mi5
+          { freq: 783.99, time: 0.45, dur: 0.55 },  // Sol5
+        ];
+        melody.forEach(function(m) {
+          var osc  = ctx.createOscillator();
+          var gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(m.freq, ctx.currentTime + m.time);
+          gain.gain.setValueAtTime(0.0,  ctx.currentTime + m.time);
+          gain.gain.linearRampToValueAtTime(0.35, ctx.currentTime + m.time + 0.01);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + m.time + m.dur);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + m.time);
+          osc.stop(ctx.currentTime + m.time + m.dur + 0.05);
+        });
+      });
+    };
+
+    // ════════════════════════════════════════════════════════
+    // 8. SON TRANSITION ÉCRAN (nouveau — glissement doux)
+    // ════════════════════════════════════════════════════════
+    window.effortPlayTransition = function() {
+      _playOrQueue(function() {
+        var ctx = _getAudioCtx();
+        var osc  = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(660, ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.20);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.22);
+      });
+    };
+
+    // ════════════════════════════════════════════════════════
+    // 9. SON SOUMISSION EXAMEN — APPLAUDISSEMENTS (existant +)
+    //    Complète le effortPlayDoubleBell déjà présent
+    // ════════════════════════════════════════════════════════
+    window.effortPlayApplause = function() {
+      _playOrQueue(function() {
+        var ctx = _getAudioCtx();
+        // Simule des applaudissements avec du bruit filtré + mélodie courte
+        var bufferSize = ctx.sampleRate * 1.5;
+        var buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        var data = buffer.getChannelData(0);
+        for (var i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.3));
+        }
+        var source = ctx.createBufferSource();
+        source.buffer = buffer;
+
+        var filter = ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = 1800;
+        filter.Q.value = 0.8;
+
+        var gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.4, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.5);
+
+        source.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        source.start(ctx.currentTime);
+
+        // Mélodie de victoire en parallèle
+        var victoryNotes = [
+          { freq: 523.25, time: 0.0,  dur: 0.2 },
+          { freq: 659.25, time: 0.2,  dur: 0.2 },
+          { freq: 783.99, time: 0.4,  dur: 0.2 },
+          { freq: 1046.5, time: 0.6,  dur: 0.6 },
+        ];
+        victoryNotes.forEach(function(n) {
+          var o  = ctx.createOscillator();
+          var g  = ctx.createGain();
+          o.type = 'sine';
+          o.frequency.setValueAtTime(n.freq, ctx.currentTime + n.time);
+          g.gain.setValueAtTime(0.0,  ctx.currentTime + n.time);
+          g.gain.linearRampToValueAtTime(0.4,  ctx.currentTime + n.time + 0.01);
+          g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + n.time + n.dur);
+          o.connect(g);
+          g.connect(ctx.destination);
+          o.start(ctx.currentTime + n.time);
+          o.stop(ctx.currentTime + n.time + n.dur + 0.05);
+        });
+      });
+    };
+
+    // ════════════════════════════════════════════════════════
+    // ÉVÉNEMENT FLUTTER — Suppression du loading screen
+    // ════════════════════════════════════════════════════════
     window.addEventListener('flutter-first-frame', function () {
       var loading = document.getElementById('loading');
-      if (loading) loading.remove();
+      if (loading) {
+        loading.style.transition = 'opacity 0.5s ease';
+        loading.style.opacity = '0';
+        setTimeout(function() { if (loading && loading.parentNode) loading.parentNode.removeChild(loading); }, 500);
+      }
     });
   </script>
   <script src="flutter_bootstrap.js" async></script>

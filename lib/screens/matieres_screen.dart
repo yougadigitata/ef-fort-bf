@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
+import '../services/bell_service.dart';
+import '../widgets/logo_widget.dart';
 import 'qcm_screen.dart';
 import 'serie_selection_screen.dart';
 
 // ══════════════════════════════════════════════════════════════
-// IDs Supabase des matières — v7.0 NOUVEAU DESIGN
+// IDs Supabase des matières — v8.0 DESIGN LISTE HARMONISÉ
 // ══════════════════════════════════════════════════════════════
 
 const Map<String, Map<String, dynamic>> _matieresMeta = {
@@ -40,7 +42,7 @@ const Set<String> _seriesMatieresIds = {
   'svt', 'pana', 'sp', 'psy', 'pc', 'enaref',
 };
 
-/// v7.0 — Matières DYNAMIQUES — Nouveau design carte avec bordure verte
+/// v8.0 — Matières DYNAMIQUES — Design liste harmonisé
 class MatieresScreen extends StatefulWidget {
   const MatieresScreen({super.key});
 
@@ -48,15 +50,28 @@ class MatieresScreen extends StatefulWidget {
   State<MatieresScreen> createState() => _MatieresScreenState();
 }
 
-class _MatieresScreenState extends State<MatieresScreen> {
+class _MatieresScreenState extends State<MatieresScreen>
+    with SingleTickerProviderStateMixin {
   List<Map<String, dynamic>> _matieres = [];
   bool _loading = true;
   String? _error;
 
+  late AnimationController _listAnimController;
+
   @override
   void initState() {
     super.initState();
+    _listAnimController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
     _loadMatieres();
+  }
+
+  @override
+  void dispose() {
+    _listAnimController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadMatieres() async {
@@ -68,6 +83,7 @@ class _MatieresScreenState extends State<MatieresScreen> {
           _matieres = data.cast<Map<String, dynamic>>();
           _loading = false;
         });
+        _listAnimController.forward(from: 0);
       }
     } catch (e) {
       if (mounted) {
@@ -114,6 +130,13 @@ class _MatieresScreenState extends State<MatieresScreen> {
                 end: Alignment.bottomRight,
                 colors: [AppColors.primary, AppColors.primaryDark],
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0x331A5C38),
+                  blurRadius: 12,
+                  offset: Offset(0, 4),
+                ),
+              ],
             ),
             padding: EdgeInsets.only(
               top: MediaQuery.of(context).padding.top + 14,
@@ -123,28 +146,31 @@ class _MatieresScreenState extends State<MatieresScreen> {
             ),
             child: Row(
               children: [
-                // Icône livres
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.18),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Center(
-                    child: Text('📚', style: TextStyle(fontSize: 22)),
-                  ),
-                ),
+                // Logo EF-FORT
+                const LogoWidget(size: 38, borderRadius: 10),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text(
-                    '${count}Matières QCM',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                      letterSpacing: 0.3,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${count}Matières QCM',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                      const Text(
+                        'Choisissez votre matière',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFFD4A017),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 IconButton(
@@ -164,7 +190,7 @@ class _MatieresScreenState extends State<MatieresScreen> {
                     ? _buildError()
                     : _matieres.isEmpty
                         ? _buildEmpty()
-                        : _buildGrid(),
+                        : _buildList(),
           ),
         ],
       ),
@@ -226,30 +252,53 @@ class _MatieresScreenState extends State<MatieresScreen> {
     );
   }
 
-  Widget _buildGrid() {
+  Widget _buildList() {
     return RefreshIndicator(
       onRefresh: _loadMatieres,
       color: AppColors.primary,
-      child: GridView.builder(
-        padding: const EdgeInsets.fromLTRB(14, 16, 14, 20),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: 14,
-          crossAxisSpacing: 14,
-          childAspectRatio: 0.92,
-        ),
+      child: ListView.separated(
+        padding: const EdgeInsets.fromLTRB(14, 16, 14, 24),
         itemCount: _matieres.length,
+        separatorBuilder: (_, __) => const Divider(
+          height: 1,
+          thickness: 1,
+          color: Color(0xFFE8F0EC),
+          indent: 68,
+          endIndent: 0,
+        ),
         itemBuilder: (context, index) {
           final matiere = _matieres[index];
           final matiereCode = ((matiere['code'] as String?) ?? (matiere['id'] as String? ?? '')).toLowerCase();
           final color = _getColor(matiereCode);
-          return _buildMatiereCard(matiere, matiereCode, color);
+
+          // Animation en cascade par index
+          final delay = (index * 0.05).clamp(0.0, 0.8);
+          final animation = Tween<double>(begin: 0.0, end: 1.0).animate(
+            CurvedAnimation(
+              parent: _listAnimController,
+              curve: Interval(delay, (delay + 0.4).clamp(0.0, 1.0), curve: Curves.easeOut),
+            ),
+          );
+
+          return AnimatedBuilder(
+            animation: animation,
+            builder: (context, child) {
+              return Transform.translate(
+                offset: Offset(0, 20 * (1 - animation.value)),
+                child: Opacity(
+                  opacity: animation.value.clamp(0.0, 1.0),
+                  child: child,
+                ),
+              );
+            },
+            child: _buildMatiereRow(matiere, matiereCode, color),
+          );
         },
       ),
     );
   }
 
-  Widget _buildMatiereCard(Map<String, dynamic> matiere, String matiereCode, Color color) {
+  Widget _buildMatiereRow(Map<String, dynamic> matiere, String matiereCode, Color color) {
     final nom = matiere['nom'] as String? ?? matiereCode.toUpperCase();
     final nbSeries = (matiere['nb_series'] as num?)?.toInt() ?? 0;
     final matiereId = matiere['matiere_id'] as String? ?? '';
@@ -257,7 +306,7 @@ class _MatieresScreenState extends State<MatieresScreen> {
     final hasMatId = matiereId.isNotEmpty;
     final isSeriesMode = _seriesMatieresIds.contains(matiereCode) && hasMatId;
 
-    // Badges uniquement basés sur le nombre de séries
+    // Badge TOP / NEW
     String? badgeLabel;
     Color badgeColor = const Color(0xFF1A5C38);
     if (nbSeries >= 10) {
@@ -268,17 +317,14 @@ class _MatieresScreenState extends State<MatieresScreen> {
       badgeColor = const Color(0xFFE67E22);
     }
 
-    // HARMONISATION : on n'affiche PLUS "X questions · Y séries"
-    // Seule info utile : une flèche indiquant qu'on peut entrer
-    // (conforme à la demande client)
-
-    return GestureDetector(
+    return _AnimatedTapCard(
       onTap: () {
+        BellService.playClick();
         if (isSeriesMode) {
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (_) => SerieSelectionScreen(
+            _buildSlideRoute(
+              SerieSelectionScreen(
                 matiereId: matiereId,
                 matiereCode: matiereCode,
                 matiereNom: nom,
@@ -290,8 +336,8 @@ class _MatieresScreenState extends State<MatieresScreen> {
         } else {
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (_) => QcmScreen(
+            _buildSlideRoute(
+              QcmScreen(
                 matiere: matiereCode,
                 label: nom,
                 couleur: color,
@@ -301,122 +347,154 @@ class _MatieresScreenState extends State<MatieresScreen> {
           );
         }
       },
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          // ── Carte principale ──────────────────────────────
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: const Color(0xFF27AE60),
-                width: 1.8,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF27AE60).withValues(alpha: 0.10),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
-                ),
-              ],
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: const Color(0xFF27AE60).withValues(alpha: 0.25),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.08),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // ── Cercle icône ──────────────────────────
-                  Container(
-                    width: 72,
-                    height: 72,
-                    decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.10),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: color.withValues(alpha: 0.25),
-                        width: 1.5,
-                      ),
-                    ),
-                    child: Center(
-                      child: _buildIconeWidget(icone, 36),
-                    ),
+            const BoxShadow(
+              color: Color(0x0A000000),
+              blurRadius: 4,
+              offset: Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+          child: Row(
+            children: [
+              // ── Cercle icône ─────────────────────────────
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.10),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: color.withValues(alpha: 0.25),
+                    width: 1.5,
                   ),
-                  const SizedBox(height: 10),
+                ),
+                child: Center(
+                  child: _buildIconeWidget(icone, 26),
+                ),
+              ),
+              const SizedBox(width: 14),
 
-                  // ── Nom de la matière ─────────────────────
-                  Text(
-                    nom,
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF1A1A2E),
-                      height: 1.25,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-
-                  // ── Flèche de navigation (remplace X questions · Y séries) ─
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: color.withValues(alpha: 0.20),
-                        width: 1,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
+              // ── Nom de la matière ─────────────────────────
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        Text(
-                          isSeriesMode ? 'Séries QCM' : 'QCM',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: color,
+                        Expanded(
+                          child: Text(
+                            nom,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF1A1A2E),
+                              letterSpacing: 0.1,
+                            ),
                           ),
                         ),
-                        const SizedBox(width: 4),
-                        Icon(Icons.arrow_forward_ios_rounded, size: 10, color: color),
+                        if (badgeLabel != null) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: badgeColor,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              badgeLabel,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
-                  ),
-                ],
+                    if (nbSeries > 0) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        '$nbSeries série${nbSeries > 1 ? 's' : ''}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textLight,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ),
-            ),
-          ),
 
-          // ── Badge TOP / NEW ───────────────────────────────
-          if (badgeLabel != null)
-            Positioned(
-              top: -1, right: -1,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              const SizedBox(width: 10),
+
+              // ── Bouton Séries QCM / QCM ───────────────────
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                 decoration: BoxDecoration(
-                  color: badgeColor,
-                  borderRadius: const BorderRadius.only(
-                    topRight: Radius.circular(14),
-                    bottomLeft: Radius.circular(10),
+                  color: color.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: color.withValues(alpha: 0.30),
+                    width: 1,
                   ),
                 ),
-                child: Text(
-                  badgeLabel,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                    letterSpacing: 0.5,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      isSeriesMode ? 'Séries QCM' : 'QCM',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: color,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(Icons.arrow_forward_ios_rounded, size: 10, color: color),
+                  ],
                 ),
               ),
-            ),
-        ],
+            ],
+          ),
+        ),
       ),
+    );
+  }
+
+  /// Transition slide douce vers la droite
+  Route _buildSlideRoute(Widget page) {
+    return PageRouteBuilder(
+      pageBuilder: (_, animation, __) => page,
+      transitionsBuilder: (_, animation, __, child) {
+        final tween = Tween<Offset>(
+          begin: const Offset(1.0, 0.0),
+          end: Offset.zero,
+        ).chain(CurveTween(curve: Curves.easeOutCubic));
+        return SlideTransition(position: animation.drive(tween), child: child);
+      },
+      transitionDuration: const Duration(milliseconds: 320),
     );
   }
 
@@ -441,5 +519,54 @@ class _MatieresScreenState extends State<MatieresScreen> {
       );
     }
     return Text(icone, style: TextStyle(fontSize: size * 0.75));
+  }
+}
+
+// ── Widget tap animé (micro-interaction rebond) ────────────────
+class _AnimatedTapCard extends StatefulWidget {
+  final Widget child;
+  final VoidCallback onTap;
+
+  const _AnimatedTapCard({required this.child, required this.onTap});
+
+  @override
+  State<_AnimatedTapCard> createState() => _AnimatedTapCardState();
+}
+
+class _AnimatedTapCardState extends State<_AnimatedTapCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 100),
+      reverseDuration: const Duration(milliseconds: 200),
+    );
+    _scale = Tween<double>(begin: 1.0, end: 0.96).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => _ctrl.forward(),
+      onTapUp: (_) {
+        _ctrl.reverse();
+        widget.onTap();
+      },
+      onTapCancel: () => _ctrl.reverse(),
+      child: ScaleTransition(scale: _scale, child: widget.child),
+    );
   }
 }

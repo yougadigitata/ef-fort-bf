@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
+import '../services/bell_service.dart';
 import 'abonnement_screen.dart';
 import 'dashboard_screen.dart';
 import 'matieres_screen.dart';
@@ -39,9 +40,11 @@ class _HomeScreenState extends State<HomeScreen> {
     final isAbonne = ApiService.isAbonne || ApiService.isAdmin;
 
     if (isPremiumSection && !isAbonne) {
+      BellService.playClick();
       _showPremiumWall(index);
       return;
     }
+    BellService.playTransition();
     setState(() => _currentIndex = index);
   }
 
@@ -161,9 +164,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final isAbonne = ApiService.isAbonne || ApiService.isAdmin;
     final showLock = isPremiumSection && !isAbonne;
 
-    return GestureDetector(
+    return _NavItemBounce(
       onTap: () => _navigateToIndex(index),
-      behavior: HitTestBehavior.opaque,
       child: SizedBox(
         width: 64,
         child: Column(
@@ -173,7 +175,8 @@ class _HomeScreenState extends State<HomeScreen> {
               clipBehavior: Clip.none,
               children: [
                 AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeOutCubic,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
@@ -182,11 +185,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Text(
-                    emoji,
+                  child: AnimatedDefaultTextStyle(
+                    duration: const Duration(milliseconds: 200),
                     style: TextStyle(
-                      fontSize: isActive ? 26 : 22,
+                      fontSize: isActive ? 27 : 22,
                     ),
+                    child: Text(emoji),
                   ),
                 ),
                 if (showLock)
@@ -205,18 +209,68 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
             const SizedBox(height: 2),
-            Text(
-              label,
+            AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 200),
               style: TextStyle(
                 fontSize: 10,
-                fontWeight:
-                    isActive ? FontWeight.w700 : FontWeight.w500,
+                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                 color: isActive ? AppColors.primary : AppColors.textLight,
               ),
+              child: Text(label),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+// ── Micro-interaction rebond sur les items de navigation ─────────────
+class _NavItemBounce extends StatefulWidget {
+  final Widget child;
+  final VoidCallback onTap;
+
+  const _NavItemBounce({required this.child, required this.onTap});
+
+  @override
+  State<_NavItemBounce> createState() => _NavItemBounceState();
+}
+
+class _NavItemBounceState extends State<_NavItemBounce>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 80),
+      reverseDuration: const Duration(milliseconds: 250),
+    );
+    _scale = Tween<double>(begin: 1.0, end: 0.85).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => _ctrl.forward(),
+      onTapUp: (_) {
+        _ctrl.reverse();
+        widget.onTap();
+      },
+      onTapCancel: () => _ctrl.reverse(),
+      behavior: HitTestBehavior.opaque,
+      child: ScaleTransition(scale: _scale, child: widget.child),
     );
   }
 }
