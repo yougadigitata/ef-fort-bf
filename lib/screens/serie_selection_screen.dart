@@ -175,7 +175,7 @@ class _SerieSelectionScreenState extends State<SerieSelectionScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${_series.length} séries · 20 questions chacune',
+                      '${_series.length} séries disponibles',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -183,7 +183,7 @@ class _SerieSelectionScreenState extends State<SerieSelectionScreen> {
                       ),
                     ),
                     const Text(
-                      '📖 Entraînement par série — Comprenez vos forces et faiblesses',
+                      '📖 Entraînement par série — 20 questions par série (sauf la dernière)',
                       style: TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                   ],
