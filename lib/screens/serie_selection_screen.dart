@@ -326,7 +326,7 @@ class _SerieSelectionScreenState extends State<SerieSelectionScreen> {
                         child: Text(
                           titre,
                           style: const TextStyle(
-                            fontSize: 143.5,
+                            fontSize: 14.5,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF1A1A1A),
                           ),
