@@ -8,6 +8,7 @@ import '../widgets/logo_widget.dart';
 import 'onboarding_screen.dart';
 import 'bienvenue_screen.dart';
 import 'home_screen.dart';
+import 'post_login_welcome_screen.dart';
 
 // ══════════════════════════════════════════════════════════════════════
 // SPLASH SCREEN — EF-FORT.BF v2.1 (Particules + Son rétabli)
@@ -103,10 +104,16 @@ class _SplashScreenState extends State<SplashScreen>
     if (!mounted) return;
 
     if (hasToken) {
-      // Utilisateur connecté → Dashboard
+      // Utilisateur déjà connecté → Animation bienvenue OBLIGATOIRE à chaque fois
+      final user = ApiService.currentUser;
+      final nom = user != null
+          ? '${user['prenom'] ?? ''} ${user['nom'] ?? ''}'.trim()
+          : '';
       Navigator.pushReplacement(
         context,
-        _fadeRoute(const HomeScreen()),
+        _fadeRoute(PostLoginWelcomeScreen(
+          userName: nom.isNotEmpty ? nom : 'Candidat',
+        )),
       );
     } else {
       // Vérifier si c'est la première fois (onboarding pas encore vu)
@@ -179,15 +186,20 @@ class _SplashScreenState extends State<SplashScreen>
             ),
 
             // ── Contenu principal animé ──────────────────────────
-            AnimatedBuilder(
+            Positioned.fill(
+              child: Center(
+                child: AnimatedBuilder(
               animation: _controller,
               builder: (context, child) {
                 return Opacity(
                   opacity: _fadeAnim.value,
                   child: Transform.scale(
                     scale: _scaleAnim.value,
+                    alignment: Alignment.center,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         const LogoWidget(size: 160, borderRadius: 24),
                         const SizedBox(height: 32),
@@ -233,6 +245,8 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                 );
               },
+                ),
+              ),
             ),
           ],
         ),

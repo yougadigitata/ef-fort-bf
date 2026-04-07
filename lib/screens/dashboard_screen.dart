@@ -362,10 +362,12 @@ class _DashboardScreenState extends State<DashboardScreen>
                                   Text(
                                     'Bonjour $prenom 👋',
                                     style: const TextStyle(
-                                      fontSize: 19,
+                                      fontSize: 17,
                                       fontWeight: FontWeight.w800,
                                       color: Colors.white,
                                     ),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
                                   ),
                                 ],
                               ),
@@ -416,12 +418,12 @@ class _DashboardScreenState extends State<DashboardScreen>
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Text('🎓', style: TextStyle(fontSize: 17)),
-                                    const SizedBox(width: 5),
+                                    const Text('🎓', style: TextStyle(fontSize: 14)),
+                                    const SizedBox(width: 4),
                                     Text(
                                       'Niveau : $niveau',
                                       style: const TextStyle(
-                                        fontSize: 15,
+                                        fontSize: 13,
                                         fontWeight: FontWeight.w700,
                                         color: Colors.white,
                                       ),
@@ -429,14 +431,18 @@ class _DashboardScreenState extends State<DashboardScreen>
                                   ],
                                 ),
                               ),
-                              const Spacer(),
-                              Text(
+                            const Spacer(),
+                              Flexible(
+                                child: Text(
                                 '$nom',
                                 style: TextStyle(
-                                  fontSize: 15,
+                                  fontSize: 13,
                                   color: Colors.white.withValues(alpha: 0.7),
                                   fontWeight: FontWeight.w500,
                                 ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
                               ),
                             ],
                           ),
@@ -575,24 +581,28 @@ class _DashboardScreenState extends State<DashboardScreen>
             offset: Offset(0, _floatAnim.value * 0.15),
             child: Column(
               children: [
-                Text(emoji, style: const TextStyle(fontSize: 18)),
-                const SizedBox(height: 4),
+                Text(emoji, style: const TextStyle(fontSize: 16)),
+                const SizedBox(height: 3),
                 Text(
                   value,
                   style: const TextStyle(
-                    fontSize: 17,
+                    fontSize: 15,
                     fontWeight: FontWeight.w900,
                     color: Color(0xFFD4A017),
                   ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
                 Text(
                   label,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 9.5,
+                    fontSize: 9,
                     color: Colors.white.withValues(alpha: 0.7),
                     fontWeight: FontWeight.w500,
                   ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
               ],
             ),
@@ -656,21 +666,31 @@ class _DashboardScreenState extends State<DashboardScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
-              niveau,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w800,
-                color: Colors.white,
+            Flexible(
+              flex: 2,
+              child: Text(
+                niveau,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            Text(
-              nextMilestone + simBonus,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.white.withValues(alpha: 0.7),
+            const SizedBox(width: 6),
+            Flexible(
+              flex: 3,
+              child: Text(
+                nextMilestone + simBonus,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.white.withValues(alpha: 0.65),
+                ),
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.end,
               ),
             ),
           ],

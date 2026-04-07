@@ -1451,7 +1451,7 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                 child: Text(
                   'Lisez attentivement chaque question et ses propositions avant de répondre.',
                   style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 12,
                     color: AppColors.primary,
                     fontStyle: FontStyle.italic,
                     height: 1.4,
@@ -1503,7 +1503,7 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                         '─────── ${matiereLabel.toUpperCase()} ───────',
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                          fontSize: 15,
+                          fontSize: 12,
                           fontWeight: FontWeight.w800,
                           color: AppColors.primary,
                           letterSpacing: 1,
@@ -1538,8 +1538,8 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              width: 38,
-                              height: 38,
+                              width: 28,
+                              height: 28,
                               decoration: const BoxDecoration(
                                 color: AppColors.primary,
                                 shape: BoxShape.circle,
@@ -1549,7 +1549,7 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                                   '${i + 1}',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w800,
-                                    fontSize: 19,
+                                    fontSize: 14,
                                     color: Colors.white,
                                   ),
                                 ),
@@ -1560,13 +1560,13 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                               child: MathTextWidget(
                                 text: texte,
                                 textStyle: const TextStyle(
-                                  fontSize: 20,
+                                  fontSize: 15,
                                   fontFamily: 'Georgia',
-                                  height: 1.65,
+                                  height: 1.5,
                                   color: AppColors.textDark,
                                   fontWeight: FontWeight.w600,
                                 ),
-                                mathSize: 20.0,
+                                mathSize: 15.0,
                                 mathColor: AppColors.textDark,
                               ),
                             ),
@@ -1584,11 +1584,11 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Container(
-                                    width: 34,
-                                    height: 34,
+                                    width: 26,
+                                    height: 26,
                                     decoration: BoxDecoration(
                                       color: AppColors.primary.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(6),
+                                      borderRadius: BorderRadius.circular(5),
                                       border: Border.all(
                                         color: AppColors.primary.withValues(alpha: 0.3),
                                         width: 1,
@@ -1599,7 +1599,7 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                                         opt.key,
                                         style: const TextStyle(
                                           fontWeight: FontWeight.w800,
-                                          fontSize: 17,
+                                          fontSize: 13,
                                           color: AppColors.primary,
                                         ),
                                       ),
@@ -1610,12 +1610,12 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                                     child: MathTextWidget(
                                       text: opt.value,
                                       textStyle: const TextStyle(
-                                        fontSize: 18,
+                                        fontSize: 14,
                                         fontFamily: 'Georgia',
-                                        height: 1.6,
+                                        height: 1.4,
                                         color: AppColors.textDark,
                                       ),
-                                      mathSize: 18.0,
+                                      mathSize: 14.0,
                                       mathColor: AppColors.textDark,
                                     ),
                                   ),
@@ -1687,10 +1687,10 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                   child: Text(
                     'Noircissez attentivement les cases correspondant à vos réponses.',
                     style: TextStyle(
-                      fontSize: 17,
+                      fontSize: 12,
                       color: Color(0xFF1565C0),
                       fontStyle: FontStyle.italic,
-                      height: 1.45,
+                      height: 1.4,
                       fontFamily: 'Georgia',
                     ),
                   ),
@@ -1718,18 +1718,18 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                   SizedBox(
                     width: 44,
                     child: Text('N°', textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 15)),
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 12)),
                   ),
                   Expanded(child: Text('A', textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16))),
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13))),
                   Expanded(child: Text('B', textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16))),
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13))),
                   Expanded(child: Text('C', textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16))),
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13))),
                   Expanded(child: Text('D', textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16))),
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13))),
                   Expanded(child: Text('E', textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 16))),
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13))),
                   SizedBox(width: 4),
                 ],
               ),
@@ -1756,7 +1756,7 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                         '${i + 1}',
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                          fontSize: 15,
+                          fontSize: 12,
                           fontWeight: FontWeight.w700,
                           color: AppColors.textLight,
                         ),
@@ -1768,8 +1768,8 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                         child: GestureDetector(
                           onTap: () => _toggleAnswer(i, letter),
                           child: Container(
-                            height: 50,
-                            margin: const EdgeInsets.all(3),
+                            height: 32,
+                            margin: const EdgeInsets.all(2),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: isSelected
@@ -1784,8 +1784,8 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                               boxShadow: isSelected ? [
                                 BoxShadow(
                                   color: AppColors.primary.withValues(alpha: 0.3),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
+                                  blurRadius: 3,
+                                  offset: const Offset(0, 1),
                                 ),
                               ] : null,
                             ),
@@ -1793,7 +1793,7 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                               child: Text(
                                 letter,
                                 style: TextStyle(
-                                  fontSize: 17,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w800,
                                   color: isSelected ? Colors.white : Colors.grey.shade500,
                                 ),
