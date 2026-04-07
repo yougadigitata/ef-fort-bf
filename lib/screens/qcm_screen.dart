@@ -126,7 +126,7 @@ class _QcmScreenState extends State<QcmScreen> {
           style: const TextStyle(
             fontFamily: 'Poppins',
             fontWeight: FontWeight.w700,
-            fontSize: 17,
+            fontSize: 20,
           ),
         ),
         flexibleSpace: Container(
@@ -146,7 +146,7 @@ class _QcmScreenState extends State<QcmScreen> {
                   '${_currentIndex + 1} / ${_questions.length}',
                   style: const TextStyle(
                     fontWeight: FontWeight.w700,
-                    fontSize: 15,
+                    fontSize: 18,
                   ),
                 ),
               ),
@@ -204,7 +204,7 @@ class _QcmScreenState extends State<QcmScreen> {
 
         Expanded(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -222,7 +222,7 @@ class _QcmScreenState extends State<QcmScreen> {
                       child: Text(
                         'Question ${_currentIndex + 1}',
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: 16,
                           fontWeight: FontWeight.w700,
                           color: _couleur,
                           fontFamily: 'Poppins',
@@ -261,13 +261,13 @@ class _QcmScreenState extends State<QcmScreen> {
                   child: MathTextWidget(
                     text: texteQuestion,
                     textStyle: const TextStyle(
-                      fontSize: 17,
+                      fontSize: 21,
                       fontFamily: 'Georgia',
-                      height: 1.6,
+                      height: 1.7,
                       color: AppColors.textDark,
                       fontWeight: FontWeight.w500,
                     ),
-                    mathSize: 18.0,
+                    mathSize: 22.0,
                   ),
                 ),
 
@@ -275,12 +275,12 @@ class _QcmScreenState extends State<QcmScreen> {
                 Text(
                   'Cochez la ou les réponses exactes :',
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 16,
                     color: AppColors.textLight,
                     fontStyle: FontStyle.italic,
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 14),
 
                 // ── Options A/B/C/D (TÂCHE 6 : cercles à cocher, multi-select) ──
                 ...options.entries.map((entry) {
@@ -293,8 +293,8 @@ class _QcmScreenState extends State<QcmScreen> {
                     onTap: () => _toggleAnswer(letter),
                     child: Container(
                       width: double.infinity,
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      margin: const EdgeInsets.only(bottom: 14),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
                       decoration: BoxDecoration(
                         color: isSelected
                             ? _couleur.withValues(alpha: 0.08)
@@ -316,8 +316,8 @@ class _QcmScreenState extends State<QcmScreen> {
                         children: [
                           // Cercle radio / check
                           Container(
-                            width: 32,
-                            height: 32,
+                            width: 42,
+                            height: 42,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: isSelected
@@ -330,29 +330,29 @@ class _QcmScreenState extends State<QcmScreen> {
                             ),
                             child: Center(
                               child: isSelected
-                                  ? const Icon(Icons.check, color: Colors.white, size: 16)
+                                  ? const Icon(Icons.check, color: Colors.white, size: 20)
                                   : Text(
                                       letter,
                                       style: TextStyle(
                                         fontWeight: FontWeight.w700,
-                                        fontSize: 14,
+                                        fontSize: 17,
                                         color: Colors.grey.withValues(alpha: 0.7),
                                       ),
                                     ),
                             ),
                           ),
-                          const SizedBox(width: 14),
+                          const SizedBox(width: 16),
                           Expanded(
                             child: MathTextWidget(
                               text: text,
                               textStyle: TextStyle(
-                                fontSize: 15,
+                                fontSize: 18,
                                 fontFamily: 'Georgia',
-                                height: 1.45,
+                                height: 1.55,
                                 color: isSelected ? _couleur.withValues(alpha: 0.9) : AppColors.textDark,
                                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                               ),
-                              mathSize: 16.0,
+                              mathSize: 19.0,
                               mathColor: isSelected ? _couleur.withValues(alpha: 0.9) : AppColors.textDark,
                             ),
                           ),
@@ -370,12 +370,12 @@ class _QcmScreenState extends State<QcmScreen> {
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: _passerQuestion,
-                        icon: const Icon(Icons.arrow_back_rounded, size: 18),
-                        label: const Text('PASSER SANS RÉPONDRE'),
+                        icon: const Icon(Icons.arrow_back_rounded, size: 20),
+                        label: const Text('PASSER SANS RÉPONDRE', style: TextStyle(fontSize: 15)),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.textLight,
                           side: BorderSide(color: Colors.grey.withValues(alpha: 0.4)),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          padding: const EdgeInsets.symmetric(vertical: 18),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                       ),
@@ -384,15 +384,15 @@ class _QcmScreenState extends State<QcmScreen> {
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: _validerEtSuivre,
-                        icon: const Icon(Icons.arrow_forward_rounded, size: 18),
+                        icon: const Icon(Icons.arrow_forward_rounded, size: 20),
                         label: Text(
                           _currentIndex < _questions.length - 1 ? 'VALIDER' : 'TERMINER',
-                          style: const TextStyle(fontWeight: FontWeight.w700),
+                          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _couleur,
                           foregroundColor: AppColors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          padding: const EdgeInsets.symmetric(vertical: 18),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           elevation: 3,
                         ),
@@ -587,7 +587,7 @@ class _QcmScreenState extends State<QcmScreen> {
                             ? 'Non répondu'
                             : correct ? 'Correct' : 'Incorrect',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: skipped || choisies.isEmpty
                               ? Colors.grey
@@ -627,16 +627,16 @@ class _QcmScreenState extends State<QcmScreen> {
                     if (isBonne) {
                       optBg = AppColors.success.withValues(alpha: 0.1);
                       optBorder = AppColors.success.withValues(alpha: 0.5);
-                      trailingIcon = const Icon(Icons.check, color: AppColors.success, size: 16);
+                      trailingIcon = const Icon(Icons.check, color: AppColors.success, size: 20);
                     } else if (isChoisie && !isBonne) {
                       optBg = AppColors.error.withValues(alpha: 0.1);
                       optBorder = AppColors.error.withValues(alpha: 0.4);
-                      trailingIcon = const Icon(Icons.close, color: AppColors.error, size: 16);
+                      trailingIcon = const Icon(Icons.close, color: AppColors.error, size: 20);
                     }
 
                     return Container(
-                      margin: const EdgeInsets.only(bottom: 6),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
                       decoration: BoxDecoration(
                         color: optBg,
                         borderRadius: BorderRadius.circular(8),
@@ -649,21 +649,21 @@ class _QcmScreenState extends State<QcmScreen> {
                             style: TextStyle(
                               fontWeight: FontWeight.w700,
                               color: isBonne ? AppColors.success : AppColors.textLight,
-                              fontSize: 13,
+                              fontSize: 16,
                             ),
                           ),
                           Expanded(
                             child: MathTextWidget(
                               text: t,
                               textStyle: TextStyle(
-                                fontSize: 13,
+                                fontSize: 16,
                                 fontFamily: 'Georgia',
                                 color: isBonne
                                     ? AppColors.success
                                     : isChoisie ? AppColors.error : AppColors.textDark,
                                 fontWeight: isBonne ? FontWeight.w600 : FontWeight.normal,
                               ),
-                              mathSize: 14.0,
+                              mathSize: 17.0,
                               mathColor: isBonne
                                   ? AppColors.success
                                   : isChoisie ? AppColors.error : AppColors.textDark,
@@ -694,12 +694,12 @@ class _QcmScreenState extends State<QcmScreen> {
                             child: MathTextWidget(
                               text: q['explication'].toString(),
                               textStyle: const TextStyle(
-                                fontSize: 12,
+                                fontSize: 15,
                                 fontStyle: FontStyle.italic,
-                                height: 1.5,
+                                height: 1.6,
                                 color: AppColors.textDark,
                               ),
-                              mathSize: 13.0,
+                              mathSize: 16.0,
                             ),
                           ),
                         ],

@@ -153,7 +153,7 @@ class _DashboardTab extends StatelessWidget {
           ]),
           const SizedBox(height: 4),
           Text('Mis à jour : ${DateTime.now().hour.toString().padLeft(2, '0')}h${DateTime.now().minute.toString().padLeft(2, '0')}',
-              style: TextStyle(fontSize: 15, color: AppColors.textLight)),
+              style: TextStyle(fontSize: 17, color: AppColors.textLight)),
           const SizedBox(height: 16),
 
           // Alerte paiements en attente
@@ -170,7 +170,7 @@ class _DashboardTab extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text('$pendingCount paiement(s) en attente', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17)),
-                const Text('Validez les abonnements des utilisateurs', style: TextStyle(fontSize: 15, color: Colors.grey)),
+                const Text('Validez les abonnements des utilisateurs', style: TextStyle(fontSize: 17, color: Colors.grey)),
               ])),
             ]),
           ),
@@ -222,7 +222,7 @@ class _DashboardTab extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(d['nom_complet']?.toString() ?? '', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                  Text(d['telephone']?.toString() ?? '', style: const TextStyle(fontSize: 15, color: Colors.grey)),
+                  Text(d['telephone']?.toString() ?? '', style: const TextStyle(fontSize: 17, color: Colors.grey)),
                 ])),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
@@ -231,7 +231,7 @@ class _DashboardTab extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(d['statut']?.toString() ?? '', style: TextStyle(
-                    fontSize: 14, fontWeight: FontWeight.w700,
+                    fontSize: 17, fontWeight: FontWeight.w700,
                     color: d['statut'] == 'EN_ATTENTE' ? Colors.orange.shade800 : Colors.green.shade800,
                   )),
                 ),
@@ -257,7 +257,7 @@ class _DashboardTab extends StatelessWidget {
           const SizedBox(height: 8),
           Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: color)),
           const SizedBox(height: 4),
-          Text(label, style: TextStyle(fontSize: 15, color: AppColors.textLight), textAlign: TextAlign.center),
+          Text(label, style: TextStyle(fontSize: 17, color: AppColors.textLight), textAlign: TextAlign.center),
         ]),
       ),
     );
@@ -416,7 +416,7 @@ class _PaiementsTabState extends State<_PaiementsTab> {
                                 ),
                                 child: Text(
                                   isEnAttente ? '⏳ En attente' : '✅ Validé',
-                                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700,
+                                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700,
                                       color: isEnAttente ? Colors.orange.shade800 : Colors.green.shade800),
                                 ),
                               ),
@@ -444,7 +444,7 @@ class _PaiementsTabState extends State<_PaiementsTab> {
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: AppColors.success,
                                       foregroundColor: AppColors.white,
-                                      padding: const EdgeInsets.symmetric(vertical: 10),
+                                      padding: const EdgeInsets.symmetric(vertical: 14),
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                     ),
                                   ),
@@ -457,7 +457,7 @@ class _PaiementsTabState extends State<_PaiementsTab> {
                                     label: const Text('Rejeter', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.error)),
                                     style: OutlinedButton.styleFrom(
                                       side: const BorderSide(color: AppColors.error),
-                                      padding: const EdgeInsets.symmetric(vertical: 10),
+                                      padding: const EdgeInsets.symmetric(vertical: 14),
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                     ),
                                   ),
@@ -486,7 +486,7 @@ class _PaiementsTabState extends State<_PaiementsTab> {
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: isSelected ? color : Colors.grey.shade300),
         ),
-        child: Text(label, style: TextStyle(fontSize: 15, fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+        child: Text(label, style: TextStyle(fontSize: 17, fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
             color: isSelected ? color : Colors.grey.shade700)),
       ),
     );
@@ -541,7 +541,7 @@ class _CmsQcmTabState extends State<CmsQcmTab> {
                     child: Row(children: [
                       Icon(s.icon, size: 16, color: isActive ? Colors.white : Colors.white60),
                       const SizedBox(width: 6),
-                      Text(s.label, style: TextStyle(fontSize: 15, fontWeight: isActive ? FontWeight.w700 : FontWeight.w400, color: isActive ? Colors.white : Colors.white60)),
+                      Text(s.label, style: TextStyle(fontSize: 17, fontWeight: isActive ? FontWeight.w700 : FontWeight.w400, color: isActive ? Colors.white : Colors.white60)),
                     ]),
                   ),
                 );
@@ -668,7 +668,7 @@ class _CmsDashboardSectionState extends State<_CmsDashboardSection> {
             return Container(
               margin: const EdgeInsets.only(bottom: 6),
               child: Row(children: [
-                Expanded(flex: 3, child: Text(mat['nom']?.toString() ?? '', style: const TextStyle(fontSize: 15), overflow: TextOverflow.ellipsis)),
+                Expanded(flex: 3, child: Text(mat['nom']?.toString() ?? '', style: const TextStyle(fontSize: 17), overflow: TextOverflow.ellipsis)),
                 Expanded(flex: 4, child: Stack(children: [
                   Container(height: 8, decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(4))),
                   if (nb > 0) FractionallySizedBox(
@@ -677,7 +677,7 @@ class _CmsDashboardSectionState extends State<_CmsDashboardSection> {
                   ),
                 ])),
                 const SizedBox(width: 8),
-                Text('$nb', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF1A5C38))),
+                Text('$nb', style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: Color(0xFF1A5C38))),
               ]),
             );
           })),
@@ -701,7 +701,7 @@ class _CmsDashboardSectionState extends State<_CmsDashboardSection> {
           const SizedBox(width: 12),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: color)),
-            Text(label, style: const TextStyle(fontSize: 15, color: Colors.grey)),
+            Text(label, style: const TextStyle(fontSize: 17, color: Colors.grey)),
           ])),
         ]),
       ),
@@ -789,7 +789,7 @@ class _CmsQuestionsSectionState extends State<_CmsQuestionsSection> {
                   hintText: 'Rechercher une question...',
                   prefixIcon: const Icon(Icons.search, size: 20),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  isDense: true, contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  isDense: true, contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 ),
                 onSubmitted: (v) { _search = v; _page = 1; _loadQuestions(); },
               )),
@@ -798,7 +798,7 @@ class _CmsQuestionsSectionState extends State<_CmsQuestionsSection> {
                 onPressed: () => _showQuestionSheet(context, null),
                 icon: const Icon(Icons.add, size: 18),
                 label: const Text('Créer'),
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1A5C38), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9)),
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1A5C38), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13)),
               ),
             ]),
             const SizedBox(height: 8),
@@ -817,9 +817,9 @@ class _CmsQuestionsSectionState extends State<_CmsQuestionsSection> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6), color: Colors.grey.shade50,
           child: Row(children: [
-            Text('$_total questions', style: const TextStyle(fontSize: 15, color: Colors.grey)),
+            Text('$_total questions', style: const TextStyle(fontSize: 17, color: Colors.grey)),
             const Spacer(),
-            Text('Page $_page / ${((_total / 15).ceil()).clamp(1, 9999)}', style: const TextStyle(fontSize: 15, color: Colors.grey)),
+            Text('Page $_page / ${((_total / 15).ceil()).clamp(1, 9999)}', style: const TextStyle(fontSize: 17, color: Colors.grey)),
           ]),
         ),
         Expanded(
@@ -855,7 +855,7 @@ class _CmsQuestionsSectionState extends State<_CmsQuestionsSection> {
           color: isSelected ? const Color(0xFF1A5C38) : Colors.grey.shade100,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Text(label, style: TextStyle(fontSize: 15, color: isSelected ? Colors.white : Colors.grey.shade700, fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400)),
+        child: Text(label, style: TextStyle(fontSize: 17, color: isSelected ? Colors.white : Colors.grey.shade700, fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400)),
       ),
     );
   }
@@ -1072,7 +1072,7 @@ class _CmsBulkImportSectionState extends State<_CmsBulkImportSection> {
         _sectionTitle('Import QCM en Masse', const Color(0xFF7C3AED)),
         const SizedBox(height: 4),
         const Text('Collez vos questions au format Markdown ou Texte brut. Chaque question commence par ## ou un chiffre.',
-            style: TextStyle(fontSize: 15, color: Colors.grey)),
+            style: TextStyle(fontSize: 17, color: Colors.grey)),
         const SizedBox(height: 16),
 
         // Format aide
@@ -1087,7 +1087,7 @@ class _CmsBulkImportSectionState extends State<_CmsBulkImportSection> {
               decoration: BoxDecoration(color: const Color(0xFF1e293b), borderRadius: BorderRadius.circular(8)),
               child: const Text(
                 '## Capitale du Burkina Faso ?\nA) Bobo-Dioulasso\nB) Ouagadougou *\nC) Koudougou\nD) Banfora\nExplication: Ouagadougou est la capitale.',
-                style: TextStyle(fontFamily: 'monospace', fontSize: 14, color: Colors.white70),
+                style: TextStyle(fontFamily: 'monospace', fontSize: 17, color: Colors.white70),
               ),
             ),
           ]),
@@ -1193,7 +1193,7 @@ class _CmsBulkImportSectionState extends State<_CmsBulkImportSection> {
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: isSelected ? const Color(0xFF7C3AED) : Colors.grey.shade300),
         ),
-        child: Text(label, style: TextStyle(fontSize: 15, fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400, color: isSelected ? const Color(0xFF7C3AED) : Colors.grey.shade700)),
+        child: Text(label, style: TextStyle(fontSize: 17, fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400, color: isSelected ? const Color(0xFF7C3AED) : Colors.grey.shade700)),
       ),
     );
   }
@@ -1258,7 +1258,7 @@ class _CmsSeriesSectionState extends State<_CmsSeriesSection> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6), color: Colors.grey.shade50,
           child: Row(children: [
-            Text('${_series.length} série(s)', style: const TextStyle(fontSize: 15, color: Colors.grey)),
+            Text('${_series.length} série(s)', style: const TextStyle(fontSize: 17, color: Colors.grey)),
           ]),
         ),
         Expanded(
@@ -1290,7 +1290,7 @@ class _CmsSeriesSectionState extends State<_CmsSeriesSection> {
                           title: Text(s['titre']?.toString() ?? s['nom']?.toString() ?? 'Série ${i + 1}', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17)),
                           subtitle: Text(
                             '${s['nb_questions'] ?? 0} questions • ${s['matiere_nom'] ?? s['matiere_code'] ?? ''}',
-                            style: const TextStyle(fontSize: 15, color: Colors.grey),
+                            style: const TextStyle(fontSize: 17, color: Colors.grey),
                           ),
                           trailing: Switch(
                             value: published,
@@ -1318,7 +1318,7 @@ class _CmsSeriesSectionState extends State<_CmsSeriesSection> {
           color: isSelected ? const Color(0xFFB45309) : Colors.grey.shade100,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Text(label, style: TextStyle(fontSize: 15, color: isSelected ? Colors.white : Colors.grey.shade700, fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400)),
+        child: Text(label, style: TextStyle(fontSize: 17, color: isSelected ? Colors.white : Colors.grey.shade700, fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400)),
       ),
     );
   }
@@ -1420,7 +1420,7 @@ class _CmsSimulationsSectionState extends State<_CmsSimulationsSection> {
           child: Row(children: [
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const Text('Simulations & Examens', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
-              Text('${_simulations.length} examen(s) créé(s)', style: const TextStyle(fontSize: 15, color: Colors.grey)),
+              Text('${_simulations.length} examen(s) créé(s)', style: const TextStyle(fontSize: 17, color: Colors.grey)),
             ]),
             const Spacer(),
             ElevatedButton.icon(
@@ -1441,7 +1441,7 @@ class _CmsSimulationsSectionState extends State<_CmsSimulationsSection> {
       padding: const EdgeInsets.all(16),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         const Text('Créer un examen/simulation', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFFCE1126))),
-        const Text('Composez un examen en sélectionnant les questions par matière', style: TextStyle(fontSize: 15, color: Colors.grey)),
+        const Text('Composez un examen en sélectionnant les questions par matière', style: TextStyle(fontSize: 17, color: Colors.grey)),
         const SizedBox(height: 14),
         TextField(controller: _titreCtrl, decoration: InputDecoration(labelText: 'Titre *', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)))),
         const SizedBox(height: 10),
@@ -1468,7 +1468,7 @@ class _CmsSimulationsSectionState extends State<_CmsSimulationsSection> {
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Row(children: [
-              Expanded(child: Text('${sel['code']} — ${(sel['nom'] as String).substring(0, (sel['nom'] as String).length.clamp(0, 28))}', style: const TextStyle(fontSize: 15))),
+              Expanded(child: Text('${sel['code']} — ${(sel['nom'] as String).substring(0, (sel['nom'] as String).length.clamp(0, 28))}', style: const TextStyle(fontSize: 17))),
               Row(children: [
                 IconButton(onPressed: sel['count'] > 0 ? () => setState(() => sel['count'] = (sel['count'] as int) - 1) : null, icon: const Icon(Icons.remove_circle_outline, size: 20), color: const Color(0xFFCE1126)),
                 SizedBox(width: 28, child: Text('${sel['count']}', textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w700))),
@@ -1517,12 +1517,12 @@ class _CmsSimulationsSectionState extends State<_CmsSimulationsSection> {
               ),
               title: Text(s['titre']?.toString() ?? 'Simulation', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17)),
               subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('${s['nb_questions'] ?? 0} questions • ${s['duree_minutes'] ?? 120} min', style: const TextStyle(fontSize: 15, color: Colors.grey)),
+                Text('${s['nb_questions'] ?? 0} questions • ${s['duree_minutes'] ?? 120} min', style: const TextStyle(fontSize: 17, color: Colors.grey)),
                 Row(children: [
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(color: published ? Colors.green.shade50 : Colors.orange.shade50, borderRadius: BorderRadius.circular(8)),
-                    child: Text(published ? '✅ Publiée' : '📝 Brouillon', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: published ? Colors.green.shade700 : Colors.orange.shade700)),
+                    child: Text(published ? '✅ Publiée' : '📝 Brouillon', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: published ? Colors.green.shade700 : Colors.orange.shade700)),
                   ),
                 ]),
               ]),
@@ -1614,7 +1614,7 @@ class _CmsExamGeneratorSectionState extends State<_CmsExamGeneratorSection> {
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         _sectionTitle('Générateur d\'Examens Composites', const Color(0xFF0891B2)),
         const SizedBox(height: 4),
-        const Text('Composez un examen en puisant des questions dans plusieurs matières.', style: TextStyle(fontSize: 15, color: Colors.grey)),
+        const Text('Composez un examen en puisant des questions dans plusieurs matières.', style: TextStyle(fontSize: 17, color: Colors.grey)),
         const SizedBox(height: 16),
 
         // Titre
@@ -1675,7 +1675,7 @@ class _CmsExamGeneratorSectionState extends State<_CmsExamGeneratorSection> {
                 ),
                 child: Text(
                   isSelected ? '✓ ${mat['nom']}' : mat['nom']?.toString() ?? '',
-                  style: TextStyle(fontSize: 15, fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400, color: isSelected ? const Color(0xFF0891B2) : Colors.grey.shade700),
+                  style: TextStyle(fontSize: 17, fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400, color: isSelected ? const Color(0xFF0891B2) : Colors.grey.shade700),
                 ),
               ),
             );
@@ -1777,7 +1777,7 @@ class _AnnoncesTabState extends State<_AnnoncesTab> {
           child: Row(children: [
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const Text('Gestion des Annonces', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
-              Text('${_annonces.length} annonce(s) publiée(s)', style: const TextStyle(fontSize: 15, color: Colors.grey)),
+              Text('${_annonces.length} annonce(s) publiée(s)', style: const TextStyle(fontSize: 17, color: Colors.grey)),
             ]),
             const Spacer(),
             ElevatedButton.icon(
@@ -1847,8 +1847,8 @@ class _AnnoncesTabState extends State<_AnnoncesTab> {
                               ),
                               title: Text(a['titre']?.toString() ?? '', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17), maxLines: 1, overflow: TextOverflow.ellipsis),
                               subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                Text(a['contenu']?.toString() ?? '', style: const TextStyle(fontSize: 15, color: Colors.grey), maxLines: 2, overflow: TextOverflow.ellipsis),
-                                if (a['created_at'] != null) Text(_formatDate(a['created_at'].toString()), style: const TextStyle(fontSize: 14, color: Colors.grey)),
+                                Text(a['contenu']?.toString() ?? '', style: const TextStyle(fontSize: 17, color: Colors.grey), maxLines: 2, overflow: TextOverflow.ellipsis),
+                                if (a['created_at'] != null) Text(_formatDate(a['created_at'].toString()), style: const TextStyle(fontSize: 17, color: Colors.grey)),
                               ]),
                               trailing: IconButton(icon: const Icon(Icons.delete_rounded, color: Colors.red, size: 22), onPressed: () => _deleteAnnonce(a['id']?.toString() ?? ''), tooltip: 'Supprimer'),
                             ),
@@ -1990,7 +1990,7 @@ class _ChangePasswordTabState extends State<_ChangePasswordTab> {
             const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text('Sécurité du Compte', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Colors.white)),
               SizedBox(height: 4),
-              Text('Changez votre mot de passe régulièrement pour protéger le panel admin', style: TextStyle(fontSize: 15, color: Colors.white70)),
+              Text('Changez votre mot de passe régulièrement pour protéger le panel admin', style: TextStyle(fontSize: 17, color: Colors.white70)),
             ])),
           ]),
         ),
@@ -2011,7 +2011,7 @@ class _ChangePasswordTabState extends State<_ChangePasswordTab> {
             )),
           ))),
           const SizedBox(height: 4),
-          Text(strengthLabels[_strength], style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: strengthColors[_strength])),
+          Text(strengthLabels[_strength], style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: strengthColors[_strength])),
         ],
         const SizedBox(height: 14),
         _pwdField('Confirmer le nouveau mot de passe', _confirmCtrl, _showConfirm, () => setState(() => _showConfirm = !_showConfirm), matchValue: _newCtrl.text),
@@ -2064,7 +2064,7 @@ class _ChangePasswordTabState extends State<_ChangePasswordTab> {
           child: const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('💡 Conseils de sécurité', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.secondary)),
             SizedBox(height: 8),
-            Text('• Changez votre mot de passe après chaque déploiement\n• Utilisez 12+ caractères avec des symboles spéciaux\n• Ne partagez jamais votre mot de passe admin', style: TextStyle(fontSize: 15, color: Colors.grey, height: 1.7)),
+            Text('• Changez votre mot de passe après chaque déploiement\n• Utilisez 12+ caractères avec des symboles spéciaux\n• Ne partagez jamais votre mot de passe admin', style: TextStyle(fontSize: 17, color: Colors.grey, height: 1.7)),
           ]),
         ),
       ]),
@@ -2090,8 +2090,8 @@ class _ChangePasswordTabState extends State<_ChangePasswordTab> {
           suffixIcon: IconButton(icon: Icon(show ? Icons.visibility_off_rounded : Icons.visibility_rounded, size: 20, color: Colors.grey), onPressed: toggle),
         ),
       ),
-      if (isMatch) const Padding(padding: EdgeInsets.only(top: 4), child: Text('✓ Les mots de passe correspondent', style: TextStyle(color: AppColors.success, fontSize: 15))),
-      if (noMatch) const Padding(padding: EdgeInsets.only(top: 4), child: Text('✗ Les mots de passe ne correspondent pas', style: TextStyle(color: AppColors.error, fontSize: 15))),
+      if (isMatch) const Padding(padding: EdgeInsets.only(top: 4), child: Text('✓ Les mots de passe correspondent', style: TextStyle(color: AppColors.success, fontSize: 17))),
+      if (noMatch) const Padding(padding: EdgeInsets.only(top: 4), child: Text('✗ Les mots de passe ne correspondent pas', style: TextStyle(color: AppColors.error, fontSize: 17))),
     ]);
   }
 }
@@ -2122,13 +2122,13 @@ class _QuestionCard extends StatelessWidget {
           if (matiere.isNotEmpty) Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(color: const Color(0xFF1A5C38).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
-            child: Text(matiere, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF1A5C38))),
+            child: Text(matiere, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: Color(0xFF1A5C38))),
           ),
           const Spacer(),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(8)),
-            child: Text('Rép: $bonneRep', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.blue.shade700)),
+            child: Text('Rép: $bonneRep', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: Colors.blue.shade700)),
           ),
           const SizedBox(width: 4),
           GestureDetector(onTap: onEdit, child: Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: Colors.orange.shade50, borderRadius: BorderRadius.circular(8)), child: Icon(Icons.edit_rounded, size: 16, color: Colors.orange.shade700))),
@@ -2139,9 +2139,9 @@ class _QuestionCard extends StatelessWidget {
         Text(enonce, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600), maxLines: 2, overflow: TextOverflow.ellipsis),
         const SizedBox(height: 6),
         Row(children: [
-          Expanded(child: Text('A: ${question['option_a']?.toString() ?? ''}', style: const TextStyle(fontSize: 14, color: Colors.grey), maxLines: 1, overflow: TextOverflow.ellipsis)),
+          Expanded(child: Text('A: ${question['option_a']?.toString() ?? ''}', style: const TextStyle(fontSize: 17, color: Colors.grey), maxLines: 1, overflow: TextOverflow.ellipsis)),
           const SizedBox(width: 8),
-          Expanded(child: Text('B: ${question['option_b']?.toString() ?? ''}', style: const TextStyle(fontSize: 14, color: Colors.grey), maxLines: 1, overflow: TextOverflow.ellipsis)),
+          Expanded(child: Text('B: ${question['option_b']?.toString() ?? ''}', style: const TextStyle(fontSize: 17, color: Colors.grey), maxLines: 1, overflow: TextOverflow.ellipsis)),
         ]),
       ]),
     );
