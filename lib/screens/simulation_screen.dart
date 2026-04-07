@@ -1538,8 +1538,8 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              width: 34,
-                              height: 34,
+                              width: 38,
+                              height: 38,
                               decoration: const BoxDecoration(
                                 color: AppColors.primary,
                                 shape: BoxShape.circle,
@@ -1549,7 +1549,7 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                                   '${i + 1}',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w800,
-                                    fontSize: 17,
+                                    fontSize: 19,
                                     color: Colors.white,
                                   ),
                                 ),
@@ -1687,10 +1687,10 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                   child: Text(
                     'Noircissez attentivement les cases correspondant à vos réponses.',
                     style: TextStyle(
-                      fontSize: 15,
+                      fontSize: 17,
                       color: Color(0xFF1565C0),
                       fontStyle: FontStyle.italic,
-                      height: 1.4,
+                      height: 1.45,
                       fontFamily: 'Georgia',
                     ),
                   ),
@@ -1871,7 +1871,7 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                     ),
                     child: const Text(
                       'SOUMETTRE MA COPIE',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, fontFamily: 'Poppins'),
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, fontFamily: 'Poppins'),
                     ),
                   ),
                 ),
@@ -2515,21 +2515,21 @@ class SimulationResultScreen extends StatelessWidget {
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 pw.Text('CONSIGNES :',
-                    style: pw.TextStyle(font: fontBold, fontSize: 14, color: PdfColor.fromHex('E67E22'))),
+                    style: pw.TextStyle(font: fontBold, fontSize: 16, color: PdfColor.fromHex('E67E22'))),
                 pw.SizedBox(height: 6),
                 pw.Text(
                   '• Chaque question ne comporte qu\'une seule bonne reponse sauf indication contraire.',
-                  style: pw.TextStyle(font: font, fontSize: 14, lineSpacing: 4, color: PdfColor.fromHex('5D4037')),
+                  style: pw.TextStyle(font: font, fontSize: 16, lineSpacing: 5, color: PdfColor.fromHex('5D4037')),
                 ),
                 pw.SizedBox(height: 2),
                 pw.Text(
                   '• Entourez la lettre correspondant a votre reponse. Duree : 2h00.',
-                  style: pw.TextStyle(font: font, fontSize: 14, lineSpacing: 4, color: PdfColor.fromHex('5D4037')),
+                  style: pw.TextStyle(font: font, fontSize: 16, lineSpacing: 5, color: PdfColor.fromHex('5D4037')),
                 ),
                 pw.SizedBox(height: 2),
                 pw.Text(
                   '• Aucun document autorise. Telephone portable interdit.',
-                  style: pw.TextStyle(font: font, fontSize: 14, lineSpacing: 4, color: PdfColor.fromHex('5D4037')),
+                  style: pw.TextStyle(font: font, fontSize: 16, lineSpacing: 5, color: PdfColor.fromHex('5D4037')),
                 ),
               ],
             ),
@@ -3007,7 +3007,7 @@ class SimulationResultScreen extends StatelessWidget {
                             borderRadius: const pw.BorderRadius.all(pw.Radius.circular(5)),
                           ),
                           child: pw.Text(statusText,
-                              style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
+                              style: pw.TextStyle(fontSize: 15, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
                         ),
                       ],
                     ),

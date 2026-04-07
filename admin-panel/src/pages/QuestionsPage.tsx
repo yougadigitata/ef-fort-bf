@@ -164,7 +164,7 @@ export default function QuestionsPage({ onNavigate, onEdit }: { onNavigate: (pag
               <thead>
                 <tr style={{ background: '#0f172a' }}>
                   {['#', 'Question', 'Matière', 'Série', 'Diff.', 'Rép.', 'Statut', 'Actions'].map(h => (
-                    <th key={h} style={{ padding: '10px 12px', color: '#64748b', fontSize: 15, fontWeight: 600, textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>{h}</th>
+                    <th key={h} style={{ padding: '12px 14px', color: '#64748b', fontSize: 16, fontWeight: 600, textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -175,19 +175,19 @@ export default function QuestionsPage({ onNavigate, onEdit }: { onNavigate: (pag
                     background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)',
                     opacity: q.published === false ? 0.5 : 1,
                   }}>
-                    <td style={{ padding: '10px 12px', color: '#475569', fontSize: 15 }}>
+                    <td style={{ padding: '12px 14px', color: '#475569', fontSize: 16 }}>
                       {(page - 1) * filters.limit + idx + 1}
                     </td>
                     <td style={{ padding: '10px 12px', maxWidth: 300 }}>
-                      <div style={{ color: '#e2e8f0', fontSize: 16, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <div style={{ color: '#e2e8f0', fontSize: 17, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {q.enonce}
                       </div>
-                      {q.sources && <div style={{ color: '#475569', fontSize: 14 }}>📌 {q.sources}</div>}
+                      {q.sources && <div style={{ color: '#475569', fontSize: 15 }}>📌 {q.sources}</div>}
                     </td>
                     <td style={{ padding: '10px 12px' }}>
                       <MatiereChip matiereId={q.matiere_id} matieres={matieres} />
                     </td>
-                    <td style={{ padding: '10px 12px', color: '#64748b', fontSize: 15, whiteSpace: 'nowrap' }}>
+                    <td style={{ padding: '12px 14px', color: '#64748b', fontSize: 16, whiteSpace: 'nowrap' }}>
                       {q.numero_serie ? `Série ${q.numero_serie}` : '—'}
                     </td>
                     <td style={{ padding: '10px 12px' }}>
@@ -195,18 +195,18 @@ export default function QuestionsPage({ onNavigate, onEdit }: { onNavigate: (pag
                     </td>
                     <td style={{ padding: '10px 12px' }}>
                       <span style={{
-                        display: 'inline-block', width: 24, height: 24, borderRadius: '50%',
-                        background: '#1A5C38', color: 'white', fontSize: 14, fontWeight: 700,
-                        textAlign: 'center', lineHeight: '24px',
+                        display: 'inline-block', width: 26, height: 26, borderRadius: '50%',
+                        background: '#1A5C38', color: 'white', fontSize: 15, fontWeight: 700,
+                        textAlign: 'center', lineHeight: '26px',
                       }}>
                         {q.bonne_reponse}
                       </span>
                     </td>
                     <td style={{ padding: '10px 12px' }}>
                       {q.published === false ? (
-                        <span style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', padding: '2px 8px', borderRadius: 10, fontSize: 14 }}>Masqué</span>
+                        <span style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', padding: '3px 10px', borderRadius: 10, fontSize: 15 }}>Masqué</span>
                       ) : (
-                        <span style={{ background: 'rgba(74,222,128,0.1)', color: '#4ade80', padding: '2px 8px', borderRadius: 10, fontSize: 14 }}>Publié</span>
+                        <span style={{ background: 'rgba(74,222,128,0.1)', color: '#4ade80', padding: '3px 10px', borderRadius: 10, fontSize: 15 }}>Publié</span>
                       )}
                     </td>
                     <td style={{ padding: '10px 12px' }}>
@@ -239,15 +239,15 @@ export default function QuestionsPage({ onNavigate, onEdit }: { onNavigate: (pag
   );
 }
 
-const labelStyle: React.CSSProperties = { display: 'block', color: '#94a3b8', fontSize: 15, marginBottom: 4, fontWeight: 500 };
-const selectStyle: React.CSSProperties = { width: '100%', padding: '8px 10px', background: '#0f172a', border: '1px solid #334155', borderRadius: 6, color: '#e2e8f0', fontSize: 17 };
-const inputStyle: React.CSSProperties = { padding: '8px 10px', background: '#0f172a', border: '1px solid #334155', borderRadius: 6, color: '#e2e8f0', fontSize: 17 };
-const paginationBtn: React.CSSProperties = { padding: '6px 14px', background: '#334155', border: 'none', borderRadius: 6, color: '#e2e8f0', cursor: 'pointer', fontSize: 16 };
+const labelStyle: React.CSSProperties = { display: 'block', color: '#94a3b8', fontSize: 16, marginBottom: 4, fontWeight: 500 };
+const selectStyle: React.CSSProperties = { width: '100%', padding: '10px 12px', background: '#0f172a', border: '1px solid #334155', borderRadius: 6, color: '#e2e8f0', fontSize: 18 };
+const inputStyle: React.CSSProperties = { padding: '10px 12px', background: '#0f172a', border: '1px solid #334155', borderRadius: 6, color: '#e2e8f0', fontSize: 18 };
+const paginationBtn: React.CSSProperties = { padding: '8px 16px', background: '#334155', border: 'none', borderRadius: 6, color: '#e2e8f0', cursor: 'pointer', fontSize: 17 };
 
 function MatiereChip({ matiereId, matieres }: { matiereId: string; matieres: any[] }) {
   const m = matieres.find(m => m.id === matiereId);
-  if (!m) return <span style={{ color: '#475569', fontSize: 15 }}>—</span>;
-  return <span style={{ background: 'rgba(26,92,56,0.2)', color: '#4ade80', padding: '2px 8px', borderRadius: 10, fontSize: 14, whiteSpace: 'nowrap' }}>{m.code}</span>;
+  if (!m) return <span style={{ color: '#475569', fontSize: 16 }}>—</span>;
+  return <span style={{ background: 'rgba(26,92,56,0.2)', color: '#4ade80', padding: '3px 10px', borderRadius: 10, fontSize: 15, whiteSpace: 'nowrap' }}>{m.code}</span>;
 }
 
 function DiffBadge({ diff }: { diff: string }) {
@@ -257,7 +257,7 @@ function DiffBadge({ diff }: { diff: string }) {
     DIFFICILE: { bg: 'rgba(239,68,68,0.1)', color: '#ef4444' },
   };
   const c = colors[diff ?? 'MOYEN'] ?? colors.MOYEN;
-  return <span style={{ background: c.bg, color: c.color, padding: '2px 8px', borderRadius: 10, fontSize: 14 }}>{diff ?? 'MOYEN'}</span>;
+  return <span style={{ background: c.bg, color: c.color, padding: '3px 10px', borderRadius: 10, fontSize: 15 }}>{diff ?? 'MOYEN'}</span>;
 }
 
 function ActionBtn({ children, title, onClick, color = '#94a3b8' }: any) {

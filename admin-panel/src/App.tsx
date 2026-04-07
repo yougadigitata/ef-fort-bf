@@ -149,7 +149,7 @@ export default function App() {
               }}>EF</div>
               <div>
                 <div style={{ fontWeight: 700, color: '#f1f5f9', fontSize: 17 }}>EF-FORT.BF</div>
-                <div style={{ color: '#4ade80', fontSize: 13, fontWeight: 600 }}>🔐 Panel Admin CMS</div>
+                <div style={{ color: '#4ade80', fontSize: 14, fontWeight: 600 }}>🔐 Panel Admin CMS</div>
               </div>
             </div>
           </div>
@@ -191,10 +191,10 @@ export default function App() {
                 color: 'white', fontSize: 16, fontWeight: 700, flexShrink: 0,
               }}>{user?.prenom?.[0]?.toUpperCase() ?? 'A'}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ color: '#e2e8f0', fontSize: 16, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ color: '#e2e8f0', fontSize: 17, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {user?.prenom} {user?.nom}
                 </div>
-                <div style={{ color: '#4ade80', fontSize: 13, display: 'flex', alignItems: 'center', gap: 3 }}>
+                <div style={{ color: '#4ade80', fontSize: 14, display: 'flex', alignItems: 'center', gap: 3 }}>
                   <Shield size={9} /> Administrateur
                 </div>
               </div>
@@ -223,7 +223,7 @@ export default function App() {
               {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
 
-            <div style={{ flex: 1, color: '#94a3b8', fontSize: 16 }}>{getPageTitle(currentPage)}</div>
+            <div style={{ flex: 1, color: '#94a3b8', fontSize: 17 }}>{getPageTitle(currentPage)}</div>
 
             {/* Badges top */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -271,11 +271,11 @@ function NavItem({ icon, label, active, onClick, badge }: {
 }) {
   return (
     <button onClick={onClick} style={{
-      width: '100%', display: 'flex', alignItems: 'center', gap: 9,
-      padding: '7px 10px', borderRadius: 7, border: 'none', cursor: 'pointer',
+              width: '100%', display: 'flex', alignItems: 'center', gap: 9,
+      padding: '9px 10px', borderRadius: 7, border: 'none', cursor: 'pointer',
       background: active ? 'rgba(26,92,56,0.3)' : 'transparent',
       color: active ? '#4ade80' : '#94a3b8',
-      fontSize: 16, fontWeight: active ? 600 : 400,
+      fontSize: 17, fontWeight: active ? 600 : 400,
       transition: 'all 0.15s', marginBottom: 1,
       borderLeft: active ? '2px solid #1A5C38' : '2px solid transparent',
       textAlign: 'left',

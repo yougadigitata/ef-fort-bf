@@ -132,7 +132,7 @@ export default function CreateQuestionPage({ questionId, onNavigate }: Props) {
 
       <form onSubmit={handleSubmit}>
         <div style={{ background: '#1e293b', borderRadius: 12, padding: 24, border: '1px solid #334155', marginBottom: 16 }}>
-          <h3 style={{ color: '#94a3b8', fontSize: 16, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 20 }}>Informations générales</h3>
+          <h3 style={{ color: '#94a3b8', fontSize: 17, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 20 }}>Informations générales</h3>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
             <div>
@@ -173,7 +173,7 @@ export default function CreateQuestionPage({ questionId, onNavigate }: Props) {
 
         {/* Propositions */}
         <div style={{ background: '#1e293b', borderRadius: 12, padding: 24, border: '1px solid #334155', marginBottom: 16 }}>
-          <h3 style={{ color: '#94a3b8', fontSize: 16, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 20 }}>
+          <h3 style={{ color: '#94a3b8', fontSize: 17, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 20 }}>
             Propositions — cocher la bonne réponse
           </h3>
 
@@ -206,7 +206,7 @@ export default function CreateQuestionPage({ questionId, onNavigate }: Props) {
 
         {/* Explications */}
         <div style={{ background: '#1e293b', borderRadius: 12, padding: 24, border: '1px solid #334155', marginBottom: 16 }}>
-          <h3 style={{ color: '#94a3b8', fontSize: 16, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 20 }}>Informations complémentaires</h3>
+          <h3 style={{ color: '#94a3b8', fontSize: 17, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 20 }}>Informations complémentaires</h3>
 
           <div style={{ marginBottom: 16 }}>
             <label style={lbl}>Explication détaillée</label>
@@ -262,9 +262,9 @@ export default function CreateQuestionPage({ questionId, onNavigate }: Props) {
   );
 }
 
-const lbl: React.CSSProperties = { display: 'block', color: '#94a3b8', fontSize: 16, marginBottom: 6, fontWeight: 500 };
-const sel: React.CSSProperties = { width: '100%', padding: '10px 12px', background: '#0f172a', border: '1px solid #334155', borderRadius: 8, color: '#e2e8f0', fontSize: 17 };
-const inp: React.CSSProperties = { padding: '10px 12px', background: '#0f172a', border: '1px solid #334155', borderRadius: 8, color: '#e2e8f0', fontSize: 17 };
+const lbl: React.CSSProperties = { display: 'block', color: '#94a3b8', fontSize: 17, marginBottom: 6, fontWeight: 500 };
+const sel: React.CSSProperties = { width: '100%', padding: '12px 14px', background: '#0f172a', border: '1px solid #334155', borderRadius: 8, color: '#e2e8f0', fontSize: 18 };
+const inp: React.CSSProperties = { padding: '12px 14px', background: '#0f172a', border: '1px solid #334155', borderRadius: 8, color: '#e2e8f0', fontSize: 18 };
 const diffColors: Record<string, any> = {
   FACILE: { bg: 'rgba(74,222,128,0.15)', color: '#4ade80' },
   MOYEN: { bg: 'rgba(251,191,36,0.15)', color: '#fbbf24' },

@@ -725,7 +725,7 @@ class _QcmScreenState extends State<QcmScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 18),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text('Retour aux matières', style: TextStyle(fontSize: 16)),
+                  child: const Text('Retour aux matières', style: TextStyle(fontSize: 18)),
                 ),
               ),
               const SizedBox(width: 12),

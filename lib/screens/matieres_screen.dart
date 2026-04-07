@@ -351,7 +351,7 @@ class _MatieresScreenState extends State<MatieresScreen> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 16,
+                      fontSize: 17,
                       fontWeight: FontWeight.w800,
                       color: Color(0xFF1A1A2E),
                       height: 1.25,
@@ -376,7 +376,7 @@ class _MatieresScreenState extends State<MatieresScreen> {
                         Text(
                           isSeriesMode ? 'Séries QCM' : 'QCM',
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 15,
                             fontWeight: FontWeight.w600,
                             color: color,
                           ),

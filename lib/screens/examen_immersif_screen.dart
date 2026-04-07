@@ -1623,7 +1623,7 @@ class _ExamenImmersifScreenState extends State<ExamenImmersifScreen>
                     child: Text(
                       '${i + 1}',
                       style: TextStyle(
-                        fontSize: 17, fontWeight: FontWeight.w900,
+                        fontSize: 19, fontWeight: FontWeight.w900,
                         color: answered ? Colors.white : Colors.grey[600],
                       ),
                     ),
@@ -1648,10 +1648,10 @@ class _ExamenImmersifScreenState extends State<ExamenImmersifScreen>
                       MathTextWidget(
                         text: texte,
                         textStyle: const TextStyle(
-                          fontSize: 20, fontFamily: 'Georgia', height: 1.65,
+                          fontSize: 22, fontFamily: 'Georgia', height: 1.7,
                           color: Color(0xFF2C3E50), fontWeight: FontWeight.w600,
                         ),
-                        mathSize: 20,
+                        mathSize: 22,
                         mathColor: const Color(0xFF2C3E50),
                       ),
                     ],
@@ -1669,7 +1669,7 @@ class _ExamenImmersifScreenState extends State<ExamenImmersifScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      width: 34, height: 34,
+                      width: 38, height: 38,
                       decoration: BoxDecoration(
                         color: widget.couleur.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(6),
@@ -1678,7 +1678,7 @@ class _ExamenImmersifScreenState extends State<ExamenImmersifScreen>
                       child: Center(
                         child: Text(
                           opt.key,
-                          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: widget.couleur),
+                          style: TextStyle(fontSize: 19, fontWeight: FontWeight.w900, color: widget.couleur),
                         ),
                       ),
                     ),
@@ -1687,10 +1687,10 @@ class _ExamenImmersifScreenState extends State<ExamenImmersifScreen>
                       child: MathTextWidget(
                         text: opt.value,
                         textStyle: const TextStyle(
-                          fontSize: 18, fontFamily: 'Georgia', height: 1.6,
+                          fontSize: 20, fontFamily: 'Georgia', height: 1.65,
                           color: Color(0xFF2C3E50),
                         ),
-                        mathSize: 18,
+                        mathSize: 20,
                         mathColor: const Color(0xFF2C3E50),
                       ),
                     ),
@@ -1730,7 +1730,7 @@ class _ExamenImmersifScreenState extends State<ExamenImmersifScreen>
                 child: const Text(
                   'Feuille de réponse',
                   style: TextStyle(
-                    fontSize: 15, fontWeight: FontWeight.w700,
+                    fontSize: 17, fontWeight: FontWeight.w700,
                     color: Color(0xFF1565C0), fontFamily: 'Georgia',
                     fontStyle: FontStyle.italic,
                   ),
@@ -1743,7 +1743,7 @@ class _ExamenImmersifScreenState extends State<ExamenImmersifScreen>
                   '${_answers.length}/${_questions.length}',
                   key: ValueKey(_answers.length),
                   style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 17,
                     color: _answers.length == _questions.length
                         ? Colors.green[700]
                         : Colors.black45,
@@ -1764,7 +1764,7 @@ class _ExamenImmersifScreenState extends State<ExamenImmersifScreen>
             'Cochez toutes les cases correspondant à votre réponse (une ou plusieurs).',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 15, color: Color(0xFF1565C0),
+              fontSize: 17, color: Color(0xFF1565C0),
               fontStyle: FontStyle.italic, fontFamily: 'Georgia',
             ),
           ),
@@ -1789,11 +1789,11 @@ class _ExamenImmersifScreenState extends State<ExamenImmersifScreen>
                       const SizedBox(
                         width: 52,
                         child: Text('N°', textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16)),
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
                       ),
                       ...['A', 'B', 'C', 'D', 'E'].map((l) => Expanded(
                         child: Text(l, textAlign: TextAlign.center,
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 17)),
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 19)),
                       )),
                     ],
                   ),
@@ -1823,12 +1823,12 @@ class _ExamenImmersifScreenState extends State<ExamenImmersifScreen>
                     child: Row(
                       children: [
                         SizedBox(
-                          width: 52, height: 50,
+                          width: 52, height: 56,
                           child: Center(
                             child: Text(
                               '${i + 1}',
                               style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w700,
+                                fontSize: 18, fontWeight: FontWeight.w700,
                                 color: selectedLetters.isNotEmpty ? widget.couleur : Colors.grey[400],
                               ),
                             ),
@@ -1844,7 +1844,7 @@ class _ExamenImmersifScreenState extends State<ExamenImmersifScreen>
                               onTap: () => _toggleAnswer(i, letter),
                               child: AnimatedContainer(
                                 duration: const Duration(milliseconds: 200),
-                                height: 48,
+                                height: 54,
                                 margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
@@ -1865,7 +1865,7 @@ class _ExamenImmersifScreenState extends State<ExamenImmersifScreen>
                                   child: Text(
                                     letter,
                                     style: TextStyle(
-                                      fontSize: 16, fontWeight: FontWeight.w800,
+                                      fontSize: 18, fontWeight: FontWeight.w800,
                                       color: isSelected ? Colors.white : Colors.grey.shade400,
                                     ),
                                   ),
@@ -2807,7 +2807,7 @@ class _ExamenImmersifResultatsScreenState
                               child: pw.Text('${i + 1}',
                                   style: pw.TextStyle(
                                     color: PdfColors.white,
-                                    fontSize: 15,
+                                    fontSize: 17,
                                     fontWeight: pw.FontWeight.bold,
                                   )),
                             ),
@@ -2817,7 +2817,7 @@ class _ExamenImmersifResultatsScreenState
                             child: pw.Text(
                               enonce,
                               style: pw.TextStyle(
-                                fontSize: 17,
+                                fontSize: 19,
                                 fontWeight: pw.FontWeight.bold,
                               ),
                             ),
@@ -2830,7 +2830,7 @@ class _ExamenImmersifResultatsScreenState
                                 pw.Text(
                                   'Votre rep.: $userRepDisplay',
                                   style: pw.TextStyle(
-                                    fontSize: 15,
+                                    fontSize: 17,
                                     color: isCorrect ? PdfColors.green700 : PdfColors.red700,
                                     fontWeight: pw.FontWeight.bold,
                                   ),
@@ -2838,7 +2838,7 @@ class _ExamenImmersifResultatsScreenState
                                 pw.Text(
                                   'Bonne rep.: $bonneRepDisplay',
                                   style: pw.TextStyle(
-                                    fontSize: 15,
+                                    fontSize: 17,
                                     color: PdfColors.green700,
                                     fontWeight: pw.FontWeight.bold,
                                   ),
@@ -2872,7 +2872,7 @@ class _ExamenImmersifResultatsScreenState
                                   child: pw.Text(
                                     letter,
                                     style: pw.TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 16,
                                       fontWeight: pw.FontWeight.bold,
                                       color: correctionMode && isBonne ? PdfColors.white : PdfColors.grey700,
                                     ),
@@ -2884,7 +2884,7 @@ class _ExamenImmersifResultatsScreenState
                                 child: pw.Text(
                                   opt,
                                   style: pw.TextStyle(
-                                    fontSize: 16,
+                                    fontSize: 18,
                                     color: correctionMode && isBonne ? PdfColors.green700 : PdfColors.grey800,
                                     fontWeight: correctionMode && isBonne
                                         ? pw.FontWeight.bold
