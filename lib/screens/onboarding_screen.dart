@@ -372,7 +372,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                   : 'Suivant',
                               style: const TextStyle(
                                 fontWeight: FontWeight.w700,
-                                fontSize: 17,
+                                fontSize: 14,
                                 letterSpacing: 0.3,
                               ),
                             ),

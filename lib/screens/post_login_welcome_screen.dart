@@ -430,7 +430,7 @@ class _PostLoginWelcomeScreenState extends State<PostLoginWelcomeScreen>
             '🎓  Bienvenue, $prenom !',
             textAlign: TextAlign.center,
             style: const TextStyle(
-              fontSize: 18,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
               color: Color(0xFFD4A017),
               fontFamily: 'monospace',

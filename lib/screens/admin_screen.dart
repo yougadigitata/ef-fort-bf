@@ -261,7 +261,7 @@ class _DashboardTab extends StatelessWidget {
         child: Column(children: [
           Icon(icon, color: color, size: 28),
           const SizedBox(height: 8),
-          Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: color)),
+          Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: color)),
           const SizedBox(height: 4),
           Text(label, style: TextStyle(fontSize: 13, color: AppColors.textLight), textAlign: TextAlign.center),
         ]),
@@ -407,7 +407,7 @@ class _PaiementsTabState extends State<_PaiementsTab> {
                               ),
                               const SizedBox(width: 12),
                               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                Text(d['nom_complet']?.toString() ?? 'Inconnu', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17)),
+                                Text(d['nom_complet']?.toString() ?? 'Inconnu', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
                                 Row(children: [
                                   const Icon(Icons.phone_rounded, size: 14, color: Colors.grey),
                                   const SizedBox(width: 4),
@@ -674,7 +674,7 @@ class _CmsDashboardSectionState extends State<_CmsDashboardSection> {
             return Container(
               margin: const EdgeInsets.only(bottom: 6),
               child: Row(children: [
-                Expanded(flex: 3, child: Text(mat['nom']?.toString() ?? '', style: const TextStyle(fontSize: 17), overflow: TextOverflow.ellipsis)),
+                Expanded(flex: 3, child: Text(mat['nom']?.toString() ?? '', style: const TextStyle(fontSize: 14), overflow: TextOverflow.ellipsis)),
                 Expanded(flex: 4, child: Stack(children: [
                   Container(height: 8, decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(4))),
                   if (nb > 0) FractionallySizedBox(
@@ -1101,7 +1101,7 @@ class _CmsBulkImportSectionState extends State<_CmsBulkImportSection> {
         const SizedBox(height: 16),
 
         // Destination
-        const Text('Destination :', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17)),
+        const Text('Destination :', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
         const SizedBox(height: 8),
         Row(children: [
           _destChip('📚 Matière', 'matiere'),
@@ -1293,7 +1293,7 @@ class _CmsSeriesSectionState extends State<_CmsSeriesSection> {
                             decoration: BoxDecoration(color: const Color(0xFFB45309).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
                             child: const Icon(Icons.library_books_rounded, color: Color(0xFFB45309), size: 22),
                           ),
-                          title: Text(s['titre']?.toString() ?? s['nom']?.toString() ?? 'Série ${i + 1}', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17)),
+                          title: Text(s['titre']?.toString() ?? s['nom']?.toString() ?? 'Série ${i + 1}', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                           subtitle: Text(
                             '${s['nb_questions'] ?? 0} questions • ${s['matiere_nom'] ?? s['matiere_code'] ?? ''}',
                             style: const TextStyle(fontSize: 13, color: Colors.grey),
@@ -1474,7 +1474,7 @@ class _CmsSimulationsSectionState extends State<_CmsSimulationsSection> {
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Row(children: [
-              Expanded(child: Text('${sel['code']} — ${(sel['nom'] as String).substring(0, (sel['nom'] as String).length.clamp(0, 28))}', style: const TextStyle(fontSize: 17))),
+              Expanded(child: Text('${sel['code']} — ${(sel['nom'] as String).substring(0, (sel['nom'] as String).length.clamp(0, 28))}', style: const TextStyle(fontSize: 14))),
               Row(children: [
                 IconButton(onPressed: sel['count'] > 0 ? () => setState(() => sel['count'] = (sel['count'] as int) - 1) : null, icon: const Icon(Icons.remove_circle_outline, size: 20), color: const Color(0xFFCE1126)),
                 SizedBox(width: 28, child: Text('${sel['count']}', textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w700))),
@@ -1521,7 +1521,7 @@ class _CmsSimulationsSectionState extends State<_CmsSimulationsSection> {
                 decoration: BoxDecoration(color: const Color(0xFFCE1126).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
                 child: const Icon(Icons.timer_rounded, color: Color(0xFFCE1126), size: 24),
               ),
-              title: Text(s['titre']?.toString() ?? 'Simulation', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17)),
+              title: Text(s['titre']?.toString() ?? 'Simulation', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
               subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text('${s['nb_questions'] ?? 0} questions • ${s['duree_minutes'] ?? 120} min', style: const TextStyle(fontSize: 13, color: Colors.grey)),
                 Row(children: [
@@ -1851,7 +1851,7 @@ class _AnnoncesTabState extends State<_AnnoncesTab> {
                                 decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), shape: BoxShape.circle),
                                 child: const Icon(Icons.newspaper_rounded, color: AppColors.primary, size: 20),
                               ),
-                              title: Text(a['titre']?.toString() ?? '', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17), maxLines: 1, overflow: TextOverflow.ellipsis),
+                              title: Text(a['titre']?.toString() ?? '', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
                               subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                                 Text(a['contenu']?.toString() ?? '', style: const TextStyle(fontSize: 13, color: Colors.grey), maxLines: 2, overflow: TextOverflow.ellipsis),
                                 if (a['created_at'] != null) Text(_formatDate(a['created_at'].toString()), style: const TextStyle(fontSize: 13, color: Colors.grey)),
@@ -2380,7 +2380,7 @@ class _ChangePasswordTabState extends State<_ChangePasswordTab> {
           child: ElevatedButton.icon(
             onPressed: _loading ? null : _changePassword,
             icon: _loading ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Icon(Icons.lock_reset_rounded, size: 20),
-            label: Text(_loading ? 'Modification...' : 'Changer le mot de passe', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17)),
+            label: Text(_loading ? 'Modification...' : 'Changer le mot de passe', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF1A5C38), foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 14),
@@ -2421,8 +2421,8 @@ class _ChangePasswordTabState extends State<_ChangePasswordTab> {
           suffixIcon: IconButton(icon: Icon(show ? Icons.visibility_off_rounded : Icons.visibility_rounded, size: 20, color: Colors.grey), onPressed: toggle),
         ),
       ),
-      if (isMatch) const Padding(padding: EdgeInsets.only(top: 4), child: Text('✓ Les mots de passe correspondent', style: TextStyle(color: AppColors.success, fontSize: 17))),
-      if (noMatch) const Padding(padding: EdgeInsets.only(top: 4), child: Text('✗ Les mots de passe ne correspondent pas', style: TextStyle(color: AppColors.error, fontSize: 17))),
+      if (isMatch) const Padding(padding: EdgeInsets.only(top: 4), child: Text('✓ Les mots de passe correspondent', style: TextStyle(color: AppColors.success, fontSize: 14))),
+      if (noMatch) const Padding(padding: EdgeInsets.only(top: 4), child: Text('✗ Les mots de passe ne correspondent pas', style: TextStyle(color: AppColors.error, fontSize: 14))),
     ]);
   }
 }

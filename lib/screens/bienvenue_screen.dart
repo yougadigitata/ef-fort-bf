@@ -522,7 +522,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
                   color: const Color(0xFFD4A017).withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Text('🔊', style: TextStyle(fontSize: 22)),
+                child: const Text('🔊', style: TextStyle(fontSize: 16)),
               ),
               const SizedBox(width: 12),
               const Column(
@@ -531,7 +531,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
                   Text(
                     'Message de Bienvenue',
                     style: TextStyle(
-                      fontSize: 17,
+                      fontSize: 14,
                       fontWeight: FontWeight.w800,
                       color: Color(0xFFD4A017),
                     ),
@@ -613,7 +613,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
             ),
             child: const Row(
               children: [
-                Text('✨', style: TextStyle(fontSize: 18)),
+                Text('✨', style: TextStyle(fontSize: 14)),
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -690,7 +690,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
                 Text(
                   s['value'] as String,
                   style: const TextStyle(
-                    fontSize: 17,
+                    fontSize: 14,
                     fontWeight: FontWeight.w900,
                     color: Colors.white,
                   ),
@@ -824,7 +824,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('👑', style: TextStyle(fontSize: 24)),
+              const Text('👑', style: TextStyle(fontSize: 14)),
               const SizedBox(width: 10),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -886,7 +886,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 17)),
+          Text(emoji, style: const TextStyle(fontSize: 14)),
           const SizedBox(width: 8),
           Expanded(
             child: RichText(

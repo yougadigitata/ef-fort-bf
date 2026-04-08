@@ -230,7 +230,7 @@ class _ActualitesStatusScreenState extends State<ActualitesStatusScreen>
                             child: Text('E', style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w900,
-                              fontSize: 20,
+                              fontSize: 16,
                             )),
                           ),
                         ),
@@ -379,7 +379,7 @@ class _ActualitesStatusScreenState extends State<ActualitesStatusScreen>
                       color: Colors.white.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
-                    child: const Text('📢', style: TextStyle(fontSize: 28)),
+                    child: const Text('📢', style: TextStyle(fontSize: 16)),
                   ),
                   const SizedBox(height: 24),
 
@@ -390,7 +390,7 @@ class _ActualitesStatusScreenState extends State<ActualitesStatusScreen>
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 22,
+                        fontSize: 16,
                         fontWeight: FontWeight.w800,
                         height: 1.3,
                         shadows: [

@@ -88,8 +88,8 @@ class _AbonnementScreenState extends State<AbonnementScreen>
           context: context,
           builder: (ctx) => AlertDialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: const Row(children: [Text('⌛', style: TextStyle(fontSize: 24)), SizedBox(width: 10), Text('Demande en cours', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700))]),
-            content: const Text('Votre demande est déjà en cours de traitement.\nNotre équipe vous contacte très prochainement.', style: TextStyle(height: 1.5, fontSize: 17)),
+            title: const Row(children: [Text('⌛', style: TextStyle(fontSize: 14)), SizedBox(width: 10), Text('Demande en cours', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700))]),
+            content: const Text('Votre demande est déjà en cours de traitement.\nNotre équipe vous contacte très prochainement.', style: TextStyle(height: 1.5, fontSize: 14)),
             actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('OK', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700)))],
           ),
         );
@@ -159,13 +159,13 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                       padding: EdgeInsets.fromLTRB(24, 8, 24, 0),
                       child: Column(
                         children: [
-                          Text('🏆', style: TextStyle(fontSize: 52)),
+                          Text('🏆', style: TextStyle(fontSize: 26)),
                           SizedBox(height: 12),
                           Text(
                             'DEVENEZ IRRÉSISTIBLE\nAUX YEUX DU JURY',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 24,
+                              fontSize: 14,
                               fontWeight: FontWeight.w900,
                               color: Colors.white,
                               height: 1.15,
@@ -231,11 +231,11 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                       const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('⭐', style: TextStyle(fontSize: 18)),
+                          Text('⭐', style: TextStyle(fontSize: 14)),
                           SizedBox(width: 8),
-                          Text('ACCÈS COMPLET EF-FORT.BF', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: Color(0xFF1A5C38))),
+                          Text('ACCÈS COMPLET EF-FORT.BF', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Color(0xFF1A5C38))),
                           SizedBox(width: 8),
-                          Text('⭐', style: TextStyle(fontSize: 18)),
+                          Text('⭐', style: TextStyle(fontSize: 14)),
                         ],
                       ),
                       const SizedBox(height: 14),
@@ -249,7 +249,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                           const Text(
                             '25 000',
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 14,
                               color: Colors.red,
                               decoration: TextDecoration.lineThrough,
                               fontWeight: FontWeight.w600,
@@ -266,7 +266,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                             child: const Text(
                               '12 000 FCFA',
                               style: TextStyle(
-                                fontSize: 36,
+                                fontSize: 26,
                                 fontWeight: FontWeight.w900,
                                 color: Color(0xFFD4A017),
                                 letterSpacing: -0.5,
@@ -328,7 +328,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                         const SizedBox(width: 12),
                         const Text(
                           'Ce que vous obtenez',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.textDark),
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: AppColors.textDark),
                         ),
                       ],
                     ),
@@ -361,12 +361,12 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                   children: [
                     const Row(
                       children: [
-                        Text('📚', style: TextStyle(fontSize: 28)),
+                        Text('📚', style: TextStyle(fontSize: 22)),
                         SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             'Jusqu\'à 10 000 copies PDF !',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.white),
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Colors.white),
                           ),
                         ),
                       ],
@@ -434,7 +434,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                   children: [
                     const Row(
                       children: [
-                        Text('💬', style: TextStyle(fontSize: 24)),
+                        Text('💬', style: TextStyle(fontSize: 14)),
                         SizedBox(width: 10),
                         Text('Ils ont réussi avec EF-FORT.BF', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textDark)),
                       ],
@@ -468,7 +468,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                       children: [
                         Text('📋', style: TextStyle(fontSize: 22)),
                         SizedBox(width: 10),
-                        Text('Comment s\'abonner ?', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: AppColors.textDark)),
+                        Text('Comment s\'abonner ?', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: AppColors.textDark)),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -535,7 +535,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                           SizedBox(width: 10),
                           Text(
                             'J\'AI PAYÉ — ENVOYER LA PREUVE',
-                            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, letterSpacing: 0.3),
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 0.3),
                           ),
                         ],
                       ),
@@ -586,7 +586,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                                 children: [
                                   Text('🟠', style: TextStyle(fontSize: 20)),
                                   SizedBox(width: 10),
-                                  Text('Orange Money', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17, color: Color(0xFFFF7900))),
+                                  Text('Orange Money', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: Color(0xFFFF7900))),
                                 ],
                               ),
                             ),
@@ -736,7 +736,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(titre, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                  Text(titre, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textDark)),
                   const SizedBox(height: 2),
                   Text(desc, style: const TextStyle(fontSize: 15, color: AppColors.textLight, height: 1.4)),
                 ],
@@ -887,7 +887,7 @@ class _OffreCountdownWidgetState extends State<OffreCountdownWidget> {
       return Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.red.shade200)),
-        child: const Text('⏰ Offre expirée', style: TextStyle(color: Colors.red, fontWeight: FontWeight.w700, fontSize: 17), textAlign: TextAlign.center),
+        child: const Text('⏰ Offre expirée', style: TextStyle(color: Colors.red, fontWeight: FontWeight.w700, fontSize: 14), textAlign: TextAlign.center),
       );
     }
 
@@ -938,7 +938,7 @@ class _OffreCountdownWidgetState extends State<OffreCountdownWidget> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8)),
-          child: Text(value, style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900, fontFamily: 'monospace')),
+          child: Text(value, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w900, fontFamily: 'monospace')),
         ),
         const SizedBox(height: 4),
         Text(label, style: const TextStyle(color: Colors.white60, fontSize: 14, fontWeight: FontWeight.w600, letterSpacing: 0.5)),

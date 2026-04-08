@@ -362,7 +362,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                   Text(
                                     'Bonjour $prenom 👋',
                                     style: const TextStyle(
-                                      fontSize: 17,
+                                      fontSize: 14,
                                       fontWeight: FontWeight.w800,
                                       color: Colors.white,
                                     ),
@@ -375,7 +375,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                               // Message motivant animé
                               _buildShimmerText(
                                 '🔥 Continue sur ta lancée !',
-                                fontSize: 15,
+                                fontSize: 11,
                               ),
                             ],
                           ),
@@ -423,7 +423,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                     Text(
                                       'Niveau : $niveau',
                                       style: const TextStyle(
-                                        fontSize: 13,
+                                        fontSize: 11,
                                         fontWeight: FontWeight.w700,
                                         color: Colors.white,
                                       ),
@@ -436,7 +436,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                 child: Text(
                                 '$nom',
                                 style: TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 11,
                                   color: Colors.white.withValues(alpha: 0.7),
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -586,7 +586,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 Text(
                   value,
                   style: const TextStyle(
-                    fontSize: 15,
+                    fontSize: 11,
                     fontWeight: FontWeight.w900,
                     color: Color(0xFFD4A017),
                   ),
@@ -673,7 +673,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               child: Text(
                 niveau,
                 style: const TextStyle(
-                  fontSize: 13,
+                  fontSize: 11,
                   fontWeight: FontWeight.w800,
                   color: Colors.white,
                 ),
@@ -749,7 +749,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   offset: Offset(0, _floatAnim.value * 0.5),
                   child: child,
                 ),
-                child: const Text('🎯', style: TextStyle(fontSize: 34)),
+                child: const Text('🎯', style: TextStyle(fontSize: 18)),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -759,7 +759,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     const Text(
                       'Bienvenue sur EF-FORT.BF !',
                       style: TextStyle(
-                        fontSize: 17,
+                        fontSize: 14,
                         fontWeight: FontWeight.w800,
                         color: Color(0xFF1A5C38),
                       ),
@@ -768,7 +768,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     Text(
                       'Chaque effort te rapproche de ton admission finale. 💪',
                       style: TextStyle(
-                        fontSize: 15,
+                        fontSize: 11,
                         color: const Color(0xFF1A5C38).withValues(alpha: 0.8),
                         height: 1.4,
                       ),
@@ -874,7 +874,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                             color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(18),
                           ),
-                          child: const Text('🚀', style: TextStyle(fontSize: 30)),
+                          child: const Text('🚀', style: TextStyle(fontSize: 22)),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -976,7 +976,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   child: Text(
                     'Voir tout →',
                     style: TextStyle(
-                      fontSize: 15,
+                      fontSize: 11,
                       color: AppColors.primary,
                       fontWeight: FontWeight.w700,
                     ),
@@ -1004,7 +1004,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     return Text(
       text,
       style: const TextStyle(
-        fontSize: 17,
+        fontSize: 14,
         fontWeight: FontWeight.w800,
         color: AppColors.textDark,
       ),
@@ -1075,7 +1075,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                           ),
                         ],
                       ),
-                      child: const Text('💳', style: TextStyle(fontSize: 26)),
+                      child: const Text('💳', style: TextStyle(fontSize: 20)),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
@@ -1085,7 +1085,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                           const Text(
                             'Débloquer EF-FORT Complet',
                             style: TextStyle(
-                              fontSize: 17,
+                              fontSize: 14,
                               fontWeight: FontWeight.w800,
                               color: AppColors.textDark,
                             ),
@@ -1097,7 +1097,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                 TextSpan(
                                   text: '12 000 FCFA ',
                                   style: TextStyle(
-                                    fontSize: 17,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.w900,
                                     color: Color(0xFFD4A017),
                                   ),
@@ -1150,7 +1150,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     ),
                     child: const Text(
                       '🚀  VOIR L\'OFFRE PREMIUM',
-                      style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17),
+                      style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
                     ),
                   ),
                 ),
@@ -1222,7 +1222,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     scale: _pulseSimAnim.value,
                     child: child,
                   ),
-                  child: const Text('🤝', style: TextStyle(fontSize: 38)),
+                  child: const Text('🤝', style: TextStyle(fontSize: 28)),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -1232,7 +1232,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       const Text(
                         'Rejoindre la Communauté',
                         style: TextStyle(
-                          fontSize: 17,
+                          fontSize: 14,
                           fontWeight: FontWeight.w800,
                           color: AppColors.textDark,
                         ),
@@ -1241,7 +1241,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       Text(
                         'Des candidats actifs vous attendent',
                         style: TextStyle(
-                          fontSize: 15,
+                          fontSize: 11,
                           color: AppColors.textLight,
                         ),
                       ),
@@ -1274,7 +1274,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     'Rejoindre',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 15,
+                      fontSize: 11,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -1353,7 +1353,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(m['emoji'] as String, style: const TextStyle(fontSize: 24)),
+                Text(m['emoji'] as String, style: const TextStyle(fontSize: 18)),
                 const SizedBox(height: 4),
                 Text(
                   m['label'] as String,

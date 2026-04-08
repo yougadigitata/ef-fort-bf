@@ -54,7 +54,7 @@ class ActualitesStatusWidget extends StatelessWidget {
               const Text(
                 '💬 Actualités',
                 style: TextStyle(
-                  fontSize: 17,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textDark,
                 ),

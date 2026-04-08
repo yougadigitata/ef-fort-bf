@@ -49,7 +49,7 @@ class ActualiteDetailScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child:
-                      const Text('📢', style: TextStyle(fontSize: 28)),
+                      const Text('📢', style: TextStyle(fontSize: 16)),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -93,7 +93,7 @@ class ActualiteDetailScreen extends StatelessWidget {
             Text(
               titre,
               style: const TextStyle(
-                fontSize: 22,
+                fontSize: 16,
                 fontWeight: FontWeight.w800,
                 color: AppColors.textDark,
                 height: 1.3,

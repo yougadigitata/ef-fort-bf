@@ -634,11 +634,11 @@ class _EntraideScreenState extends State<EntraideScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('🤝', style: TextStyle(fontSize: 64)),
+            const Text('🤝', style: TextStyle(fontSize: 42)),
             const SizedBox(height: 16),
             const Text(
               'Aucun message pour l\'instant',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Color(0xFF1A1A2E)),
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF1A1A2E)),
             ),
             const SizedBox(height: 10),
             Padding(
@@ -729,7 +729,7 @@ class _EntraideScreenState extends State<EntraideScreen>
                           child: Text(
                             initiale,
                             style: TextStyle(
-                              fontSize: 17,
+                              fontSize: 14,
                               fontWeight: FontWeight.w800,
                               color: msgColor,
                             ),

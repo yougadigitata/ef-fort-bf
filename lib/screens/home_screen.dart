@@ -56,11 +56,11 @@ class _HomeScreenState extends State<HomeScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: const Row(
           children: [
-            Text('👑', style: TextStyle(fontSize: 26)),
+            Text('👑', style: TextStyle(fontSize: 20)),
             SizedBox(width: 10),
             Text(
               'Accès Premium',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17),
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
             ),
           ],
         ),

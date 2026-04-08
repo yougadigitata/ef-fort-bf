@@ -177,7 +177,7 @@ class _ProfilScreenState extends State<ProfilScreen>
                                   child: Text(
                                     prenom.isNotEmpty ? prenom[0].toUpperCase() : 'U',
                                     style: const TextStyle(
-                                      fontSize: 36,
+                                      fontSize: 26,
                                       fontWeight: FontWeight.w900,
                                       color: Colors.white,
                                     ),
@@ -193,7 +193,7 @@ class _ProfilScreenState extends State<ProfilScreen>
                         Text(
                           '$prenom $nom',
                           style: const TextStyle(
-                            fontSize: 22,
+                            fontSize: 16,
                             fontWeight: FontWeight.w800,
                             color: Colors.white,
                             letterSpacing: 0.3,
@@ -203,7 +203,7 @@ class _ProfilScreenState extends State<ProfilScreen>
                         Text(
                           telephone,
                           style: TextStyle(
-                            fontSize: 17,
+                            fontSize: 14,
                             color: Colors.white.withValues(alpha: 0.75),
                           ),
                         ),
@@ -255,7 +255,7 @@ class _ProfilScreenState extends State<ProfilScreen>
                       const SizedBox(height: 12),
                       const Text(
                         'Abonnement Premium',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.white),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.white),
                       ),
                       const SizedBox(height: 6),
                       // Prix barré ancien + nouveau prix
@@ -263,7 +263,7 @@ class _ProfilScreenState extends State<ProfilScreen>
                         Text(
                           '25 000 FCFA',
                           style: TextStyle(
-                            fontSize: 17, fontWeight: FontWeight.w600,
+                            fontSize: 14, fontWeight: FontWeight.w600,
                             color: AppColors.white.withValues(alpha: 0.6),
                             decoration: TextDecoration.lineThrough,
                             decorationColor: AppColors.white.withValues(alpha: 0.6),
@@ -272,7 +272,7 @@ class _ProfilScreenState extends State<ProfilScreen>
                         const SizedBox(width: 10),
                         const Text(
                           '12 000 FCFA',
-                          style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: AppColors.white),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: AppColors.white),
                         ),
                       ]),
                       const SizedBox(height: 4),
@@ -466,7 +466,7 @@ class _ProfilScreenState extends State<ProfilScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 17, color: AppColors.textDark)),
+                  Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: AppColors.textDark)),
                   const SizedBox(height: 2),
                   Text(subtitle, style: TextStyle(fontSize: 15, color: AppColors.textLight)),
                 ],
@@ -491,7 +491,7 @@ class _ProfilScreenState extends State<ProfilScreen>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Paiement par Orange Money', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+            const Text('Paiement par Orange Money', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
             const SizedBox(height: 6),
             Text(
               'Mode de paiement disponible',
@@ -606,7 +606,7 @@ class _ProfilScreenState extends State<ProfilScreen>
                 child: const Text(
                   '*144*10*65 46 70 70*12000#',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
                     fontFamily: 'monospace',
                   ),
@@ -915,7 +915,7 @@ class _AboutScreenState extends State<_AboutScreen>
                                                 child: const Column(
                                                   mainAxisAlignment: MainAxisAlignment.center,
                                                   children: [
-                                                    Text('🎓', style: TextStyle(fontSize: 28)),
+                                                    Text('🎓', style: TextStyle(fontSize: 16)),
                                                     Text('EF-FORT', style: TextStyle(
                                                       color: Colors.white, fontSize: 14,
                                                       fontWeight: FontWeight.w900,
@@ -1162,7 +1162,7 @@ class _AboutScreenState extends State<_AboutScreen>
                   scale: _pulseAnim.value,
                   child: child,
                 ),
-                child: const Text('🏆', style: TextStyle(fontSize: 38)),
+                child: const Text('🏆', style: TextStyle(fontSize: 16)),
               ),
               const SizedBox(width: 14),
               const Expanded(
@@ -1173,7 +1173,7 @@ class _AboutScreenState extends State<_AboutScreen>
                       'Plateforme N°1',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 20,
+                        fontSize: 16,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 0.5,
                       ),
@@ -1284,7 +1284,7 @@ class _AboutScreenState extends State<_AboutScreen>
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,
-                    fontSize: 17,
+                    fontSize: 14,
                   ),
                 ),
               ],
@@ -1307,13 +1307,13 @@ class _AboutScreenState extends State<_AboutScreen>
           ),
           child: Column(
             children: [
-              const Text('❝', style: TextStyle(fontSize: 36, color: AppColors.primary)),
+              const Text('❝', style: TextStyle(fontSize: 26, color: AppColors.primary)),
               const SizedBox(height: 8),
               const Text(
                 'La chance ne sourit pas au hasard, elle rencontre toujours un effort bien préparé.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 17,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                   fontStyle: FontStyle.italic,
                   color: AppColors.textDark,
@@ -1357,14 +1357,14 @@ class _AboutScreenState extends State<_AboutScreen>
           ),
           child: Column(
             children: [
-              const Text('🔐', style: TextStyle(fontSize: 44)),
+              const Text('🔐', style: TextStyle(fontSize: 32)),
               const SizedBox(height: 10),
               const Text(
                 'Cybercriminalité en Afrique',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 20,
+                  fontSize: 16,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 0.5,
                 ),
@@ -1403,7 +1403,7 @@ class _AboutScreenState extends State<_AboutScreen>
           ),
           child: const Row(
             children: [
-              Text('⚠️', style: TextStyle(fontSize: 22)),
+              Text('⚠️', style: TextStyle(fontSize: 16)),
               SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -1523,7 +1523,7 @@ class _AboutScreenState extends State<_AboutScreen>
                     child: Text(
                       'Chapitre 7 — L\'arnaque 5M au Burkina Faso (2023)',
                       style: TextStyle(
-                        fontSize: 17,
+                        fontSize: 14,
                         fontWeight: FontWeight.w800,
                         color: Color(0xFF7A5A00),
                       ),
@@ -1601,7 +1601,7 @@ class _AboutScreenState extends State<_AboutScreen>
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('📞', style: TextStyle(fontSize: 22)),
+                Text('📞', style: TextStyle(fontSize: 16)),
                 SizedBox(width: 10),
                 Text(
                   'Une question sur la cybersécurité ? Contactez-nous',
@@ -1632,7 +1632,7 @@ class _AboutScreenState extends State<_AboutScreen>
           ),
           child: const Column(
             children: [
-              Text('👋', style: TextStyle(fontSize: 36)),
+              Text('👋', style: TextStyle(fontSize: 26)),
               SizedBox(height: 8),
               Text(
                 'Nous sommes là pour vous accompagner',
@@ -1700,7 +1700,7 @@ class _AboutScreenState extends State<_AboutScreen>
             ),
             child: Row(
               children: [
-                const Text('🔐', style: TextStyle(fontSize: 28)),
+                const Text('🔐', style: TextStyle(fontSize: 16)),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -1708,7 +1708,7 @@ class _AboutScreenState extends State<_AboutScreen>
                     children: [
                       const Text(
                         'Guide Cybersécurité gratuit',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 17),
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 14),
                       ),
                       Text(
                         'Lire notre guide : Cybercriminalité en Afrique →',
@@ -1808,7 +1808,7 @@ class _AboutScreenState extends State<_AboutScreen>
                 decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(2)),
               ),
               const SizedBox(width: 10),
-              Text(icon, style: const TextStyle(fontSize: 18)),
+              Text(icon, style: const TextStyle(fontSize: 14)),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textDark)),
@@ -1842,12 +1842,12 @@ class _AboutScreenState extends State<_AboutScreen>
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(emoji, style: const TextStyle(fontSize: 22)),
+              Text(emoji, style: const TextStyle(fontSize: 16)),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   title,
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.textDark),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.textDark),
                 ),
               ),
             ],
@@ -1869,11 +1869,11 @@ class _AboutScreenState extends State<_AboutScreen>
       ),
       child: Column(
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 28)),
+          Text(emoji, style: const TextStyle(fontSize: 16)),
           const SizedBox(height: 6),
           Text(partNum, style: const TextStyle(color: AppColors.secondary, fontSize: 14, fontWeight: FontWeight.w800, letterSpacing: 2)),
           const SizedBox(height: 4),
-          Text(partTitle, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w900)),
+          Text(partTitle, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w900)),
           if (quote.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text('$quote', textAlign: TextAlign.center, style: TextStyle(color: Colors.white.withValues(alpha: 0.65), fontSize: 15, fontStyle: FontStyle.italic)),
@@ -1888,7 +1888,7 @@ class _AboutScreenState extends State<_AboutScreen>
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 20)),
+          Text(emoji, style: const TextStyle(fontSize: 16)),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -1915,7 +1915,7 @@ class _AboutScreenState extends State<_AboutScreen>
         ),
         child: Column(
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 20)),
+            Text(emoji, style: const TextStyle(fontSize: 16)),
             const SizedBox(height: 4),
             Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: AppColors.primary)),
             Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: AppColors.textLight)),
@@ -1948,7 +1948,7 @@ class _AboutScreenState extends State<_AboutScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title, style: const TextStyle(fontSize: 15, color: AppColors.textLight)),
-                Text(subtitle, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textDark)),
+                Text(subtitle, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textDark)),
               ],
             ),
           ),
@@ -2074,11 +2074,11 @@ class _CountdownWidgetState extends State<_CountdownWidget> {
     final seconds = _remaining.inSeconds % 60;
     return Row(mainAxisAlignment: MainAxisAlignment.center, children: [
       _countUnit('$days', 'j'),
-      const Text(' : ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
+      const Text(' : ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14)),
       _countUnit(_pad(hours), 'h'),
-      const Text(' : ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
+      const Text(' : ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14)),
       _countUnit(_pad(minutes), 'min'),
-      const Text(' : ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
+      const Text(' : ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14)),
       _countUnit(_pad(seconds), 'sec'),
     ]);
   }
@@ -2091,7 +2091,7 @@ class _CountdownWidgetState extends State<_CountdownWidget> {
           color: Colors.black26,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Text(value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 20)),
+        child: Text(value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16)),
       ),
       const SizedBox(height: 2),
       Text(label, style: const TextStyle(color: Colors.white70, fontSize: 14)),
