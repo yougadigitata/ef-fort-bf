@@ -17,7 +17,7 @@ import '../widgets/math_text_widget.dart';
 // ══════════════════════════════════════════════════════════════════════
 
 // ─── Mapping simulationId → (examenId, serie) ───────────────────────
-// Les séries 66-75 = Série 1, 76-85 = Série 2
+// Les séries 66-75 = Série 1, 76-85 = Série 2, 86-95 = Série 3
 // exam_001..010 → 10 examens types
 const Map<int, Map<String, dynamic>> _kSimToExam = {
   66: {'exam_id': 'exam_001', 'serie': 1},
@@ -40,6 +40,17 @@ const Map<int, Map<String, dynamic>> _kSimToExam = {
   83: {'exam_id': 'exam_008', 'serie': 2},
   84: {'exam_id': 'exam_009', 'serie': 2},
   85: {'exam_id': 'exam_010', 'serie': 2},
+  // Série 3 — Examens Types (IDs 86–95)
+  86: {'exam_id': 'exam_001', 'serie': 3},
+  87: {'exam_id': 'exam_002', 'serie': 3},
+  88: {'exam_id': 'exam_003', 'serie': 3},
+  89: {'exam_id': 'exam_004', 'serie': 3},
+  90: {'exam_id': 'exam_005', 'serie': 3},
+  91: {'exam_id': 'exam_006', 'serie': 3},
+  92: {'exam_id': 'exam_007', 'serie': 3},
+  93: {'exam_id': 'exam_008', 'serie': 3},
+  94: {'exam_id': 'exam_009', 'serie': 3},
+  95: {'exam_id': 'exam_010', 'serie': 3},
   // Examens Blancs — 11e matière (IDs 97–106)
   97:  {'exam_id': 'exam_blanc_01', 'serie': 3},
   98:  {'exam_id': 'exam_blanc_02', 'serie': 3},
@@ -65,7 +76,7 @@ const Map<int, Color> _kExamColors = {
   73: Color(0xFF2471A3), // Informatique Sér.1
   74: Color(0xFF7D3C98), // Travaux publics Sér.1
   75: Color(0xFF4A5568), // Statistiques Sér.1
-  76: Color(0xFF1A5276),
+  76: Color(0xFF1A5276), // Sér.2
   77: Color(0xFFC0392B),
   78: Color(0xFF1E8449),
   79: Color(0xFF8E44AD),
@@ -75,6 +86,17 @@ const Map<int, Color> _kExamColors = {
   83: Color(0xFF2471A3),
   84: Color(0xFF7D3C98),
   85: Color(0xFF4A5568),
+  // Série 3 — Examens Types (couleurs identiques)
+  86: Color(0xFF1A5276), // Administration Sér.3
+  87: Color(0xFFC0392B), // Justice Sér.3
+  88: Color(0xFF1E8449), // Économie Sér.3
+  89: Color(0xFF8E44AD), // Santé Sér.3
+  90: Color(0xFF1A5C38), // Éducation Sér.3
+  91: Color(0xFFD4A017), // Techniques Sér.3
+  92: Color(0xFF148A72), // Agriculture Sér.3
+  93: Color(0xFF2471A3), // Informatique Sér.3
+  94: Color(0xFF7D3C98), // Travaux publics Sér.3
+  95: Color(0xFF4A5568), // Statistiques Sér.3
   // Examens Blancs — couleur verte EF-FORT
   97:  Color(0xFF1A5C38),
   98:  Color(0xFF1A5C38),
@@ -136,6 +158,17 @@ class _ExamenImmersifAccueilScreenState
     {'id': 83, 'nom': 'Informatique & numérique', 'serie': 2, 'icone': '💻', 'description': 'Techniciens informatiques, développement'},
     {'id': 84, 'nom': 'Travaux publics & urbanisme', 'serie': 2, 'icone': '🏗️', 'description': 'BTP, urbanisme, infrastructures'},
     {'id': 85, 'nom': 'Statistiques & planification', 'serie': 2, 'icone': '📊', 'description': 'Statisticiens, analyse de données'},
+    // Série 3 — Examens Types (IDs 86–95)
+    {'id': 86, 'nom': 'Administration générale', 'serie': 3, 'icone': '📋', 'description': 'Adjoints et agents administratifs'},
+    {'id': 87, 'nom': 'Justice & sécurité', 'serie': 3, 'icone': '⚖️', 'description': 'Greffiers, police, gendarmerie, douane'},
+    {'id': 88, 'nom': 'Économie & finances', 'serie': 3, 'icone': '💰', 'description': 'Impôts, trésor, contrôleurs des finances'},
+    {'id': 89, 'nom': 'Concours de la santé', 'serie': 3, 'icone': '⚕️', 'description': 'Infirmiers, sages-femmes, agents de santé'},
+    {'id': 90, 'nom': 'Éducation & formation', 'serie': 3, 'icone': '📚', 'description': 'Enseignants du primaire et secondaire'},
+    {'id': 91, 'nom': 'Concours techniques', 'serie': 3, 'icone': '🔧', 'description': 'Génie civil, électricité, mécanique'},
+    {'id': 92, 'nom': 'Agriculture & environnement', 'serie': 3, 'icone': '🌾', 'description': 'Agents agricoles, élevage, environnement'},
+    {'id': 93, 'nom': 'Informatique & numérique', 'serie': 3, 'icone': '💻', 'description': 'Techniciens informatiques, développement'},
+    {'id': 94, 'nom': 'Travaux publics & urbanisme', 'serie': 3, 'icone': '🏗️', 'description': 'BTP, urbanisme, infrastructures'},
+    {'id': 95, 'nom': 'Statistiques & planification', 'serie': 3, 'icone': '📊', 'description': 'Statisticiens, analyse de données'},
     // Examens Blancs — 11e matière (série 3)
     {'id': 97,  'nom': 'Examens Blancs', 'serie': 3, 'icone': '📝', 'description': 'Histoire-Géo & Culture Générale'},
     {'id': 98,  'nom': 'Examens Blancs', 'serie': 3, 'icone': '📝', 'description': 'Sciences & Culture Générale'},
@@ -176,11 +209,14 @@ class _ExamenImmersifAccueilScreenState
       _kExamensTypes.where((e) => e['serie'] == 1).toList();
   List<Map<String, dynamic>> get _serie2 =>
       _kExamensTypes.where((e) => e['serie'] == 2).toList();
+  List<Map<String, dynamic>> get _serie3ExamensTypes =>
+      _kExamensTypes.where((e) => e['serie'] == 3 && e['id']! < 97).toList();
   List<Map<String, dynamic>> get _serieBlanche =>
-      _kExamensTypes.where((e) => e['serie'] == 3).toList();
+      _kExamensTypes.where((e) => e['serie'] == 3 && e['id']! >= 97).toList();
   List<Map<String, dynamic>> get _currentList {
     if (_selectedSerieTab == 0) return _serie1;
     if (_selectedSerieTab == 1) return _serie2;
+    if (_selectedSerieTab == 2) return _serie3ExamensTypes;
     return _serieBlanche;
   }
 
@@ -419,7 +455,8 @@ class _ExamenImmersifAccueilScreenState
         children: [
           _buildSerieTab(0, 'Série 1', '10 examens'),
           _buildSerieTab(1, 'Série 2', '10 examens'),
-          _buildSerieTab(2, 'Blancs', '10 séries'),
+          _buildSerieTab(2, 'Série 3', '10 examens'),
+          _buildSerieTab(3, 'Blancs', '10 séries'),
         ],
       ),
     );

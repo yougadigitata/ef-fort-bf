@@ -1,14 +1,9 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../core/theme/app_colors.dart';
-import '../services/api_service.dart';
 import '../services/bell_service.dart';
 import '../widgets/logo_widget.dart';
 import 'onboarding_screen.dart';
-import 'bienvenue_screen.dart';
-import 'home_screen.dart';
-import 'post_login_welcome_screen.dart';
 
 // ══════════════════════════════════════════════════════════════════════
 // SPLASH SCREEN — EF-FORT.BF v2.1 (Particules + Son rétabli)
@@ -100,41 +95,20 @@ class _SplashScreenState extends State<SplashScreen>
     await Future.delayed(const Duration(seconds: 3));
     if (!mounted) return;
 
-    final hasToken = await ApiService.loadToken();
-    if (!mounted) return;
-
-    if (hasToken) {
-      // Utilisateur déjà connecté → Animation bienvenue OBLIGATOIRE à chaque fois
-      final user = ApiService.currentUser;
-      final nom = user != null
-          ? '${user['prenom'] ?? ''} ${user['nom'] ?? ''}'.trim()
-          : '';
-      Navigator.pushReplacement(
-        context,
-        _fadeRoute(PostLoginWelcomeScreen(
-          userName: nom.isNotEmpty ? nom : 'Candidat',
-        )),
-      );
-    } else {
-      // Vérifier si c'est la première fois (onboarding pas encore vu)
-      final prefs = await SharedPreferences.getInstance();
-      final onboardingDone = prefs.getBool('onboarding_done') ?? false;
-      if (!mounted) return;
-
-      if (!onboardingDone) {
-        // 1ère fois → Onboarding complet
-        Navigator.pushReplacement(
-          context,
-          _fadeRoute(const OnboardingScreen()),
-        );
-      } else {
-        // Déjà vu l'onboarding → Page de bienvenue directement
-        Navigator.pushReplacement(
-          context,
-          _fadeRoute(const BienvenueScreen()),
-        );
-      }
-    }
+    // ┌───────────────────────────────────────────────────────────────────────┐
+    // │ FLUX COMPLÈTE D'ACCUEIL (à chaque ouverture de l'application)     │
+    // │ 1. SplashScreen (animation logo + son)                              │
+    // │ 2. OnboardingScreen (5 slides) - TOUJOURS AFFICHÉ                   │
+    // │ 3. BienvenueScreen (animation bienvenue + son) OU                    │
+    // │    PostLoginWelcomeScreen (si utilisateur déjà connecté)          │
+    // │ 4. Dashboard / HomeScreen                                           │
+    // └───────────────────────────────────────────────────────────────────────┘
+    
+    // TOUJOURS afficher l'onboarding (5 slides) après le splash screen
+    Navigator.pushReplacement(
+      context,
+      _fadeRoute(const OnboardingScreen()),
+    );
   }
 
   /// Transition fade douce depuis le splash

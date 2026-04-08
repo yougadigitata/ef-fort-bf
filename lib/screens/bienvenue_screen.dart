@@ -367,7 +367,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
           _bannerMessages[_currentBannerIndex],
           textAlign: TextAlign.center,
           style: const TextStyle(
-            fontSize: 142.5,
+            fontSize: 12.5,
             color: Color(0xFFD4A017),
             fontWeight: FontWeight.w700,
             letterSpacing: 0.4,
@@ -774,7 +774,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
                       Text(
                         p.$2,
                         style: const TextStyle(
-                          fontSize: 143.5,
+                          fontSize: 13.5,
                           color: Color(0xFFD4A017),
                           fontWeight: FontWeight.w700,
                         ),
@@ -782,7 +782,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
                       Text(
                         p.$3,
                         style: const TextStyle(
-                          fontSize: 142.5,
+                          fontSize: 12.5,
                           color: Colors.white60,
                           height: 1.4,
                         ),
@@ -832,7 +832,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
                   const Text(
                     'Accès Premium EF-FORT.BF',
                     style: TextStyle(
-                      fontSize: 144.5,
+                      fontSize: 14.5,
                       fontWeight: FontWeight.w900,
                       color: Color(0xFFD4A017),
                     ),
@@ -1016,7 +1016,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
               Text(
                 'Partagez EF-FORT.BF à vos proches',
                 style: TextStyle(
-                  fontSize: 141.5,
+                  fontSize: 11.5,
                   color: Colors.white.withValues(alpha: 0.4),
                   fontStyle: FontStyle.italic,
                 ),
