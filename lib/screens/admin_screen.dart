@@ -30,7 +30,10 @@ class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStat
   final List<_AdminTab> _tabs = const [
     _AdminTab(icon: Icons.dashboard_rounded, label: 'Tableau de bord'),
     _AdminTab(icon: Icons.credit_card_rounded, label: 'Paiements'),
+    _AdminTab(icon: Icons.quiz_rounded, label: 'CMS QCM'),
     _AdminTab(icon: Icons.newspaper_rounded, label: 'Annonces'),
+    _AdminTab(icon: Icons.forum_rounded, label: 'Modération'),
+    _AdminTab(icon: Icons.history_rounded, label: 'Logs'),
     _AdminTab(icon: Icons.key_rounded, label: 'Sécurité'),
   ];
 
@@ -108,7 +111,10 @@ class _AdminScreenState extends State<AdminScreen> with SingleTickerProviderStat
         children: [
           _DashboardTab(stats: _stats, demandes: _demandes, loading: _loadingStats, onRefresh: _loadData),
           _PaiementsTab(demandes: _demandes, loading: _loadingDemandes, onRefresh: _loadData),
+          const CmsQcmTab(),
           const _AnnoncesTab(),
+          const _ModerationTab(),
+          const _LogsTab(),
           const _ChangePasswordTab(),
         ],
       ),
@@ -149,11 +155,11 @@ class _DashboardTab extends StatelessWidget {
           Row(children: [
             Container(width: 4, height: 22, decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(2))),
             const SizedBox(width: 10),
-            const Expanded(child: Text('Tableau de bord consolidé', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800))),
+            const Expanded(child: Text('Tableau de bord consolidé', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800))),
           ]),
           const SizedBox(height: 4),
           Text('Mis à jour : ${DateTime.now().hour.toString().padLeft(2, '0')}h${DateTime.now().minute.toString().padLeft(2, '0')}',
-              style: TextStyle(fontSize: 17, color: AppColors.textLight)),
+              style: TextStyle(fontSize: 13, color: AppColors.textLight)),
           const SizedBox(height: 16),
 
           // Alerte paiements en attente
@@ -169,8 +175,8 @@ class _DashboardTab extends StatelessWidget {
               const Icon(Icons.notifications_active_rounded, color: Colors.orange, size: 24),
               const SizedBox(width: 12),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('$pendingCount paiement(s) en attente', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17)),
-                const Text('Validez les abonnements des utilisateurs', style: TextStyle(fontSize: 17, color: Colors.grey)),
+                Text('$pendingCount paiement(s) en attente', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                const Text('Validez les abonnements des utilisateurs', style: TextStyle(fontSize: 13, color: Colors.grey)),
               ])),
             ]),
           ),
@@ -201,7 +207,7 @@ class _DashboardTab extends StatelessWidget {
             Row(children: [
               Container(width: 4, height: 18, decoration: BoxDecoration(color: Colors.orange, borderRadius: BorderRadius.circular(2))),
               const SizedBox(width: 10),
-              const Text('Dernières demandes d\'abonnement', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+              const Text('Dernières demandes d\'abonnement', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
             ]),
             const SizedBox(height: 10),
             ...demandes.take(3).map((d) => Container(
@@ -222,7 +228,7 @@ class _DashboardTab extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(d['nom_complet']?.toString() ?? '', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                  Text(d['telephone']?.toString() ?? '', style: const TextStyle(fontSize: 17, color: Colors.grey)),
+                  Text(d['telephone']?.toString() ?? '', style: const TextStyle(fontSize: 13, color: Colors.grey)),
                 ])),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
@@ -231,7 +237,7 @@ class _DashboardTab extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(d['statut']?.toString() ?? '', style: TextStyle(
-                    fontSize: 17, fontWeight: FontWeight.w700,
+                    fontSize: 13, fontWeight: FontWeight.w700,
                     color: d['statut'] == 'EN_ATTENTE' ? Colors.orange.shade800 : Colors.green.shade800,
                   )),
                 ),
@@ -255,9 +261,9 @@ class _DashboardTab extends StatelessWidget {
         child: Column(children: [
           Icon(icon, color: color, size: 28),
           const SizedBox(height: 8),
-          Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: color)),
+          Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: color)),
           const SizedBox(height: 4),
-          Text(label, style: TextStyle(fontSize: 17, color: AppColors.textLight), textAlign: TextAlign.center),
+          Text(label, style: TextStyle(fontSize: 13, color: AppColors.textLight), textAlign: TextAlign.center),
         ]),
       ),
     );
@@ -416,7 +422,7 @@ class _PaiementsTabState extends State<_PaiementsTab> {
                                 ),
                                 child: Text(
                                   isEnAttente ? '⏳ En attente' : '✅ Validé',
-                                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700,
+                                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
                                       color: isEnAttente ? Colors.orange.shade800 : Colors.green.shade800),
                                 ),
                               ),
@@ -486,7 +492,7 @@ class _PaiementsTabState extends State<_PaiementsTab> {
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: isSelected ? color : Colors.grey.shade300),
         ),
-        child: Text(label, style: TextStyle(fontSize: 17, fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+        child: Text(label, style: TextStyle(fontSize: 13, fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
             color: isSelected ? color : Colors.grey.shade700)),
       ),
     );
@@ -541,7 +547,7 @@ class _CmsQcmTabState extends State<CmsQcmTab> {
                     child: Row(children: [
                       Icon(s.icon, size: 16, color: isActive ? Colors.white : Colors.white60),
                       const SizedBox(width: 6),
-                      Text(s.label, style: TextStyle(fontSize: 17, fontWeight: isActive ? FontWeight.w700 : FontWeight.w400, color: isActive ? Colors.white : Colors.white60)),
+                      Text(s.label, style: TextStyle(fontSize: 13, fontWeight: isActive ? FontWeight.w700 : FontWeight.w400, color: isActive ? Colors.white : Colors.white60)),
                     ]),
                   ),
                 );
@@ -677,7 +683,7 @@ class _CmsDashboardSectionState extends State<_CmsDashboardSection> {
                   ),
                 ])),
                 const SizedBox(width: 8),
-                Text('$nb', style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: Color(0xFF1A5C38))),
+                Text('$nb', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1A5C38))),
               ]),
             );
           })),
@@ -700,8 +706,8 @@ class _CmsDashboardSectionState extends State<_CmsDashboardSection> {
               child: Icon(icon, color: color, size: 22)),
           const SizedBox(width: 12),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: color)),
-            Text(label, style: const TextStyle(fontSize: 17, color: Colors.grey)),
+            Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: color)),
+            Text(label, style: const TextStyle(fontSize: 13, color: Colors.grey)),
           ])),
         ]),
       ),
@@ -817,9 +823,9 @@ class _CmsQuestionsSectionState extends State<_CmsQuestionsSection> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6), color: Colors.grey.shade50,
           child: Row(children: [
-            Text('$_total questions', style: const TextStyle(fontSize: 17, color: Colors.grey)),
+            Text('$_total questions', style: const TextStyle(fontSize: 13, color: Colors.grey)),
             const Spacer(),
-            Text('Page $_page / ${((_total / 15).ceil()).clamp(1, 9999)}', style: const TextStyle(fontSize: 17, color: Colors.grey)),
+            Text('Page $_page / ${((_total / 15).ceil()).clamp(1, 9999)}', style: const TextStyle(fontSize: 13, color: Colors.grey)),
           ]),
         ),
         Expanded(
@@ -855,7 +861,7 @@ class _CmsQuestionsSectionState extends State<_CmsQuestionsSection> {
           color: isSelected ? const Color(0xFF1A5C38) : Colors.grey.shade100,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Text(label, style: TextStyle(fontSize: 17, color: isSelected ? Colors.white : Colors.grey.shade700, fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400)),
+        child: Text(label, style: TextStyle(fontSize: 13, color: isSelected ? Colors.white : Colors.grey.shade700, fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400)),
       ),
     );
   }
@@ -892,7 +898,7 @@ class _CmsQuestionsSectionState extends State<_CmsQuestionsSection> {
           child: SingleChildScrollView(
             child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
-                Text(isEdit ? '✏️ Modifier la question' : '✚ Nouvelle question', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                Text(isEdit ? '✏️ Modifier la question' : '✚ Nouvelle question', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
                 const Spacer(),
                 IconButton(onPressed: () => Navigator.pop(ctx), icon: const Icon(Icons.close)),
               ]),
@@ -1072,7 +1078,7 @@ class _CmsBulkImportSectionState extends State<_CmsBulkImportSection> {
         _sectionTitle('Import QCM en Masse', const Color(0xFF7C3AED)),
         const SizedBox(height: 4),
         const Text('Collez vos questions au format Markdown ou Texte brut. Chaque question commence par ## ou un chiffre.',
-            style: TextStyle(fontSize: 17, color: Colors.grey)),
+            style: TextStyle(fontSize: 13, color: Colors.grey)),
         const SizedBox(height: 16),
 
         // Format aide
@@ -1087,7 +1093,7 @@ class _CmsBulkImportSectionState extends State<_CmsBulkImportSection> {
               decoration: BoxDecoration(color: const Color(0xFF1e293b), borderRadius: BorderRadius.circular(8)),
               child: const Text(
                 '## Capitale du Burkina Faso ?\nA) Bobo-Dioulasso\nB) Ouagadougou *\nC) Koudougou\nD) Banfora\nExplication: Ouagadougou est la capitale.',
-                style: TextStyle(fontFamily: 'monospace', fontSize: 17, color: Colors.white70),
+                style: TextStyle(fontFamily: 'monospace', fontSize: 13, color: Colors.white70),
               ),
             ),
           ]),
@@ -1193,7 +1199,7 @@ class _CmsBulkImportSectionState extends State<_CmsBulkImportSection> {
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: isSelected ? const Color(0xFF7C3AED) : Colors.grey.shade300),
         ),
-        child: Text(label, style: TextStyle(fontSize: 17, fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400, color: isSelected ? const Color(0xFF7C3AED) : Colors.grey.shade700)),
+        child: Text(label, style: TextStyle(fontSize: 13, fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400, color: isSelected ? const Color(0xFF7C3AED) : Colors.grey.shade700)),
       ),
     );
   }
@@ -1258,7 +1264,7 @@ class _CmsSeriesSectionState extends State<_CmsSeriesSection> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6), color: Colors.grey.shade50,
           child: Row(children: [
-            Text('${_series.length} série(s)', style: const TextStyle(fontSize: 17, color: Colors.grey)),
+            Text('${_series.length} série(s)', style: const TextStyle(fontSize: 13, color: Colors.grey)),
           ]),
         ),
         Expanded(
@@ -1290,7 +1296,7 @@ class _CmsSeriesSectionState extends State<_CmsSeriesSection> {
                           title: Text(s['titre']?.toString() ?? s['nom']?.toString() ?? 'Série ${i + 1}', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17)),
                           subtitle: Text(
                             '${s['nb_questions'] ?? 0} questions • ${s['matiere_nom'] ?? s['matiere_code'] ?? ''}',
-                            style: const TextStyle(fontSize: 17, color: Colors.grey),
+                            style: const TextStyle(fontSize: 13, color: Colors.grey),
                           ),
                           trailing: Switch(
                             value: published,
@@ -1318,7 +1324,7 @@ class _CmsSeriesSectionState extends State<_CmsSeriesSection> {
           color: isSelected ? const Color(0xFFB45309) : Colors.grey.shade100,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Text(label, style: TextStyle(fontSize: 17, color: isSelected ? Colors.white : Colors.grey.shade700, fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400)),
+        child: Text(label, style: TextStyle(fontSize: 13, color: isSelected ? Colors.white : Colors.grey.shade700, fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400)),
       ),
     );
   }
@@ -1419,8 +1425,8 @@ class _CmsSimulationsSectionState extends State<_CmsSimulationsSection> {
           padding: const EdgeInsets.all(12), color: Colors.white,
           child: Row(children: [
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('Simulations & Examens', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
-              Text('${_simulations.length} examen(s) créé(s)', style: const TextStyle(fontSize: 17, color: Colors.grey)),
+              const Text('Simulations & Examens', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+              Text('${_simulations.length} examen(s) créé(s)', style: const TextStyle(fontSize: 13, color: Colors.grey)),
             ]),
             const Spacer(),
             ElevatedButton.icon(
@@ -1441,7 +1447,7 @@ class _CmsSimulationsSectionState extends State<_CmsSimulationsSection> {
       padding: const EdgeInsets.all(16),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         const Text('Créer un examen/simulation', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFFCE1126))),
-        const Text('Composez un examen en sélectionnant les questions par matière', style: TextStyle(fontSize: 17, color: Colors.grey)),
+        const Text('Composez un examen en sélectionnant les questions par matière', style: TextStyle(fontSize: 13, color: Colors.grey)),
         const SizedBox(height: 14),
         TextField(controller: _titreCtrl, decoration: InputDecoration(labelText: 'Titre *', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)))),
         const SizedBox(height: 10),
@@ -1455,7 +1461,7 @@ class _CmsSimulationsSectionState extends State<_CmsSimulationsSection> {
         ),
         const SizedBox(height: 16),
         Row(children: [
-          const Text('Questions par matière', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+          const Text('Questions par matière', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
           const Spacer(),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -1517,12 +1523,12 @@ class _CmsSimulationsSectionState extends State<_CmsSimulationsSection> {
               ),
               title: Text(s['titre']?.toString() ?? 'Simulation', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17)),
               subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('${s['nb_questions'] ?? 0} questions • ${s['duree_minutes'] ?? 120} min', style: const TextStyle(fontSize: 17, color: Colors.grey)),
+                Text('${s['nb_questions'] ?? 0} questions • ${s['duree_minutes'] ?? 120} min', style: const TextStyle(fontSize: 13, color: Colors.grey)),
                 Row(children: [
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(color: published ? Colors.green.shade50 : Colors.orange.shade50, borderRadius: BorderRadius.circular(8)),
-                    child: Text(published ? '✅ Publiée' : '📝 Brouillon', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: published ? Colors.green.shade700 : Colors.orange.shade700)),
+                    child: Text(published ? '✅ Publiée' : '📝 Brouillon', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: published ? Colors.green.shade700 : Colors.orange.shade700)),
                   ),
                 ]),
               ]),
@@ -1614,7 +1620,7 @@ class _CmsExamGeneratorSectionState extends State<_CmsExamGeneratorSection> {
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         _sectionTitle('Générateur d\'Examens Composites', const Color(0xFF0891B2)),
         const SizedBox(height: 4),
-        const Text('Composez un examen en puisant des questions dans plusieurs matières.', style: TextStyle(fontSize: 17, color: Colors.grey)),
+        const Text('Composez un examen en puisant des questions dans plusieurs matières.', style: TextStyle(fontSize: 13, color: Colors.grey)),
         const SizedBox(height: 16),
 
         // Titre
@@ -1631,7 +1637,7 @@ class _CmsExamGeneratorSectionState extends State<_CmsExamGeneratorSection> {
         // Allocation par matière
         if (_allocations.isNotEmpty) ...[
           Row(children: [
-            const Text('Répartition sélectionnée', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+            const Text('Répartition sélectionnée', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
             const Spacer(),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -1657,7 +1663,7 @@ class _CmsExamGeneratorSectionState extends State<_CmsExamGeneratorSection> {
         ],
 
         // Sélection matières
-        const Text('Ajouter des matières :', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+        const Text('Ajouter des matières :', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
         const SizedBox(height: 10),
         Wrap(
           spacing: 8, runSpacing: 8,
@@ -1675,7 +1681,7 @@ class _CmsExamGeneratorSectionState extends State<_CmsExamGeneratorSection> {
                 ),
                 child: Text(
                   isSelected ? '✓ ${mat['nom']}' : mat['nom']?.toString() ?? '',
-                  style: TextStyle(fontSize: 17, fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400, color: isSelected ? const Color(0xFF0891B2) : Colors.grey.shade700),
+                  style: TextStyle(fontSize: 13, fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400, color: isSelected ? const Color(0xFF0891B2) : Colors.grey.shade700),
                 ),
               ),
             );
@@ -1776,8 +1782,8 @@ class _AnnoncesTabState extends State<_AnnoncesTab> {
           padding: const EdgeInsets.all(14), color: Colors.white,
           child: Row(children: [
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('Gestion des Annonces', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
-              Text('${_annonces.length} annonce(s) publiée(s)', style: const TextStyle(fontSize: 17, color: Colors.grey)),
+              const Text('Gestion des Annonces', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+              Text('${_annonces.length} annonce(s) publiée(s)', style: const TextStyle(fontSize: 13, color: Colors.grey)),
             ]),
             const Spacer(),
             ElevatedButton.icon(
@@ -1847,8 +1853,8 @@ class _AnnoncesTabState extends State<_AnnoncesTab> {
                               ),
                               title: Text(a['titre']?.toString() ?? '', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17), maxLines: 1, overflow: TextOverflow.ellipsis),
                               subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                Text(a['contenu']?.toString() ?? '', style: const TextStyle(fontSize: 17, color: Colors.grey), maxLines: 2, overflow: TextOverflow.ellipsis),
-                                if (a['created_at'] != null) Text(_formatDate(a['created_at'].toString()), style: const TextStyle(fontSize: 17, color: Colors.grey)),
+                                Text(a['contenu']?.toString() ?? '', style: const TextStyle(fontSize: 13, color: Colors.grey), maxLines: 2, overflow: TextOverflow.ellipsis),
+                                if (a['created_at'] != null) Text(_formatDate(a['created_at'].toString()), style: const TextStyle(fontSize: 13, color: Colors.grey)),
                               ]),
                               trailing: IconButton(icon: const Icon(Icons.delete_rounded, color: Colors.red, size: 22), onPressed: () => _deleteAnnonce(a['id']?.toString() ?? ''), tooltip: 'Supprimer'),
                             ),
@@ -1870,7 +1876,332 @@ class _AnnoncesTabState extends State<_AnnoncesTab> {
 }
 
 // ══════════════════════════════════════════════════════════════
-// ONGLET 5 — CHANGEMENT DE MOT DE PASSE
+// ONGLET 5 — MODÉRATION (ENTRAIDE)
+// ══════════════════════════════════════════════════════════════
+class _ModerationTab extends StatefulWidget {
+  const _ModerationTab();
+  @override
+  State<_ModerationTab> createState() => _ModerationTabState();
+}
+
+class _ModerationTabState extends State<_ModerationTab> {
+  List<dynamic> _messages = [];
+  bool _loading = true;
+
+  @override
+  void initState() { super.initState(); _loadMessages(); }
+
+  Future<void> _loadMessages() async {
+    setState(() => _loading = true);
+    try {
+      final token = ApiService.token;
+      final res = await http.get(
+        Uri.parse('$_baseUrl/api/admin/entraide-messages'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+      final data = jsonDecode(res.body);
+      if (mounted) setState(() {
+        _messages = data['messages'] as List<dynamic>? ?? [];
+        _loading = false;
+      });
+    } catch (_) { if (mounted) setState(() => _loading = false); }
+  }
+
+  Future<void> _deleteMessage(String id) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Supprimer le message ?'),
+        content: const Text('Cette action est irréversible.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annuler')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+            child: const Text('Supprimer', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+    
+    final token = ApiService.token;
+    await http.delete(
+      Uri.parse('$_baseUrl/api/admin/entraide-messages/$id'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Message supprimé'), backgroundColor: Colors.orange),
+      );
+      _loadMessages();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+    
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(14), color: Colors.white,
+          child: Row(children: [
+            const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('Modération de l\'Entraide', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+              Text('Gérer les messages de la communauté', style: TextStyle(fontSize: 13, color: Colors.grey)),
+            ])),
+            IconButton(icon: const Icon(Icons.refresh_rounded), onPressed: _loadMessages, tooltip: 'Rafraîchir'),
+          ]),
+        ),
+        Expanded(
+          child: _messages.isEmpty
+              ? _buildEmpty('Aucun message', 'Les messages de l\'Entraide apparaîtront ici')
+              : RefreshIndicator(
+                  onRefresh: _loadMessages,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(12),
+                    itemCount: _messages.length,
+                    itemBuilder: (_, i) {
+                      final m = _messages[i] as Map<String, dynamic>;
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 6)],
+                        ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.all(12),
+                          leading: CircleAvatar(
+                            backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                            child: const Icon(Icons.person, color: AppColors.primary, size: 20),
+                          ),
+                          title: Text(m['auteur']?.toString() ?? 'Anonyme', 
+                            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                          subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            const SizedBox(height: 4),
+                            Text(m['contenu']?.toString() ?? '', 
+                              style: const TextStyle(fontSize: 13), maxLines: 3, overflow: TextOverflow.ellipsis),
+                            if (m['created_at'] != null) ...[
+                              const SizedBox(height: 4),
+                              Text(_formatDate(m['created_at'].toString()), 
+                                style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                            ],
+                          ]),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete_rounded, color: Colors.red, size: 20),
+                            onPressed: () => _deleteMessage(m['id']?.toString() ?? ''),
+                            tooltip: 'Supprimer',
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+        ),
+      ],
+    );
+  }
+
+  String _formatDate(String dateStr) {
+    try {
+      final dt = DateTime.parse(dateStr).toLocal();
+      return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year} ${dt.hour}h${dt.minute.toString().padLeft(2, '0')}';
+    } catch (_) { return dateStr.substring(0, 16.clamp(0, dateStr.length)); }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// ONGLET 6 — LOGS (JOURNAL DES ACTIONS ADMIN)
+// ══════════════════════════════════════════════════════════════
+class _LogsTab extends StatefulWidget {
+  const _LogsTab();
+  @override
+  State<_LogsTab> createState() => _LogsTabState();
+}
+
+class _LogsTabState extends State<_LogsTab> {
+  List<dynamic> _logs = [];
+  bool _loading = true;
+  String _filter = 'TOUS';
+
+  @override
+  void initState() { super.initState(); _loadLogs(); }
+
+  Future<void> _loadLogs() async {
+    setState(() => _loading = true);
+    try {
+      final token = ApiService.token;
+      final res = await http.get(
+        Uri.parse('$_baseUrl/api/admin/logs'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+      final data = jsonDecode(res.body);
+      if (mounted) setState(() {
+        _logs = data['logs'] as List<dynamic>? ?? [];
+        _loading = false;
+      });
+    } catch (_) { if (mounted) setState(() => _loading = false); }
+  }
+
+  List<dynamic> get _filteredLogs {
+    if (_filter == 'TOUS') return _logs;
+    return _logs.where((log) => log['type']?.toString() == _filter).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+    
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(14), color: Colors.white,
+          child: Row(children: [
+            const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('Journal des Actions Admin', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+              Text('Historique de toutes les modifications', style: TextStyle(fontSize: 13, color: Colors.grey)),
+            ])),
+            IconButton(icon: const Icon(Icons.refresh_rounded), onPressed: _loadLogs, tooltip: 'Rafraîchir'),
+          ]),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          color: Colors.grey.shade50,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(children: [
+              _filterChip('Tous', 'TOUS', Colors.grey),
+              const SizedBox(width: 8),
+              _filterChip('Questions', 'QUESTION', Colors.blue),
+              const SizedBox(width: 8),
+              _filterChip('Séries', 'SERIE', Colors.orange),
+              const SizedBox(width: 8),
+              _filterChip('Examens', 'EXAMEN', Colors.red),
+              const SizedBox(width: 8),
+              _filterChip('Paiements', 'PAIEMENT', Colors.green),
+              const SizedBox(width: 8),
+              _filterChip('Annonces', 'ANNONCE', Colors.purple),
+            ]),
+          ),
+        ),
+        Expanded(
+          child: _filteredLogs.isEmpty
+              ? _buildEmpty('Aucun log', 'Les actions admin seront enregistrées ici')
+              : RefreshIndicator(
+                  onRefresh: _loadLogs,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(12),
+                    itemCount: _filteredLogs.length,
+                    itemBuilder: (_, i) {
+                      final log = _filteredLogs[i] as Map<String, dynamic>;
+                      final type = log['type']?.toString() ?? 'ACTION';
+                      final color = _getLogColor(type);
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: color.withValues(alpha: 0.2)),
+                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 4)],
+                        ),
+                        child: ListTile(
+                          dense: true,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          leading: Container(
+                            width: 36, height: 36,
+                            decoration: BoxDecoration(
+                              color: color.withValues(alpha: 0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(_getLogIcon(type), color: color, size: 18),
+                          ),
+                          title: Text(log['action']?.toString() ?? '', 
+                            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                          subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            if (log['details'] != null) ...[
+                              const SizedBox(height: 2),
+                              Text(log['details']?.toString() ?? '', 
+                                style: const TextStyle(fontSize: 12, color: Colors.grey), 
+                                maxLines: 2, overflow: TextOverflow.ellipsis),
+                            ],
+                            if (log['created_at'] != null) ...[
+                              const SizedBox(height: 4),
+                              Text(_formatLogDate(log['created_at'].toString()), 
+                                style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                            ],
+                          ]),
+                          trailing: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: color.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(type, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color)),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _filterChip(String label, String value, Color color) {
+    final isSelected = _filter == value;
+    return GestureDetector(
+      onTap: () => setState(() => _filter = value),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? color.withValues(alpha: 0.1) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: isSelected ? color : Colors.grey.shade300),
+        ),
+        child: Text(label, style: TextStyle(
+          fontSize: 13, 
+          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+          color: isSelected ? color : Colors.grey.shade700,
+        )),
+      ),
+    );
+  }
+
+  Color _getLogColor(String type) {
+    switch (type) {
+      case 'QUESTION': return Colors.blue;
+      case 'SERIE': return Colors.orange;
+      case 'EXAMEN': return Colors.red;
+      case 'PAIEMENT': return Colors.green;
+      case 'ANNONCE': return Colors.purple;
+      default: return Colors.grey;
+    }
+  }
+
+  IconData _getLogIcon(String type) {
+    switch (type) {
+      case 'QUESTION': return Icons.quiz_rounded;
+      case 'SERIE': return Icons.library_books_rounded;
+      case 'EXAMEN': return Icons.timer_rounded;
+      case 'PAIEMENT': return Icons.payment_rounded;
+      case 'ANNONCE': return Icons.newspaper_rounded;
+      default: return Icons.history_rounded;
+    }
+  }
+
+  String _formatLogDate(String dateStr) {
+    try {
+      final dt = DateTime.parse(dateStr).toLocal();
+      return '${dt.day}/${dt.month}/${dt.year} à ${dt.hour}h${dt.minute.toString().padLeft(2, '0')}';
+    } catch (_) { return dateStr.substring(0, 16.clamp(0, dateStr.length)); }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// ONGLET 7 — CHANGEMENT DE MOT DE PASSE
 // ══════════════════════════════════════════════════════════════
 class _ChangePasswordTab extends StatefulWidget {
   const _ChangePasswordTab();
@@ -1988,9 +2319,9 @@ class _ChangePasswordTabState extends State<_ChangePasswordTab> {
                 child: const Icon(Icons.security_rounded, color: Colors.white, size: 28)),
             const SizedBox(width: 14),
             const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Sécurité du Compte', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Colors.white)),
+              Text('Sécurité du Compte', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Colors.white)),
               SizedBox(height: 4),
-              Text('Changez votre mot de passe régulièrement pour protéger le panel admin', style: TextStyle(fontSize: 17, color: Colors.white70)),
+              Text('Changez votre mot de passe régulièrement pour protéger le panel admin', style: TextStyle(fontSize: 13, color: Colors.white70)),
             ])),
           ]),
         ),
@@ -2011,7 +2342,7 @@ class _ChangePasswordTabState extends State<_ChangePasswordTab> {
             )),
           ))),
           const SizedBox(height: 4),
-          Text(strengthLabels[_strength], style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: strengthColors[_strength])),
+          Text(strengthLabels[_strength], style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: strengthColors[_strength])),
         ],
         const SizedBox(height: 14),
         _pwdField('Confirmer le nouveau mot de passe', _confirmCtrl, _showConfirm, () => setState(() => _showConfirm = !_showConfirm), matchValue: _newCtrl.text),
@@ -2064,7 +2395,7 @@ class _ChangePasswordTabState extends State<_ChangePasswordTab> {
           child: const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('💡 Conseils de sécurité', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.secondary)),
             SizedBox(height: 8),
-            Text('• Changez votre mot de passe après chaque déploiement\n• Utilisez 12+ caractères avec des symboles spéciaux\n• Ne partagez jamais votre mot de passe admin', style: TextStyle(fontSize: 17, color: Colors.grey, height: 1.7)),
+            Text('• Changez votre mot de passe après chaque déploiement\n• Utilisez 12+ caractères avec des symboles spéciaux\n• Ne partagez jamais votre mot de passe admin', style: TextStyle(fontSize: 13, color: Colors.grey, height: 1.7)),
           ]),
         ),
       ]),
@@ -2122,13 +2453,13 @@ class _QuestionCard extends StatelessWidget {
           if (matiere.isNotEmpty) Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(color: const Color(0xFF1A5C38).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
-            child: Text(matiere, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: Color(0xFF1A5C38))),
+            child: Text(matiere, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1A5C38))),
           ),
           const Spacer(),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(8)),
-            child: Text('Rép: $bonneRep', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: Colors.blue.shade700)),
+            child: Text('Rép: $bonneRep', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.blue.shade700)),
           ),
           const SizedBox(width: 4),
           GestureDetector(onTap: onEdit, child: Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: Colors.orange.shade50, borderRadius: BorderRadius.circular(8)), child: Icon(Icons.edit_rounded, size: 16, color: Colors.orange.shade700))),
@@ -2139,9 +2470,9 @@ class _QuestionCard extends StatelessWidget {
         Text(enonce, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600), maxLines: 2, overflow: TextOverflow.ellipsis),
         const SizedBox(height: 6),
         Row(children: [
-          Expanded(child: Text('A: ${question['option_a']?.toString() ?? ''}', style: const TextStyle(fontSize: 17, color: Colors.grey), maxLines: 1, overflow: TextOverflow.ellipsis)),
+          Expanded(child: Text('A: ${question['option_a']?.toString() ?? ''}', style: const TextStyle(fontSize: 13, color: Colors.grey), maxLines: 1, overflow: TextOverflow.ellipsis)),
           const SizedBox(width: 8),
-          Expanded(child: Text('B: ${question['option_b']?.toString() ?? ''}', style: const TextStyle(fontSize: 17, color: Colors.grey), maxLines: 1, overflow: TextOverflow.ellipsis)),
+          Expanded(child: Text('B: ${question['option_b']?.toString() ?? ''}', style: const TextStyle(fontSize: 13, color: Colors.grey), maxLines: 1, overflow: TextOverflow.ellipsis)),
         ]),
       ]),
     );
@@ -2172,7 +2503,7 @@ Widget _buildEmpty(String title, String subtitle) {
   return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
     Icon(Icons.inbox_outlined, size: 64, color: Colors.grey.withValues(alpha: 0.3)),
     const SizedBox(height: 16),
-    Text(title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: Colors.grey)),
+    Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.grey)),
     const SizedBox(height: 6),
     Text(subtitle, textAlign: TextAlign.center, style: const TextStyle(fontSize: 16, color: Colors.grey)),
   ]));
