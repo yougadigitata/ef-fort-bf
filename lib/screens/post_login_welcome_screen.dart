@@ -378,11 +378,11 @@ class _PostLoginWelcomeScreenState extends State<PostLoginWelcomeScreen>
           child: const Text(
             'EF-FORT.BF',
             style: TextStyle(
-              fontSize: 38,
+              fontSize: 28,
               fontWeight: FontWeight.w900,
               color: Colors.white,
               fontFamily: 'monospace',
-              letterSpacing: 5,
+              letterSpacing: 3,
               shadows: [
                 Shadow(
                   color: Color(0xFF4CAF50),
@@ -403,7 +403,7 @@ class _PostLoginWelcomeScreenState extends State<PostLoginWelcomeScreen>
           child: const Text(
             '▶  PLATEFORME N°1 AU BURKINA FASO  ◀',
             style: TextStyle(
-              fontSize: 9,
+              fontSize: 8,
               color: Color(0xFF4CAF50),
               fontFamily: 'monospace',
               letterSpacing: 1.5,
@@ -430,7 +430,7 @@ class _PostLoginWelcomeScreenState extends State<PostLoginWelcomeScreen>
             '🎓  Bienvenue, $prenom !',
             textAlign: TextAlign.center,
             style: const TextStyle(
-              fontSize: 14,
+              fontSize: 13,
               fontWeight: FontWeight.w800,
               color: Color(0xFFD4A017),
               fontFamily: 'monospace',
@@ -442,7 +442,7 @@ class _PostLoginWelcomeScreenState extends State<PostLoginWelcomeScreen>
             'Votre espace de préparation est prêt.\nBonne révision et bonne chance ! 🇧🇫',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 12.5,
+              fontSize: 11.5,
               color: Color(0xFF81C784),
               height: 1.6,
               fontFamily: 'monospace',
