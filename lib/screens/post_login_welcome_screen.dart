@@ -403,11 +403,11 @@ class _PostLoginWelcomeScreenState extends State<PostLoginWelcomeScreen>
           child: const Text(
             '▶  PLATEFORME N°1 AU BURKINA FASO  ◀',
             style: TextStyle(
-              fontSize: 8,
+              fontSize: 9,
               color: Color(0xFF4CAF50),
               fontFamily: 'monospace',
-              letterSpacing: 1.5,
-              fontWeight: FontWeight.w700,
+              letterSpacing: 0.6,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),

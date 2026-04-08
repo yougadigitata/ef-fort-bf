@@ -371,10 +371,10 @@ class _BienvenueScreenState extends State<BienvenueScreen>
           _bannerMessages[_currentBannerIndex],
           textAlign: TextAlign.center,
           style: const TextStyle(
-            fontSize: 12.5,
+            fontSize: 11,
             color: Color(0xFFD4A017),
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.4,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.3,
           ),
         ),
       ),
