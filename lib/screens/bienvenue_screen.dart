@@ -124,11 +124,15 @@ class _BienvenueScreenState extends State<BienvenueScreen>
       }));
     }
 
-    // Bandeau défilant
+    // Bandeau défilant (limité à 3 cycles complets)
+    int bannerCycleCount = 0;
     _bannerTimer = Timer.periodic(const Duration(seconds: 3), (t) {
-      if (mounted) {
+      if (mounted && bannerCycleCount < _bannerMessages.length * 3) {
         setState(() => _currentBannerIndex =
             (_currentBannerIndex + 1) % _bannerMessages.length);
+        bannerCycleCount++;
+      } else {
+        t.cancel();
       }
     });
   }
@@ -450,7 +454,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
               child: const Text(
                 'EF-FORT.BF',
                 style: TextStyle(
-                  fontSize: 40,
+                  fontSize: 32,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 4,
                   color: Colors.white, // requis pour ShaderMask
@@ -621,7 +625,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
                     'et que la réussite soit au rendez-vous ! '
                     'Bonne chance à vous. 🇧🇫',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 14,
                       color: Color(0xFF22C55E),
                       fontWeight: FontWeight.w600,
                       height: 1.55,
@@ -897,14 +901,14 @@ class _BienvenueScreenState extends State<BienvenueScreen>
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
-                      fontSize: 16,
+                      fontSize: 13,
                     ),
                   ),
                   TextSpan(
                     text: desc,
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.65),
-                      fontSize: 15,
+                      fontSize: 12,
                     ),
                   ),
                 ],
@@ -968,7 +972,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
               Text(
                 'Commencer mon apprentissage',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 15,
                   fontWeight: FontWeight.w900,
                   color: Color(0xFF0A2E1A),
                   letterSpacing: 0.3,
@@ -989,7 +993,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
           '"Le savoir est la plus puissante des armes."',
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 14,
             color: Color(0xFFD4A017),
             fontStyle: FontStyle.italic,
             fontWeight: FontWeight.w600,
