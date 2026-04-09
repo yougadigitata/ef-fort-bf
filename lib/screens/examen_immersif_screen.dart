@@ -1685,10 +1685,10 @@ class _ExamenImmersifScreenState extends State<ExamenImmersifScreen>
                       MathTextWidget(
                         text: texte,
                         textStyle: const TextStyle(
-                          fontSize: 22, fontFamily: 'Georgia', height: 1.7,
+                          fontSize: 18, fontFamily: 'Georgia', height: 1.7,
                           color: Color(0xFF2C3E50), fontWeight: FontWeight.w600,
                         ),
-                        mathSize: 22,
+                        mathSize: 18,
                         mathColor: const Color(0xFF2C3E50),
                       ),
                     ],
@@ -1715,7 +1715,7 @@ class _ExamenImmersifScreenState extends State<ExamenImmersifScreen>
                       child: Center(
                         child: Text(
                           opt.key,
-                          style: TextStyle(fontSize: 19, fontWeight: FontWeight.w900, color: widget.couleur),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: widget.couleur),
                         ),
                       ),
                     ),
@@ -1724,10 +1724,10 @@ class _ExamenImmersifScreenState extends State<ExamenImmersifScreen>
                       child: MathTextWidget(
                         text: opt.value,
                         textStyle: const TextStyle(
-                          fontSize: 20, fontFamily: 'Georgia', height: 1.65,
+                          fontSize: 16, fontFamily: 'Georgia', height: 1.65,
                           color: Color(0xFF2C3E50),
                         ),
-                        mathSize: 20,
+                        mathSize: 16,
                         mathColor: const Color(0xFF2C3E50),
                       ),
                     ),
@@ -1826,11 +1826,11 @@ class _ExamenImmersifScreenState extends State<ExamenImmersifScreen>
                       const SizedBox(
                         width: 52,
                         child: Text('N°', textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 15)),
                       ),
                       ...['A', 'B', 'C', 'D', 'E'].map((l) => Expanded(
                         child: Text(l, textAlign: TextAlign.center,
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 19)),
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 15)),
                       )),
                     ],
                   ),
@@ -1865,7 +1865,7 @@ class _ExamenImmersifScreenState extends State<ExamenImmersifScreen>
                             child: Text(
                               '${i + 1}',
                               style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w700,
+                                fontSize: 15, fontWeight: FontWeight.w700,
                                 color: selectedLetters.isNotEmpty ? widget.couleur : Colors.grey[400],
                               ),
                             ),
@@ -1902,7 +1902,7 @@ class _ExamenImmersifScreenState extends State<ExamenImmersifScreen>
                                   child: Text(
                                     letter,
                                     style: TextStyle(
-                                      fontSize: 18, fontWeight: FontWeight.w800,
+                                      fontSize: 15, fontWeight: FontWeight.w800,
                                       color: isSelected ? Colors.white : Colors.grey.shade400,
                                     ),
                                   ),

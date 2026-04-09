@@ -89,7 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const Text(
                     'Connexion',
                     style: TextStyle(
-                      fontSize: 30,
+                      fontSize: 24,
                       fontWeight: FontWeight.w800,
                       color: AppColors.white,
                     ),

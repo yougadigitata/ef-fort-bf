@@ -112,7 +112,7 @@ class _InscriptionScreenState extends State<InscriptionScreen> {
                   const Text(
                     'Creer mon compte',
                     style: TextStyle(
-                      fontSize: 26,
+                      fontSize: 22,
                       fontWeight: FontWeight.w800,
                       color: AppColors.white,
                     ),

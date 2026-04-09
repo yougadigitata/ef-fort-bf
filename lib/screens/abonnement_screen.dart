@@ -177,7 +177,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                             'Les candidats EF-FORT.BF arrivent PRÉPARÉS.\nIls connaissent les questions. Ils maîtrisent les matières.\nIls réussissent là où les autres échouent.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 14,
                               color: Colors.white70,
                               height: 1.5,
                             ),
@@ -666,7 +666,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                     Expanded(
                       child: Text(
                         'Paiement 100% sécurisé via Orange Money. Chaque transaction est vérifiée manuellement par notre équipe avant activation.',
-                        style: TextStyle(fontSize: 141.5, color: AppColors.textDark, height: 1.5),
+                        style: TextStyle(fontSize: 13.5, color: AppColors.textDark, height: 1.5),
                       ),
                     ),
                   ],
@@ -795,7 +795,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
           const SizedBox(height: 8),
           Text(
             '"${t['texte']}"',
-            style: const TextStyle(fontSize: 142.5, color: AppColors.textDark, height: 1.5, fontStyle: FontStyle.italic),
+            style: const TextStyle(fontSize: 14.5, color: AppColors.textDark, height: 1.5, fontStyle: FontStyle.italic),
           ),
         ],
       ),
@@ -825,9 +825,9 @@ class _AbonnementScreenState extends State<AbonnementScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(titre, style: const TextStyle(fontSize: 143.5, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                Text(titre, style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700, color: AppColors.textDark)),
                 const SizedBox(height: 3),
-                Text(description, style: const TextStyle(fontSize: 141.5, color: AppColors.textLight, height: 1.4)),
+                Text(description, style: const TextStyle(fontSize: 13.5, color: AppColors.textLight, height: 1.4)),
                 if (action != null) ...[const SizedBox(height: 10), action],
               ],
             ),

@@ -346,7 +346,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 141.5,
+                fontSize: 13.5,
                 fontWeight: FontWeight.w800,
                 color: color,
                 height: 1.2,
