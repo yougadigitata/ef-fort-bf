@@ -521,8 +521,8 @@ class _ExamenImmersifAccueilScreenState
     final id = examen['id'] as int;
     final color = _kExamColors[id] ?? const Color(0xFF1A5C38);
     final rawNom = examen['nom'] as String;
-    // Pour les Examens Blancs (série 3), afficher "Série N" au lieu de "Examens Blancs"
-    final nom = (examen['serie'] == 3)
+    // Pour les Examens Blancs (IDs 97-106), afficher "Série N" au lieu de "Examens Blancs"
+    final nom = (examen['serie'] == 3 && id >= 97 && id <= 106)
         ? 'Série ${index + 1}'
         : rawNom;
     final icone = examen['icone'] as String;
