@@ -17823,7 +17823,7 @@ this.b=b},
 YZ:function YZ(a,b,c,d){var _=this
 _.c=a
 _.d=b
-_.e=c
+_.f=c
 _.a=d},
 M2:function M2(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,a0,a1,a2,a3,a4,a5,a6,a7,a8){var _=this
 _.c=a
@@ -56479,7 +56479,7 @@ return new B.Tz(new B.avg(r,12,12,0.82),new B.A7(new B.aFu(this),q,!0,!0,!0,B.aW
 afF(a0,a1){var s,r,q,p,o,n,m,l,k,j,i,h,g,f,e,d=null,c=J.aa(a0),b=B.bw(c.h(a0,"id")),a=A.M0.h(0,b)
 if(a==null)a=A.H
 s=B.bx(c.h(a0,"nom"))
-r=J.d(c.h(a0,"serie"),3)?"S\xe9rie "+(a1+1):s
+r=J.d(c.h(a0,"serie"),3)&&b>=97&&b<=106?"S\xe9rie "+(a1+1):s
 q=B.bx(c.h(a0,"icone"))
 p=B.bx(c.h(a0,"description"))
 o=this.e
@@ -72340,10 +72340,9 @@ break
 case 1:s=new B.P(o.gSJ()+n.gc0(),o.gadE()+(n.gbN(n)+n.gbP(n)))
 break
 default:s=null}return s},
-L(a){var s,r,q=this,p=null
-switch(0){case 0:s=q.e
-break}r=q.aln(a)
-return new B.M2(q.c,q.d,s,p,p,p,p,p,p,p,p,p,p,p,p,A.U,p,p,p,p,p,p,p,!1,r,!1,A.bnE,p)}}
+L(a){var s,r=this,q=null
+switch(0){case 0:break}s=r.aln(a)
+return new B.M2(r.c,r.d,r.f,q,q,q,q,q,q,q,q,q,q,q,q,A.U,q,q,q,q,q,q,q,!1,s,!1,A.bnE,q)}}
 B.M2.prototype={
 ac(){var s=null
 return new B.M3(new B.O_(B.AA(s,s,s,s,s,A.bd,s,s,A.jH,A.bS),$.aR()),$,$,$,$,$,$,$,$,A.d3,$,s,!1,!1,s,s)}}
