@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
-import '../services/api_service.dart';
 import 'examen_screen.dart';
 import 'examen_immersif_screen.dart';
 
@@ -273,6 +272,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
     );
   }
 
+  // ignore: unused_element
   Widget _buildExamenCard(dynamic examen, int index) {
     final color = _getExamColor(examen, index);
     final nom = examen['nom'] as String? ?? '';
@@ -468,6 +468,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
     );
   }
 
+  // ignore: unused_element
   void _showAbonnementDialog() {
     showDialog(
       context: context,

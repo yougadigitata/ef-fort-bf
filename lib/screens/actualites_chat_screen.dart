@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
-import '../widgets/logo_widget.dart';
 
 // ══════════════════════════════════════════════════════════════
 // ACTUALITÉS CHAT SCREEN — Style discussion officielle

@@ -1300,7 +1300,7 @@ class _CmsSeriesSectionState extends State<_CmsSeriesSection> {
                           ),
                           trailing: Switch(
                             value: published,
-                            activeColor: Colors.green,
+                            activeThumbColor: Colors.green,
                             onChanged: (_) => _togglePublish(s['id']?.toString() ?? '', published),
                           ),
                         ),

@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
@@ -892,6 +890,7 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
     _playBellAsset(dur > 2.0 ? 'bell_end.mp3' : 'bell_start.mp3');
   }
 
+  // ignore: unused_element
   void _showQuotaDialog() {
     showDialog(
       context: context,
@@ -1214,6 +1213,7 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
     // Rafraîchir le profil utilisateur pour mettre à jour les stats du dashboard
     await ApiService.refreshUserProfile();
 
+    if (!mounted) return;
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -2725,7 +2725,7 @@ class SimulationResultScreen extends StatelessWidget {
 
     final total = questions.length;
     final pct = total > 0 ? (bonnes / total * 100).round() : 0;
-    final mention = pct >= 70 ? 'Félicitations !' : pct >= 50 ? 'Bonne progression, continuez !' : 'Courage ! Chaque effort compte.';
+    // mention removed (unused variable)
 
     final primaryColor   = PdfColor.fromHex('1A5C38');
     final primaryDark    = PdfColor.fromHex('0E3D24');
