@@ -454,9 +454,9 @@ class _BienvenueScreenState extends State<BienvenueScreen>
               child: const Text(
                 'EF-FORT.BF',
                 style: TextStyle(
-                  fontSize: 32,
+                  fontSize: 20,
                   fontWeight: FontWeight.w900,
-                  letterSpacing: 4,
+                  letterSpacing: 3,
                   color: Colors.white, // requis pour ShaderMask
                 ),
               ),

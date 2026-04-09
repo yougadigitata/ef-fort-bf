@@ -378,11 +378,11 @@ class _PostLoginWelcomeScreenState extends State<PostLoginWelcomeScreen>
           child: const Text(
             'EF-FORT.BF',
             style: TextStyle(
-              fontSize: 28,
+              fontSize: 20,
               fontWeight: FontWeight.w900,
               color: Colors.white,
               fontFamily: 'monospace',
-              letterSpacing: 3,
+              letterSpacing: 2,
               shadows: [
                 Shadow(
                   color: Color(0xFF4CAF50),

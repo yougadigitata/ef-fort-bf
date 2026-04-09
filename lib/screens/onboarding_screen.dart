@@ -210,7 +210,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                             child: Center(
                               child: Text(
                                 slide['emoji'] as String,
-                                style: const TextStyle(fontSize: 72),
+                                style: const TextStyle(fontSize: 52),
                               ),
                             ),
                           ),
@@ -243,7 +243,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                           slide['title'] as String,
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontSize: 30,
+                            fontSize: 22,
                             fontWeight: FontWeight.w800,
                             color: isGold ? const Color(0xFF1A5C38) : AppColors.white,
                             height: 1.2,
