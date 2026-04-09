@@ -248,7 +248,8 @@ app.get('/api/examens', async (c) => {
 app.get('/api/examens/:id/questions', async (c) => {
     const examenId = c.req.param('id');
     const serieParam = c.req.query('serie') ?? '1';
-    const serieNum = parseInt(serieParam, 10) === 2 ? 2 : 1;
+    const parsedSerie = parseInt(serieParam, 10);
+    const serieNum = parsedSerie === 3 ? 3 : parsedSerie === 2 ? 2 : 1;
     const db = getDB(c.env);
     // ── MISSION 7 : ANTI-FRAUDE — Les examens types sont réservés aux abonnés ──
     const authHeaderExam = c.req.header('Authorization');
@@ -276,21 +277,23 @@ app.get('/api/examens/:id/questions', async (c) => {
         }, 403);
     }
     // Mapping des 10 examens types vers leurs IDs de simulation dans simulations_examens
-    // Série 1 (IDs 66-75) et Série 2 (IDs 76-85)
+    // Série 1 (IDs 66-75), Série 2 (IDs 76-85), Série 3 (IDs 107-116)
     const EXAMEN_SIMULATION_MAP = {
-        'exam_001': { serie1: 66, serie2: 76 }, // Administration générale
-        'exam_002': { serie1: 67, serie2: 77 }, // Justice & sécurité
-        'exam_003': { serie1: 68, serie2: 78 }, // Économie & finances
-        'exam_004': { serie1: 69, serie2: 79 }, // Concours de la santé
-        'exam_005': { serie1: 70, serie2: 80 }, // Éducation & formation
-        'exam_006': { serie1: 71, serie2: 81 }, // Concours techniques
-        'exam_007': { serie1: 72, serie2: 82 }, // Agriculture & environnement
-        'exam_008': { serie1: 73, serie2: 83 }, // Informatique & numérique
-        'exam_009': { serie1: 74, serie2: 84 }, // Travaux publics & urbanisme
-        'exam_010': { serie1: 75, serie2: 85 }, // Statistiques & planification
+        'exam_001': { serie1: 66, serie2: 76, serie3: 107 }, // Administration générale
+        'exam_002': { serie1: 67, serie2: 77, serie3: 108 }, // Justice & sécurité
+        'exam_003': { serie1: 68, serie2: 78, serie3: 109 }, // Économie & finances
+        'exam_004': { serie1: 69, serie2: 79, serie3: 110 }, // Concours de la santé
+        'exam_005': { serie1: 70, serie2: 80, serie3: 111 }, // Éducation & formation
+        'exam_006': { serie1: 71, serie2: 81, serie3: 112 }, // Concours techniques
+        'exam_007': { serie1: 72, serie2: 82, serie3: 113 }, // Agriculture & environnement
+        'exam_008': { serie1: 73, serie2: 83, serie3: 114 }, // Informatique & numérique
+        'exam_009': { serie1: 74, serie2: 84, serie3: 115 }, // Travaux publics & urbanisme
+        'exam_010': { serie1: 75, serie2: 85, serie3: 116 }, // Statistiques & planification
     };
     const simId = EXAMEN_SIMULATION_MAP[examenId]
-        ? (serieNum === 2 ? EXAMEN_SIMULATION_MAP[examenId].serie2 : EXAMEN_SIMULATION_MAP[examenId].serie1)
+        ? (serieNum === 3 ? EXAMEN_SIMULATION_MAP[examenId].serie3
+            : serieNum === 2 ? EXAMEN_SIMULATION_MAP[examenId].serie2
+                : EXAMEN_SIMULATION_MAP[examenId].serie1)
         : undefined;
     const EXAMEN_NOM_MAP = {
         'exam_001': 'Administration générale',
@@ -305,9 +308,11 @@ app.get('/api/examens/:id/questions', async (c) => {
         'exam_010': 'Statistiques & planification',
     };
     const examenNomBase = EXAMEN_NOM_MAP[examenId] ?? 'Examen Type';
-    const examenNom = serieNum === 2
-        ? `${examenNomBase} — Série 2`
-        : examenNomBase;
+    const examenNom = serieNum === 3
+        ? `${examenNomBase} — Série 3`
+        : serieNum === 2
+            ? `${examenNomBase} — Série 2`
+            : examenNomBase;
     // Map UUID matière → nom
     const matiereNomAll = {};
     try {

@@ -286,12 +286,17 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
     final examenId = examen['id'] as String? ?? '';
 
     void lancerSerie(int serie) {
+      final nomExam = serie == 3
+          ? '$nom — Série 3'
+          : serie == 2
+          ? '$nom — Série 2'
+          : nom;
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (_) => ExamenScreen(
             examenId: examenId,
-            nomExamen: serie == 2 ? '$nom — Série 2' : nom,
+            nomExamen: nomExam,
             couleur: color,
             serie: serie,
           ),
@@ -384,7 +389,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
             ),
             const SizedBox(height: 8),
 
-            // ── 2 boutons Série 1 & Série 2 ───────────────
+            // ── 3 boutons Série 1, Série 2 & Série 3 ──────
             Row(
               children: [
                 Expanded(
@@ -397,10 +402,10 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Text(
-                        'Série 1',
+                        'S. 1',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 13,
                           fontWeight: FontWeight.w800,
                           color: Colors.white,
                         ),
@@ -408,7 +413,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
                     ),
                   ),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 4),
                 Expanded(
                   child: GestureDetector(
                     onTap: () => lancerSerie(2),
@@ -420,10 +425,33 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
                         border: Border.all(color: color, width: 1.5),
                       ),
                       child: Text(
-                        'Série 2',
+                        'S. 2',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: color,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => lancerSerie(3),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 7),
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: color, width: 1.5),
+                      ),
+                      child: Text(
+                        'S. 3',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 13,
                           fontWeight: FontWeight.w800,
                           color: color,
                         ),

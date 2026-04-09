@@ -3057,8 +3057,8 @@ class SimulationResultScreen extends StatelessWidget {
                                       style: pw.TextStyle(fontSize: 15, color: isBonne ? successColor : errorColor, lineSpacing: 4)),
                                 ),
                                 pw.SizedBox(width: 4),
-                                pw.Text(isBonne ? '✓' : '✗',
-                                    style: pw.TextStyle(fontSize: 15, color: optColor, fontWeight: pw.FontWeight.bold)),
+                                pw.Text(isBonne ? 'OK' : 'X',
+                                    style: pw.TextStyle(fontSize: 13, color: optColor, fontWeight: pw.FontWeight.bold)),
                               ],
                             ),
                           );
