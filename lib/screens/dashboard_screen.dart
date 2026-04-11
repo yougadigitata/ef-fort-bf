@@ -6,6 +6,7 @@ import '../services/bell_service.dart';
 import '../widgets/logo_widget.dart';
 import '../widgets/actualites_status_widget.dart';
 import 'abonnement_screen.dart';
+import 'actualites_chat_screen.dart';
 import 'entraide_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -22,6 +23,10 @@ class _DashboardScreenState extends State<DashboardScreen>
   List<dynamic> _actualites = [];
   bool _loadingActu = true;
   bool _showWelcome = true;
+
+  // ── Ticker actualités ──────────────────────────────────────────────
+  late AnimationController _tickerController;
+  late ScrollController _tickerScrollController;
 
   // Stats utilisateur
   String _scoresMoyen = '--';
@@ -48,6 +53,11 @@ class _DashboardScreenState extends State<DashboardScreen>
   @override
   void initState() {
     super.initState();
+    _tickerScrollController = ScrollController();
+    _tickerController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 18),
+    );
     _initAnimations();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
@@ -125,6 +135,8 @@ class _DashboardScreenState extends State<DashboardScreen>
     _statsCountController.dispose();
     _floatController.dispose();
     _rotateController.dispose();
+    _tickerController.dispose();
+    _tickerScrollController.dispose();
     super.dispose();
   }
 
@@ -187,6 +199,12 @@ class _DashboardScreenState extends State<DashboardScreen>
                 child: _buildPremiumHeader(prenom, nom, niveau, isAbonne),
               ),
 
+              // ─── SECTION 1b : Bandeau ACTUALITÉS défilant (NOUVEAU) ──
+              if (!_loadingActu && _actualites.isNotEmpty)
+                SliverToBoxAdapter(
+                  child: _buildNewsTicker(),
+                ),
+
               // ─── SECTION 2 : Message de bienvenue ──────────────────
               if (_showWelcome)
                 SliverToBoxAdapter(
@@ -236,6 +254,98 @@ class _DashboardScreenState extends State<DashboardScreen>
               const SliverToBoxAdapter(child: SizedBox(height: 30)),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // BANDEAU NEWS TICKER — Défilant automatique avec badge NOUVEAU
+  // ═══════════════════════════════════════════════════════════════════
+  Widget _buildNewsTicker() {
+    if (_actualites.isEmpty) return const SizedBox.shrink();
+    // Construire le texte défilant : toutes les actualités séparées par ••
+    final titres = _actualites
+        .map((a) => a['titre']?.toString() ?? '')
+        .where((t) => t.isNotEmpty)
+        .toList();
+    if (titres.isEmpty) return const SizedBox.shrink();
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ActualitesChatScreen(actualites: _actualites),
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF0E3D24), Color(0xFF1A5C38), Color(0xFFD4A017)],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+        ),
+        height: 38,
+        child: Row(
+          children: [
+            // Badge "NOUVEAU" rouge clignotant
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(5),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.red.withValues(alpha: 0.5),
+                    blurRadius: 6,
+                    spreadRadius: 1,
+                  ),
+                ],
+              ),
+              child: const Text(
+                '🔴 ACTU',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+            // Séparateur vertical
+            Container(
+              width: 1.5,
+              height: 24,
+              color: Colors.white.withValues(alpha: 0.3),
+            ),
+            const SizedBox(width: 6),
+            // Texte défilant
+            Expanded(
+              child: _TickerText(
+                items: titres,
+                textStyle: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ),
+            // Icône flèche "Voir"
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: const Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Colors.white70,
+                size: 12,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -1670,6 +1780,74 @@ class _CitationBurkinabeWidgetState extends State<_CitationBurkinabeWidget>
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// _TickerText — Widget de texte défilant automatique pour les actualités
+// ══════════════════════════════════════════════════════════════════════
+class _TickerText extends StatefulWidget {
+  final List<String> items;
+  final TextStyle? textStyle;
+  const _TickerText({required this.items, this.textStyle});
+
+  @override
+  State<_TickerText> createState() => _TickerTextState();
+}
+
+class _TickerTextState extends State<_TickerText>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _anim;
+  int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _anim = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
+    );
+    _ctrl.forward();
+    _startRotation();
+  }
+
+  void _startRotation() {
+    Future.delayed(const Duration(seconds: 4), () {
+      if (!mounted) return;
+      _ctrl.reverse().then((_) {
+        if (!mounted) return;
+        setState(() {
+          _currentIndex = (_currentIndex + 1) % widget.items.length;
+        });
+        _ctrl.forward().then((_) {
+          _startRotation();
+        });
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final text = widget.items.isEmpty ? '' : widget.items[_currentIndex];
+    return FadeTransition(
+      opacity: _anim,
+      child: Text(
+        '▶  $text',
+        style: widget.textStyle,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }

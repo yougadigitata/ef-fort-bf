@@ -464,6 +464,12 @@ class _ExamenImmersifAccueilScreenState
 
   Widget _buildSerieTab(int index, String titre, String sousTitre) {
     final isSelected = _selectedSerieTab == index;
+    // L'onglet "Blancs" (index=3) a un style distinctif noir/blanc
+    final isBlancsTab = index == 3;
+    final selectedColor = isBlancsTab
+        ? const Color(0xFF1C1C1E)   // Noir pour Blancs
+        : const Color(0xFF1A5C38); // Vert pour Types
+
     return Expanded(
       child: GestureDetector(
         onTap: () => setState(() {
@@ -472,18 +478,22 @@ class _ExamenImmersifAccueilScreenState
         }),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 10),
+          padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFF1A5C38) : Colors.transparent,
+            color: isSelected ? selectedColor : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Column(
             children: [
+              if (isBlancsTab && isSelected)
+                const Icon(Icons.star_rounded, size: 11, color: Colors.white70),
+              if (isBlancsTab && !isSelected)
+                const Icon(Icons.star_rounded, size: 11, color: Colors.black38),
               Text(
                 titre,
                 style: TextStyle(
                   fontWeight: FontWeight.w800,
-                  fontSize: 14,
+                  fontSize: 13,
                   color: isSelected ? Colors.white : Colors.black54,
                   fontFamily: 'Poppins',
                 ),
@@ -491,7 +501,7 @@ class _ExamenImmersifAccueilScreenState
               Text(
                 sousTitre,
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 9,
                   color: isSelected ? Colors.white70 : Colors.black38,
                 ),
               ),
@@ -517,14 +527,35 @@ class _ExamenImmersifAccueilScreenState
     );
   }
 
+  // ── Icônes Material vectorielles pour les Examens Blancs (par index) ──────
+  static const List<IconData> _kBlancsIcons = [
+    Icons.menu_book_rounded,         // Blanc 1 — livre ouvert
+    Icons.science_rounded,            // Blanc 2 — sciences
+    Icons.public_rounded,             // Blanc 3 — géopolitique
+    Icons.account_balance_rounded,    // Blanc 4 — institutions
+    Icons.spellcheck_rounded,         // Blanc 5 — orthographe
+    Icons.gavel_rounded,              // Blanc 6 — droit
+    Icons.newspaper_rounded,          // Blanc 7 — actualités
+    Icons.bar_chart_rounded,          // Blanc 8 — économie
+    Icons.calculate_rounded,          // Blanc 9 — maths
+    Icons.emoji_objects_rounded,      // Blanc 10 — culture générale
+  ];
+
   Widget _buildExamenCard(Map<String, dynamic> examen, int index) {
     final id = examen['id'] as int;
+    final serieNum = examen['serie'] as int;
+    final isExamenBlanc = serieNum == 3 && id >= 97 && id <= 106;
+
+    // ── Design distinct pour Examens Blancs ──────────────────────────
+    if (isExamenBlanc) {
+      return _buildExamenBlancCard(examen, index);
+    }
+
+    // ── Design standard pour Examens Types ───────────────────────────
     final color = _kExamColors[id] ?? const Color(0xFF1A5C38);
     final rawNom = examen['nom'] as String;
-    // Pour les Examens Blancs (IDs 97-106), afficher "Série N" au lieu de "Examens Blancs"
-    final nom = (examen['serie'] == 3 && id >= 97 && id <= 106)
-        ? 'Série ${index + 1}'
-        : rawNom;
+    final nom = rawNom;
+    final serieBadge = 'Sér. $serieNum';
     final icone = examen['icone'] as String;
     final desc = examen['description'] as String;
     final isSelected = _selectedExamen?['id'] == id;
@@ -618,7 +649,7 @@ class _ExamenImmersifAccueilScreenState
                   ),
                 ),
                 child: Text(
-                  isSelected ? '✓ Sélectionné' : 'Sér. ${examen['serie']}',
+                  isSelected ? '✓ Sélectionné' : serieBadge,
                   style: TextStyle(
                     fontSize: 10,
                     color: isSelected ? Colors.white : color,
@@ -633,19 +664,181 @@ class _ExamenImmersifAccueilScreenState
     );
   }
 
+  // ── Carte EXAMEN BLANC — Design noir & blanc distinctif ─────────────
+  Widget _buildExamenBlancCard(Map<String, dynamic> examen, int index) {
+    final id = examen['id'] as int;
+    final desc = examen['description'] as String;
+    final isSelected = _selectedExamen?['id'] == id;
+    final iconData = _kBlancsIcons[index % _kBlancsIcons.length];
+
+    // Palette noir et blanc
+    const darkColor = Color(0xFF1C1C1E);
+    const lightGrey = Color(0xFFF2F2F7);
+    const accentGrey = Color(0xFF6E6E73);
+
+    return GestureDetector(
+      onTap: () {
+        if (!ApiService.isAbonne && !ApiService.isAdmin) {
+          _showAbonnementRequired();
+          return;
+        }
+        HapticFeedback.lightImpact();
+        setState(() => _selectedExamen = isSelected ? null : examen);
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+        decoration: BoxDecoration(
+          color: isSelected ? darkColor : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? darkColor : const Color(0xFF2C2C2E).withValues(alpha: 0.3),
+            width: isSelected ? 2.5 : 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: darkColor.withValues(alpha: isSelected ? 0.35 : 0.1),
+              blurRadius: isSelected ? 18 : 6,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(10, 12, 10, 10),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              // ── Icône vectorielle Material (distinction visuelle) ──
+              Container(
+                width: 52, height: 52,
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? Colors.white.withValues(alpha: 0.12)
+                      : lightGrey,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isSelected
+                        ? Colors.white.withValues(alpha: 0.3)
+                        : darkColor.withValues(alpha: 0.2),
+                    width: 1.5,
+                  ),
+                ),
+                child: Center(
+                  child: Icon(
+                    iconData,
+                    size: 24,
+                    color: isSelected ? Colors.white : darkColor,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 6),
+              // ── Titre "Série N" ────────────────────────────────────
+              Text(
+                'Série ${index + 1}',
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                  color: isSelected ? Colors.white : darkColor,
+                  height: 1.2,
+                  fontFamily: 'Poppins',
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                desc,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 8.5,
+                  color: isSelected ? Colors.white70 : accentGrey,
+                  height: 1.3,
+                ),
+              ),
+              const Spacer(),
+              // ── Badge "Blanc" distinctif ────────────────────────────
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? Colors.white.withValues(alpha: 0.15)
+                      : darkColor.withValues(alpha: 0.07),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isSelected
+                        ? Colors.white.withValues(alpha: 0.4)
+                        : darkColor.withValues(alpha: 0.25),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.star_rounded,
+                      size: 9,
+                      color: isSelected ? Colors.white : darkColor,
+                    ),
+                    const SizedBox(width: 3),
+                    Text(
+                      isSelected ? '✓ Sélectionné' : 'Blanc',
+                      style: TextStyle(
+                        fontSize: 9,
+                        color: isSelected ? Colors.white : darkColor,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildDemarrerButton(BuildContext context) {
     final examen = _selectedExamen!;
     final id = examen['id'] as int;
     final color = _kExamColors[id] ?? const Color(0xFF1A5C38);
+    final serieNum = examen['serie'] as int;
+    // Nom affiché proprement dans le bouton démarrer
+    final indexInList = _currentList.indexWhere((e) => e['id'] == id);
+    final displayNom = (serieNum == 3 && id >= 97 && id <= 106)
+        ? 'Examen Blanc ${indexInList + 1}'
+        : '${examen['nom']} — Série $serieNum';
+
+    final isBlancExamen = serieNum == 3 && id >= 97 && id <= 106;
+    final btnColor = isBlancExamen ? const Color(0xFF1C1C1E) : color;
+    // Icône dans le bouton: vectorielle pour blancs, emoji pour types
+    final iconeWidget = isBlancExamen
+        ? Container(
+            width: 36, height: 36,
+            decoration: BoxDecoration(
+              color: const Color(0xFF1C1C1E).withValues(alpha: 0.08),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              _kBlancsIcons[(indexInList) % _kBlancsIcons.length],
+              size: 20,
+              color: const Color(0xFF1C1C1E),
+            ),
+          )
+        : Text(examen['icone'] as String, style: const TextStyle(fontSize: 30));
 
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
+        border: Border.all(color: btnColor.withValues(alpha: 0.3), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.15),
+            color: btnColor.withValues(alpha: 0.15),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -656,18 +849,18 @@ class _ExamenImmersifAccueilScreenState
         children: [
           Row(
             children: [
-              Text(examen['icone'] as String, style: const TextStyle(fontSize: 30)),
+              iconeWidget,
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${examen['nom']} — Série ${examen['serie']}',
+                      displayNom,
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
-                        color: color,
+                        color: btnColor,
                         fontFamily: 'Poppins',
                       ),
                     ),
@@ -685,7 +878,7 @@ class _ExamenImmersifAccueilScreenState
             width: double.infinity,
             height: 54,
             child: ElevatedButton.icon(
-              onPressed: () => _lancerExamen(context, examen, color),
+              onPressed: () => _lancerExamen(context, examen, btnColor),
               icon: const Icon(Icons.play_circle_fill_rounded, size: 24),
               label: const Text(
                 '🔔 TOP DÉPART — COMMENCER',
@@ -697,7 +890,7 @@ class _ExamenImmersifAccueilScreenState
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: color,
+                backgroundColor: btnColor,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 elevation: 5,
@@ -714,13 +907,20 @@ class _ExamenImmersifAccueilScreenState
     final nomCandidat = user != null
         ? '${user['prenom'] ?? ''} ${user['nom'] ?? ''}'.trim()
         : 'Candidat';
+    final id = examen['id'] as int;
+    final serieNum = examen['serie'] as int;
+    final indexInList = _currentList.indexWhere((e) => e['id'] == id);
+    // Nom propre pour l'examen lancé
+    final nomExamen = (serieNum == 3 && id >= 97 && id <= 106)
+        ? 'Examen Blanc ${indexInList + 1}'
+        : '${examen['nom']} — Série $serieNum';
     HapticFeedback.mediumImpact();
     Navigator.push(
       context,
       PageRouteBuilder(
         pageBuilder: (_, anim, __) => ExamenImmersifScreen(
           simulationId: (examen['id'] as int).toString(),
-          nomExamen: '${examen['nom']} — Série ${examen['serie']}',
+          nomExamen: nomExamen,
           icone: examen['icone'] as String,
           couleur: color,
           nomCandidat: nomCandidat.isNotEmpty ? nomCandidat : 'Candidat',
