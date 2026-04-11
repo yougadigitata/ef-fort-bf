@@ -240,7 +240,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
             ),
             const SizedBox(height: 16),
             Text(
-              '10 concours × 2 séries = 20 examens types disponibles',
+              '10 concours × 3 séries = 30 examens types disponibles',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,

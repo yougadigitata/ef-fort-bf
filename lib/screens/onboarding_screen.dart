@@ -35,7 +35,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       'bgColor': const Color(0xFF1A5C38),
       'bgColor2': const Color(0xFF0F3D26),
       'accent': const Color(0xFFD4A017),
-      'badges': ['20 000+ QCM', '18 Matières', '100% Gratuit*'],
+      'badges': ['20 000+ QCM', '19 Matières', '100% Gratuit*'],
     },
     {
       'emoji': '📚',

@@ -3,7 +3,7 @@ import { getDB, Env } from '../lib/db';
 
 const questions = new Hono<{ Bindings: Env }>();
 
-// ── GET /api/matieres — 18 matières avec caching (v5.1) ──────────────
+// ── GET /api/matieres — 19 matières avec caching (v6.0) ──────────────
 questions.get('/matieres', async (c) => {
   const db = getDB(c.env);
 
@@ -16,11 +16,11 @@ questions.get('/matieres', async (c) => {
 
   if (mErr) return c.json({ error: mErr.message }, 500);
 
-  // Les 18 codes officiels v5.1 (+ AES + BF + PSY)
+  // Les 19 codes officiels v6.0 (+ AES + BF + PSY + HAUT)
   const CODES_OFFICIELS = [
     'DROIT2','ECO2','MATHS','SP','SVT','CG','ACTU','PANA',
     'HISTO','ARMEE','PSYCHO','PSY','FR','ANG','INFO','COMM','HG',
-    'AES', 'BF'  // Nouvelles matières v5.1 — PSY = code canonique Psychotechnique
+    'AES', 'BF', 'HAUT'  // v5.1 : AES, BF, PSY — v6.0 : HAUT (Préparation haut niveau)
   ];
 
   // Filtrer uniquement les matières officielles

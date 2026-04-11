@@ -47,7 +47,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
   // ── Messages défilants du bandeau ───────────────────────────────────
   final List<String> _bannerMessages = [
     '🇧🇫  Plateforme N°1 au Burkina Faso',
-    '📚  20 000+ QCM · 18 Matières · Illimité',
+    '📚  20 000+ QCM · 19 Matières · Illimité',
     '🏆  Conçue par des Burkinabè, pour des Burkinabè',
     '⏱️  Simulation Examen · Conditions Réelles',
     '🤝  Communauté Burkinabè Active 24h/24',
@@ -668,7 +668,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
   Widget _buildStatsRow() {
     final stats = [
       {'value': '20 000+', 'label': 'QCM', 'icon': Icons.quiz_rounded},
-      {'value': '18', 'label': 'Matières', 'icon': Icons.menu_book_rounded},
+      {'value': '19', 'label': 'Matières', 'icon': Icons.menu_book_rounded},
       {'value': '24h/24', 'label': 'Accès', 'icon': Icons.access_time_rounded},
       {'value': '100%', 'label': '🇧🇫 BF', 'icon': Icons.flag_rounded},
     ];
