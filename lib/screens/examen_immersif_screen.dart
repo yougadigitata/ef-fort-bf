@@ -1459,7 +1459,7 @@ class _ExamenImmersifScreenState extends State<ExamenImmersifScreen>
             ),
             const SizedBox(height: 16),
             const Text(
-              'Récupération des 50 questions depuis Supabase...',
+              'Veuillez patienter quelques instants...',
               style: TextStyle(fontSize: 11, color: Colors.black38),
             ),
           ],

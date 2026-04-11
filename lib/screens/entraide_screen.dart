@@ -1234,7 +1234,9 @@ class _EntraideScreenState extends State<EntraideScreen>
   Widget _buildReponseItem(Map<String, dynamic> rep) {
     final repContenu = rep['contenu']?.toString() ?? '';
     final repDate = rep['created_at']?.toString();
-    final repPrenom = rep['prenom']?.toString() ?? 'Admin';
+    final repPrenom = rep['is_admin'] == true
+        ? 'Notre équipe'
+        : (rep['prenom']?.toString() ?? 'Utilisateur');
 
     return Container(
       margin: const EdgeInsets.fromLTRB(10, 0, 10, 8),

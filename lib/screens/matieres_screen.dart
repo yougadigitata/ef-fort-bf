@@ -33,7 +33,7 @@ const Map<String, Map<String, dynamic>> _matieresMeta = {
   'psy':          {'icone': '🧠', 'couleur': Color(0xFF8E44AD)},
   'pc':           {'icone': '🔬', 'couleur': Color(0xFFE74C3C)},
   'enaref':       {'icone': '🏛️', 'couleur': Color(0xFF1A5C38)},
-  'haut':         {'icone': '🏆', 'couleur': Color(0xFFD4A017)},
+  'haut':         {'icone': '🎓', 'couleur': Color(0xFF8B0000)},
   'default':      {'icone': '📚', 'couleur': Color(0xFF1A5C38)},
 };
 

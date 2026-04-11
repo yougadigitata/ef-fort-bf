@@ -184,7 +184,83 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
     }
   }
 
+  // ══ Vérification verrou anti-fraude (5 minutes minimum) ═══════════
+  static const int _minSecondsRequired = 300; // 5 minutes
+
   void _finirSerie() {
+    // Vérification anti-fraude : au moins 5 minutes doivent s'être écoulées
+    if (_secondsElapsed < _minSecondsRequired) {
+      final remaining = _minSecondsRequired - _secondsElapsed;
+      final m = (remaining ~/ 60).toString().padLeft(2, '0');
+      final s = (remaining % 60).toString().padLeft(2, '0');
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          backgroundColor: Colors.white,
+          title: const Row(
+            children: [
+              Text('⏳', style: TextStyle(fontSize: 26)),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Trop rapide !',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Color(0xFF1A1A2E)),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Pour garantir un apprentissage sérieux, vous devez passer au moins 5 minutes sur cette série.',
+                style: TextStyle(fontSize: 14, height: 1.5, color: Color(0xFF555555)),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDCF8C6),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: _waGreen, width: 1.5),
+                ),
+                child: Text(
+                  'Temps restant : $m:$s',
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                    color: _waDarkGreen,
+                    letterSpacing: 2,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Continuez à réviser vos réponses pour accéder à la correction.',
+                style: TextStyle(fontSize: 12, color: Colors.grey, height: 1.4),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _waGreen,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+              ),
+              child: const Text('Continuer à réviser', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+            ),
+          ],
+        ),
+      );
+      return; // Ne pas terminer la série
+    }
+
     _timer?.cancel();
     setState(() {
       _serieTerminee = true;

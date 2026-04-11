@@ -543,21 +543,25 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                   ),
                   const SizedBox(height: 12),
 
-                  // Bouton secondaire "J'ai déjà payé"
+                  // ── Bouton principal : Envoyer ma demande ──────────────
                   if (!isAbonne) ...[
+                    const SizedBox(height: 6),
                     SizedBox(
                       width: double.infinity,
-                      child: OutlinedButton(
+                      height: 62,
+                      child: ElevatedButton.icon(
                         onPressed: () => setState(() => _showFormDemande = !_showFormDemande),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.primary,
-                          side: const BorderSide(color: AppColors.primary, width: 1.5),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        icon: const Text('📩', style: TextStyle(fontSize: 22)),
+                        label: const Text(
+                          'ENVOYER MA DEMANDE D\'ABONNEMENT',
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 0.3),
                         ),
-                        child: const Text(
-                          "J'AI DÉJÀ PAYÉ — SOUMETTRE MA DEMANDE",
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          elevation: 10,
+                          shadowColor: AppColors.primary.withValues(alpha: 0.6),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
                       ),
                     ),
@@ -593,7 +597,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                             const SizedBox(height: 12),
                             SizedBox(
                               width: double.infinity,
-                              child: ElevatedButton(
+                              child: ElevatedButton.icon(
                                 onPressed: _submitting ? null : _soumettreDemande,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.primary,
@@ -601,9 +605,8 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                   padding: const EdgeInsets.symmetric(vertical: 14),
                                 ),
-                                child: _submitting
-                                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                                    : const Text('ENVOYER MA DEMANDE', style: TextStyle(fontWeight: FontWeight.w700)),
+                                icon: _submitting ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text('📩', style: TextStyle(fontSize: 18)),
+                                label: const Text('CONFIRMER L\'ENVOI DE MA DEMANDE', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
                               ),
                             ),
                           ],
