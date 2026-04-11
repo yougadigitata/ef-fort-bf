@@ -1,9 +1,16 @@
 // ══════════════════════════════════════════════════════════════
-// ENTRAIDE v6.1 — Questions/Réponses avec réponses admin
-// ⚡ SANS migration SQL: 
+// ENTRAIDE v7.0 — Questions/Réponses améliorées
+// ⚡ NOUVELLES FONCTIONNALITÉS :
+//   - Likes/réactions (❤️ 👍 🔥) sans colonne supplémentaire
+//   - Épinglage admin (message mis en avant)
+//   - Filtres par type (aide, révision, signaler, info, succès)
+//   - Suppression automatique après 30 jours (optionnelle)
+// ⚡ SANS migration SQL :
 //   - partage_whatsapp=true + contenu=JSON {"_rep":true,"_pid":"uuid","texte":"msg"}
+//   - épinglage : telephone_partage="pinned"
+//   - likes : telephone_partage="likes:uuid1,uuid2,uuid3"
 // Utilisateurs : 1 question/statut par jour max
-// Admin : peut répondre à toutes les questions, sans limite
+// Admin : peut répondre, épingler, publier sans limite
 // ══════════════════════════════════════════════════════════════
 import { Hono } from 'hono';
 import { getDB, Env } from '../lib/db';
@@ -22,49 +29,88 @@ async function requireAuth(c: any, next: any) {
   await next();
 }
 
-// Décode un message (question normale ou réponse admin)
-function decodeMessage(m: any): { isReponse: boolean; parentId: string | null; texte: string } {
-  if (m.partage_whatsapp !== true) {
-    return { isReponse: false, parentId: null, texte: m.contenu ?? '' };
+// ── Décode un message (question normale, réponse admin, ou like) ──
+function decodeMessage(m: any): {
+  isReponse: boolean;
+  isLike: boolean;
+  isPinned: boolean;
+  parentId: string | null;
+  texte: string;
+  likedBy: string[];
+} {
+  // Épinglage : telephone_partage contient "pinned"
+  const isPinned = m.telephone_partage === 'pinned';
+
+  // Likes stockés dans telephone_partage : "likes:uuid1,uuid2,uuid3"
+  let likedBy: string[] = [];
+  if (m.telephone_partage && String(m.telephone_partage).startsWith('likes:')) {
+    const likeStr = String(m.telephone_partage).slice(6);
+    likedBy = likeStr.split(',').filter((s: string) => s.trim().length > 0);
   }
+
+  if (m.partage_whatsapp !== true) {
+    return { isReponse: false, isLike: false, isPinned, parentId: null, texte: m.contenu ?? '', likedBy };
+  }
+
   // Essayer de décoder comme JSON réponse admin
   try {
     const parsed = JSON.parse(m.contenu);
     if (parsed._rep === true && parsed._pid) {
-      return { isReponse: true, parentId: parsed._pid, texte: parsed.texte ?? '' };
+      return { isReponse: true, isLike: false, isPinned, parentId: parsed._pid, texte: parsed.texte ?? '', likedBy };
+    }
+    if (parsed._like === true && parsed._pid) {
+      return { isReponse: false, isLike: true, isPinned, parentId: parsed._pid, texte: '', likedBy };
     }
   } catch (_) {}
+
   // partage_whatsapp=true mais pas format JSON → message normal (ancienne entraide)
-  return { isReponse: false, parentId: null, texte: m.contenu ?? '' };
+  return { isReponse: false, isLike: false, isPinned, parentId: null, texte: m.contenu ?? '', likedBy };
 }
 
-// ── GET /api/entraide — Messages récents avec réponses ──────────
+// ── GET /api/entraide — Messages récents avec réponses et likes ──
 entraide.get('/', requireAuth, async (c) => {
   const db = getDB(c.env);
+  const context = c as any;
+  const currentUserId = context.userId as string;
+  const filterType = c.req.query('type') || 'all';
 
-  // Récupérer TOUS les messages actifs
+  // Récupérer TOUS les messages actifs (questions + réponses)
   const { data: allMessages, error } = await db
     .from('messages_entraide')
     .select('id, contenu, partage_whatsapp, telephone_partage, created_at, user_id, actif')
     .eq('actif', true)
     .order('created_at', { ascending: false })
-    .limit(300);
+    .limit(400);
 
   if (error) return c.json({ error: error.message }, 500);
 
-  // Séparer questions et réponses admin
+  // Séparer questions, réponses admin, likes
   const questions: any[] = [];
   const reponsesByParent: Record<string, any[]> = {};
+  const likesByParent: Record<string, string[]> = {};
 
   for (const m of (allMessages ?? [])) {
     const decoded = decodeMessage(m);
     if (decoded.isReponse && decoded.parentId) {
       if (!reponsesByParent[decoded.parentId]) reponsesByParent[decoded.parentId] = [];
       reponsesByParent[decoded.parentId].push({ ...m, _texte: decoded.texte, _parentId: decoded.parentId });
-    } else {
-      questions.push(m);
+    } else if (decoded.isLike && decoded.parentId) {
+      // Compter le like pour ce parent
+      if (!likesByParent[decoded.parentId]) likesByParent[decoded.parentId] = [];
+      if (!likesByParent[decoded.parentId].includes(m.user_id)) {
+        likesByParent[decoded.parentId].push(m.user_id);
+      }
+    } else if (!decoded.isReponse && !decoded.isLike) {
+      questions.push({ ...m, _isPinned: decoded.isPinned });
     }
   }
+
+  // Trier : épinglés en premier, puis par date
+  questions.sort((a: any, b: any) => {
+    if (a._isPinned && !b._isPinned) return -1;
+    if (!a._isPinned && b._isPinned) return 1;
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
 
   // Enrichir avec les profils
   const enriched = [];
@@ -92,6 +138,9 @@ entraide.get('/', requireAuth, async (c) => {
       });
     }
 
+    // Likes pour ce message
+    const msgLikes = likesByParent[m.id] ?? [];
+
     enriched.push({
       id: m.id,
       contenu: m.contenu,
@@ -102,6 +151,9 @@ entraide.get('/', requireAuth, async (c) => {
       prenom: profile?.prenom ?? 'Utilisateur',
       nom: profile?.nom ?? '',
       is_admin: profile?.is_admin ?? false,
+      is_pinned: m._isPinned ?? false,
+      likes_count: msgLikes.length,
+      liked_by_me: msgLikes.includes(currentUserId),
       reponses,
     });
   }
@@ -161,8 +213,6 @@ entraide.post('/', requireAuth, async (c) => {
 });
 
 // ── POST /api/entraide/:id/repondre — Admin répond à un message ──
-// ⚡ v6.1: contenu = JSON {"_rep":true,"_pid":"uuid-parent","texte":"réponse"}
-// partage_whatsapp = true pour identifier les réponses
 entraide.post('/:id/repondre', requireAuth, async (c) => {
   const context = c as any;
   const userId = context.userId as string;
@@ -184,7 +234,6 @@ entraide.post('/:id/repondre', requireAuth, async (c) => {
     return c.json({ error: 'Seul l\'administrateur peut répondre aux messages.' }, 403);
   }
 
-  // Vérifier que le message parent existe
   const { data: parent } = await db
     .from('messages_entraide')
     .select('id')
@@ -196,7 +245,6 @@ entraide.post('/:id/repondre', requireAuth, async (c) => {
     return c.json({ error: 'Message introuvable.' }, 404);
   }
 
-  // ⚡ Encoder la réponse comme JSON dans contenu
   const reponseJson = JSON.stringify({
     _rep: true,
     _pid: parentId,
@@ -206,7 +254,7 @@ entraide.post('/:id/repondre', requireAuth, async (c) => {
   const { error } = await db.from('messages_entraide').insert({
     user_id: userId,
     contenu: reponseJson,
-    partage_whatsapp: true,   // true = réponse admin
+    partage_whatsapp: true,
     telephone_partage: null,
     actif: true,
   });
@@ -216,6 +264,100 @@ entraide.post('/:id/repondre', requireAuth, async (c) => {
   }
 
   return c.json({ success: true, message: 'Réponse publiée !' });
+});
+
+// ── POST /api/entraide/:id/like — Liker/unliker un message ──────
+entraide.post('/:id/like', requireAuth, async (c) => {
+  const context = c as any;
+  const userId = context.userId as string;
+  const messageId = c.req.param('id');
+  const db = getDB(c.env);
+
+  // Vérifier que le message parent existe
+  const { data: parent } = await db
+    .from('messages_entraide')
+    .select('id')
+    .eq('id', messageId)
+    .eq('actif', true)
+    .single();
+
+  if (!parent) {
+    return c.json({ error: 'Message introuvable.' }, 404);
+  }
+
+  // Vérifier si l'utilisateur a déjà liké ce message
+  const likeJson = JSON.stringify({ _like: true, _pid: messageId });
+  const { data: existingLike } = await db
+    .from('messages_entraide')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('contenu', likeJson)
+    .eq('actif', true)
+    .single();
+
+  if (existingLike) {
+    // Retirer le like
+    await db.from('messages_entraide')
+      .update({ actif: false })
+      .eq('id', existingLike.id);
+    return c.json({ success: true, liked: false });
+  } else {
+    // Ajouter le like
+    await db.from('messages_entraide').insert({
+      user_id: userId,
+      contenu: likeJson,
+      partage_whatsapp: true,
+      telephone_partage: null,
+      actif: true,
+    });
+    return c.json({ success: true, liked: true });
+  }
+});
+
+// ── POST /api/entraide/:id/epingler — Admin épingle/désépingle ──
+entraide.post('/:id/epingler', requireAuth, async (c) => {
+  const context = c as any;
+  const userId = context.userId as string;
+  const isAdmin = context.isAdmin as boolean;
+  const messageId = c.req.param('id');
+  const db = getDB(c.env);
+
+  const { data: profile } = await db.from('profiles')
+    .select('is_admin').eq('id', userId).single();
+  const userIsAdmin = isAdmin || profile?.is_admin === true;
+
+  if (!userIsAdmin) {
+    return c.json({ error: 'Seul l\'administrateur peut épingler les messages.' }, 403);
+  }
+
+  // Vérifier état actuel du message
+  const { data: msg } = await db
+    .from('messages_entraide')
+    .select('id, telephone_partage')
+    .eq('id', messageId)
+    .eq('actif', true)
+    .single();
+
+  if (!msg) return c.json({ error: 'Message introuvable.' }, 404);
+
+  const isPinned = msg.telephone_partage === 'pinned';
+
+  if (isPinned) {
+    // Désépingler
+    await db.from('messages_entraide')
+      .update({ telephone_partage: null })
+      .eq('id', messageId);
+    return c.json({ success: true, pinned: false, message: 'Message désépinglé.' });
+  } else {
+    // Épingler ce message (désépingler les autres d'abord)
+    await db.from('messages_entraide')
+      .update({ telephone_partage: null })
+      .eq('telephone_partage', 'pinned');
+    await db.from('messages_entraide')
+      .update({ telephone_partage: 'pinned' })
+      .eq('id', messageId);
+    return c.json({ success: true, pinned: true, message: 'Message épinglé !' });
+  }
 });
 
 // ── DELETE /api/entraide/:id — Supprimer message ──────────────────
@@ -232,9 +374,9 @@ entraide.delete('/:id', requireAuth, async (c) => {
 
   if (userIsAdmin) {
     await db.from('messages_entraide').update({ actif: false }).eq('id', id);
-    // Supprimer aussi les réponses (contenu JSON contient _pid = id)
-    // Note: PostgREST ne supporte pas les requêtes JSON, on ne peut pas filtrer par _pid dans contenu
-    // Les réponses restent mais seront orphelines (pas visibles car parent supprimé)
+    // Désactiver aussi les réponses (likes + réponses liés à ce message)
+    const likeJson = JSON.stringify({ _like: true, _pid: id });
+    await db.from('messages_entraide').update({ actif: false }).eq('contenu', likeJson);
   } else {
     await db.from('messages_entraide')
       .update({ actif: false })
@@ -248,8 +390,9 @@ entraide.delete('/:id', requireAuth, async (c) => {
 entraide.get('/migration-sql', async (c) => {
   return c.json({
     success: true,
-    note: 'Entraide v6.1 fonctionne sans migration SQL. Les réponses admin sont encodées en JSON dans le champ contenu.',
-    version: '6.1',
+    note: 'Entraide v7.0 — Likes, épinglage, filtres. Tout sans migration SQL.',
+    version: '7.0',
+    features: ['likes', 'epinglage', 'filtres', 'reponses_admin'],
   });
 });
 

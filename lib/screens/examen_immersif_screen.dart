@@ -209,14 +209,14 @@ class _ExamenImmersifAccueilScreenState
       _kExamensTypes.where((e) => e['serie'] == 1).toList();
   List<Map<String, dynamic>> get _serie2 =>
       _kExamensTypes.where((e) => e['serie'] == 2).toList();
-  List<Map<String, dynamic>> get _serie3ExamensTypes =>
-      _kExamensTypes.where((e) => e['serie'] == 3 && e['id']! < 97).toList();
+  // Série 3 retirée de l'interface (onglet supprimé sur demande)
+  // Les IDs 107-116 existent en base mais ne sont plus affichés
   List<Map<String, dynamic>> get _serieBlanche =>
       _kExamensTypes.where((e) => e['serie'] == 3 && e['id']! >= 97).toList();
   List<Map<String, dynamic>> get _currentList {
     if (_selectedSerieTab == 0) return _serie1;
     if (_selectedSerieTab == 1) return _serie2;
-    if (_selectedSerieTab == 2) return _serie3ExamensTypes;
+    // Index 2 = Examens Blancs (Série 3 supprimée de l'interface)
     return _serieBlanche;
   }
 
@@ -455,8 +455,7 @@ class _ExamenImmersifAccueilScreenState
         children: [
           _buildSerieTab(0, 'Série 1', '10 examens'),
           _buildSerieTab(1, 'Série 2', '10 examens'),
-          _buildSerieTab(2, 'Série 3', '10 examens'),
-          _buildSerieTab(3, 'Blancs', '10 séries'),
+          _buildSerieTab(2, 'Blancs', '10 séries'),
         ],
       ),
     );
@@ -464,8 +463,8 @@ class _ExamenImmersifAccueilScreenState
 
   Widget _buildSerieTab(int index, String titre, String sousTitre) {
     final isSelected = _selectedSerieTab == index;
-    // L'onglet "Blancs" (index=3) a un style distinctif noir/blanc
-    final isBlancsTab = index == 3;
+    // L'onglet "Blancs" (index=2 désormais) a un style distinctif noir/blanc
+    final isBlancsTab = index == 2;
     final selectedColor = isBlancsTab
         ? const Color(0xFF1C1C1E)   // Noir pour Blancs
         : const Color(0xFF1A5C38); // Vert pour Types
@@ -2803,30 +2802,93 @@ class _ExamenImmersifResultatsScreenState
     );
   }
 
-  // ── Nettoyer le texte pour le PDF (supprimer LaTeX, URL, symboles) ────
+  // ── Nettoyer le texte pour le PDF (supprimer LaTeX, URL, cases à cocher, caractères parasites) ────
   static String _cleanForPdf(String text) {
-    // Supprimer les cases à croix ☒☑☐ et symboles checkbox
+    if (text.isEmpty) return text;
+
+    // 1. Supprimer les cases à coix / checkbox Unicode (☒☑☐✓✔✗✘)
     String s = text
-        .replaceAll('\u2612', '')  // ☒
-        .replaceAll('\u2611', '')  // ☑
-        .replaceAll('\u2610', '')  // ☐
-        .replaceAll('\u2713', '')  // ✓
-        .replaceAll('\u2714', '')  // ✔
-        .replaceAll('\u2717', '')  // ✗
-        .replaceAll('\u2718', ''); // ✘
-    // Utiliser le convertisseur LaTeX du MathTextWidget
+        .replaceAll('\u2612', '')  // ☒ ballot box with X
+        .replaceAll('\u2611', '')  // ☑ ballot box with check
+        .replaceAll('\u2610', '')  // ☐ ballot box
+        .replaceAll('\u2713', '')  // ✓ check mark
+        .replaceAll('\u2714', '')  // ✔ heavy check mark
+        .replaceAll('\u2717', '')  // ✗ ballot X
+        .replaceAll('\u2718', '')  // ✘ heavy ballot X
+        .replaceAll('\u25A1', '')  // □ white square
+        .replaceAll('\u25A0', '')  // ■ black square
+        .replaceAll('\u2B1C', '')  // ⬜ large white square
+        .replaceAll('\u2B1B', ''); // ⬛ large black square
+
+    // 2. Convertir LaTeX inline $...$ en texte Unicode lisible
+    // D'abord traiter les blocs $$...$$
+    s = s.replaceAllMapped(
+      RegExp(r'\$\$([^$]+)\$\$'),
+      (m) => MathTextWidget.latexToReadablePublic(m.group(1) ?? ''),
+    );
+    // Puis les $ inline $...$
+    s = s.replaceAllMapped(
+      RegExp(r'\$([^$\n]+)\$'),
+      (m) => MathTextWidget.latexToReadablePublic(m.group(1) ?? ''),
+    );
+
+    // 3. Appliquer la conversion LaTeX globale
     s = MathTextWidget.latexToReadablePublic(s);
-    // Supprimer les balises $ restantes
+
+    // 4. Supprimer les signes $ résiduels
     s = s.replaceAll(r'$', '');
-    // Supprimer URL de développement
+
+    // 5. Remplacer ^ { } _ résiduels par du texte lisible
+    // ^{...} → exposant textuel
+    s = s.replaceAllMapped(
+      RegExp(r'\^\{([^}]*)\}'),
+      (m) => '^${m.group(1)}',
+    );
+    // ^n → exposant n (sans accolades)
+    // _{...} → indice textuel
+    s = s.replaceAllMapped(
+      RegExp(r'_\{([^}]*)\}'),
+      (m) => '_${m.group(1)}',
+    );
+
+    // 6. Supprimer les accolades résiduelles
+    s = s.replaceAll('{', '').replaceAll('}', '');
+
+    // 7. Supprimer les commandes LaTeX résiduelles \commande
+    s = s.replaceAllMapped(
+      RegExp(r'\\([a-zA-Z]+)\s*'),
+      (m) {
+        // Garder les caractères connus comme symboles
+        final cmd = m.group(1) ?? '';
+        const knownSymbols = {
+          'times': '×', 'div': '÷', 'pm': '±', 'mp': '∓',
+          'cdot': '·', 'infty': '∞', 'pi': 'π', 'alpha': 'α',
+          'beta': 'β', 'gamma': 'γ', 'delta': 'δ', 'sigma': 'Σ',
+          'sqrt': '√', 'sum': 'Σ', 'int': '∫', 'frac': '/',
+          'geq': '≥', 'leq': '≤', 'neq': '≠', 'approx': '≈',
+          'rightarrow': '→', 'leftarrow': '←', 'Rightarrow': '⇒',
+          'in': '∈', 'notin': '∉', 'subset': '⊂', 'cup': '∪', 'cap': '∩',
+          'triangle': '△', 'angle': '∠', 'perp': '⊥',
+          'degree': '°', 'partial': '∂', 'nabla': '∇',
+        };
+        if (knownSymbols.containsKey(cmd)) return knownSymbols[cmd]!;
+        return ''; // Supprimer les commandes inconnues
+      },
+    );
+
+    // 8. Supprimer URL de développement
     s = s.replaceAll(RegExp(r'https?://[^\s]+'), '');
     s = s.replaceAll('ef-fort-bf.pages.dev', '');
     s = s.replaceAll('ef-fort-bf', 'EF-FORT.BF');
-    // Supprimer les accolades et backslash résiduels
-    s = s.replaceAll(RegExp(r'\\[a-zA-Z]+'), '');
-    s = s.replaceAll('{', '').replaceAll('}', '');
-    // Nettoyer espaces multiples
-    s = s.replaceAll(RegExp(r'\s+'), ' ').trim();
+    s = s.replaceAll('yembuaro29.workers.dev', '');
+
+    // 9. Nettoyer les guillemets et caractères parasites en début/fin de texte d'option
+    // Supprimer les backslash seuls et antislashes orphelins
+    s = s.replaceAll(RegExp(r'\\(?!\w)'), '');
+
+    // 10. Nettoyer espaces multiples et normaliser
+    s = s.replaceAll(RegExp(r'\s{2,}'), ' ').trim();
+
     return s.isEmpty ? text : s;
   }
 

@@ -22,10 +22,11 @@ questions.get('/matieres', async (c) => {
     const matieresFiltrees = (matieres ?? []).filter(m => CODES_OFFICIELS.includes(m.code));
     const matiereIds = matieresFiltrees.map(m => m.id);
     // ── OPTIMISATION v7.0 : 2 requêtes globales au lieu de 40 séquentielles ──
+    // Requête 1 : tous les matiere_id des questions (pour comptage)
     const countMap = {};
     const seriesMap = {};
     try {
-        // Requête 1 : tous les matiere_id des questions (pour comptage)
+        // Récupérer les matiere_id de toutes les questions en une seule requête
         const { data: allQ } = await db
             .from('questions')
             .select('matiere_id')
@@ -36,9 +37,9 @@ questions.get('/matieres', async (c) => {
             countMap[mid] = (countMap[mid] ?? 0) + 1;
         }
     }
-    catch (_) {}
+    catch (_) { }
     try {
-        // Requête 2 : tous les matiere_id des séries actives
+        // Récupérer les matiere_id de toutes les séries actives en une seule requête
         const { data: allS } = await db
             .from('series_qcm')
             .select('matiere_id')
@@ -50,7 +51,7 @@ questions.get('/matieres', async (c) => {
             seriesMap[mid] = (seriesMap[mid] ?? 0) + 1;
         }
     }
-    catch (_) {}
+    catch (_) { }
     const result = matieresFiltrees.map(m => ({
         id: m.code?.toLowerCase() || m.id,
         nom: m.nom,

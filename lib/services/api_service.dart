@@ -498,14 +498,19 @@ class ApiService {
   }
 
   // ══════════════════════════════════════════════════════════════
-  // ENTRAIDE v5.0 — Questions/Réponses Admin via /api/entraide
+  // ENTRAIDE v7.0 — Questions/Réponses + Likes + Épinglage Admin
   // ══════════════════════════════════════════════════════════════
 
-  /// Récupérer les messages d'entraide avec réponses
-  static Future<List<Map<String, dynamic>>> getEntraideMsgsV2() async {
+  /// Récupérer les messages d'entraide avec réponses, likes et épinglés
+  static Future<List<Map<String, dynamic>>> getEntraideMsgsV2({String? filterType}) async {
     try {
+      final uri = Uri.parse('$apiBase/entraide').replace(
+        queryParameters: filterType != null && filterType != 'all'
+            ? {'type': filterType}
+            : null,
+      );
       final response = await http.get(
-        Uri.parse('$apiBase/entraide'),
+        uri,
         headers: _headers,
       ).timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
@@ -517,6 +522,42 @@ class ApiService {
     } catch (e) {
       if (kDebugMode) debugPrint('getEntraideMsgsV2 error: $e');
       return [];
+    }
+  }
+
+  /// Liker / Unliker un message d'entraide
+  static Future<Map<String, dynamic>> likerEntraideMsg(String messageId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$apiBase/entraide/$messageId/like'),
+        headers: _headers,
+      ).timeout(const Duration(seconds: 10));
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      if (response.statusCode == 200) {
+        return {'success': true, 'liked': data['liked'] ?? false};
+      }
+      return {'error': data['error'] ?? 'Erreur like'};
+    } catch (e) {
+      if (kDebugMode) debugPrint('likerEntraideMsg error: $e');
+      return {'error': 'Erreur de connexion.'};
+    }
+  }
+
+  /// Admin épingle/désépingle un message
+  static Future<Map<String, dynamic>> epinglerEntraideMsg(String messageId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$apiBase/entraide/$messageId/epingler'),
+        headers: _headers,
+      ).timeout(const Duration(seconds: 10));
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      if (response.statusCode == 200) {
+        return {'success': true, 'pinned': data['pinned'] ?? false};
+      }
+      return {'error': data['error'] ?? 'Erreur épinglage'};
+    } catch (e) {
+      if (kDebugMode) debugPrint('epinglerEntraideMsg error: $e');
+      return {'error': 'Erreur de connexion.'};
     }
   }
 
