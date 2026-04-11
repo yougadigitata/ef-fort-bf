@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { getDB } from '../lib/db';
 const questions = new Hono();
-// ── GET /api/matieres — 19 matières avec caching (v6.0) ──────────────
+// ── GET /api/matieres — 20 matières optimisé v7.0 (2 requêtes globales) ──
 questions.get('/matieres', async (c) => {
     const db = getDB(c.env);
     // Récupérer toutes les matières officielles (triées par ordre)
@@ -12,43 +12,45 @@ questions.get('/matieres', async (c) => {
         .limit(50);
     if (mErr)
         return c.json({ error: mErr.message }, 500);
-    // Les 19 codes officiels v6.0 (+ AES + BF + PSY + HAUT)
+    // Les 20 codes officiels v7.0 (PSY + HAUT inclus)
     const CODES_OFFICIELS = [
         'DROIT2', 'ECO2', 'MATHS', 'SP', 'SVT', 'CG', 'ACTU', 'PANA',
         'HISTO', 'ARMEE', 'PSYCHO', 'PSY', 'FR', 'ANG', 'INFO', 'COMM', 'HG',
-        'AES', 'BF', 'HAUT' // v5.1: AES, BF, PSY — v6.0: HAUT (Préparation haut niveau)
+        'AES', 'BF', 'HAUT'
     ];
     // Filtrer uniquement les matières officielles
     const matieresFiltrees = (matieres ?? []).filter(m => CODES_OFFICIELS.includes(m.code));
-    // Compter les questions par matière via count exact
+    const matiereIds = matieresFiltrees.map(m => m.id);
+    // ── OPTIMISATION v7.0 : 2 requêtes globales au lieu de 40 séquentielles ──
     const countMap = {};
-    for (const mat of matieresFiltrees) {
-        try {
-            const { count } = await db
-                .from('questions')
-                .select('*', { count: 'exact', head: true })
-                .eq('matiere_id', mat.id);
-            countMap[mat.id] = count ?? 0;
-        }
-        catch (_) {
-            countMap[mat.id] = 0;
-        }
-    }
-    // Compter aussi les séries par matière
     const seriesMap = {};
-    for (const mat of matieresFiltrees) {
-        try {
-            const { count } = await db
-                .from('series_qcm')
-                .select('*', { count: 'exact', head: true })
-                .eq('matiere_id', mat.id)
-                .eq('actif', true);
-            seriesMap[mat.id] = count ?? 0;
-        }
-        catch (_) {
-            seriesMap[mat.id] = 0;
+    try {
+        // Requête 1 : tous les matiere_id des questions (pour comptage)
+        const { data: allQ } = await db
+            .from('questions')
+            .select('matiere_id')
+            .in('matiere_id', matiereIds)
+            .limit(10000);
+        for (const q of (allQ ?? [])) {
+            const mid = q.matiere_id;
+            countMap[mid] = (countMap[mid] ?? 0) + 1;
         }
     }
+    catch (_) {}
+    try {
+        // Requête 2 : tous les matiere_id des séries actives
+        const { data: allS } = await db
+            .from('series_qcm')
+            .select('matiere_id')
+            .in('matiere_id', matiereIds)
+            .eq('actif', true)
+            .limit(2000);
+        for (const s of (allS ?? [])) {
+            const mid = s.matiere_id;
+            seriesMap[mid] = (seriesMap[mid] ?? 0) + 1;
+        }
+    }
+    catch (_) {}
     const result = matieresFiltrees.map(m => ({
         id: m.code?.toLowerCase() || m.id,
         nom: m.nom,

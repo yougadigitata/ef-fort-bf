@@ -33,13 +33,14 @@ const Map<String, Map<String, dynamic>> _matieresMeta = {
   'psy':          {'icone': '🧠', 'couleur': Color(0xFF8E44AD)},
   'pc':           {'icone': '🔬', 'couleur': Color(0xFFE74C3C)},
   'enaref':       {'icone': '🏛️', 'couleur': Color(0xFF1A5C38)},
+  'haut':         {'icone': '🏆', 'couleur': Color(0xFFD4A017)},
   'default':      {'icone': '📚', 'couleur': Color(0xFF1A5C38)},
 };
 
 const Set<String> _seriesMatieresIds = {
   'hg', 'droit2', 'eco2', 'ang', 'psycho', 'histo', 'info', 'comm',
   'aes', 'bf', 'burkina_faso', 'armee', 'actu', 'cg', 'fr', 'maths',
-  'svt', 'pana', 'sp', 'psy', 'pc', 'enaref',
+  'svt', 'pana', 'sp', 'psy', 'pc', 'enaref', 'haut',
 };
 
 /// v8.0 — Matières DYNAMIQUES — Design liste harmonisé
