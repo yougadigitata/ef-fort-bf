@@ -108,20 +108,41 @@ questions.get('/questions', async (c) => {
       } catch (_) {}
     }
 
-    // Vérifier si la série demandée est gratuite (est_demo) ou payante
+    // ── ANTI-FRAUDE RENFORCÉ : Vérifier si la série est la première de SA matière ──
+    // Règle absolue : seule la série ayant le plus petit numéro dans sa matière est gratuite
     if (!isAbonne && !isAdmin) {
       try {
+        // Récupérer la série demandée avec sa matière
         const { data: serieInfo } = await db.from('series_qcm')
-          .select('est_demo, numero')
+          .select('est_demo, numero, matiere_id, actif')
           .eq('id', serieId)
           .single();
-        // Bloquer si série payante (ni demo ni première de la matière par numéro = 1)
-        if (serieInfo && !serieInfo.est_demo && serieInfo.numero !== 1) {
-          return c.json({
-            error: 'Accès réservé aux abonnés Premium.',
-            code: 'PREMIUM_REQUIRED',
-            message: 'Abonnez-vous pour accéder à cette série.',
-          }, 403);
+
+        if (serieInfo) {
+          // Vérifier si c'est la première série active de CETTE matière (numéro min)
+          let isPremiereDeLaMatiere = serieInfo.est_demo === true;
+
+          if (!isPremiereDeLaMatiere && serieInfo.matiere_id) {
+            // Chercher la série avec le plus petit numéro pour cette matière
+            const { data: premiereSerieData } = await db.from('series_qcm')
+              .select('id, numero')
+              .eq('matiere_id', serieInfo.matiere_id)
+              .eq('actif', true)
+              .order('numero', { ascending: true })
+              .limit(1);
+
+            const premiereSerieId = premiereSerieData?.[0]?.id;
+            isPremiereDeLaMatiere = (premiereSerieId === serieId);
+          }
+
+          // Bloquer si ce n'est ni demo ni la première série de la matière
+          if (!isPremiereDeLaMatiere) {
+            return c.json({
+              error: 'Accès réservé aux abonnés Premium.',
+              code: 'PREMIUM_REQUIRED',
+              message: 'Seule la première série est gratuite. Abonnez-vous pour accéder aux autres séries.',
+            }, 403);
+          }
         }
       } catch (_) {}
     }

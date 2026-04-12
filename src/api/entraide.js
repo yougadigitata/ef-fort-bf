@@ -56,11 +56,26 @@ function decodeMessage(m) {
     return { isReponse: false, isLike: false, isPinned, parentId: null, texte: m.contenu ?? '', likedBy };
 }
 // ── GET /api/entraide — Messages récents avec réponses et likes ──
+// ⚠️ ANTI-FRAUDE : Accès réservé aux abonnés (vérifié côté serveur)
 entraide.get('/', requireAuth, async (c) => {
     const db = getDB(c.env);
     const context = c;
     const currentUserId = context.userId;
     const filterType = c.req.query('type') || 'all';
+    // ── Vérification abonnement obligatoire pour Entraide ──
+    const { data: entraideProfile } = await db.from('profiles')
+        .select('abonnement_actif, is_admin')
+        .eq('id', currentUserId)
+        .single();
+    const isAbonneEntraide = entraideProfile?.abonnement_actif === true;
+    const isAdminEntraide = entraideProfile?.is_admin === true || context.isAdmin === true;
+    if (!isAbonneEntraide && !isAdminEntraide) {
+        return c.json({
+            error: 'Accès réservé aux abonnés Premium.',
+            code: 'PREMIUM_REQUIRED',
+            message: 'L\'Entraide est réservée aux abonnés. Abonnez-vous pour rejoindre la communauté.',
+        }, 403);
+    }
     // Récupérer TOUS les messages actifs (questions + réponses)
     const { data: allMessages, error } = await db
         .from('messages_entraide')
@@ -155,8 +170,17 @@ entraide.post('/', requireAuth, async (c) => {
     }
     const db = getDB(c.env);
     const { data: profile } = await db.from('profiles')
-        .select('is_admin').eq('id', userId).single();
+        .select('is_admin, abonnement_actif').eq('id', userId).single();
     const userIsAdmin = isAdmin || profile?.is_admin === true;
+    const userIsAbonne = profile?.abonnement_actif === true;
+    // ── Vérification abonnement : seuls les abonnés et admins peuvent poster ──
+    if (!userIsAbonne && !userIsAdmin) {
+        return c.json({
+            error: 'Accès réservé aux abonnés Premium.',
+            code: 'PREMIUM_REQUIRED',
+            message: 'L\'Entraide est réservée aux abonnés. Abonnez-vous pour rejoindre la communauté.',
+        }, 403);
+    }
     if (!userIsAdmin) {
         const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
         const { data: existing } = await db

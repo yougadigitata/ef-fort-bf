@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
+import 'abonnement_screen.dart';
 
 // ══════════════════════════════════════════════════════════════
 // ENTRAIDE v7.0 — Interface communautaire enrichie
@@ -454,7 +455,90 @@ class _EntraideScreenState extends State<EntraideScreen>
   Widget build(BuildContext context) {
     final user = ApiService.currentUser;
     final isAdmin = ApiService.isAdmin;
+    final isAbonne = ApiService.isAbonne;
     final pinnedCount = _messages.where((m) => m['is_pinned'] == true).length;
+
+    // ── Mur Premium : Entraide réservée aux abonnés ──────────────────
+    if (!isAbonne && !isAdmin) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF0F4F1),
+        appBar: AppBar(
+          title: const Text('Entraide', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700)),
+          automaticallyImplyLeading: false,
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(colors: [Color(0xFF1A5C38), Color(0xFF0E3D24)]),
+            ),
+          ),
+          foregroundColor: Colors.white,
+          elevation: 0,
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 20)],
+                  ),
+                  child: Column(
+                    children: [
+                      const Text('👑', style: TextStyle(fontSize: 48)),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Entraide Premium',
+                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Color(0xFF1A5C38)),
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'La communauté Entraide est réservée aux abonnés Premium.\n\nPartagez, apprenez et progressez ensemble.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 14, color: Colors.grey, height: 1.6),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8F5E9),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFF4CAF50).withValues(alpha: 0.3)),
+                        ),
+                        child: const Text(
+                          '✅ Plan gratuit : Accès à la 1ère série de chaque matière',
+                          style: TextStyle(fontSize: 12, color: Color(0xFF2E7D32), fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const AbonnementScreen()));
+                          },
+                          icon: const Icon(Icons.star_rounded),
+                          label: const Text("S'abonner maintenant", style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1A5C38),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF0F4F1),
