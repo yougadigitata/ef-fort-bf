@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
+import '../services/api_service.dart';
+import 'abonnement_screen.dart';
 import 'examen_screen.dart';
 import 'examen_immersif_screen.dart';
 
@@ -205,12 +207,18 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
             ),
             const SizedBox(height: 28),
 
-            // Bouton
+            // Bouton — accès réservé aux abonnés
             SizedBox(
               width: double.infinity,
               height: 54,
               child: ElevatedButton.icon(
                 onPressed: () {
+                  // Vérification abonnement
+                  final isAbonne = ApiService.isAbonne || ApiService.isAdmin;
+                  if (!isAbonne) {
+                    _showAbonnementDialog();
+                    return;
+                  }
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -218,10 +226,17 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
                     ),
                   );
                 },
-                icon: const Icon(Icons.play_circle_filled_rounded, size: 26),
-                label: const Text(
-                  'ACCÉDER AUX EXAMENS TYPES',
-                  style: TextStyle(
+                icon: Icon(
+                  (ApiService.isAbonne || ApiService.isAdmin)
+                      ? Icons.play_circle_filled_rounded
+                      : Icons.lock_rounded,
+                  size: 26,
+                ),
+                label: Text(
+                  (ApiService.isAbonne || ApiService.isAdmin)
+                      ? 'ACCÉDER AUX EXAMENS TYPES'
+                      : '🔒 RÉSERVÉ AUX ABONNÉS',
+                  style: const TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.3,
@@ -229,7 +244,9 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: (ApiService.isAbonne || ApiService.isAdmin)
+                      ? AppColors.primary
+                      : Colors.orange,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
@@ -496,7 +513,6 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
     );
   }
 
-  // ignore: unused_element
   void _showAbonnementDialog() {
     showDialog(
       context: context,
@@ -520,7 +536,13 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
             child: const Text('Plus tard'),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.pop(ctx),
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AbonnementScreen()),
+              );
+            },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
             child: const Text("S'abonner",
                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),

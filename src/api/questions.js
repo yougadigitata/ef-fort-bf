@@ -106,9 +106,10 @@ questions.get('/questions', async (c) => {
                     .eq('id', serieId)
                     .single();
                 if (serieInfo) {
-                    // Vérifier si c'est la première série active de CETTE matière (numéro min)
-                    let isPremiereDeLaMatiere = serieInfo.est_demo === true;
-                    if (!isPremiereDeLaMatiere && serieInfo.matiere_id) {
+                    // RÈGLE STRICTE : seule la première série (numéro min) de sa matière est gratuite
+                    // est_demo n'est plus utilisé pour contrôler l'accès
+                    let isPremiereDeLaMatiere = false;
+                    if (serieInfo.matiere_id) {
                         // Chercher la série avec le plus petit numéro pour cette matière
                         const { data: premiereSerieData } = await db.from('series_qcm')
                             .select('id, numero')
@@ -264,11 +265,11 @@ questions.get('/series', async (c) => {
     const { data, error } = await query.limit(2000);
     if (error)
         return c.json({ error: error.message }, 500);
-    // Marquer les séries verrouillées pour les non-abonnés (la 1ère est toujours gratuite)
+    // RÈGLE STRICTE : seule la 1ère série (index 0) est gratuite — on ignore est_demo
     const series = (data ?? []).map((s, index) => ({
         ...s,
-        locked: !isAbonne && !isAdmin && !s.est_demo && index > 0,
-        is_free: index === 0 || s.est_demo,
+        locked: !isAbonne && !isAdmin && index > 0,
+        is_free: index === 0,
     }));
     // Pas de cache sur les séries
     c.header('Cache-Control', 'no-store, no-cache, must-revalidate');

@@ -222,6 +222,89 @@ class _ExamenImmersifAccueilScreenState
 
   @override
   Widget build(BuildContext context) {
+    // Guard abonnement — les examens immersifs sont réservés aux abonnés
+    if (!ApiService.isAbonne && !ApiService.isAdmin) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF0F4F1),
+        appBar: AppBar(
+          title: const Text('Examens Types', style: TextStyle(fontWeight: FontWeight.w700)),
+          automaticallyImplyLeading: true,
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(colors: [Color(0xFF1A5C38), Color(0xFF0E3D24)]),
+            ),
+          ),
+          foregroundColor: Colors.white,
+          elevation: 0,
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 20),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      const Text('🎓', style: TextStyle(fontSize: 52)),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Examens Types — Premium',
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Color(0xFF1A5C38)),
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Les examens types immersifs sont réservés aux abonnés Premium.\n\nPassez Premium pour vous entraîner dans les conditions réelles du concours.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 14, color: Colors.grey, height: 1.6),
+                      ),
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8F5E9),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFF4CAF50).withValues(alpha: 0.3)),
+                        ),
+                        child: const Text(
+                          '✅ Plan gratuit : Accès à la 1ère série de chaque matière',
+                          style: TextStyle(fontSize: 12, color: Color(0xFF2E7D32), fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          icon: const Icon(Icons.arrow_back_rounded),
+                          label: const Text("Retour", style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1A5C38),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
     final isWide = MediaQuery.of(context).size.width >= 700;
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F0),
