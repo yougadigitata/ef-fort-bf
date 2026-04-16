@@ -209,14 +209,17 @@ class _ExamenImmersifAccueilScreenState
       _kExamensTypes.where((e) => e['serie'] == 1).toList();
   List<Map<String, dynamic>> get _serie2 =>
       _kExamensTypes.where((e) => e['serie'] == 2).toList();
-  // Série 3 retirée de l'interface (onglet supprimé sur demande)
-  // Les IDs 107-116 existent en base mais ne sont plus affichés
+  // Série 3 — Examens Types (IDs 107–116)
+  List<Map<String, dynamic>> get _serie3 =>
+      _kExamensTypes.where((e) => e['serie'] == 3 && e['id']! >= 107).toList();
+  // Examens Blancs — vrais examens officiels (IDs 97–106)
   List<Map<String, dynamic>> get _serieBlanche =>
-      _kExamensTypes.where((e) => e['serie'] == 3 && e['id']! >= 97).toList();
+      _kExamensTypes.where((e) => e['id']! >= 97 && e['id']! <= 106).toList();
   List<Map<String, dynamic>> get _currentList {
     if (_selectedSerieTab == 0) return _serie1;
     if (_selectedSerieTab == 1) return _serie2;
-    // Index 2 = Examens Blancs (Série 3 supprimée de l'interface)
+    if (_selectedSerieTab == 2) return _serie3;
+    // Index 3 = Examens Blancs (vrais examens officiels)
     return _serieBlanche;
   }
 
@@ -385,7 +388,7 @@ class _ExamenImmersifAccueilScreenState
                   ),
                 ),
                 Text(
-                  '30 séries · 50 questions · 1h30 · Conditions réelles',
+                  '40 séries · 50 questions · 1h30 · Conditions réelles',
                   style: TextStyle(fontSize: 11, color: Colors.white70),
                 ),
               ],
@@ -538,7 +541,8 @@ class _ExamenImmersifAccueilScreenState
         children: [
           _buildSerieTab(0, 'Série 1', '10 examens'),
           _buildSerieTab(1, 'Série 2', '10 examens'),
-          _buildSerieTab(2, 'Blancs', '10 séries'),
+          _buildSerieTab(2, 'Série 3', '10 examens'),
+          _buildSerieTab(3, 'Examens Blancs', '10 examens'),
         ],
       ),
     );
@@ -546,10 +550,10 @@ class _ExamenImmersifAccueilScreenState
 
   Widget _buildSerieTab(int index, String titre, String sousTitre) {
     final isSelected = _selectedSerieTab == index;
-    // L'onglet "Blancs" (index=2 désormais) a un style distinctif noir/blanc
-    final isBlancsTab = index == 2;
+    // L'onglet "Examens Blancs" (index=3) a un style distinctif bleu nuit
+    final isBlancsTab = index == 3;
     final selectedColor = isBlancsTab
-        ? const Color(0xFF1C1C1E)   // Noir pour Blancs
+        ? const Color(0xFF1A3A5C)   // Bleu nuit pour Examens Blancs
         : const Color(0xFF1A5C38); // Vert pour Types
 
     return Expanded(
@@ -573,9 +577,12 @@ class _ExamenImmersifAccueilScreenState
                 const Icon(Icons.star_rounded, size: 11, color: Colors.black38),
               Text(
                 titre,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontWeight: FontWeight.w800,
-                  fontSize: 13,
+                  fontSize: 11,
                   color: isSelected ? Colors.white : Colors.black54,
                   fontFamily: 'Poppins',
                 ),
@@ -583,7 +590,7 @@ class _ExamenImmersifAccueilScreenState
               Text(
                 sousTitre,
                 style: TextStyle(
-                  fontSize: 9,
+                  fontSize: 8,
                   color: isSelected ? Colors.white70 : Colors.black38,
                 ),
               ),
