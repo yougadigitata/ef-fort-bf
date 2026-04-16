@@ -8,8 +8,11 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-// Lire key.properties
-val keyPropertiesFile = rootProject.file("key.properties")
+// Lire key.properties (chercher dans android/ puis android/app/)
+val keyPropertiesFile = if (rootProject.file("key.properties").exists())
+    rootProject.file("key.properties")
+else
+    file("key.properties")
 val keyProperties = Properties()
 if (keyPropertiesFile.exists()) {
     keyProperties.load(FileInputStream(keyPropertiesFile))
@@ -34,7 +37,8 @@ android {
             if (keyPropertiesFile.exists()) {
                 keyAlias = keyProperties["keyAlias"] as String
                 keyPassword = keyProperties["keyPassword"] as String
-                storeFile = rootProject.file(keyProperties["storeFile"] as String)
+                // Le keystore est dans android/app/
+                storeFile = file(keyProperties["storeFile"] as String)
                 storePassword = keyProperties["storePassword"] as String
             }
         }

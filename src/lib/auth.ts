@@ -35,10 +35,25 @@ export async function verifyPassword(password: string, stored: string): Promise<
 }
 
 // ── JWT ──────────────────────────────────────────────────────
-const JWT_SECRET = 'EfFort2026BF!JWT#Secure@Concours';
-const JWT_DAYS   = 30;
+// ⚠️ JWT_SECRET est lu depuis l'environnement (secret Cloudflare Workers)
+// Ne jamais hardcoder ce secret ici.
+const JWT_DAYS = 30;
 
-export async function createJWT(payload: Record<string, unknown>): Promise<string> {
+function getJwtSecret(env?: { JWT_SECRET?: string }): string {
+  // Priorité : env > variable globale (Workers) > fallback dev uniquement
+  if (env?.JWT_SECRET) return env.JWT_SECRET;
+  // @ts-ignore – accès variable globale Workers
+  if (typeof globalThis !== 'undefined' && (globalThis as any).JWT_SECRET) {
+    // @ts-ignore
+    return (globalThis as any).JWT_SECRET;
+  }
+  // FALLBACK DEV UNIQUEMENT — ne jamais utiliser en production
+  console.warn('[SECURITY] JWT_SECRET non défini — utilisation du fallback dev');
+  return 'EfFort2026BF!JWT#Secure@Concours';
+}
+
+export async function createJWT(payload: Record<string, unknown>, env?: { JWT_SECRET?: string }): Promise<string> {
+  const JWT_SECRET = getJwtSecret(env);
   const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }))
     .replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
   const body = btoa(JSON.stringify({
@@ -59,7 +74,8 @@ export async function createJWT(payload: Record<string, unknown>): Promise<strin
   return `${header}.${body}.${sigB64}`;
 }
 
-export async function verifyJWT(token: string): Promise<Record<string, unknown> | null> {
+export async function verifyJWT(token: string, env?: { JWT_SECRET?: string }): Promise<Record<string, unknown> | null> {
+  const JWT_SECRET = getJwtSecret(env);
   try {
     const [header, body, sig] = token.split('.');
     if (!header || !body || !sig) return null;
