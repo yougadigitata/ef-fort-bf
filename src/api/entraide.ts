@@ -91,11 +91,14 @@ entraide.get('/', requireAuth, async (c) => {
     }, 403);
   }
 
-  // Récupérer TOUS les messages actifs (questions + réponses)
+  // Récupérer TOUS les messages actifs des dernières 24h (questions + réponses)
+  // Note : les réponses admin et les likes peuvent être plus anciens, on les garde
+  const cutoff24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const { data: allMessages, error } = await db
     .from('messages_entraide')
     .select('id, contenu, partage_whatsapp, telephone_partage, created_at, user_id, actif')
     .eq('actif', true)
+    .gte('created_at', cutoff24h)
     .order('created_at', { ascending: false })
     .limit(400);
 

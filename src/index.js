@@ -940,6 +940,67 @@ app.get('/api/admin/check-entraide-schema', async (c) => {
         message: '✅ Schéma entraide OK - parent_id présent'
     });
 });
+// ── POST /api/admin/apply-rls — Appliquer les politiques RLS ──
+app.post('/api/admin/apply-rls', async (c) => {
+    const h = c.req.header('Authorization');
+    if (!h?.startsWith('Bearer '))
+        return c.json({ error: 'Auth requise.' }, 401);
+    const payload = await (await import('./lib/auth')).verifyJWT(h.slice(7));
+    if (!payload || !payload['is_admin'])
+        return c.json({ error: 'Admin requis.' }, 403);
+    const supabaseUrl = c.env.SUPABASE_URL || 'https://xqifdbgqxyrlhrkwlyir.supabase.co';
+    const serviceKey = c.env.SUPABASE_KEY || '';
+    const supabaseRef = 'xqifdbgqxyrlhrkwlyir';
+    const results = [];
+    // Politiques RLS à appliquer
+    const rlsStatements = [
+        // questions
+        `ALTER TABLE public.questions ENABLE ROW LEVEL SECURITY`,
+        `DROP POLICY IF EXISTS "Lecture publique questions" ON public.questions`,
+        `CREATE POLICY "Lecture publique questions" ON public.questions FOR SELECT USING (published = true)`,
+        `DROP POLICY IF EXISTS "Ecriture admin questions" ON public.questions`,
+        `CREATE POLICY "Ecriture admin questions" ON public.questions FOR ALL USING (auth.role() = 'service_role')`,
+        // series_qcm
+        `ALTER TABLE public.series_qcm ENABLE ROW LEVEL SECURITY`,
+        `DROP POLICY IF EXISTS "Lecture publique series" ON public.series_qcm`,
+        `CREATE POLICY "Lecture publique series" ON public.series_qcm FOR SELECT USING (published = true AND actif = true)`,
+        `DROP POLICY IF EXISTS "Ecriture admin series" ON public.series_qcm`,
+        `CREATE POLICY "Ecriture admin series" ON public.series_qcm FOR ALL USING (auth.role() = 'service_role')`,
+        // matieres
+        `ALTER TABLE public.matieres ENABLE ROW LEVEL SECURITY`,
+        `DROP POLICY IF EXISTS "Lecture publique matieres" ON public.matieres`,
+        `CREATE POLICY "Lecture publique matieres" ON public.matieres FOR SELECT USING (true)`,
+        // actualites
+        `ALTER TABLE public.actualites ENABLE ROW LEVEL SECURITY`,
+        `DROP POLICY IF EXISTS "Lecture publique actualites" ON public.actualites`,
+        `CREATE POLICY "Lecture publique actualites" ON public.actualites FOR SELECT USING (actif = true)`,
+    ];
+    for (const sql of rlsStatements) {
+        try {
+            const resp = await fetch(`https://api.supabase.com/v1/projects/${supabaseRef}/database/query`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${serviceKey}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ query: sql }),
+            });
+            const data = await resp.json();
+            results.push({ sql: sql.substring(0, 60) + '...', status: resp.status, ok: resp.ok });
+        }
+        catch (e) {
+            results.push({ sql: sql.substring(0, 60) + '...', error: e.message });
+        }
+    }
+    const success = results.filter(r => r.ok).length;
+    const failed = results.filter(r => !r.ok && !r.error).length;
+    return c.json({
+        success: true,
+        message: `RLS appliqué: ${success} succès, ${failed} échecs`,
+        results,
+        sql_file: 'Fichier SQL complet disponible: sql_rls_securite.sql',
+    });
+});
 // 404
 app.notFound((c) => c.json({ error: 'Route introuvable.' }, 404));
 export default app;

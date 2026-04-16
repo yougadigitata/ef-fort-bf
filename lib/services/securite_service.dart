@@ -42,9 +42,8 @@ class SecuriteService {
   }
 
   /// Désactiver le blocage (pour l'admin)
+  /// Note : on ne vérifie pas _isSecured car l'admin doit toujours avoir accès
   static Future<void> desactiverBlocage() async {
-    if (!_isSecured && !kIsWeb) return;
-    
     if (!kIsWeb) {
       try {
         await _channel.invokeMethod('setSecureFlag', {'secure': false});

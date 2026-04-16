@@ -2215,7 +2215,6 @@ class _ExamenImmersifScreenState extends State<ExamenImmersifScreen>
   // ── Barre de soumission ──────────────────────────────────────
   Widget _buildSubmitBar(int answeredCount) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -2226,76 +2225,82 @@ class _ExamenImmersifScreenState extends State<ExamenImmersifScreen>
           ),
         ],
       ),
-      child: _canSubmit
-          ? Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (_isAdmin)
-                  Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.only(bottom: 6),
-                    padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 10),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFF3E0),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFFFF6F00).withValues(alpha: 0.4)),
-                    ),
-                    child: const Text(
-                      '⚙️  MODE ADMIN — Soumission débloquée',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 11, color: Color(0xFFE65100), fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                SizedBox(
-                  width: double.infinity,
-                  height: 60,
-                  child: ElevatedButton(
-                    onPressed: () => _terminerExamen(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: widget.couleur,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      elevation: 3,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.check_circle_rounded, size: 24),
-                        const SizedBox(width: 8),
-                        Text(
-                          'REMETTRE MA COPIE ($answeredCount/${_questions.length})',
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, fontFamily: 'Poppins'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            )
-          : Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
-              ),
-              child: Column(
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          child: _canSubmit
+            ? Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    '🔒  Soumission dans ${_secondsBeforeCanSubmit ~/ 60}min ${_secondsBeforeCanSubmit % 60}s',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 15, color: Colors.black45, fontWeight: FontWeight.w700),
-                  ),
-                  const Text(
-                    'Vous ne pouvez pas soumettre avant 30 minutes',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 13, color: Colors.black38),
+                  if (_isAdmin)
+                    Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(bottom: 6),
+                      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF3E0),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFFF6F00).withValues(alpha: 0.4)),
+                      ),
+                      child: const Text(
+                        '⚙️  MODE ADMIN — Soumission débloquée',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 11, color: Color(0xFFE65100), fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 60,
+                    child: ElevatedButton(
+                      onPressed: () => _terminerExamen(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: widget.couleur,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 3,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.check_circle_rounded, size: 24),
+                          const SizedBox(width: 8),
+                          Text(
+                            'REMETTRE MA COPIE ($answeredCount/${_questions.length})',
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, fontFamily: 'Poppins'),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
+              )
+            : Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '🔒  Soumission dans ${_secondsBeforeCanSubmit ~/ 60}min ${_secondsBeforeCanSubmit % 60}s',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 15, color: Colors.black45, fontWeight: FontWeight.w700),
+                    ),
+                    const Text(
+                      'Vous ne pouvez pas soumettre avant 30 minutes',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 13, color: Colors.black38),
+                    ),
+                  ],
+                ),
               ),
-            ),
+        ),
+      ),
     );
   }
 

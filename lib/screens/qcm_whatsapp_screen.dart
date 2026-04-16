@@ -188,8 +188,9 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
   static const int _minSecondsRequired = 300; // 5 minutes
 
   void _finirSerie() {
-    // Vérification anti-fraude : au moins 5 minutes doivent s'être écoulées
-    if (_secondsElapsed < _minSecondsRequired) {
+    // Admin bypass : l'admin peut soumettre à tout moment sans attendre 5 min
+    // Vérification anti-fraude : au moins 5 minutes doivent s'être écoulées (utilisateurs normaux seulement)
+    if (!ApiService.isAdmin && _secondsElapsed < _minSecondsRequired) {
       final remaining = _minSecondsRequired - _secondsElapsed;
       final m = (remaining ~/ 60).toString().padLeft(2, '0');
       final s = (remaining % 60).toString().padLeft(2, '0');
@@ -783,7 +784,6 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
     final hasAnswer = (_selectedAnswers[_currentIndex] ?? {}).isNotEmpty;
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -794,9 +794,13 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
           ),
         ],
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
           // Score live
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -871,7 +875,9 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
               ),
             ],
           ),
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -1829,7 +1829,6 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
   // ── Barre de soumission ──
   Widget _buildSubmitBar(int answeredCount) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
       decoration: BoxDecoration(
         color: AppColors.white,
         boxShadow: [
@@ -1840,10 +1839,14 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
           ),
         ],
       ),
-      child: _canSubmit
-          ? Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+          child: _canSubmit
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
                 if (_isAdminUser) ...[
                   Container(
                     width: double.infinity,
@@ -1913,6 +1916,8 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                 ],
               ),
             ),
+        ),
+      ),
     );
   }
 
