@@ -1340,7 +1340,7 @@ class _ExamenImmersifScreenState extends State<ExamenImmersifScreen>
     if (!_bellStartPlayed) {
       _bellStartPlayed = true;
       Future.delayed(const Duration(milliseconds: 600), () async {
-        await BellService.playStart();
+        await BellService.playExamStart();
       });
     }
     _timer = Timer.periodic(const Duration(seconds: 1), (t) {
@@ -1357,7 +1357,7 @@ class _ExamenImmersifScreenState extends State<ExamenImmersifScreen>
       // Rappel 5 minutes
       if (_remainingSeconds == 5 * 60 && !_bell5MinPlayed) {
         _bell5MinPlayed = true;
-        BellService.playStart();
+        BellService.playReminder();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -1408,7 +1408,7 @@ class _ExamenImmersifScreenState extends State<ExamenImmersifScreen>
         current.add(letter);
         _answers[qIndex] = current;
         _lastAnswered = qIndex;
-        BellService.playClick();
+        BellService.playMark(); // Clic mécanique — noircissement case OMR
       }
     });
     _syncScroll(qIndex);
@@ -2388,7 +2388,12 @@ class _ExamenImmersifResultatsScreenState
     }
 
     Future.delayed(const Duration(milliseconds: 500), () {
-      BellService.playEnd();
+      // Son selon le score : applaudissements si bon score, fin d'examen sinon
+      if (_pct >= 50) {
+        BellService.playApplause();
+      } else {
+        BellService.playEnd();
+      }
       if (mounted && _pct >= 50) {
         _confettiController.forward();
         _confettiTimer = Timer(const Duration(seconds: 4), () {

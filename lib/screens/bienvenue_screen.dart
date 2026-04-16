@@ -141,8 +141,8 @@ class _BienvenueScreenState extends State<BienvenueScreen>
     if (_soundPlayed) return;
     _soundPlayed = true;
     try {
-      // BellService gère Web (Web Audio API) ET Mobile (audioplayers)
-      await BellService.playStart();
+      // Son distinct pour l'écran de bienvenue
+      await BellService.playWelcome();
     } catch (_) {
       // Silencieux si erreur
     }

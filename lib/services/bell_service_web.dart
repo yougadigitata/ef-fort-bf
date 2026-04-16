@@ -30,6 +30,15 @@ external void _effortPlayTransitionJS();
 @JS('window.effortPlayApplause')
 external void _effortPlayApplauseJS();
 
+@JS('window.effortPlayExamStart')
+external void _effortPlayExamStartJS();
+
+@JS('window.effortPlayReminder')
+external void _effortPlayReminderJS();
+
+@JS('window.effortPlayMark')
+external void _effortPlayMarkJS();
+
 // ── Mélodie d'intro (Splash Screen — première animation) ──
 Future<void> playBellStartPlatform() async {
   if (!kIsWeb) return;
@@ -115,5 +124,38 @@ Future<void> playBellApplausePlatform() async {
     _effortPlayApplauseJS();
   } catch (e) {
     if (kDebugMode) debugPrint('Web bell applause error: $e');
+  }
+}
+
+// ── Début d'examen — cloche de départ ──
+Future<void> playBellExamStartPlatform() async {
+  if (!kIsWeb) return;
+  try {
+    _effortPlayExamStartJS();
+  } catch (e) {
+    try { _effortPlayBell(550, 1.5); } catch (_) {}
+    if (kDebugMode) debugPrint('Web bell exam_start error: $e');
+  }
+}
+
+// ── Rappel 5 minutes avant la fin ──
+Future<void> playBellReminderPlatform() async {
+  if (!kIsWeb) return;
+  try {
+    _effortPlayReminderJS();
+  } catch (e) {
+    try { _effortPlayBell(880, 0.8); } catch (_) {}
+    if (kDebugMode) debugPrint('Web bell reminder error: $e');
+  }
+}
+
+// ── Noircissement case OMR ──
+Future<void> playBellMarkPlatform() async {
+  if (!kIsWeb) return;
+  try {
+    _effortPlayMarkJS();
+  } catch (e) {
+    try { _effortPlayBell(1200, 0.05); } catch (_) {}
+    if (kDebugMode) debugPrint('Web bell mark error: $e');
   }
 }

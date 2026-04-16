@@ -224,7 +224,7 @@ class _QcmScreenState extends State<QcmScreen> {
 
         Expanded(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -382,53 +382,67 @@ class _QcmScreenState extends State<QcmScreen> {
                   );
                 }),
 
-                const SizedBox(height: 24),
-
-                // ── Boutons PASSER / VALIDER (TÂCHE 6) ──
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: _passerQuestion,
-                        icon: const Icon(Icons.arrow_back_rounded, size: 20),
-                        label: const Text('PASSER SANS RÉPONDRE', style: TextStyle(fontSize: 15)),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.textLight,
-                          side: BorderSide(color: Colors.grey.withValues(alpha: 0.4)),
-                          padding: const EdgeInsets.symmetric(vertical: 18),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: _validerEtSuivre,
-                        icon: const Icon(Icons.arrow_forward_rounded, size: 20),
-                        label: Text(
-                          _currentIndex < _questions.length - 1 ? 'VALIDER' : 'TERMINER',
-                          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _couleur,
-                          foregroundColor: AppColors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 18),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          elevation: 3,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-
                 // Bannière abonnement si version gratuite
                 if (!ApiService.isAbonne && _currentIndex >= 4) ...[
                   const SizedBox(height: 20),
                   _buildPremiumBanner(),
                 ],
 
-                const SizedBox(height: 40),
+                const SizedBox(height: 12),
               ],
+            ),
+          ),
+        ),
+
+        // ── Boutons PASSER / VALIDER — ZONE FIXE AVEC SafeArea ──
+        // Positionnés au-dessus de la barre de navigation Android
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            border: Border(
+              top: BorderSide(color: Colors.grey.withValues(alpha: 0.15), width: 1),
+            ),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _passerQuestion,
+                      icon: const Icon(Icons.arrow_back_rounded, size: 20),
+                      label: const Text('PASSER', style: TextStyle(fontSize: 15)),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.textLight,
+                        side: BorderSide(color: Colors.grey.withValues(alpha: 0.4)),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 2,
+                    child: ElevatedButton.icon(
+                      onPressed: _validerEtSuivre,
+                      icon: const Icon(Icons.arrow_forward_rounded, size: 20),
+                      label: Text(
+                        _currentIndex < _questions.length - 1 ? 'VALIDER ET SUIVANT' : 'TERMINER',
+                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _couleur,
+                        foregroundColor: AppColors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 3,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

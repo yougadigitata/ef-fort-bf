@@ -44,7 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _showPremiumWall(index);
       return;
     }
-    BellService.playTransition();
+    BellService.playWelcome();
     setState(() => _currentIndex = index);
   }
 

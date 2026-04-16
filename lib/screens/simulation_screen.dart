@@ -21,7 +21,7 @@ import 'abonnement_screen.dart';
 // ── Sons cloche via BellService (multi-plateforme) ──
 Future<void> _playBellAsset(String assetName) async {
   if (assetName.contains('start')) {
-    await BellService.playStart();
+    await BellService.playExamStart();
   } else {
     await BellService.playEnd();
   }
@@ -877,7 +877,7 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
   }
 
   void _startTimerAndBell() {
-    // ── TÂCHE 8 : Son de démarrage (audioplayers) ──
+    // Son de démarrage — cloche d'examen distincte
     if (!_bellStartPlayed) {
       _bellStartPlayed = true;
       Future.delayed(const Duration(milliseconds: 500), () => _playBellAsset('bell_start.mp3'));
@@ -886,8 +886,17 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
   }
 
   void _playBell(double freq, double dur) {
-    // Conservé pour compatibilité - utilise maintenant audioplayers
-    _playBellAsset(dur > 2.0 ? 'bell_end.mp3' : 'bell_start.mp3');
+    // Sons distincts selon la durée / fréquence
+    if (dur <= 1.5) {
+      // Rappel court → son reminder
+      BellService.playReminder();
+    } else if (freq <= 500) {
+      // Départ examen → cloche de début
+      BellService.playExamStart();
+    } else {
+      // Fin examen → double cloche
+      BellService.playEnd();
+    }
   }
 
   // ignore: unused_element
@@ -1146,8 +1155,8 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
   Future<void> _finishSimulation() async {
     if (_finished) return;
     _timer?.cancel();
-    // ── TÂCHE 8 : Son de fin (bell_end.mp3) ──
-    await _playBellAsset('bell_end.mp3');
+    // Son de fin d'examen — double cloche
+    await BellService.playEnd();
     setState(() => _finished = true);
 
     final reponses = <Map<String, String>>[];
