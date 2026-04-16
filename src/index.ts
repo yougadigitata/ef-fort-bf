@@ -629,7 +629,7 @@ app.get('/api/health', (c) => c.json({
   app: 'EF-FORT.BF API',
   version: '10.0.0',
   timestamp: new Date().toISOString(),
-  features: ['18-matieres', '2786-questions', 'simulation-v3', 'examens-blancs', 'pdf-export-v2', 'entraide-v6-no-migration', 'simulations-admin', 'freemium-v2', 'annonces-crud', 'admin-delete', 'reponses-admin-sans-migration'],
+  features: ['21-matieres', '5326-questions', 'simulation-v3', 'examens-blancs', 'pdf-export-v2', 'entraide-v6-no-migration', 'simulations-admin', 'freemium-v2', 'annonces-crud', 'admin-delete', 'reponses-admin-sans-migration', 'series3-examens-types', 'nouvelles-series-cg-hg-sp'],
 }));
 
 // ── POST /api/admin/migrate-parent-id — Migration parent_id entraide ──

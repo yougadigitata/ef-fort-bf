@@ -115,7 +115,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
                 const SizedBox(height: 12),
                 // Sous-titre (plus de TabBar — un seul écran)
                 Text(
-                  '11 matières · 30 séries · 50 questions · 1h30',
+                  '10 concours × 3 séries · 50 questions · 1h30',
                   style: TextStyle(
                     fontSize: 15,
                     color: Colors.white.withValues(alpha: 0.75),
@@ -182,7 +182,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
             ),
             const SizedBox(height: 8),
             const Text(
-              '20 séries officielles · Interface vraie feuille\n50 questions · 1h30 · Correction détaillée',
+              '30 examens types officiels · Interface vraie feuille\n50 questions · 1h30 · Correction détaillée',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
@@ -257,7 +257,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
             ),
             const SizedBox(height: 16),
             Text(
-              '10 concours × 3 séries = 30 examens types disponibles',
+              '10 concours × 3 séries = 30 examens types | Série 3 disponible',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
