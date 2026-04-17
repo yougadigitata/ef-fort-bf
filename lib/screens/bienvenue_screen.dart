@@ -381,39 +381,11 @@ class _BienvenueScreenState extends State<BienvenueScreen>
     );
   }
 
-  // ── En-tête avec shimmer ─────────────────────────────────────────────
+  // ── En-tête avec vrai logo EF-FORT.BF ────────────────────────────────
   Widget _buildHeader() {
     return Column(
       children: [
-        // Icône pulsante
-        ScaleTransition(
-          scale: _pulseAnim,
-          child: Container(
-            width: 96,
-            height: 96,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFFD4A017), Color(0xFFF5C840)],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFD4A017).withValues(alpha: 0.5),
-                  blurRadius: 35,
-                  spreadRadius: 8,
-                ),
-              ],
-            ),
-            child: const Center(
-              child: Text('🎓', style: TextStyle(fontSize: 48)),
-            ),
-          ),
-        ),
-        const SizedBox(height: 14),
-
-        // "Bienvenue sur"
+        // "Bienvenue sur" (placé AVANT le logo)
         const Text(
           'Bienvenue sur',
           style: TextStyle(
@@ -423,9 +395,56 @@ class _BienvenueScreenState extends State<BienvenueScreen>
             letterSpacing: 2,
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 14),
 
-        // Titre EF-FORT.BF avec effet shimmer
+        // ══════════════════════════════════════════════════════════════
+        // VRAI LOGO EF-FORT.BF (image PNG avec livre)
+        // Animation : pulsation + halo doré conservé
+        // ══════════════════════════════════════════════════════════════
+        ScaleTransition(
+          scale: _pulseAnim,
+          child: Container(
+            width: 170,
+            height: 170,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withValues(alpha: 0.08),
+              border: Border.all(
+                color: const Color(0xFFD4A017).withValues(alpha: 0.6),
+                width: 2.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFD4A017).withValues(alpha: 0.55),
+                  blurRadius: 40,
+                  spreadRadius: 10,
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: ClipOval(
+                child: Image.asset(
+                  'assets/images/logo_effort.png',
+                  fit: BoxFit.contain,
+                  filterQuality: FilterQuality.high,
+                  errorBuilder: (context, error, stackTrace) {
+                    // Fallback si l'image ne charge pas
+                    return const Center(
+                      child: Text(
+                        '📖',
+                        style: TextStyle(fontSize: 64),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
+
+        // Mention "EF-FORT.BF" sous le logo, avec shimmer (optionnel, plus petit)
         AnimatedBuilder(
           animation: _shimmerAnim,
           builder: (context, child) {
@@ -454,7 +473,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
               child: const Text(
                 'EF-FORT.BF',
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: 18,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 3,
                   color: Colors.white, // requis pour ShaderMask

@@ -320,48 +320,49 @@ class _PostLoginWelcomeScreenState extends State<PostLoginWelcomeScreen>
     );
   }
 
-  // ── Logo style pixel art ─────────────────────────────────────────────
+  // ── Vrai logo EF-FORT.BF (image PNG) ─────────────────────────────────
   Widget _buildMinecraftLogo() {
     return Container(
-      width: 100,
-      height: 100,
+      width: 140,
+      height: 140,
       decoration: BoxDecoration(
-        color: const Color(0xFF1A5C38),
+        color: const Color(0xFF1A5C38).withValues(alpha: 0.25),
         border: Border.all(color: const Color(0xFFD4A017), width: 3),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF4CAF50).withValues(alpha: 0.5),
-            blurRadius: 24,
-            spreadRadius: 6,
+            blurRadius: 28,
+            spreadRadius: 8,
           ),
           BoxShadow(
-            color: const Color(0xFFD4A017).withValues(alpha: 0.3),
-            blurRadius: 40,
-            spreadRadius: 2,
+            color: const Color(0xFFD4A017).withValues(alpha: 0.35),
+            blurRadius: 44,
+            spreadRadius: 3,
           ),
         ],
       ),
-      child: Stack(
-        children: [
-          // Coins pixelisés
-          Positioned(top: 0, left: 0, child: Container(width: 8, height: 8, color: const Color(0xFF0A3D20))),
-          Positioned(top: 0, right: 0, child: Container(width: 8, height: 8, color: const Color(0xFF0A3D20))),
-          Positioned(bottom: 0, left: 0, child: Container(width: 8, height: 8, color: const Color(0xFF0A3D20))),
-          Positioned(bottom: 0, right: 0, child: Container(width: 8, height: 8, color: const Color(0xFF0A3D20))),
-          // Texte
-          const Center(
-            child: Text(
-              'EF',
-              style: TextStyle(
-                fontSize: 36,
-                fontWeight: FontWeight.w900,
-                color: Color(0xFFD4A017),
-                fontFamily: 'monospace',
-                letterSpacing: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Image.asset(
+          'assets/images/logo_effort.png',
+          fit: BoxFit.contain,
+          filterQuality: FilterQuality.high,
+          errorBuilder: (context, error, stackTrace) {
+            // Fallback au style précédent si l'image ne charge pas
+            return const Center(
+              child: Text(
+                'EF',
+                style: TextStyle(
+                  fontSize: 44,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFFD4A017),
+                  fontFamily: 'monospace',
+                  letterSpacing: 2,
+                ),
               ),
-            ),
-          ),
-        ],
+            );
+          },
+        ),
       ),
     );
   }
