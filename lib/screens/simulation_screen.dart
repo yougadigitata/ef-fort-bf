@@ -2432,6 +2432,7 @@ class SimulationResultScreen extends StatelessWidget {
       sujet: 'Examen type — ${questions.length} questions',
       questions: pdfQuestions,
       duree: '2h00',
+      titrePdf: 'Sujet – Examen type – ${questions.length} questions',
     );
   }
 
@@ -2492,6 +2493,7 @@ class SimulationResultScreen extends StatelessWidget {
       questions: pdfQuestions,
       scoreObtenu: bonnes,
       scoreTotal: questions.length,
+      titrePdf: 'Examen – Correction – ${questions.length} questions',
     );
   }
 

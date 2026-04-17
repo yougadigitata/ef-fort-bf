@@ -2954,6 +2954,10 @@ class _ExamenImmersifResultatsScreenState
           .replaceAll(RegExp(r'[^a-zA-Z0-9\u00C0-\u024F_-]'), '_')
           .replaceAll(RegExp(r'_+'), '_');
 
+      // ── Titre rouge souligné : "Examen – {nom examen}" ──────────────
+      final String titreCorrection = 'Examen – ${widget.nomExamen} – Correction';
+      final String titreSujet = 'Sujet – ${widget.nomExamen}';
+
       final Uint8List pdfBytes;
       final String pdfName;
       if (correctionMode) {
@@ -2964,6 +2968,7 @@ class _ExamenImmersifResultatsScreenState
           questions: pdfQuestions,
           scoreObtenu: _score,
           scoreTotal: _total,
+          titrePdf: titreCorrection,
         );
         pdfName = 'EF-FORT_Correction_$nomSafe.pdf';
       } else {
@@ -2972,6 +2977,7 @@ class _ExamenImmersifResultatsScreenState
           sujet: widget.nomExamen,
           questions: pdfQuestions,
           duree: '1h30',
+          titrePdf: titreSujet,
         );
         pdfName = 'EF-FORT_Sujet_$nomSafe.pdf';
       }

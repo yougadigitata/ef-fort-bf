@@ -873,6 +873,9 @@ class _QcmScreenState extends State<QcmScreen> {
         ));
       }
 
+      // ── Titre rouge souligné : "Série – Matière" ────────────────────
+      final String titrePdf = 'Série – ${widget.label}';
+
       final pdfBytes = await PdfService.genererCopieCorrigee(
         kind: PdfKind.matiere,
         nomCandidat: nomCandidat,
@@ -880,6 +883,7 @@ class _QcmScreenState extends State<QcmScreen> {
         questions: pdfQuestions,
         scoreObtenu: score,
         scoreTotal: total,
+        titrePdf: titrePdf,
       );
 
       final matiereSafe = widget.label

@@ -170,6 +170,7 @@ class PdfService {
     required int scoreObtenu,        // nombre de bonnes réponses
     required int scoreTotal,         // nombre total de questions
     DateTime? date,
+    String? titrePdf,                // ex: "Série 1 – Français" ou "Examen – Administration générale – Série 1"
   }) async {
     await _loadFonts();
     final pdf = pw.Document(
@@ -191,6 +192,7 @@ class PdfService {
     // Nettoyer toutes les entrées
     final sujetClean = cleanText(sujet);
     final nomClean = nomCandidat.trim().isEmpty ? 'Candidat' : nomCandidat.trim();
+    final titreClean = (titrePdf ?? '').trim().isEmpty ? null : cleanText(titrePdf!.trim());
 
     pdf.addPage(
       pw.MultiPage(
@@ -205,6 +207,10 @@ class PdfService {
         ),
         build: (ctx) => [
           _buildHeader(logo, noteStr, maxNote.toInt(), _mention(pct)),
+          if (titreClean != null) ...[
+            pw.SizedBox(height: 12),
+            _buildTitrePdf(titreClean),
+          ],
           pw.SizedBox(height: 14),
           _buildInfoCandidat(nomClean, sujetClean, dateStr),
           pw.SizedBox(height: 10),
@@ -221,6 +227,36 @@ class PdfService {
     );
 
     return pdf.save();
+  }
+
+  // ─── Titre PDF (rouge, souligné, centré) ────────────────────────
+  /// Affiche le titre de la série / examen juste sous le logo.
+  /// Exemples : "Série 1 – Français", "Examen – Administration générale – Série 1"
+  static pw.Widget _buildTitrePdf(String titre) {
+    return pw.Center(
+      child: pw.Container(
+        decoration: pw.BoxDecoration(
+          border: pw.Border(
+            bottom: pw.BorderSide(color: rougeLight, width: 1.8),
+          ),
+        ),
+        padding: const pw.EdgeInsets.only(bottom: 3),
+        child: pw.Text(
+          titre,
+          textAlign: pw.TextAlign.center,
+          style: pw.TextStyle(
+            font: _fontSansBold!,
+            fontSize: 15,
+            fontWeight: pw.FontWeight.bold,
+            color: rougeLight,
+            // Souligné natif en plus de la BoxBorder pour un rendu net
+            decoration: pw.TextDecoration.underline,
+            decorationColor: rougeLight,
+            decorationThickness: 1.2,
+          ),
+        ),
+      ),
+    );
   }
 
   // ─── EN-TÊTE : Logo + titre (gauche) + score circle rouge (droite) ──
@@ -702,6 +738,7 @@ class PdfService {
     required List<PdfQuestion> questions,
     String duree = '2h00',
     DateTime? date,
+    String? titrePdf,               // ex: "Sujet – Administration générale – Série 1"
   }) async {
     await _loadFonts();
     final pdf = pw.Document(
@@ -716,6 +753,7 @@ class PdfService {
 
     final sujetClean = cleanText(sujet);
     final nomClean = nomCandidat.trim().isEmpty ? 'Candidat' : nomCandidat.trim();
+    final titreClean = (titrePdf ?? '').trim().isEmpty ? null : cleanText(titrePdf!.trim());
 
     pdf.addPage(
       pw.MultiPage(
@@ -766,6 +804,10 @@ class PdfService {
               ),
             ],
           ),
+          if (titreClean != null) ...[
+            pw.SizedBox(height: 12),
+            _buildTitrePdf(titreClean),
+          ],
           pw.SizedBox(height: 14),
           _buildInfoCandidat(nomClean, sujetClean, dateStr),
           pw.SizedBox(height: 4),
