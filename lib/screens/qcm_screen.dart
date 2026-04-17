@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
 import '../services/bell_service.dart';
@@ -785,6 +789,24 @@ class _QcmScreenState extends State<QcmScreen> {
             ],
           ),
 
+          // Bouton PDF Correction
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => _exportPdfCorrection(context),
+              icon: const Icon(Icons.picture_as_pdf_rounded, size: 18),
+              label: const Text('Télécharger la correction PDF',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFC62828),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ),
+
           // Bannière abonnement si gratuit
           if (!ApiService.isAbonne) ...[
             const SizedBox(height: 16),
@@ -797,8 +819,376 @@ class _QcmScreenState extends State<QcmScreen> {
     );
   }
 
-  Widget _buildPremiumBanner() {
-    return GestureDetector(
+  // ── Nettoyer le texte pour PDF ──────────────────────────────────
+  static String _cleanTextForPdf(String text) {
+    if (text.isEmpty) return text;
+    String s = text
+        .replaceAll('\u2612', '').replaceAll('\u2611', '').replaceAll('\u2610', '')
+        .replaceAll('\u2713', '').replaceAll('\u2714', '').replaceAll('\u2717', '').replaceAll('\u2718', '')
+        .replaceAll('\u25A1', '').replaceAll('\u25A0', '').replaceAll('\u2B1C', '').replaceAll('\u2B1B', '');
+    // Supprimer LaTeX $...$
+    s = s.replaceAllMapped(RegExp(r'\$\$([^$]+)\$\$'), (m) => m.group(1) ?? '');
+    s = s.replaceAllMapped(RegExp(r'\$([^$\n]+)\$'), (m) => m.group(1) ?? '');
+    s = s.replaceAll(r'$', '').replaceAll('{', '').replaceAll('}', '');
+    s = s.replaceAllMapped(RegExp(r'\\[a-zA-Z]+\s*'), (m) => '');
+    s = s.replaceAll(RegExp(r'\\(?!\w)'), '');
+    s = s.replaceAll(RegExp(r'\s{2,}'), ' ').trim();
+    return s.isEmpty ? text : s;
+  }
+
+  // ── Export PDF correction matière (note sur 20) ─────────────────
+  Future<void> _exportPdfCorrection(BuildContext ctx) async {
+    ScaffoldMessenger.of(ctx).showSnackBar(
+      const SnackBar(content: Text('Génération du PDF en cours...'),
+          duration: Duration(seconds: 2), backgroundColor: Color(0xFF1A5C38)),
+    );
+    try {
+      final pdf = pw.Document();
+      final user = ApiService.currentUser;
+      final nomCandidat = user != null
+          ? '${user['prenom'] ?? ''} ${user['nom'] ?? ''}'.trim()
+          : 'Candidat';
+      final now = DateTime.now();
+      final dateStr = '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}';
+      final score = _calculerScore();
+      final total = _questions.length;
+      final pct = total > 0 ? (score / total * 100).round() : 0;
+      final noteSur20 = total > 0 ? (score / total * 20) : 0.0;
+      final noteStr = noteSur20.toStringAsFixed(1);
+
+      // Charger logo
+      pw.MemoryImage? logoImage;
+      try {
+        final ByteData data = await rootBundle.load('assets/images/logo_effort.png');
+        logoImage = pw.MemoryImage(data.buffer.asUint8List());
+      } catch (_) {
+        try {
+          final ByteData data = await rootBundle.load('assets/icons/logo_effort.png');
+          logoImage = pw.MemoryImage(data.buffer.asUint8List());
+        } catch (_) {}
+      }
+
+      // Couleurs
+      final rouge      = PdfColor.fromHex('C62828');
+      final rougeFonce = PdfColor.fromHex('8B0000');
+      final vert       = PdfColor.fromHex('2E7D32');
+      final vertClair  = PdfColor.fromHex('E8F5E9');
+      final rougeClair = PdfColor.fromHex('FFEBEE');
+      final greyLight  = PdfColor.fromHex('F5F5F5');
+      final greyMed    = PdfColor.fromHex('BDBDBD');
+      final greyDark   = PdfColor.fromHex('424242');
+      final greyText   = PdfColor.fromHex('6C757D');
+      final borderVert = PdfColor.fromHex('A5D6A7');
+      final borderRge  = PdfColor.fromHex('EF9A9A');
+      final noir       = PdfColors.black;
+
+      String getMention() {
+        if (pct >= 90) return 'EXCELLENT';
+        if (pct >= 80) return 'TRES BIEN';
+        if (pct >= 70) return 'BIEN';
+        if (pct >= 60) return 'ASSEZ BIEN';
+        if (pct >= 50) return 'PASSABLE';
+        return 'INSUFFISANT';
+      }
+
+      PdfColor getMentionColor() {
+        if (pct >= 70) return vert;
+        if (pct >= 50) return PdfColor.fromHex('F57C00');
+        return rouge;
+      }
+
+      String getAppreciation() {
+        if (pct >= 90) return 'Excellent ! Vous maîtrisez parfaitement ce chapitre. Continuez ainsi !';
+        if (pct >= 80) return 'Très bien ! Bon niveau. Quelques révisions pour atteindre l\'excellence.';
+        if (pct >= 70) return 'Bien ! Bonne maîtrise. Concentrez-vous sur les points manqués.';
+        if (pct >= 60) return 'Assez bien. Fondamentaux assimilés. Approfondissez davantage.';
+        if (pct >= 50) return 'Passable. Revoyez les notions importantes. Persévérez !';
+        return 'Des efforts supplémentaires sont nécessaires. Revoyez le cours attentivement.';
+      }
+
+      pdf.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.fromLTRB(40, 36, 40, 36),
+          header: (context) => pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.center,
+            children: [
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.center,
+                crossAxisAlignment: pw.CrossAxisAlignment.center,
+                children: [
+                  if (logoImage != null) ...[
+                    pw.Container(width: 52, height: 52,
+                        child: pw.Image(logoImage, fit: pw.BoxFit.contain)),
+                    pw.SizedBox(width: 12),
+                  ],
+                  pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.center,
+                    children: [
+                      pw.Text('EF-FORT.BF',
+                          style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold, color: noir)),
+                      pw.Text('Plateforme N°1 des Concours du Burkina Faso',
+                          style: pw.TextStyle(fontSize: 11, color: greyText)),
+                    ],
+                  ),
+                ],
+              ),
+              pw.SizedBox(height: 6),
+              pw.Divider(color: greyMed, thickness: 1),
+              pw.SizedBox(height: 4),
+            ],
+          ),
+          footer: (context) => pw.Column(
+            children: [
+              pw.Divider(color: greyMed, thickness: 0.5),
+              pw.SizedBox(height: 4),
+              pw.Text(
+                'Chaque effort te rapproche de ton admission — EF-FORT.BF',
+                textAlign: pw.TextAlign.center,
+                style: pw.TextStyle(fontSize: 11, color: greyText, fontStyle: pw.FontStyle.italic),
+              ),
+              pw.SizedBox(height: 2),
+              pw.Text('Page ${context.pageNumber}/${context.pagesCount}',
+                  textAlign: pw.TextAlign.center,
+                  style: pw.TextStyle(fontSize: 10, color: greyMed)),
+            ],
+          ),
+          build: (context) {
+            final List<pw.Widget> widgets = [];
+
+            // ── Infos candidat + Score encerclé ──
+            widgets.add(
+              pw.Row(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Expanded(
+                    child: pw.Container(
+                      padding: const pw.EdgeInsets.all(12),
+                      decoration: pw.BoxDecoration(
+                        border: pw.Border.all(color: greyMed, width: 0.8),
+                        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+                      ),
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.Text('CORRECTION — ${_cleanTextForPdf(widget.label)}',
+                              style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, color: greyDark)),
+                          pw.SizedBox(height: 6),
+                          pw.Text('Candidat(e) : ${nomCandidat.isEmpty ? "Candidat" : nomCandidat}',
+                              style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                          pw.SizedBox(height: 3),
+                          pw.Text('Matière : ${_cleanTextForPdf(widget.label)}   |   Date : $dateStr',
+                              style: pw.TextStyle(fontSize: 12, color: greyText)),
+                          pw.SizedBox(height: 8),
+                          pw.Container(
+                            padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: pw.BoxDecoration(
+                              color: getMentionColor(),
+                              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
+                            ),
+                            child: pw.Text(getMention(),
+                                style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
+                          ),
+                          pw.SizedBox(height: 6),
+                          pw.Text(getAppreciation(),
+                              style: pw.TextStyle(fontSize: 12, color: greyDark, fontStyle: pw.FontStyle.italic, lineSpacing: 3)),
+                        ],
+                      ),
+                    ),
+                  ),
+                  pw.SizedBox(width: 16),
+                  // ── SCORE ENCERCLE EN ROUGE ──
+                  pw.Column(
+                    mainAxisAlignment: pw.MainAxisAlignment.center,
+                    children: [
+                      pw.Container(
+                        width: 90, height: 90,
+                        decoration: pw.BoxDecoration(
+                          color: PdfColors.white,
+                          shape: pw.BoxShape.circle,
+                          border: pw.Border.all(color: rouge, width: 4),
+                        ),
+                        child: pw.Center(
+                          child: pw.Column(
+                            mainAxisAlignment: pw.MainAxisAlignment.center,
+                            children: [
+                              pw.Text(noteStr,
+                                  style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold, color: rouge)),
+                              pw.Container(width: 40, height: 1.5, color: rougeFonce),
+                              pw.Text('20',
+                                  style: pw.TextStyle(fontSize: 14, color: rouge)),
+                            ],
+                          ),
+                        ),
+                      ),
+                      pw.SizedBox(height: 4),
+                      pw.Text('$score/$total  ($pct%)',
+                          textAlign: pw.TextAlign.center,
+                          style: pw.TextStyle(fontSize: 11, color: greyText)),
+                    ],
+                  ),
+                ],
+              ),
+            );
+            widgets.add(pw.SizedBox(height: 14));
+
+            // ── Titre correction ──
+            widgets.add(
+              pw.Container(
+                width: double.infinity,
+                padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: pw.BoxDecoration(
+                  color: greyDark,
+                  borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+                ),
+                child: pw.Text('CORRIGE DETAILLE — QUESTION PAR QUESTION',
+                    style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
+              ),
+            );
+            widgets.add(pw.SizedBox(height: 10));
+
+            // ── Questions ──
+            for (int i = 0; i < _questions.length; i++) {
+              final q = _questions[i] as Map<String, dynamic>;
+              final bonnesSet = _getBonnesReponses(q);
+              final choisies = _selectedAnswers[i] ?? {};
+              final correct = choisies.isNotEmpty && choisies.containsAll(bonnesSet) && bonnesSet.containsAll(choisies);
+              final noAns = choisies.isEmpty;
+              final bonneStr = bonnesSet.toList()..sort();
+
+              final enonce = _cleanTextForPdf((q['enonce'] ?? q['question'] ?? '').toString());
+              final bgColor   = noAns ? greyLight : (correct ? vertClair : rougeClair);
+              final brdColor  = noAns ? greyMed   : (correct ? borderVert : borderRge);
+              final numColor  = noAns ? greyText  : (correct ? vert : rouge);
+              final statusTxt = noAns ? 'NON REPONDU' : (correct ? 'CORRECT' : 'INCORRECT');
+              final choisiesDisplay = choisies.isEmpty ? 'Aucune' : (choisies.toList()..sort()).join('+');
+              final bonneDisplay = bonneStr.isEmpty ? '?' : bonneStr.join('+');
+
+              widgets.add(
+                pw.Container(
+                  margin: const pw.EdgeInsets.only(bottom: 10),
+                  padding: const pw.EdgeInsets.fromLTRB(12, 10, 12, 10),
+                  decoration: pw.BoxDecoration(
+                    color: bgColor,
+                    border: pw.Border.all(color: brdColor, width: 0.8),
+                    borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+                  ),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Row(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.Container(
+                            width: 26, height: 26,
+                            decoration: pw.BoxDecoration(color: numColor, shape: pw.BoxShape.circle),
+                            child: pw.Center(
+                              child: pw.Text('${i + 1}',
+                                  style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
+                            ),
+                          ),
+                          pw.SizedBox(width: 8),
+                          pw.Expanded(
+                            child: pw.Text(enonce,
+                                style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: greyDark, lineSpacing: 3)),
+                          ),
+                          pw.SizedBox(width: 6),
+                          pw.Container(
+                            padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: pw.BoxDecoration(
+                              color: numColor,
+                              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
+                            ),
+                            child: pw.Text(statusTxt,
+                                style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
+                          ),
+                        ],
+                      ),
+                      pw.SizedBox(height: 4),
+                      pw.Text(
+                        'Votre réponse : $choisiesDisplay   |   Bonne(s) réponse(s) : $bonneDisplay',
+                        style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold,
+                            color: correct ? vert : rouge),
+                      ),
+                      pw.SizedBox(height: 4),
+                      // Options
+                      ...['A', 'B', 'C', 'D'].where((l) {
+                        final key = 'option_${l.toLowerCase()}';
+                        return (q[key]?.toString() ?? '').isNotEmpty;
+                      }).map((l) {
+                        final key = 'option_${l.toLowerCase()}';
+                        final optText = _cleanTextForPdf(q[key]?.toString() ?? '');
+                        final isBonne = bonnesSet.contains(l);
+                        final isChoisie = choisies.contains(l);
+                        final textColor = isBonne ? vert : (isChoisie ? rouge : greyText);
+                        final fontW = isBonne ? pw.FontWeight.bold : pw.FontWeight.normal;
+                        return pw.Padding(
+                          padding: const pw.EdgeInsets.only(left: 34, bottom: 4),
+                          child: pw.Row(
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              pw.Text('$l. ', style: pw.TextStyle(fontSize: 14, fontWeight: fontW, color: textColor)),
+                              pw.Expanded(
+                                child: pw.Text(
+                                  optText + (isBonne ? '  ✓ Bonne réponse' : (isChoisie ? '  ✗ Votre réponse' : '')),
+                                  style: pw.TextStyle(fontSize: 14, color: textColor, fontWeight: fontW, lineSpacing: 2),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                      if (q['explication'] != null && (q['explication'] as String).isNotEmpty) ...[
+                        pw.SizedBox(height: 6),
+                        pw.Container(
+                          width: double.infinity,
+                          padding: const pw.EdgeInsets.all(8),
+                          decoration: pw.BoxDecoration(
+                            color: PdfColor.fromHex('FFF8E1'),
+                            borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
+                            border: pw.Border.all(color: PdfColor.fromHex('FFD54F'), width: 0.8),
+                          ),
+                          child: pw.Row(
+                            crossAxisAlignment: pw.CrossAxisAlignment.start,
+                            children: [
+                              pw.Text('Explication : ',
+                                  style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold,
+                                      color: PdfColor.fromHex('E65100'))),
+                              pw.Expanded(
+                                child: pw.Text(
+                                  _cleanTextForPdf(q['explication'].toString()),
+                                  style: pw.TextStyle(fontSize: 14, color: greyDark, fontStyle: pw.FontStyle.italic, lineSpacing: 3),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              );
+            }
+            return widgets;
+          },
+        ),
+      );
+
+      final matiereSafe = widget.label
+          .replaceAll(RegExp(r'[^a-zA-Z0-9\u00C0-\u024F_-]'), '_')
+          .replaceAll(RegExp(r'_+'), '_');
+      await Printing.sharePdf(bytes: await pdf.save(),
+          filename: 'EF-FORT_Correction_$matiereSafe.pdf');
+    } catch (e) {
+      if (ctx.mounted) {
+        ScaffoldMessenger.of(ctx).showSnackBar(
+          SnackBar(content: Text('Erreur PDF : $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  Widget _buildPremiumBanner() {    return GestureDetector(
       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AbonnementScreen())),
       child: Container(
         padding: const EdgeInsets.all(16),
