@@ -8,6 +8,7 @@ import 'package:printing/printing.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
 import '../services/bell_service.dart';
+import '../utils/pdf_text_cleaner.dart';
 import '../widgets/math_text_widget.dart';
 
 // ══════════════════════════════════════════════════════════════════════
@@ -2902,94 +2903,9 @@ class _ExamenImmersifResultatsScreenState
     );
   }
 
-  // ── Nettoyer le texte pour le PDF (supprimer LaTeX, URL, cases à cocher, caractères parasites) ────
+  // ── Nettoyer le texte pour le PDF — utilise PdfTextCleaner unifié ──────
   static String _cleanForPdf(String text) {
-    if (text.isEmpty) return text;
-
-    // 1. Supprimer les cases à coix / checkbox Unicode (☒☑☐✓✔✗✘)
-    String s = text
-        .replaceAll('\u2612', '')  // ☒ ballot box with X
-        .replaceAll('\u2611', '')  // ☑ ballot box with check
-        .replaceAll('\u2610', '')  // ☐ ballot box
-        .replaceAll('\u2713', '')  // ✓ check mark
-        .replaceAll('\u2714', '')  // ✔ heavy check mark
-        .replaceAll('\u2717', '')  // ✗ ballot X
-        .replaceAll('\u2718', '')  // ✘ heavy ballot X
-        .replaceAll('\u25A1', '')  // □ white square
-        .replaceAll('\u25A0', '')  // ■ black square
-        .replaceAll('\u2B1C', '')  // ⬜ large white square
-        .replaceAll('\u2B1B', ''); // ⬛ large black square
-
-    // 2. Convertir LaTeX inline $...$ en texte Unicode lisible
-    // D'abord traiter les blocs $$...$$
-    s = s.replaceAllMapped(
-      RegExp(r'\$\$([^$]+)\$\$'),
-      (m) => MathTextWidget.latexToReadablePublic(m.group(1) ?? ''),
-    );
-    // Puis les $ inline $...$
-    s = s.replaceAllMapped(
-      RegExp(r'\$([^$\n]+)\$'),
-      (m) => MathTextWidget.latexToReadablePublic(m.group(1) ?? ''),
-    );
-
-    // 3. Appliquer la conversion LaTeX globale
-    s = MathTextWidget.latexToReadablePublic(s);
-
-    // 4. Supprimer les signes $ résiduels
-    s = s.replaceAll(r'$', '');
-
-    // 5. Remplacer ^ { } _ résiduels par du texte lisible
-    // ^{...} → exposant textuel
-    s = s.replaceAllMapped(
-      RegExp(r'\^\{([^}]*)\}'),
-      (m) => '^${m.group(1)}',
-    );
-    // ^n → exposant n (sans accolades)
-    // _{...} → indice textuel
-    s = s.replaceAllMapped(
-      RegExp(r'_\{([^}]*)\}'),
-      (m) => '_${m.group(1)}',
-    );
-
-    // 6. Supprimer les accolades résiduelles
-    s = s.replaceAll('{', '').replaceAll('}', '');
-
-    // 7. Supprimer les commandes LaTeX résiduelles \commande
-    s = s.replaceAllMapped(
-      RegExp(r'\\([a-zA-Z]+)\s*'),
-      (m) {
-        // Garder les caractères connus comme symboles
-        final cmd = m.group(1) ?? '';
-        const knownSymbols = {
-          'times': '×', 'div': '÷', 'pm': '±', 'mp': '∓',
-          'cdot': '·', 'infty': '∞', 'pi': 'π', 'alpha': 'α',
-          'beta': 'β', 'gamma': 'γ', 'delta': 'δ', 'sigma': 'Σ',
-          'sqrt': '√', 'sum': 'Σ', 'int': '∫', 'frac': '/',
-          'geq': '≥', 'leq': '≤', 'neq': '≠', 'approx': '≈',
-          'rightarrow': '→', 'leftarrow': '←', 'Rightarrow': '⇒',
-          'in': '∈', 'notin': '∉', 'subset': '⊂', 'cup': '∪', 'cap': '∩',
-          'triangle': '△', 'angle': '∠', 'perp': '⊥',
-          'degree': '°', 'partial': '∂', 'nabla': '∇',
-        };
-        if (knownSymbols.containsKey(cmd)) return knownSymbols[cmd]!;
-        return ''; // Supprimer les commandes inconnues
-      },
-    );
-
-    // 8. Supprimer URL de développement
-    s = s.replaceAll(RegExp(r'https?://[^\s]+'), '');
-    s = s.replaceAll('ef-fort-bf.pages.dev', '');
-    s = s.replaceAll('ef-fort-bf', 'EF-FORT.BF');
-    s = s.replaceAll('yembuaro29.workers.dev', '');
-
-    // 9. Nettoyer les guillemets et caractères parasites en début/fin de texte d'option
-    // Supprimer les backslash seuls et antislashes orphelins
-    s = s.replaceAll(RegExp(r'\\(?!\w)'), '');
-
-    // 10. Nettoyer espaces multiples et normaliser
-    s = s.replaceAll(RegExp(r'\s{2,}'), ' ').trim();
-
-    return s.isEmpty ? text : s;
+    return PdfTextCleaner.clean(text);
   }
 
   // ── Export PDF — Copie corrigée propre (taille 14px, logo centré, score encerclé) ───
@@ -3307,7 +3223,7 @@ class _ExamenImmersifResultatsScreenState
                                   style: pw.TextStyle(fontSize: 14, fontWeight: fontW, color: textColor)),
                               pw.Expanded(
                                 child: pw.Text(
-                                  opt + (isBonne ? '  ✓ Bonne réponse' : (isChoisie && correctionMode ? '  ✗ Votre réponse' : '')),
+                                  opt + (isBonne ? '  << Bonne reponse' : (isChoisie && correctionMode ? '  << Votre reponse' : '')),
                                   style: pw.TextStyle(fontSize: 14, color: textColor, fontWeight: fontW, lineSpacing: 2),
                                 ),
                               ),

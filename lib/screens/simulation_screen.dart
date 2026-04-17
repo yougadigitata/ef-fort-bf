@@ -8,6 +8,7 @@ import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
 import '../services/supabase_service.dart';
 import '../services/bell_service.dart';
+import '../utils/pdf_text_cleaner.dart';
 import '../widgets/logo_widget.dart';
 import '../widgets/math_text_widget.dart';
 import 'abonnement_screen.dart';
@@ -2969,7 +2970,7 @@ class SimulationResultScreen extends StatelessWidget {
                             pw.Text('$l. ', style: pw.TextStyle(fontSize: 14, fontWeight: fontW, color: textColor)),
                             pw.Expanded(
                               child: pw.Text(
-                                optText + (isBonne ? '  ✓ Bonne réponse' : (isChoisie ? '  ✗ Votre réponse' : '')),
+                                optText + (isBonne ? '  << Bonne reponse' : (isChoisie ? '  << Votre reponse' : '')),
                                 style: pw.TextStyle(fontSize: 14, color: textColor, fontWeight: fontW, lineSpacing: 2),
                               ),
                             ),
@@ -3022,55 +3023,7 @@ class SimulationResultScreen extends StatelessWidget {
   // Gère : délimiteurs $...$ et $$...$$, LaTeX brut sans délimiteurs
   // Supprime TOUS les symboles LaTeX bruts du texte final
   static String _cleanLatexForPdf(String text) {
-    if (text.isEmpty) return text;
-    String result = text;
-
-    // ── Supprimer les cases à croix ☒☑☐ et symboles checkbox ────────
-    result = result
-        .replaceAll('\u2612', '')  // ☒ checked box with X
-        .replaceAll('\u2611', '')  // ☑ checked box with checkmark
-        .replaceAll('\u2610', '')  // ☐ empty box
-        .replaceAll('\u2713', '')  // ✓ checkmark
-        .replaceAll('\u2714', '')  // ✔ heavy checkmark
-        .replaceAll('\u2717', '')  // ✗ ballot X
-        .replaceAll('\u2718', ''); // ✘ heavy ballot X
-
-    // Remplacer les blocs $$...$$ d'abord
-    result = result.replaceAllMapped(
-      RegExp(r'\$\$([^$]*)\$\$'),
-      (m) => MathTextWidget.latexToReadablePublic(m.group(1)!.trim()),
-    );
-    // Remplacer les blocs $...$
-    result = result.replaceAllMapped(
-      RegExp(r'\$([^$]+)\$'),
-      (m) => MathTextWidget.latexToReadablePublic(m.group(1)!.trim()),
-    );
-
-    // Nettoyer les commandes LaTeX résiduelles hors délimiteurs
-    // (cas où le texte contient \sqrt, \frac etc. directement sans $)
-    if (result.contains(r'\')) {
-      result = MathTextWidget.latexToReadablePublic(result);
-    }
-
-    // Supprimer tout $ résiduel
-    result = result.replaceAll(r'$', '');
-
-    // Supprimer les accolades résiduelles
-    result = result.replaceAll('{', '').replaceAll('}', '');
-
-    // Supprimer toute commande LaTeX restante du type \mot
-    result = result.replaceAllMapped(
-      RegExp(r'\\[a-zA-Z]+'),
-      (m) => '',
-    );
-
-    // Supprimer les caractères d'échappement résiduels isolés
-    result = result.replaceAll(RegExp(r'\\(?![a-zA-Z])'), '');
-
-    // Nettoyer espaces multiples
-    result = result.replaceAll(RegExp(r'\s+'), ' ').trim();
-
-    return result.isEmpty ? text : result;
+    return PdfTextCleaner.clean(text);
   }
 
   pw.Widget _pdfStatNew(String label, String value, PdfColor color) {

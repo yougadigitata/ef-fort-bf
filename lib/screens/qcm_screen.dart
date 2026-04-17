@@ -6,6 +6,7 @@ import 'package:printing/printing.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
 import '../services/bell_service.dart';
+import '../utils/pdf_text_cleaner.dart';
 import '../widgets/math_text_widget.dart';
 import 'abonnement_screen.dart';
 
@@ -819,21 +820,9 @@ class _QcmScreenState extends State<QcmScreen> {
     );
   }
 
-  // ── Nettoyer le texte pour PDF ──────────────────────────────────
+  // ── Nettoyer le texte pour PDF — utilise PdfTextCleaner unifié ─────
   static String _cleanTextForPdf(String text) {
-    if (text.isEmpty) return text;
-    String s = text
-        .replaceAll('\u2612', '').replaceAll('\u2611', '').replaceAll('\u2610', '')
-        .replaceAll('\u2713', '').replaceAll('\u2714', '').replaceAll('\u2717', '').replaceAll('\u2718', '')
-        .replaceAll('\u25A1', '').replaceAll('\u25A0', '').replaceAll('\u2B1C', '').replaceAll('\u2B1B', '');
-    // Supprimer LaTeX $...$
-    s = s.replaceAllMapped(RegExp(r'\$\$([^$]+)\$\$'), (m) => m.group(1) ?? '');
-    s = s.replaceAllMapped(RegExp(r'\$([^$\n]+)\$'), (m) => m.group(1) ?? '');
-    s = s.replaceAll(r'$', '').replaceAll('{', '').replaceAll('}', '');
-    s = s.replaceAllMapped(RegExp(r'\\[a-zA-Z]+\s*'), (m) => '');
-    s = s.replaceAll(RegExp(r'\\(?!\w)'), '');
-    s = s.replaceAll(RegExp(r'\s{2,}'), ' ').trim();
-    return s.isEmpty ? text : s;
+    return PdfTextCleaner.clean(text);
   }
 
   // ── Export PDF correction matière (note sur 20) ─────────────────
@@ -1130,7 +1119,7 @@ class _QcmScreenState extends State<QcmScreen> {
                               pw.Text('$l. ', style: pw.TextStyle(fontSize: 14, fontWeight: fontW, color: textColor)),
                               pw.Expanded(
                                 child: pw.Text(
-                                  optText + (isBonne ? '  ✓ Bonne réponse' : (isChoisie ? '  ✗ Votre réponse' : '')),
+                                  optText + (isBonne ? '  << Bonne reponse' : (isChoisie ? '  << Votre reponse' : '')),
                                   style: pw.TextStyle(fontSize: 14, color: textColor, fontWeight: fontW, lineSpacing: 2),
                                 ),
                               ),
