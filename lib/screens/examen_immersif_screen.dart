@@ -1,14 +1,13 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
 import '../services/bell_service.dart';
-import '../utils/pdf_text_cleaner.dart';
+import '../services/pdf_service.dart';
 import '../widgets/math_text_widget.dart';
 
 // ══════════════════════════════════════════════════════════════════════
@@ -2903,381 +2902,82 @@ class _ExamenImmersifResultatsScreenState
     );
   }
 
-  // ── Nettoyer le texte pour le PDF — utilise PdfTextCleaner unifié ──────
-  static String _cleanForPdf(String text) {
-    return PdfTextCleaner.clean(text);
-  }
-
-  // ── Export PDF — Copie corrigée propre (taille 14px, logo centré, score encerclé) ───
+  // ── Export PDF — Utilise le service PdfService centralisé ──────
   Future<void> _exportPdf(BuildContext context, {required bool correctionMode}) async {
     try {
-      final pdf = pw.Document();
-      final now = DateTime.now();
-      final dateStr = '${now.day.toString().padLeft(2,'0')}/${now.month.toString().padLeft(2,'0')}/${now.year}';
-      final nomExamenClean = _cleanForPdf(widget.nomExamen);
+      // Construire les questions pour le service PDF
+      final pdfQuestions = <PdfQuestion>[];
+      for (int i = 0; i < widget.questions.length; i++) {
+        final q = widget.questions[i] as Map<String, dynamic>;
+        final bonneRep = (q['bonne_reponse'] as String?)?.toUpperCase().trim() ?? '';
+        final bonnesReps = bonneRep
+            .split(RegExp(r'[/,;]'))
+            .map((s) => s.trim().toUpperCase())
+            .where((s) => s.isNotEmpty)
+            .toSet();
+        final userReps = correctionMode ? (widget.answers[i] ?? <String>{}) : <String>{};
+        final isCorrect = correctionMode &&
+            bonnesReps.isNotEmpty &&
+            userReps.isNotEmpty &&
+            userReps.containsAll(bonnesReps) &&
+            bonnesReps.containsAll(userReps);
+        final nonRepondu = correctionMode && userReps.isEmpty;
 
-      // ── Charger le logo EF-FORT.BF ──
-      pw.ImageProvider? logoImage;
-      try {
-        final logoBytes = await rootBundle.load('assets/images/logo_effort.png');
-        logoImage = pw.MemoryImage(logoBytes.buffer.asUint8List());
-      } catch (_) {
-        try {
-          final logoBytes = await rootBundle.load('assets/icons/logo_effort.png');
-          logoImage = pw.MemoryImage(logoBytes.buffer.asUint8List());
-        } catch (_) {
-          try {
-            final logoBytes = await rootBundle.load('assets/logo/aes_logo.png');
-            logoImage = pw.MemoryImage(logoBytes.buffer.asUint8List());
-          } catch (_) {
-            logoImage = null;
-          }
+        final options = <String, String>{};
+        for (final l in ['A', 'B', 'C', 'D', 'E']) {
+          final key = 'option_${l.toLowerCase()}';
+          final v = (q[key] ?? '').toString();
+          if (v.trim().isNotEmpty) options[l] = v;
         }
+
+        final bonneDisplay =
+            bonnesReps.isEmpty ? bonneRep : (bonnesReps.toList()..sort()).join('+');
+        final choisiesDisplay =
+            userReps.isEmpty ? '' : (userReps.toList()..sort()).join('+');
+
+        pdfQuestions.add(PdfQuestion(
+          numero: i + 1,
+          categorie: (q['categorie'] ?? q['chapitre'] ?? '').toString(),
+          enonce: (q['enonce'] ?? q['question'] ?? '').toString(),
+          reponseEleve: choisiesDisplay,
+          bonneReponse: bonneDisplay,
+          explication: (q['explication'] ?? '').toString(),
+          points: isCorrect ? 1 : 0,
+          pointsMax: 1,
+          correct: isCorrect,
+          nonRepondu: nonRepondu,
+          options: options,
+        ));
       }
-
-      // ── Couleurs ──
-      final rouge       = PdfColor.fromHex('C62828');
-      final rougeFonce  = PdfColor.fromHex('8B0000');
-      final vert        = PdfColor.fromHex('2E7D32');
-      final vertClair   = PdfColor.fromHex('E8F5E9');
-      final rougeClair  = PdfColor.fromHex('FFEBEE');
-      final greyLight   = PdfColor.fromHex('F5F5F5');
-      final greyMed     = PdfColor.fromHex('BDBDBD');
-      final greyDark    = PdfColor.fromHex('424242');
-      final greyText    = PdfColor.fromHex('6C757D');
-      final borderVert  = PdfColor.fromHex('A5D6A7');
-      final borderRouge = PdfColor.fromHex('EF9A9A');
-      final noir        = PdfColors.black;
-
-      // ── Note sur 50 pour les examens ──
-      final noteSur50  = _total > 0 ? (_score / _total * 50) : 0.0;
-      final noteStr    = noteSur50.toStringAsFixed(1);
-      final pctVal     = _total > 0 ? (_score / _total * 100).round() : 0;
-
-      String getMention() {
-        if (pctVal >= 90) return 'EXCELLENT';
-        if (pctVal >= 80) return 'TRES BIEN';
-        if (pctVal >= 70) return 'BIEN';
-        if (pctVal >= 60) return 'ASSEZ BIEN';
-        if (pctVal >= 50) return 'PASSABLE';
-        return 'INSUFFISANT';
-      }
-
-      PdfColor getMentionColor() {
-        if (pctVal >= 70) return vert;
-        if (pctVal >= 50) return PdfColor.fromHex('F57C00');
-        return rouge;
-      }
-
-      String getAppreciation() {
-        if (pctVal >= 90) return 'Excellent ! Vous maîtrisez parfaitement le sujet. Continuez ainsi !';
-        if (pctVal >= 80) return 'Excellent travail ! Vous maîtrisez bien les notions. Visez la perfection.';
-        if (pctVal >= 70) return 'Très bien ! Bon niveau. Quelques révisions vous permettront d\'atteindre l\'excellence.';
-        if (pctVal >= 60) return 'Bien ! Fondamentaux assimilés. Concentrez-vous sur les points manqués.';
-        if (pctVal >= 50) return 'Passable. Revoyez certaines notions importantes. Persévérez !';
-        return 'Des efforts supplémentaires sont nécessaires. Revoyez le cours attentivement. Vous pouvez y arriver !';
-      }
-
-      pdf.addPage(
-        pw.MultiPage(
-          pageFormat: PdfPageFormat.a4,
-          margin: const pw.EdgeInsets.fromLTRB(40, 36, 40, 36),
-          // ═══════════════════════════════════════════════════════
-          // EN-TÊTE : Logo centré + Titre + Nom
-          // ═══════════════════════════════════════════════════════
-          header: (ctx) => pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.center,
-            children: [
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.center,
-                crossAxisAlignment: pw.CrossAxisAlignment.center,
-                children: [
-                  if (logoImage != null) ...[
-                    pw.Container(width: 52, height: 52,
-                        child: pw.Image(logoImage, fit: pw.BoxFit.contain)),
-                    pw.SizedBox(width: 12),
-                  ],
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    children: [
-                      pw.Text('EF-FORT.BF',
-                          style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold, color: noir)),
-                      pw.Text('Plateforme N°1 des Concours du Burkina Faso',
-                          style: pw.TextStyle(fontSize: 11, color: greyText)),
-                    ],
-                  ),
-                ],
-              ),
-              pw.SizedBox(height: 6),
-              pw.Divider(color: greyMed, thickness: 1),
-              pw.SizedBox(height: 4),
-            ],
-          ),
-          // ═══════════════════════════════════════════════════════
-          // PIED DE PAGE : Slogan centré
-          // ═══════════════════════════════════════════════════════
-          footer: (ctx) => pw.Column(
-            children: [
-              pw.Divider(color: greyMed, thickness: 0.5),
-              pw.SizedBox(height: 4),
-              pw.Text(
-                'Chaque effort te rapproche de ton admission — EF-FORT.BF',
-                textAlign: pw.TextAlign.center,
-                style: pw.TextStyle(fontSize: 11, color: greyText, fontStyle: pw.FontStyle.italic),
-              ),
-              pw.SizedBox(height: 2),
-              pw.Text('Page ${ctx.pageNumber}/${ctx.pagesCount}',
-                  textAlign: pw.TextAlign.center,
-                  style: pw.TextStyle(fontSize: 10, color: greyMed)),
-            ],
-          ),
-          // ═══════════════════════════════════════════════════════
-          // CORPS DU PDF
-          // ═══════════════════════════════════════════════════════
-          build: (ctx) {
-            final List<pw.Widget> content = [];
-
-            // ── Titre + Infos candidat + Score encerclé ──
-            content.add(
-              pw.Row(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Expanded(
-                    child: pw.Container(
-                      padding: const pw.EdgeInsets.all(12),
-                      decoration: pw.BoxDecoration(
-                        border: pw.Border.all(color: greyMed, width: 0.8),
-                        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
-                      ),
-                      child: pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.start,
-                        children: [
-                          pw.Text(
-                            correctionMode ? 'CORRECTION — $nomExamenClean' : 'SUJET D\'EXAMEN — $nomExamenClean',
-                            style: pw.TextStyle(fontSize: 13, fontWeight: pw.FontWeight.bold, color: greyDark),
-                          ),
-                          pw.SizedBox(height: 6),
-                          pw.Text('Candidat(e) : ${widget.nomCandidat}',
-                              style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
-                          pw.SizedBox(height: 3),
-                          pw.Text('Date : $dateStr   |   ${widget.questions.length} questions   |   Durée : 1h30',
-                              style: pw.TextStyle(fontSize: 12, color: greyText)),
-                          if (correctionMode) ...[
-                            pw.SizedBox(height: 8),
-                            pw.Container(
-                              padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: pw.BoxDecoration(
-                                color: getMentionColor(),
-                                borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
-                              ),
-                              child: pw.Text(getMention(),
-                                  style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
-                            ),
-                            pw.SizedBox(height: 6),
-                            pw.Text(getAppreciation(),
-                                style: pw.TextStyle(fontSize: 12, color: greyDark, fontStyle: pw.FontStyle.italic, lineSpacing: 3)),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
-                  if (correctionMode) ...[
-                    pw.SizedBox(width: 16),
-                    // ── SCORE ENCERCLE EN ROUGE ──
-                    pw.Column(
-                      mainAxisAlignment: pw.MainAxisAlignment.center,
-                      children: [
-                        pw.Container(
-                          width: 90, height: 90,
-                          decoration: pw.BoxDecoration(
-                            color: PdfColors.white,
-                            shape: pw.BoxShape.circle,
-                            border: pw.Border.all(color: rouge, width: 4),
-                          ),
-                          child: pw.Center(
-                            child: pw.Column(
-                              mainAxisAlignment: pw.MainAxisAlignment.center,
-                              children: [
-                                pw.Text(noteStr,
-                                    style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold, color: rouge)),
-                                pw.Container(width: 40, height: 1.5, color: rougeFonce),
-                                pw.Text('50',
-                                    style: pw.TextStyle(fontSize: 14, color: rouge)),
-                              ],
-                            ),
-                          ),
-                        ),
-                        pw.SizedBox(height: 4),
-                        pw.Text('$_score/$_total  ($pctVal%)',
-                            textAlign: pw.TextAlign.center,
-                            style: pw.TextStyle(fontSize: 11, color: greyText)),
-                      ],
-                    ),
-                  ],
-                ],
-              ),
-            );
-            content.add(pw.SizedBox(height: 14));
-
-            // ── Questions ──
-            for (int i = 0; i < widget.questions.length; i++) {
-              final q = widget.questions[i] as Map<String, dynamic>;
-              final enonce = _cleanForPdf((q['enonce'] ?? q['question'] ?? '').toString());
-              final bonneRep = (q['bonne_reponse'] as String?)?.toUpperCase().trim() ?? '';
-              final userReps = correctionMode ? (widget.answers[i] ?? <String>{}) : <String>{};
-              final userRepDisplay = userReps.isEmpty ? 'Aucune' : (userReps.toList()..sort()).join('+');
-              final bonnesReps = bonneRep
-                  .split(RegExp(r'[/,;]'))
-                  .map((s) => s.trim().toUpperCase())
-                  .where((s) => s.isNotEmpty)
-                  .toSet();
-              final bonneRepDisplay = bonnesReps.isEmpty ? bonneRep : (bonnesReps.toList()..sort()).join('+');
-              final isCorrect = correctionMode && bonnesReps.isNotEmpty && userReps.isNotEmpty &&
-                  userReps.containsAll(bonnesReps) && bonnesReps.containsAll(userReps);
-              final nonRepondu = correctionMode && userReps.isEmpty;
-
-              final bgColor = correctionMode
-                  ? (isCorrect ? vertClair : (nonRepondu ? greyLight : rougeClair))
-                  : PdfColors.white;
-              final brdColor = correctionMode
-                  ? (isCorrect ? borderVert : (nonRepondu ? greyMed : borderRouge))
-                  : greyMed;
-              final numColor = correctionMode
-                  ? (isCorrect ? vert : (nonRepondu ? greyText : rouge))
-                  : greyDark;
-              final statusTxt = correctionMode
-                  ? (isCorrect ? 'CORRECT' : (nonRepondu ? 'NON REPONDU' : 'INCORRECT'))
-                  : '';
-
-              content.add(
-                pw.Container(
-                  margin: const pw.EdgeInsets.only(bottom: 10),
-                  padding: const pw.EdgeInsets.fromLTRB(12, 10, 12, 10),
-                  decoration: pw.BoxDecoration(
-                    color: bgColor,
-                    border: pw.Border.all(color: brdColor, width: 0.8),
-                    borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
-                  ),
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      // Ligne numéro + énoncé + statut
-                      pw.Row(
-                        crossAxisAlignment: pw.CrossAxisAlignment.start,
-                        children: [
-                          pw.Container(
-                            width: 26, height: 26,
-                            decoration: pw.BoxDecoration(color: numColor, shape: pw.BoxShape.circle),
-                            child: pw.Center(
-                              child: pw.Text('${i + 1}',
-                                  style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
-                            ),
-                          ),
-                          pw.SizedBox(width: 8),
-                          pw.Expanded(
-                            child: pw.Text(enonce,
-                                style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: greyDark, lineSpacing: 3)),
-                          ),
-                          if (correctionMode) ...[
-                            pw.SizedBox(width: 6),
-                            pw.Container(
-                              padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: pw.BoxDecoration(
-                                color: numColor,
-                                borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
-                              ),
-                              child: pw.Text(statusTxt,
-                                  style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
-                            ),
-                          ],
-                        ],
-                      ),
-                      if (correctionMode) ...[
-                        pw.SizedBox(height: 4),
-                        // Réponse donnée et bonne réponse
-                        pw.Text(
-                          'Votre réponse : $userRepDisplay   |   Bonne(s) réponse(s) : $bonneRepDisplay',
-                          style: pw.TextStyle(
-                            fontSize: 14,
-                            fontWeight: pw.FontWeight.bold,
-                            color: isCorrect ? vert : rouge,
-                          ),
-                        ),
-                      ],
-                      pw.SizedBox(height: 6),
-                      // Options A B C D E
-                      ...['A', 'B', 'C', 'D', 'E'].map((letter) {
-                        final optKey = 'option_${letter.toLowerCase()}';
-                        final opt = _cleanForPdf((q[optKey] ?? '').toString());
-                        if (opt.isEmpty) return pw.SizedBox();
-                        final isBonne = correctionMode && bonnesReps.contains(letter);
-                        final isChoisie = correctionMode && userReps.contains(letter);
-                        final textColor = isBonne ? vert : (isChoisie ? rouge : greyText);
-                        final fontW = isBonne ? pw.FontWeight.bold : pw.FontWeight.normal;
-                        return pw.Padding(
-                          padding: const pw.EdgeInsets.only(left: 34, bottom: 4),
-                          child: pw.Row(
-                            crossAxisAlignment: pw.CrossAxisAlignment.start,
-                            children: [
-                              pw.Text('$letter. ',
-                                  style: pw.TextStyle(fontSize: 14, fontWeight: fontW, color: textColor)),
-                              pw.Expanded(
-                                child: pw.Text(
-                                  opt + (isBonne ? '  << Bonne reponse' : (isChoisie && correctionMode ? '  << Votre reponse' : '')),
-                                  style: pw.TextStyle(fontSize: 14, color: textColor, fontWeight: fontW, lineSpacing: 2),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }),
-                      // Explication (mode correction uniquement)
-                      if (correctionMode &&
-                          q['explication'] != null &&
-                          (q['explication'] as String).trim().isNotEmpty) ...[
-                        pw.SizedBox(height: 6),
-                        pw.Container(
-                          padding: const pw.EdgeInsets.all(8),
-                          decoration: pw.BoxDecoration(
-                            color: PdfColor.fromHex('FFF8E1'),
-                            borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
-                            border: pw.Border.all(color: PdfColor.fromHex('FFD54F'), width: 0.8),
-                          ),
-                          child: pw.Row(
-                            crossAxisAlignment: pw.CrossAxisAlignment.start,
-                            children: [
-                              pw.Text('Explication : ',
-                                  style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold,
-                                      color: PdfColor.fromHex('E65100'))),
-                              pw.Expanded(
-                                child: pw.Text(
-                                  _cleanForPdf(q['explication'].toString()),
-                                  style: pw.TextStyle(fontSize: 14, color: greyDark, fontStyle: pw.FontStyle.italic, lineSpacing: 3),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              );
-            }
-            return content;
-          },
-        ),
-      );
 
       final nomSafe = widget.nomExamen
           .replaceAll(RegExp(r'[^a-zA-Z0-9\u00C0-\u024F_-]'), '_')
           .replaceAll(RegExp(r'_+'), '_');
-      final pdfName = correctionMode
-          ? 'EF-FORT_Correction_$nomSafe.pdf'
-          : 'EF-FORT_Sujet_$nomSafe.pdf';
+
+      final Uint8List pdfBytes;
+      final String pdfName;
+      if (correctionMode) {
+        pdfBytes = await PdfService.genererCopieCorrigee(
+          kind: PdfKind.examen,
+          nomCandidat: widget.nomCandidat,
+          sujet: widget.nomExamen,
+          questions: pdfQuestions,
+          scoreObtenu: _score,
+          scoreTotal: _total,
+        );
+        pdfName = 'EF-FORT_Correction_$nomSafe.pdf';
+      } else {
+        pdfBytes = await PdfService.genererSujetVierge(
+          nomCandidat: widget.nomCandidat,
+          sujet: widget.nomExamen,
+          questions: pdfQuestions,
+          duree: '1h30',
+        );
+        pdfName = 'EF-FORT_Sujet_$nomSafe.pdf';
+      }
 
       if (!context.mounted) return;
-      await Printing.sharePdf(bytes: await pdf.save(), filename: pdfName);
+      await Printing.sharePdf(bytes: pdfBytes, filename: pdfName);
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
