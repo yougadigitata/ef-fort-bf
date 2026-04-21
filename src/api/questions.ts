@@ -27,38 +27,36 @@ questions.get('/matieres', async (c) => {
   const matieresFiltrees = (matieres ?? []).filter(m => CODES_OFFICIELS.includes(m.code));
   const matiereIds = matieresFiltrees.map(m => m.id);
 
-  // ⚡ OPTIMISATION v7.1 : Compter en parallèle et en exploitant Supabase count()
-  // Plutôt que de charger 10 000 lignes, on fait des count() légers par matière
+  // ⚡ OPTIMISATION v7.1 : 2 requêtes globales (comme v7.0) - plus efficace que N count() parallèles
   const countMap: Record<string, number> = {};
   const seriesMap: Record<string, number> = {};
 
-  // Exécuter les comptages en parallèle (questions + séries)
-  const countPromises: Promise<void>[] = [];
+  // Requête 1 : tous les matiere_id des questions
+  try {
+    const { data: allQ } = await db
+      .from('questions')
+      .select('matiere_id')
+      .in('matiere_id', matiereIds)
+      .limit(10000);
+    for (const q of (allQ ?? [])) {
+      const mid = q.matiere_id as string;
+      countMap[mid] = (countMap[mid] ?? 0) + 1;
+    }
+  } catch (_) {}
 
-  for (const mid of matiereIds) {
-    countPromises.push((async () => {
-      try {
-        const { count } = await db
-          .from('questions')
-          .select('id', { count: 'exact', head: true })
-          .eq('matiere_id', mid);
-        countMap[mid] = count ?? 0;
-      } catch (_) { countMap[mid] = 0; }
-    })());
-
-    countPromises.push((async () => {
-      try {
-        const { count } = await db
-          .from('series_qcm')
-          .select('id', { count: 'exact', head: true })
-          .eq('matiere_id', mid)
-          .eq('actif', true);
-        seriesMap[mid] = count ?? 0;
-      } catch (_) { seriesMap[mid] = 0; }
-    })());
-  }
-
-  await Promise.all(countPromises);
+  // Requête 2 : tous les matiere_id des séries actives
+  try {
+    const { data: allS } = await db
+      .from('series_qcm')
+      .select('matiere_id')
+      .in('matiere_id', matiereIds)
+      .eq('actif', true)
+      .limit(2000);
+    for (const s of (allS ?? [])) {
+      const mid = s.matiere_id as string;
+      seriesMap[mid] = (seriesMap[mid] ?? 0) + 1;
+    }
+  } catch (_) {}
 
   const result = matieresFiltrees.map(m => ({
     id: m.code?.toLowerCase() || m.id,
