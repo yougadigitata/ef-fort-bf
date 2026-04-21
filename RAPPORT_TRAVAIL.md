@@ -162,3 +162,27 @@ Série 3 : IDs 107-116 (exam_001..010)  ← Nouvellement configurée
 ---
 
 *Document rédigé automatiquement à la fin de la session de travail.*
+
+---
+
+## 🔧 CORRECTION DU 21 AVRIL 2026 - Notations isotopiques
+
+**Problème :** Dans la Série 4 "Chimie et réactions" (Sciences Physiques), deux questions (Q2785 et Q2786) affichaient les notations isotopiques sous une forme non conventionnelle (ex: `₆¹²C` au lieu de `C¹²₆`, `₈¹⁶O` au lieu de `O¹⁶₈`). Un problème similaire a été identifié dans la Série 8 (uranium-238).
+
+**Corrections appliquées en base Supabase (table `questions`) :**
+- **Q2785 (Série 4)** : `₆¹²C` → `C¹²₆` (carbone 12)
+- **Q2786 (Série 4)** : `₈¹⁶O` → `O¹⁶₈` (oxygène 16)
+- **Q14 (Série 8)** : `²³⁸₉₂U` → `U²³⁸₉₂`, `²³⁸₉₁Pa` → `Pa²³⁸₉₁`, `²³⁴₉₀Th` → `Th²³⁴₉₀`, `²³⁶₉₀Th` → `Th²³⁶₀`, `²³⁸₉₀Th` → `Th²³⁸₉₀`, `²₂He` → `He²₂`
+
+**Règles de la correction automatisée :**
+- Reformatage : `[indice][exposant][Symbole]` → `[Symbole][exposant][indice]` (conforme aux notations pédagogiques demandées)
+- Protection : formules chimiques (H₂O, Na₂SO₄, C₆H₁₂O₆, CaCO₃, CO₂...) et ions (Ca²⁺, H⁺, SO₄²⁻, H₃O⁺, OH⁻) **non modifiés**
+- Aucune question supprimée, aucune matière supprimée
+- 21 matières préservées, 250 questions en Sciences Physiques préservées, 20 questions en Série 4 préservées
+
+**APK reconstruite et publiée :**
+- Version : v5.1.1 (build 6)
+- Fichier : `ef-fort-bf-v5.1.1.apk` (69,3 MB)
+- Lien de téléchargement inchangé : https://github.com/yougadigitata/ef-fort-bf/releases/download/v5.1.1/ef-fort-bf-v5.1.1.apk
+- Page de téléchargement inchangée : https://ef-fort-bf-app.pages.dev
+
