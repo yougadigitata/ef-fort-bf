@@ -132,21 +132,36 @@ entraide.get('/', requireAuth, async (c) => {
     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
   });
 
+  // ⚡ OPTIMISATION v7.1 : BATCH FETCH des profils (élimine N+1 queries)
+  // Collecter tous les user_id uniques (questions + réponses)
+  const allUserIds = new Set<string>();
+  for (const m of questions) allUserIds.add(m.user_id);
+  for (const parentId of Object.keys(reponsesByParent)) {
+    for (const r of reponsesByParent[parentId]) allUserIds.add(r.user_id);
+  }
+
+  // Une seule requête pour récupérer tous les profils
+  let profilesMap: Record<string, { nom: string; prenom: string; is_admin: boolean }> = {};
+  if (allUserIds.size > 0) {
+    const { data: profiles } = await db.from('profiles')
+      .select('id, nom, prenom, is_admin')
+      .in('id', Array.from(allUserIds));
+    for (const p of (profiles ?? [])) {
+      profilesMap[p.id] = { nom: p.nom, prenom: p.prenom, is_admin: p.is_admin };
+    }
+  }
+
   // Enrichir avec les profils
   const enriched = [];
   for (const m of questions) {
-    const { data: profile } = await db.from('profiles')
-      .select('nom, prenom, is_admin')
-      .eq('id', m.user_id).single();
+    const profile = profilesMap[m.user_id];
 
     const rawReponses = reponsesByParent[m.id] ?? [];
     const reponses: any[] = [];
     for (const r of rawReponses.sort((a: any, b: any) =>
       new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
     )) {
-      const { data: repProfile } = await db.from('profiles')
-        .select('nom, prenom, is_admin')
-        .eq('id', r.user_id).single();
+      const repProfile = profilesMap[r.user_id];
       reponses.push({
         id: r.id,
         contenu: r._texte,

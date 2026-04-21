@@ -246,8 +246,12 @@ auth.post('/login', async (c) => {
   const telClean = cleanTel(String(telephone));
   const db = getDB(c.env);
 
+  // ⚡ OPTIMISATION v7.1 : ne sélectionner que les colonnes nécessaires
   const { data: user, error } = await db
-    .from('profiles').select('*').eq('telephone_clean', telClean).maybeSingle();
+    .from('profiles')
+    .select('id, nom, prenom, telephone, niveau, is_admin, abonnement_actif, password_hash')
+    .eq('telephone_clean', telClean)
+    .maybeSingle();
 
   if (error || !user) {
     return c.json({ error: 'Numéro ou mot de passe incorrect.' }, 401);
