@@ -41,36 +41,71 @@ class _AbonnementScreenState extends State<AbonnementScreen>
     super.dispose();
   }
 
+  // ── Helper : lance une URL de façon robuste et affiche un feedback en cas d'échec ──
+  Future<void> _safeLaunch(Uri uri, {String? fallbackMessage, LaunchMode mode = LaunchMode.externalApplication}) async {
+    try {
+      // On tente d'abord directement (plus fiable que canLaunchUrl sur Android 11+)
+      final ok = await launchUrl(uri, mode: mode);
+      if (!ok && mounted && fallbackMessage != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(fallbackMessage),
+            backgroundColor: const Color(0xFFFF7900),
+            duration: const Duration(seconds: 6),
+          ),
+        );
+      }
+    } catch (e) {
+      // Fallback : on essaie avec un mode différent
+      try {
+        await launchUrl(uri, mode: LaunchMode.platformDefault);
+      } catch (_) {
+        if (mounted && fallbackMessage != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(fallbackMessage),
+              backgroundColor: const Color(0xFFFF7900),
+              duration: const Duration(seconds: 6),
+            ),
+          );
+        }
+      }
+    }
+  }
+
   void _launchWhatsAppPreuve() async {
     final uri = Uri.parse(
         'https://wa.me/22665467070?text=Bonjour%20EF-FORT.BF%2C%20j%27ai%20effectu%C3%A9%20le%20paiement%20de%2012%20000%20FCFA%20via%20Orange%20Money.%20Je%20vous%20envoie%20la%20capture%20de%20confirmation.');
-    if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
+    await _safeLaunch(uri, fallbackMessage: 'Contactez-nous sur WhatsApp au 65 46 70 70');
   }
 
   void _launchWhatsAppAutre() async {
     final uri = Uri.parse(
         'https://wa.me/22665467070?text=Bonjour%2C%20je%20souhaite%20m%27abonner%20%C3%A0%20EF-FORT.BF%20et%20j%27ai%20une%20question%20sur%20le%20paiement.');
-    if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
+    await _safeLaunch(uri, fallbackMessage: 'Contactez-nous sur WhatsApp au 65 46 70 70');
   }
 
   void _launchUSSD() async {
+    // Sur Android 10+, le code USSD avec # doit être encodé : %23
     final uri = Uri.parse('tel:*144*10*65467070*12000%23');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Composez : *144*10*65467070*12000# sur Orange Money'),
-            backgroundColor: Color(0xFFFF7900),
-            duration: Duration(seconds: 5),
-          ),
-        );
-      }
-    }
+    await _safeLaunch(
+      uri,
+      fallbackMessage: 'Composez manuellement : *144*10*65467070*12000#',
+    );
   }
 
   Future<void> _soumettreDemande() async {
+    // Vérification : l'utilisateur doit être connecté pour envoyer une demande
+    if (!ApiService.isLoggedIn) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vous devez être connecté pour envoyer une demande. Merci de vous connecter d\'abord.'),
+          backgroundColor: AppColors.error,
+          duration: Duration(seconds: 5),
+        ),
+      );
+      return;
+    }
     setState(() => _submitting = true);
     final result = await ApiService.demanderAbonnement(_moyenPaiement);
     if (mounted) {

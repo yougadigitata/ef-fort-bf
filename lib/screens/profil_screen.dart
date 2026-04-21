@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
+import '../utils/safe_launcher.dart';
 import 'login_screen.dart';
 import 'admin_screen.dart';
 
@@ -92,9 +93,8 @@ class _ProfilScreenState extends State<ProfilScreen>
 
   Future<void> _openWhatsApp() async {
     final uri = Uri.parse('https://wa.me/22665467070?text=Bonjour%20EF-FORT%2C%20je%20souhaite%20m%27abonner%20%C3%A0%20EF-FORT.BF');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
+    await SafeLauncher.launch(context, uri,
+        fallbackMessage: 'Contactez-nous sur WhatsApp au 65 46 70 70');
   }
 
   Future<void> _logout() async {
@@ -585,9 +585,14 @@ class _ProfilScreenState extends State<ProfilScreen>
   Future<void> _composeOrangeMoney() async {
     const String code = '*144*10*65467070*12000%23';
     final Uri telUri = Uri(scheme: 'tel', path: code);
-    if (await canLaunchUrl(telUri)) {
-      await launchUrl(telUri);
-    } else {
+    // Tentative directe (plus fiable sur Android 11+)
+    bool launched = false;
+    try {
+      launched = await launchUrl(telUri);
+    } catch (_) {
+      launched = false;
+    }
+    if (!launched) {
       if (!mounted) return;
       showDialog(
         context: context,
@@ -754,24 +759,21 @@ class _AboutScreenState extends State<_AboutScreen>
   Future<void> _openWhatsApp() async {
     final uri = Uri.parse(
         'https://wa.me/22665467070?text=Bonjour%20EF-FORT%2C%20j%27ai%20une%20question%20sur%20l%27application.');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
+    await SafeLauncher.launch(context, uri,
+        fallbackMessage: 'Contactez-nous sur WhatsApp au 65 46 70 70');
   }
 
   Future<void> _openEmail() async {
     final uri = Uri.parse('mailto:effortbf2026@gmail.com?subject=Question%20EF-FORT.BF');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    }
+    await SafeLauncher.launch(context, uri,
+        fallbackMessage: 'Écrivez-nous à effortbf2026@gmail.com');
   }
 
   Future<void> _shareApp() async {
     final uri = Uri.parse(
         'https://wa.me/?text=Je%20vous%20recommande%20EF-FORT.BF%20-%20La%20plateforme%20N%C2%B01%20d%27apprentissage%20et%20d%27%C3%A9ducation%20au%20Burkina%20Faso%20%F0%9F%87%A7%F0%9F%87%AB%20%F0%9F%9A%80%20https%3A%2F%2Fef-fort-bf.pages.dev');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
+    await SafeLauncher.launch(context, uri,
+        fallbackMessage: 'Partagez le lien : https://ef-fort-bf.pages.dev');
   }
 
   @override
@@ -1358,7 +1360,8 @@ class _AboutScreenState extends State<_AboutScreen>
                             child: ElevatedButton(
                               onPressed: () async {
                                 final uri = Uri.parse('https://ef-fort-bf.pages.dev');
-                                if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                await SafeLauncher.launch(context, uri,
+                                    fallbackMessage: 'Ouvrez : https://ef-fort-bf.pages.dev');
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF1A5C38),
