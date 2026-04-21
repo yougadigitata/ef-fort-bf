@@ -1,0 +1,123 @@
+{
+  "total_questions": 4887,
+  "stats": {
+    "caret_generic": 46,
+    "caret_exposant": 18,
+    "chem_digits": 40,
+    "html_tag": 2,
+    "parentheses_vides": 4
+  },
+  "field_stats": {
+    "caret_generic::option_b": 3,
+    "caret_generic::option_c": 1,
+    "caret_generic::explication": 22,
+    "caret_exposant::enonce": 6,
+    "caret_generic::enonce": 16,
+    "caret_exposant::explication": 10,
+    "caret_generic::option_d": 4,
+    "chem_digits::option_a": 7,
+    "html_tag::explication": 2,
+    "chem_digits::explication": 15,
+    "chem_digits::option_c": 5,
+    "parentheses_vides::explication": 3,
+    "chem_digits::enonce": 7,
+    "caret_exposant::option_b": 1,
+    "caret_exposant::option_d": 1,
+    "chem_digits::option_b": 4,
+    "chem_digits::option_d": 2,
+    "parentheses_vides::enonce": 1
+  },
+  "examples": {
+    "parentheses_vides": [
+      {
+        "id": "2aa1904c-a7a4-422b-8330-ffe20de0c161",
+        "field": "explication",
+        "excerpt": "hamp gravitationnel ( ). Il est mesuré en Newtons (N)"
+      },
+      {
+        "id": "6e0ee33d-5c16-49c9-8f0f-b56588a019eb",
+        "field": "explication",
+        "excerpt": "verse de la période ( ). A est la longueur d’onde. C "
+      },
+      {
+        "id": "dd14bd5f-855e-4740-a0b9-119e95a29216",
+        "field": "explication",
+        "excerpt": "rse de la fréquence ( ). A est la fréquence. B est la"
+      }
+    ],
+    "caret_exposant": [
+      {
+        "id": "16cc7de1-2d40-4f65-9a7b-992dbcd41f3b",
+        "field": "enonce",
+        "excerpt": " lim(x→1) [(x - 2 + e^1-x) / (x - 1)] ?"
+      },
+      {
+        "id": "16cc7de1-2d40-4f65-9a7b-992dbcd41f3b",
+        "field": "explication",
+        "excerpt": "Quand x→1, e^1-x → 1 donc numérateur → 1 - 2"
+      },
+      {
+        "id": "2b92bbe4-ad0b-4048-b8a1-65a567fcb91c",
+        "field": "explication",
+        "excerpt": "4^x = (2²)^x = 2^2x donc 2^x-1 = 2^2x ⇒ x - 1 = "
+      }
+    ],
+    "caret_generic": [
+      {
+        "id": "02b5d9d7-2239-40e0-96c4-5165da58fa9f",
+        "field": "option_b",
+        "excerpt": "(AB)^T = A^T × B^T"
+      },
+      {
+        "id": "02b5d9d7-2239-40e0-96c4-5165da58fa9f",
+        "field": "option_c",
+        "excerpt": "(AB)^T = B^T × A^T"
+      },
+      {
+        "id": "02b5d9d7-2239-40e0-96c4-5165da58fa9f",
+        "field": "explication",
+        "excerpt": "verse l'ordre : (AB)^T = B^T A^T. C'est une proprié"
+      }
+    ],
+    "latex_sqrt": [],
+    "latex_frac": [],
+    "latex_times": [],
+    "latex_autre": [],
+    "markdown_gras": [],
+    "markdown_italic": [],
+    "chem_digits": [
+      {
+        "id": "18ca544c-d721-438c-86a7-cafa39662ae2",
+        "field": "option_a",
+        "excerpt": "n des émissions de CO2 à l’échelle globale"
+      },
+      {
+        "id": "21f331d4-8bf2-491a-b4b0-70c792d594d5",
+        "field": "explication",
+        "excerpt": "L'azote (N2) est le gaz le plus abondant "
+      },
+      {
+        "id": "2328fa3d-8852-4181-a9fc-b81596b88ba8",
+        "field": "explication",
+        "excerpt": " ferrée SITARAIL + RN1), complété par les routes ver"
+      }
+    ],
+    "arobase": [],
+    "diese": [],
+    "backslash_n": [],
+    "backslash_t": [],
+    "multiple_spaces": [],
+    "html_tag": [
+      {
+        "id": "1d1e9542-8495-4166-a13c-35d98c8fcc5b",
+        "field": "explication",
+        "excerpt": "x ⊥ x, c'est-à-dire <x,x> = ||x||² = 0, donc x = 0E. Ai"
+      },
+      {
+        "id": "4f8a2951-fc7b-4e01-b859-43213ae41a46",
+        "field": "explication",
+        "excerpt": "nonique dans R² est <u, v> = u1v1 + u2v2 = 1×3 + 2×(-1) "
+      }
+    ]
+  }
+}
