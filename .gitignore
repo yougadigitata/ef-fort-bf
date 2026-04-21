@@ -89,3 +89,4 @@ worker-configuration.h
 android/key.properties
 android/app/release-key.jks
 android/release-key.jks
+dist/
