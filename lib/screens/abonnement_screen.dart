@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
+import '../utils/safe_launcher.dart';
 
 // ═══════════════════════════════════════════════════════════════════
 // ABONNEMENT SCREEN v5.0 — PAGE DE VENTE PREMIUM
@@ -49,43 +50,21 @@ class _AbonnementScreenState extends State<AbonnementScreen>
   // ══════════════════════════════════════════════════════════════
 
   /// Ouvre WhatsApp avec le message de preuve de paiement
+  /// Stratégie : https://wa.me/ en mode externalApplication — plus fiable
+  /// (l'OS redirige vers l'app WhatsApp si installée, sinon navigateur)
   Future<void> _launchWhatsAppPreuve() async {
     const message =
         'Bonjour EF-FORT.BF, j\'ai effectué le paiement de 12 000 FCFA via Orange Money. '
         'Je vous envoie la capture de confirmation.';
     final encoded = Uri.encodeComponent(message);
+    final uri = Uri.parse('https://wa.me/22665467070?text=$encoded');
 
-    // Essai 1 : application WhatsApp native (scheme whatsapp://)
-    bool launched = false;
-    final uriNative = Uri.parse('whatsapp://send?phone=22665467070&text=$encoded');
-    try {
-      launched = await launchUrl(uriNative, mode: LaunchMode.externalNonBrowserApplication);
-    } catch (_) {}
-
-    // Essai 2 : wa.me via navigateur
-    if (!launched) {
-      final uriWeb = Uri.parse('https://wa.me/22665467070?text=$encoded');
-      try {
-        launched = await launchUrl(uriWeb, mode: LaunchMode.externalApplication);
-      } catch (_) {}
-      if (!launched) {
-        try {
-          launched = await launchUrl(uriWeb, mode: LaunchMode.platformDefault);
-        } catch (_) {}
-      }
-    }
-
-    if (!launched && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Contactez-nous directement sur WhatsApp au +226 65 46 70 70',
-          ),
-          backgroundColor: Color(0xFF25D366),
-          duration: Duration(seconds: 8),
-        ),
-      );
-    }
+    await SafeLauncher.launch(
+      context,
+      uri,
+      fallbackMessage:
+          'Contactez-nous directement sur WhatsApp au +226 65 46 70 70',
+    );
   }
 
   /// Ouvre WhatsApp pour une question sur un autre moyen de paiement
@@ -93,51 +72,31 @@ class _AbonnementScreenState extends State<AbonnementScreen>
     const message =
         'Bonjour, je souhaite m\'abonner à EF-FORT.BF et j\'ai une question sur le paiement.';
     final encoded = Uri.encodeComponent(message);
+    final uri = Uri.parse('https://wa.me/22665467070?text=$encoded');
 
-    bool launched = false;
-    final uriNative = Uri.parse('whatsapp://send?phone=22665467070&text=$encoded');
-    try {
-      launched = await launchUrl(uriNative, mode: LaunchMode.externalNonBrowserApplication);
-    } catch (_) {}
-
-    if (!launched) {
-      final uriWeb = Uri.parse('https://wa.me/22665467070?text=$encoded');
-      try {
-        launched = await launchUrl(uriWeb, mode: LaunchMode.externalApplication);
-      } catch (_) {}
-      if (!launched) {
-        try {
-          launched = await launchUrl(uriWeb, mode: LaunchMode.platformDefault);
-        } catch (_) {}
-      }
-    }
-
-    if (!launched && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Contactez-nous sur WhatsApp au +226 65 46 70 70'),
-          backgroundColor: Color(0xFF25D366),
-          duration: Duration(seconds: 8),
-        ),
-      );
-    }
+    await SafeLauncher.launch(
+      context,
+      uri,
+      fallbackMessage: 'Contactez-nous sur WhatsApp au +226 65 46 70 70',
+    );
   }
 
-  /// Lance le code USSD Orange Money — Android 11+ compatible avec fallback clipboard
+  /// Lance le code USSD Orange Money — Android 11+ compatible
+  /// Le '#' doit être encodé en %23. On utilise externalApplication pour
+  /// forcer la résolution vers l'app Téléphone (jamais vers un WebView).
   Future<void> _launchUSSD() async {
-    // Android 11+ : le '#' doit être encodé en %23 dans l'URL
     const ussdCode = '*144*10*65467070*12000#';
     final uri = Uri.parse('tel:*144*10*65467070*12000%23');
 
     bool launched = false;
-    // Essai 1 : platformDefault (le plus fiable pour tel: sur Android)
+    // Essai 1 : externalApplication — force l'ouverture hors WebView
     try {
-      launched = await launchUrl(uri, mode: LaunchMode.platformDefault);
+      launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
     } catch (_) {}
-    // Essai 2 : externalApplication
+    // Essai 2 : platformDefault
     if (!launched) {
       try {
-        launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+        launched = await launchUrl(uri, mode: LaunchMode.platformDefault);
       } catch (_) {}
     }
 

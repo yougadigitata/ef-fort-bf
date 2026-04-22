@@ -4,7 +4,6 @@ import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
 import '../services/bell_service.dart';
 import '../widgets/logo_widget.dart';
-import '../widgets/actualites_status_widget.dart';
 import 'abonnement_screen.dart';
 import 'actualites_chat_screen.dart';
 import 'entraide_screen.dart';
@@ -202,14 +201,21 @@ class _DashboardScreenState extends State<DashboardScreen>
                 child: _buildPremiumHeader(prenom, nom, niveau, isAbonne),
               ),
 
-              // ─── SECTION 1b : Bandeau ACTUALITÉS défilant (NOUVEAU) ──
-              if (!_loadingActu && _actualites.isNotEmpty)
+              // ─── SECTION 1b : Bandeau ACTUALITÉS défilant AGRANDI ──
+              //    (occupe l'espace de l'ancienne bannière de bienvenue)
+              if (_loadingActu)
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 24),
+                    child: Center(
+                      child: CircularProgressIndicator(color: AppColors.primary),
+                    ),
+                  ),
+                )
+              else if (_actualites.isNotEmpty)
                 SliverToBoxAdapter(
                   child: _buildNewsTicker(),
                 ),
-
-              // ─── SECTION 2 : [SUPPRIMÉ] Bannière de bienvenue retirée
-              //                 pour agrandir la section Actualités ──
 
               // ─── SECTION 3 : Bouton SIMULATION animé ───────────────
               SliverToBoxAdapter(
@@ -227,21 +233,6 @@ class _DashboardScreenState extends State<DashboardScreen>
               SliverToBoxAdapter(
                 child: _buildMatieresSection(),
               ),
-
-              // ─── SECTION 5 : Actualités (AGRANDIE) ──────────────────
-              if (_loadingActu)
-                const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.all(30),
-                    child: Center(
-                      child: CircularProgressIndicator(color: AppColors.primary),
-                    ),
-                  ),
-                )
-              else
-                SliverToBoxAdapter(
-                  child: _buildActualitesAgrandies(),
-                ),
 
               // ─── SECTION 6 : Abonnement animé ───────────────────────
               SliverToBoxAdapter(
@@ -288,67 +279,142 @@ class _DashboardScreenState extends State<DashboardScreen>
         );
       },
       child: Container(
-        margin: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
+        // Marges extérieures pour remplir l'espace de l'ancienne bannière
+        margin: const EdgeInsets.fromLTRB(16, 18, 16, 6),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
             colors: [Color(0xFF0E3D24), Color(0xFF1A5C38), Color(0xFFD4A017)],
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
           ),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF1A5C38).withValues(alpha: 0.35),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
-        height: 38,
+        height: 72,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         child: Row(
           children: [
-            // Badge "NOUVEAU" rouge clignotant
+            // Cercle rouge clignotant "ACTU"
             Container(
-              margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+              width: 56,
+              height: 56,
               decoration: BoxDecoration(
-                color: Colors.red,
-                borderRadius: BorderRadius.circular(5),
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFF3B30), Color(0xFFD61A1A)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.red.withValues(alpha: 0.5),
-                    blurRadius: 6,
+                    color: Colors.red.withValues(alpha: 0.55),
+                    blurRadius: 12,
                     spreadRadius: 1,
                   ),
                 ],
+                border: Border.all(color: Colors.white.withValues(alpha: 0.35), width: 2),
               ),
-              child: const Text(
-                '🔴 ACTU',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 9,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 0.5,
+              child: const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '🔴',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                    Text(
+                      'ACTU',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.6,
+                        height: 1.0,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
+            const SizedBox(width: 10),
             // Séparateur vertical
             Container(
               width: 1.5,
-              height: 24,
-              color: Colors.white.withValues(alpha: 0.3),
+              height: 40,
+              color: Colors.white.withValues(alpha: 0.28),
             ),
-            const SizedBox(width: 6),
-            // Texte défilant
+            const SizedBox(width: 10),
+            // Texte défilant + titre
             Expanded(
-              child: _TickerText(
-                items: titres,
-                textStyle: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.2,
-                ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.campaign_rounded,
+                          color: Colors.white, size: 14),
+                      const SizedBox(width: 5),
+                      Text(
+                        'Actualités Concours',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.92),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.22),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          '${_actualites.length}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 3),
+                  SizedBox(
+                    height: 22,
+                    child: _TickerText(
+                      items: titres,
+                      textStyle: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             // Icône flèche "Voir"
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
+              margin: const EdgeInsets.only(left: 6),
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.18),
+                shape: BoxShape.circle,
+              ),
               child: const Icon(
                 Icons.arrow_forward_ios_rounded,
-                color: Colors.white70,
+                color: Colors.white,
                 size: 12,
               ),
             ),
@@ -1287,74 +1353,6 @@ class _DashboardScreenState extends State<DashboardScreen>
         ),
       );
     }
-  }
-
-  // ═══════════════════════════════════════════════════════════════════
-  // SECTION ACTUALITÉS AGRANDIE (après suppression de la bannière)
-  // Donne plus de place visuelle aux actualités
-  // ═══════════════════════════════════════════════════════════════════
-  Widget _buildActualitesAgrandies() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Titre de section mis en valeur
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFD4A017), Color(0xFFE8B520)],
-                  ),
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFD4A017).withValues(alpha: 0.3),
-                      blurRadius: 8,
-                    ),
-                  ],
-                ),
-                child: const Text('📰', style: TextStyle(fontSize: 18)),
-              ),
-              const SizedBox(width: 10),
-              const Expanded(
-                child: Text(
-                  'Actualités Concours',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.textDark,
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ),
-              if (_actualites.isNotEmpty)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
-                  ),
-                  child: Text(
-                    '🔴 ${_actualites.length} nouveau${_actualites.length > 1 ? 'x' : ''}',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: Colors.red,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
-        // Le widget des actualités existant conserve son comportement
-        ActualitesStatusWidget(actualites: _actualites),
-      ],
-    );
   }
 
   // ═══════════════════════════════════════════════════════════════════
