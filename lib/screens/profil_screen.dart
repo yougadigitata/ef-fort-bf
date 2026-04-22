@@ -284,7 +284,7 @@ class _ProfilScreenState extends State<ProfilScreen>
                           border: Border.all(color: Colors.white.withValues(alpha: 0.5)),
                         ),
                         child: const Text(
-                          '🔥 OFFRE SPÉCIALE — Expire le 3 mai 2026',
+                          '🔥 OFFRE SPÉCIALE — Expire le 15 mai 2026',
                           style: TextStyle(fontSize: 14, color: AppColors.white, fontWeight: FontWeight.w700),
                         ),
                       ),
@@ -2150,7 +2150,7 @@ class _AboutParticle {
 }
 
 // ══════════════════════════════════════════════════════════════
-// WIDGET COMPTE À REBOURS — Expire le 3 mai 2026
+// WIDGET COMPTE À REBOURS — Expire le 15 mai 2026
 // ══════════════════════════════════════════════════════════════
 class _CountdownWidget extends StatefulWidget {
   const _CountdownWidget();
@@ -2165,7 +2165,7 @@ class _CountdownWidgetState extends State<_CountdownWidget> {
   @override
   void initState() {
     super.initState();
-    _expiry = DateTime(2026, 5, 3, 23, 59, 59);
+    _expiry = DateTime(2026, 5, 15, 23, 59, 59);
     _updateRemaining();
     _startTimer();
   }

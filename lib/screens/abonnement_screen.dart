@@ -18,6 +18,8 @@ class AbonnementScreen extends StatefulWidget {
 
 class _AbonnementScreenState extends State<AbonnementScreen>
     with SingleTickerProviderStateMixin {
+  // Ancien flag du formulaire de demande (conservé pour compatibilité)
+  // ignore: unused_field, prefer_final_fields
   bool _showFormDemande = false;
   bool _submitting = false;
   final String _moyenPaiement = 'Orange Money';
@@ -156,6 +158,140 @@ class _AbonnementScreenState extends State<AbonnementScreen>
     }
   }
 
+  /// Envoie directement la demande (sans formulaire intermédiaire)
+  /// Utilisée par le bouton "ENVOYER MA DEMANDE MAINTENANT" de l'étape 3.
+  Future<void> _soumettreDemandeDirecte() async {
+    if (!ApiService.isLoggedIn) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Vous devez être connecté pour envoyer une demande.',
+          ),
+          backgroundColor: AppColors.error,
+          duration: Duration(seconds: 5),
+        ),
+      );
+      return;
+    }
+
+    // Dialogue de confirmation
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: const Row(
+          children: [
+            Text('📩', style: TextStyle(fontSize: 20)),
+            SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Envoyer ma demande',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+              ),
+            ),
+          ],
+        ),
+        content: const Text(
+          'Confirmez-vous avoir effectué le paiement de 12 000 FCFA via Orange Money ?\n\nVotre demande sera transmise à notre équipe qui activera votre accès premium.',
+          style: TextStyle(height: 1.5, fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Annuler', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text(
+              'Confirmer',
+              style: TextStyle(fontWeight: FontWeight.w800),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true || !mounted) return;
+
+    setState(() => _submitting = true);
+    final result = await ApiService.demanderAbonnement(_moyenPaiement);
+    if (!mounted) return;
+    setState(() => _submitting = false);
+
+    if (result['success'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            '✅ Demande envoyée ! Notre équipe va vous contacter très prochainement.',
+          ),
+          backgroundColor: AppColors.success,
+          duration: Duration(seconds: 6),
+        ),
+      );
+    } else if (result['pending'] == true) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Row(
+            children: [
+              Text('⌛', style: TextStyle(fontSize: 18)),
+              SizedBox(width: 10),
+              Text(
+                'Demande en cours',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+              ),
+            ],
+          ),
+          content: const Text(
+            'Votre demande est déjà en cours de traitement.\nNotre équipe vous contacte très prochainement.',
+            style: TextStyle(height: 1.5, fontSize: 14),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text(
+                'OK',
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    } else if (result['already_subscribed'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Votre abonnement est déjà actif !'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['error'] ?? 'Erreur lors de l\'envoi'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
+  // Ancienne méthode (conservée pour compatibilité, non utilisée en UI)
+  // ignore: unused_element
   Future<void> _soumettreDemande() async {
     // Vérification : l'utilisateur doit être connecté pour envoyer une demande
     if (!ApiService.isLoggedIn) {
@@ -380,7 +516,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Text(
-                          '🔥 Offre spéciale valable jusqu\'au 3 mai 2026 — Ne ratez pas cette chance !',
+                          '🔥 Offre spéciale valable jusqu\'au 15 mai 2026 — Ne ratez pas cette chance !',
                           style: TextStyle(fontSize: 15, color: AppColors.success, fontWeight: FontWeight.w700),
                         ),
                       ),
@@ -587,7 +723,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                       action: ElevatedButton.icon(
                         onPressed: _launchWhatsAppPreuve,
                         icon: const Text('📲', style: TextStyle(fontSize: 16)),
-                        label: const Text('J\'AI PAYÉ — ENVOYER LA PREUVE'),
+                        label: const Text('ENVOYER LA CAPTURE WHATSAPP'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF25D366),
                           foregroundColor: Colors.white,
@@ -597,7 +733,32 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                       ),
                     ),
                     const SizedBox(height: 12),
-                    _etapeSimple('3', 'Activation sous 24h max', 'Notre équipe vérifie votre paiement et active votre accès', AppColors.primary),
+                    _etapeSimple(
+                      '3',
+                      'Envoyez votre demande à notre équipe',
+                      'Cliquez pour notifier l\'administrateur. Votre accès premium sera débloqué très rapidement.',
+                      AppColors.primary,
+                      action: ElevatedButton.icon(
+                        onPressed: _submitting ? null : _soumettreDemandeDirecte,
+                        icon: _submitting
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text('📩', style: TextStyle(fontSize: 16)),
+                        label: const Text('ENVOYER MA DEMANDE MAINTENANT'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -606,114 +767,47 @@ class _AbonnementScreenState extends State<AbonnementScreen>
             const SizedBox(height: 20),
 
             // ══════════════════════════════════════════════
-            // CTA PRINCIPAL — Bouton d'abonnement
+            // CTA PRINCIPAL — Récapitulatif & bouton final
+            // Note : les doublons ont été supprimés pour harmoniser avec
+            // les 3 étapes ci-dessus (bouton WhatsApp = étape 2,
+            // bouton "Envoyer ma demande" = étape 3).
             // ══════════════════════════════════════════════
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                children: [
-                  // Bouton principal WhatsApp
-                  SizedBox(
-                    width: double.infinity,
-                    height: 60,
-                    child: ElevatedButton(
-                      onPressed: _launchWhatsAppPreuve,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF25D366),
-                        foregroundColor: Colors.white,
-                        elevation: 8,
-                        shadowColor: const Color(0xFF25D366).withValues(alpha: 0.5),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('📲', style: TextStyle(fontSize: 22)),
-                          SizedBox(width: 10),
-                          Text(
-                            'J\'AI PAYÉ — ENVOYER LA PREUVE',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 0.3),
-                          ),
-                        ],
-                      ),
+            if (!isAbonne)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.primary.withValues(alpha: 0.06),
+                        const Color(0xFFD4A017).withValues(alpha: 0.06),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.2),
                     ),
                   ),
-                  const SizedBox(height: 12),
-
-                  // ── Bouton principal : Envoyer ma demande ──────────────
-                  if (!isAbonne) ...[
-                    const SizedBox(height: 6),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 62,
-                      child: ElevatedButton.icon(
-                        onPressed: () => setState(() => _showFormDemande = !_showFormDemande),
-                        icon: const Text('📩', style: TextStyle(fontSize: 22)),
-                        label: const Text(
-                          'ENVOYER MA DEMANDE D\'ABONNEMENT',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 0.3),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          elevation: 10,
-                          shadowColor: AppColors.primary.withValues(alpha: 0.6),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        ),
-                      ),
-                    ),
-                    if (_showFormDemande) ...[
-                      const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('Moyen de paiement :', style: TextStyle(fontWeight: FontWeight.w600)),
-                            const SizedBox(height: 8),
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFF7900).withValues(alpha: 0.08),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: const Color(0xFFFF7900).withValues(alpha: 0.3)),
-                              ),
-                              child: const Row(
-                                children: [
-                                  Text('🟠', style: TextStyle(fontSize: 20)),
-                                  SizedBox(width: 10),
-                                  Text('Orange Money', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: Color(0xFFFF7900))),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton.icon(
-                                onPressed: _submitting ? null : _soumettreDemande,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primary,
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                ),
-                                icon: _submitting ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text('📩', style: TextStyle(fontSize: 18)),
-                                label: const Text('CONFIRMER L\'ENVOI DE MA DEMANDE', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
-                              ),
-                            ),
-                          ],
+                  child: Row(
+                    children: [
+                      const Text('✅', style: TextStyle(fontSize: 22)),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Suivez les 3 étapes ci-dessus pour activer votre abonnement premium.',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textDark,
+                            fontWeight: FontWeight.w600,
+                            height: 1.4,
+                          ),
                         ),
                       ),
                     ],
-                  ],
-                ],
+                  ),
+                ),
               ),
-            ),
 
             const SizedBox(height: 16),
 
@@ -812,7 +906,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
       {'icon': '📄', 'titre': '10 000+ Copies PDF Imprimables', 'desc': 'Chaque QCM traité génère un PDF avec corrections. Imprimez, partagez, révisez partout, même sans internet.'},
       {'icon': '🤝', 'titre': 'Communauté Active & Entraide', 'desc': 'Des milliers de candidats s\'entraident. Posez vos questions, obtenez des réponses. Vous n\'êtes jamais seul.'},
       {'icon': '📰', 'titre': 'Actualités Concours en Temps Réel', 'desc': 'Ne ratez AUCUNE ouverture de concours, AUCUNE date limite, AUCUNE opportunité au Burkina Faso.'},
-      {'icon': '💰', 'titre': 'Paiement Unique — Offre Limitée', 'desc': '🔥 Payez 12 000 FCFA (au lieu de 25 000 FCFA) UNE SEULE FOIS. Offre valable jusqu\'au 3 mai 2026 uniquement !'},
+      {'icon': '💰', 'titre': 'Paiement Unique — Offre Limitée', 'desc': '🔥 Payez 12 000 FCFA (au lieu de 25 000 FCFA) UNE SEULE FOIS. Offre valable jusqu\'au 15 mai 2026 uniquement !'},
     ];
     return items.map((item) {
       final icon = item['icon'] ?? item['icon'];
@@ -939,7 +1033,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
 }
 
 // ══════════════════════════════════════════════════════════
-// WIDGET COMPTE À REBOURS — Offre valable jusqu'au 3 mai 2026
+// WIDGET COMPTE À REBOURS — Offre valable jusqu'au 15 mai 2026
 // ══════════════════════════════════════════════════════════
 class OffreCountdownWidget extends StatefulWidget {
   const OffreCountdownWidget({super.key});
@@ -951,8 +1045,8 @@ class OffreCountdownWidget extends StatefulWidget {
 class _OffreCountdownWidgetState extends State<OffreCountdownWidget> {
   Timer? _timer;
   Duration _remaining = Duration.zero;
-  // Date limite : 3 mai 2026 à minuit
-  static final DateTime _deadline = DateTime(2026, 5, 3, 23, 59, 59);
+  // Date limite : 15 mai 2026 à minuit (prolongation de la promo)
+  static final DateTime _deadline = DateTime(2026, 5, 15, 23, 59, 59);
 
   @override
   void initState() {

@@ -22,6 +22,9 @@ class _DashboardScreenState extends State<DashboardScreen>
     with TickerProviderStateMixin {
   List<dynamic> _actualites = [];
   bool _loadingActu = true;
+  // Bannière de bienvenue supprimée (mission de refonte page d'accueil)
+  // Le champ est conservé pour compatibilité interne.
+  // ignore: unused_field, prefer_final_fields
   bool _showWelcome = true;
 
   // ── Ticker actualités ──────────────────────────────────────────────
@@ -205,23 +208,27 @@ class _DashboardScreenState extends State<DashboardScreen>
                   child: _buildNewsTicker(),
                 ),
 
-              // ─── SECTION 2 : Message de bienvenue ──────────────────
-              if (_showWelcome)
-                SliverToBoxAdapter(
-                  child: _buildWelcomeBanner(),
-                ),
+              // ─── SECTION 2 : [SUPPRIMÉ] Bannière de bienvenue retirée
+              //                 pour agrandir la section Actualités ──
 
               // ─── SECTION 3 : Bouton SIMULATION animé ───────────────
               SliverToBoxAdapter(
                 child: _buildSimulationButton(),
               ),
 
+              // ─── SECTION 3b : Bouton "J'AI PAYÉ — ENVOYER MA DEMANDE"
+              //                 (visible uniquement si non abonné) ────
+              if (!isAbonne)
+                SliverToBoxAdapter(
+                  child: _buildDemandeAbonnementButton(),
+                ),
+
               // ─── SECTION 4 : Matières rapides ──────────────────────
               SliverToBoxAdapter(
                 child: _buildMatieresSection(),
               ),
 
-              // ─── SECTION 5 : Actualités ─────────────────────────────
+              // ─── SECTION 5 : Actualités (AGRANDIE) ──────────────────
               if (_loadingActu)
                 const SliverToBoxAdapter(
                   child: Padding(
@@ -233,7 +240,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 )
               else
                 SliverToBoxAdapter(
-                  child: ActualitesStatusWidget(actualites: _actualites),
+                  child: _buildActualitesAgrandies(),
                 ),
 
               // ─── SECTION 6 : Abonnement animé ───────────────────────
@@ -820,8 +827,11 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   // ═══════════════════════════════════════════════════════════════════
-  // BANNIÈRE DE BIENVENUE animée
+  // BANNIÈRE DE BIENVENUE animée — [DÉSACTIVÉE]
+  // Méthode conservée pour historique / potentielle réactivation future.
+  // Elle n'est plus référencée dans le build (mission de refonte accueil).
   // ═══════════════════════════════════════════════════════════════════
+  // ignore: unused_element
   Widget _buildWelcomeBanner() {
     return AnimatedBuilder(
       animation: _cardSlideAnim,
@@ -1058,6 +1068,292 @@ class _DashboardScreenState extends State<DashboardScreen>
           fontWeight: FontWeight.w700,
         ),
       ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // BOUTON "J'AI PAYÉ — ENVOYER MA DEMANDE" (Page d'accueil)
+  // Envoie la demande à l'administrateur via ApiService
+  // ═══════════════════════════════════════════════════════════════════
+  Widget _buildDemandeAbonnementButton() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: const Color(0xFF25D366).withValues(alpha: 0.35),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF25D366).withValues(alpha: 0.12),
+              blurRadius: 14,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Bouton principal
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton.icon(
+                onPressed: _envoyerDemandeDepuisAccueil,
+                icon: const Text('📩', style: TextStyle(fontSize: 22)),
+                label: const Text(
+                  'J\'AI PAYÉ — ENVOYER MA DEMANDE',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF25D366),
+                  foregroundColor: Colors.white,
+                  elevation: 6,
+                  shadowColor: const Color(0xFF25D366).withValues(alpha: 0.5),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            // Explication sous le bouton
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('💡', style: TextStyle(fontSize: 16)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Si vous avez effectué votre paiement via Orange Money, soumettez votre demande ici. Notre équipe vous débloquera l\'accès premium.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textLight,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Envoie la demande d'abonnement depuis la page d'accueil
+  Future<void> _envoyerDemandeDepuisAccueil() async {
+    // Vérifier que l'utilisateur est connecté
+    if (!ApiService.isLoggedIn) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Vous devez être connecté pour envoyer une demande.',
+          ),
+          backgroundColor: AppColors.error,
+          duration: Duration(seconds: 5),
+        ),
+      );
+      return;
+    }
+
+    // Afficher un dialogue de confirmation
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: const Row(
+          children: [
+            Text('📩', style: TextStyle(fontSize: 20)),
+            SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Envoyer ma demande',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+              ),
+            ),
+          ],
+        ),
+        content: const Text(
+          'Confirmez-vous avoir effectué le paiement de 12 000 FCFA via Orange Money ?\n\nVotre demande sera transmise à notre équipe qui activera votre accès premium.',
+          style: TextStyle(height: 1.5, fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Annuler', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF25D366),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text(
+              'Confirmer',
+              style: TextStyle(fontWeight: FontWeight.w800),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true || !mounted) return;
+
+    // Afficher un indicateur de chargement
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(
+        child: CircularProgressIndicator(color: AppColors.primary),
+      ),
+    );
+
+    final result = await ApiService.demanderAbonnement('Orange Money');
+    if (!mounted) return;
+    Navigator.pop(context); // Fermer le loader
+
+    if (result['success'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            '✅ Demande envoyée ! Notre équipe va vous contacter très prochainement.',
+          ),
+          backgroundColor: AppColors.success,
+          duration: Duration(seconds: 6),
+        ),
+      );
+    } else if (result['pending'] == true) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Row(
+            children: [
+              Text('⌛', style: TextStyle(fontSize: 18)),
+              SizedBox(width: 10),
+              Text(
+                'Demande en cours',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+              ),
+            ],
+          ),
+          content: const Text(
+            'Votre demande est déjà en cours de traitement.\nNotre équipe vous contacte très prochainement.',
+            style: TextStyle(height: 1.5, fontSize: 14),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text(
+                'OK',
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    } else if (result['already_subscribed'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Votre abonnement est déjà actif !'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['error'] ?? 'Erreur lors de l\'envoi'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // SECTION ACTUALITÉS AGRANDIE (après suppression de la bannière)
+  // Donne plus de place visuelle aux actualités
+  // ═══════════════════════════════════════════════════════════════════
+  Widget _buildActualitesAgrandies() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Titre de section mis en valeur
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFD4A017), Color(0xFFE8B520)],
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFD4A017).withValues(alpha: 0.3),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
+                child: const Text('📰', style: TextStyle(fontSize: 18)),
+              ),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Text(
+                  'Actualités Concours',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.textDark,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ),
+              if (_actualites.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                  ),
+                  child: Text(
+                    '🔴 ${_actualites.length} nouveau${_actualites.length > 1 ? 'x' : ''}',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Colors.red,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        // Le widget des actualités existant conserve son comportement
+        ActualitesStatusWidget(actualites: _actualites),
+      ],
     );
   }
 
