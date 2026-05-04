@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
-import '../services/api_service.dart';
-import 'bienvenue_screen.dart';
-import 'post_login_welcome_screen.dart';
+import 'demo_intro_screen.dart';
 
 // ══════════════════════════════════════════════════════════════════════
 // ONBOARDING SCREEN — 5 SLIDES PÉDAGOGIQUES — EF-FORT.BF
@@ -104,50 +102,27 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   Future<void> _goToLogin() async {
     if (!mounted) return;
-    
-    // Vérifier si l'utilisateur est déjà connecté
-    final hasToken = await ApiService.loadToken();
-    if (!mounted) return;
 
-    if (hasToken) {
-      // Utilisateur déjà connecté → Animation bienvenue connectée
-      final user = ApiService.currentUser;
-      final nom = user != null
-          ? '${user['prenom'] ?? ''} ${user['nom'] ?? ''}'.trim()
-          : '';
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              PostLoginWelcomeScreen(
-            userName: nom.isNotEmpty ? nom : 'Candidat',
-          ),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(
-              opacity: animation,
-              child: child,
-            );
-          },
-          transitionDuration: const Duration(milliseconds: 600),
-        ),
-      );
-    } else {
-      // Pas connecté → Page de bienvenue avant le Login
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const BienvenueScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(
-              opacity: animation,
-              child: child,
-            );
-          },
-          transitionDuration: const Duration(milliseconds: 600),
-        ),
-      );
-    }
+    // ┌──────────────────────────────────────────────────────────────┐
+    // │ NOUVEAU FLUX (Mission 2) :                                   │
+    // │  Après les 5 slides → DemoIntroScreen (passage obligé)       │
+    // │  - Nouveau visiteur : démo fortement encouragée              │
+    // │  - Utilisateur connecté : peut passer directement au         │
+    // │    dashboard (bouton "Aller au tableau de bord" visible)     │
+    // │  La détection du token et l'animation suivante (BienvenueScreen
+    // │  ou PostLoginWelcomeScreen) est gérée par DemoIntroScreen.   │
+    // └──────────────────────────────────────────────────────────────┘
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const DemoIntroScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        transitionDuration: const Duration(milliseconds: 600),
+      ),
+    );
   }
 
   @override

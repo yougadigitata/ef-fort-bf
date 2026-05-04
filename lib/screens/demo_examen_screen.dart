@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
 import '../core/theme/app_colors.dart';
 import '../data/demoQuestions.dart';
+import '../services/api_service.dart';
 import '../services/bell_service.dart';
 import '../services/pdf_service.dart';
 import '../widgets/logo_widget.dart';
@@ -35,7 +36,10 @@ import 'abonnement_screen.dart';
 // ══════════════════════════════════════════════════════════════
 
 const int _kDemoDurationSeconds = 90 * 60; // 1h30
-const int _kDemoMinSecondsBeforeSubmit = 30 * 60; // 30 min
+// ⚠️ MISSION 3 : la soumission avant l'heure est désormais POSSIBLE
+// (plus de blocage à 30 min). On garde la constante pour compatibilité
+// mais la propriété _canSubmit retourne maintenant toujours true.
+const int _kDemoMinSecondsBeforeSubmit = 30 * 60; // (informatif uniquement)
 
 // ══════════════════════════════════════════════════════════════
 // ÉCRAN DE LANCEMENT — page d'accueil de la démo
@@ -268,16 +272,25 @@ class _DemoExamScreenState extends State<DemoExamScreen> {
   bool _finished = false;
   bool _bellStartPlayed = false;
 
+  // ── Surveillant virtuel ─────────────────────────────────────────────
+  // Messages contextuels diffusés à des moments précis de l'examen
+  // pour reproduire l'effet "surveillant" qui motive et rappelle
+  // les consignes le jour J.
+  final Set<int> _surveillantTriggers = {};
+  String? _surveillantMessage;
+  Timer? _surveillantHideTimer;
+
   final ScrollController _questionsScroll = ScrollController();
   final ScrollController _reponseScroll = ScrollController();
 
-  bool get _canSubmit =>
-      _remainingSeconds <= (_kDemoDurationSeconds - _kDemoMinSecondsBeforeSubmit);
+  // ⚠️ MISSION 3 : soumission TOUJOURS possible (plus de blocage 30min).
+  // Si l'utilisateur soumet avant 30min, on lui affichera un message
+  // d'encouragement bienveillant dans _showConfirmSubmit().
 
-  int get _secondsBeforeCanSubmit => _canSubmit
-      ? 0
-      : _remainingSeconds -
-          (_kDemoDurationSeconds - _kDemoMinSecondsBeforeSubmit);
+  /// Indique si l'utilisateur soumet "avant l'heure" (utilisé pour
+  /// adapter le message d'encouragement dans le dialog de confirmation).
+  bool get _isSubmittingEarly =>
+      _remainingSeconds > (_kDemoDurationSeconds - _kDemoMinSecondsBeforeSubmit);
 
   @override
   void initState() {
@@ -297,12 +310,31 @@ class _DemoExamScreenState extends State<DemoExamScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _surveillantHideTimer?.cancel();
     _questionsScroll.dispose();
     _reponseScroll.dispose();
     super.dispose();
   }
 
+  // ── Surveillant virtuel : affiche un message bienveillant pendant
+  //    quelques secondes en surimpression au-dessus de l'examen.
+  void _showSurveillantMessage(String message,
+      {Duration duration = const Duration(seconds: 5)}) {
+    if (!mounted) return;
+    _surveillantHideTimer?.cancel();
+    setState(() => _surveillantMessage = message);
+    _surveillantHideTimer = Timer(duration, () {
+      if (mounted) setState(() => _surveillantMessage = null);
+    });
+  }
+
   void _startTimer() {
+    // Message d'accueil du surveillant virtuel
+    _showSurveillantMessage(
+      "👮 Surveillant : Bienvenue ! Lisez bien chaque question avant de répondre. Bon courage !",
+      duration: const Duration(seconds: 6),
+    );
+
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
         timer.cancel();
@@ -313,28 +345,55 @@ class _DemoExamScreenState extends State<DemoExamScreen> {
         _finishExam();
       } else {
         setState(() => _remainingSeconds--);
-
-        if (_remainingSeconds == 15 * 60) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Plus que 15 minutes !'),
-              backgroundColor: AppColors.secondary,
-              duration: Duration(seconds: 3),
-            ),
-          );
-        }
-        if (_remainingSeconds == 5 * 60) {
-          BellService.playReminder();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('ATTENTION : 5 minutes restantes !'),
-              backgroundColor: AppColors.error,
-              duration: Duration(seconds: 4),
-            ),
-          );
-        }
+        _checkSurveillantTriggers();
       }
     });
+  }
+
+  /// Déclenche les messages contextuels du surveillant virtuel à des
+  /// moments précis de l'examen. Chaque trigger n'est joué qu'une fois.
+  void _checkSurveillantTriggers() {
+    final elapsed = _kDemoDurationSeconds - _remainingSeconds;
+
+    // Triggers basés sur le temps ÉCOULÉ (clé unique = temps en secondes)
+    final byElapsed = <int, String>{
+      5 * 60: "👮 Surveillant : Concentrez-vous, vous êtes lancé(e). Prenez votre temps sur chaque énoncé.",
+      15 * 60: "👮 Surveillant : Vous avez fait 15 minutes — gardez le rythme et n'oubliez pas de cocher la feuille de réponses.",
+      30 * 60: "👮 Surveillant : 30 minutes écoulées. Vous pouvez désormais soumettre votre copie quand vous le souhaitez.",
+      45 * 60: "👮 Surveillant : Mi-parcours ! Si une question vous bloque, passez à la suivante et revenez plus tard.",
+      60 * 60: "👮 Surveillant : Plus qu'une demi-heure. Relisez attentivement vos réponses si vous avez fini.",
+    };
+
+    // Triggers basés sur le temps RESTANT
+    final byRemaining = <int, String>{
+      30 * 60: "👮 Surveillant : Plus que 30 minutes — gardez le cap !",
+      15 * 60: "👮 Surveillant : Plus que 15 minutes ! Pensez à vérifier les questions sans réponse.",
+      10 * 60: "👮 Surveillant : 10 minutes restantes. Concentrez-vous sur les questions les plus rapides.",
+      5 * 60: "🔔 ATTENTION : 5 minutes restantes ! Finalisez votre feuille de réponses.",
+      2 * 60: "🔔 Plus que 2 minutes ! Soumettez votre copie dès que vous êtes prêt.",
+      30: "🔔 Derniers instants — la cloche va sonner !",
+    };
+
+    if (byElapsed.containsKey(elapsed) &&
+        !_surveillantTriggers.contains(elapsed)) {
+      _surveillantTriggers.add(elapsed);
+      _showSurveillantMessage(byElapsed[elapsed]!);
+      // Petit "ding" discret pour les rappels mi-parcours
+      if (elapsed == 30 * 60 || elapsed == 45 * 60) {
+        BellService.playClick();
+      }
+    }
+
+    if (byRemaining.containsKey(_remainingSeconds) &&
+        !_surveillantTriggers.contains(-_remainingSeconds)) {
+      _surveillantTriggers.add(-_remainingSeconds);
+      _showSurveillantMessage(byRemaining[_remainingSeconds]!);
+      if (_remainingSeconds == 5 * 60 ||
+          _remainingSeconds == 2 * 60 ||
+          _remainingSeconds == 30) {
+        BellService.playReminder();
+      }
+    }
   }
 
   String get _timerDisplay {
@@ -378,7 +437,10 @@ class _DemoExamScreenState extends State<DemoExamScreen> {
   Future<void> _finishExam() async {
     if (_finished) return;
     _timer?.cancel();
+    _surveillantHideTimer?.cancel();
+    // Cloche de fin + applaudissements pour célébrer la soumission
     await BellService.playEnd();
+    BellService.playApplause();
     if (!mounted) return;
     setState(() => _finished = true);
 
@@ -487,13 +549,97 @@ class _DemoExamScreenState extends State<DemoExamScreen> {
             ),
           ],
         ),
-        body: Column(
+        body: Stack(
           children: [
-            Expanded(
-              child: isWide ? _buildTwoColumns() : _buildSingleColumn(),
+            Column(
+              children: [
+                Expanded(
+                  child: isWide ? _buildTwoColumns() : _buildSingleColumn(),
+                ),
+                _buildSubmitBar(answeredCount),
+              ],
             ),
-            _buildSubmitBar(answeredCount),
+            // ── Surveillant virtuel : message contextuel en surimpression
+            if (_surveillantMessage != null)
+              Positioned(
+                top: 12,
+                left: 12,
+                right: 12,
+                child: _buildSurveillantBanner(_surveillantMessage!),
+              ),
           ],
+        ),
+      ),
+    );
+  }
+
+  // ── Bandeau du surveillant virtuel ──────────────────────────────────
+  Widget _buildSurveillantBanner(String message) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      child: Material(
+        key: ValueKey(message),
+        color: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF1A5C38), Color(0xFF0F3D24)],
+            ),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: const Color(0xFFD4A017).withValues(alpha: 0.6),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.25),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD4A017).withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: const Color(0xFFD4A017).withValues(alpha: 0.5),
+                  ),
+                ),
+                child: const Center(
+                  child: Text('👮', style: TextStyle(fontSize: 18)),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  message,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  _surveillantHideTimer?.cancel();
+                  setState(() => _surveillantMessage = null);
+                },
+                child: Icon(
+                  Icons.close_rounded,
+                  size: 18,
+                  color: Colors.white.withValues(alpha: 0.7),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -951,6 +1097,9 @@ class _DemoExamScreenState extends State<DemoExamScreen> {
   }
 
   Widget _buildSubmitBar(int answeredCount) {
+    // ⚠️ MISSION 3 : la soumission est désormais TOUJOURS possible.
+    // Si l'utilisateur soumet avant 30 min, on affichera un message
+    // d'encouragement bienveillant dans le dialog de confirmation.
     return Container(
       decoration: BoxDecoration(
         color: AppColors.white,
@@ -966,57 +1115,27 @@ class _DemoExamScreenState extends State<DemoExamScreen> {
         top: false,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-          child: _canSubmit
-              ? SizedBox(
-                  width: double.infinity,
-                  height: 60,
-                  child: ElevatedButton(
-                    onPressed: () => _showConfirmSubmit(answeredCount),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.error,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14)),
-                      elevation: 4,
-                    ),
-                    child: const Text(
-                      'SOUMETTRE MA COPIE',
-                      style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                          fontFamily: 'Poppins'),
-                    ),
-                  ),
-                )
-              : Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                        color: Colors.grey.withValues(alpha: 0.25)),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        'Soumission disponible dans ${_secondsBeforeCanSubmit ~/ 60}min ${_secondsBeforeCanSubmit % 60}s',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          color: AppColors.textLight,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const Text(
-                        'Vous ne pouvez pas soumettre avant 30 minutes.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 11, color: AppColors.textLight),
-                      ),
-                    ],
-                  ),
-                ),
+          child: SizedBox(
+            width: double.infinity,
+            height: 60,
+            child: ElevatedButton(
+              onPressed: () => _showConfirmSubmit(answeredCount),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.error,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
+                elevation: 4,
+              ),
+              child: const Text(
+                'SOUMETTRE MA COPIE',
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    fontFamily: 'Poppins'),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -1111,18 +1230,86 @@ class _DemoExamScreenState extends State<DemoExamScreen> {
   }
 
   void _showConfirmSubmit(int answeredCount) {
+    final isEarly = _isSubmittingEarly;
+    final minutesEcoulees =
+        (_kDemoDurationSeconds - _remainingSeconds) ~/ 60;
+
+    // Message d'encouragement bienveillant si soumission avant 30 min
+    final encouragementMessage = isEarly
+        ? "Tu soumets après seulement $minutesEcoulees min. C'est ton choix : "
+            "tu peux soumettre quand tu veux ! 💪\n\n"
+            "Astuce : sur l'examen réel, on conseille de prendre le temps "
+            "de relire ses réponses avant de rendre la copie."
+        : "Tu as bien utilisé ton temps. Soumets ta copie quand tu es prêt(e) !";
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Terminer la démo ?'),
-        content: Text(
-          'Vous avez répondu à $answeredCount/${_questions.length} questions.\n\nÊtes-vous sûr de vouloir soumettre votre copie ?',
+        title: Row(
+          children: [
+            Text(
+              isEarly ? '⚡' : '✅',
+              style: const TextStyle(fontSize: 26),
+            ),
+            const SizedBox(width: 10),
+            const Expanded(
+              child: Text(
+                'Terminer la démo ?',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Tu as répondu à $answeredCount/${_questions.length} questions.',
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textDark,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: (isEarly
+                        ? const Color(0xFFE67E22)
+                        : AppColors.primary)
+                    .withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: (isEarly
+                          ? const Color(0xFFE67E22)
+                          : AppColors.primary)
+                      .withValues(alpha: 0.3),
+                ),
+              ),
+              child: Text(
+                encouragementMessage,
+                style: const TextStyle(
+                  fontSize: 13.5,
+                  height: 1.55,
+                  color: AppColors.textDark,
+                  fontFamily: 'Georgia',
+                ),
+              ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Continuer la démo')),
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Continuer la démo'),
+          ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
@@ -1235,6 +1422,22 @@ class _DemoResultScreenState extends State<DemoResultScreen> {
   }
 
   // ────────────────────────────────────────────────────────────
+  // MISSION 3 : récupération dynamique du nom du candidat
+  // - Si l'utilisateur est connecté → "Prénom Nom"
+  // - Sinon → "Invité – Démo gratuite"
+  // ────────────────────────────────────────────────────────────
+  String _getNomCandidatPourPdf() {
+    final user = ApiService.currentUser;
+    if (user != null) {
+      final prenom = (user['prenom'] ?? '').toString().trim();
+      final nom = (user['nom'] ?? '').toString().trim();
+      final fullName = '$prenom $nom'.trim();
+      if (fullName.isNotEmpty) return fullName;
+    }
+    return 'Invité – Démo gratuite';
+  }
+
+  // ────────────────────────────────────────────────────────────
   // Génère le PDF SUJET (50 questions seulement, sans réponses)
   // ────────────────────────────────────────────────────────────
   Future<void> _generatePdfSujet() async {
@@ -1242,7 +1445,7 @@ class _DemoResultScreenState extends State<DemoResultScreen> {
     setState(() => _generatingSujet = true);
     try {
       final pdfBytes = await PdfService.genererSujetVierge(
-        nomCandidat: 'Candidat – Démo gratuite',
+        nomCandidat: _getNomCandidatPourPdf(),
         sujet: 'Démo gratuite EF-FORT.BF — 50 questions',
         questions: _toPdfQuestions(withAnswers: false),
         duree: '1h30',
@@ -1275,7 +1478,7 @@ class _DemoResultScreenState extends State<DemoResultScreen> {
     try {
       final Uint8List pdfBytes = await PdfService.genererCopieCorrigee(
         kind: PdfKind.examen,
-        nomCandidat: 'Candidat – Démo gratuite',
+        nomCandidat: _getNomCandidatPourPdf(),
         sujet: 'Démo gratuite EF-FORT.BF — 50 questions',
         questions: _toPdfQuestions(withAnswers: true),
         scoreObtenu: bonnes,
