@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'core/theme/app_theme.dart';
 import 'screens/splash_screen.dart';
+import 'screens/demo_examen_screen.dart';
 import 'services/securite_service.dart';
 import 'services/api_service.dart';
 
@@ -28,6 +29,13 @@ class EfFortApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       home: const SplashScreen(),
+      // ── Routes nommées (provisoire pour la démo gratuite) ──
+      // La route /demo-examen permet d'accéder directement à la
+      // démo sans passer par le flux d'authentification.
+      // Elle est utilisée uniquement à des fins de test.
+      routes: {
+        '/demo-examen': (context) => const DemoExamenScreen(),
+      },
     );
   }
 }

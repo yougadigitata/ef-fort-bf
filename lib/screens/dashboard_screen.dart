@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
 import '../services/bell_service.dart';
+import '../services/promo_service.dart';
 import '../widgets/logo_widget.dart';
 import 'abonnement_screen.dart';
+import 'demo_examen_screen.dart';
 import 'actualites_chat_screen.dart';
 import 'entraide_screen.dart';
 
@@ -220,6 +222,12 @@ class _DashboardScreenState extends State<DashboardScreen>
               // ─── SECTION 3 : Bouton SIMULATION animé ───────────────
               SliverToBoxAdapter(
                 child: _buildSimulationButton(),
+              ),
+
+              // ─── SECTION 3a : Bouton DÉMO GRATUITE ─────────────────
+              //                 (visible pour tous, accès libre) ──────
+              SliverToBoxAdapter(
+                child: _buildDemoButton(),
               ),
 
               // ─── SECTION 3b : Bouton "J'AI PAYÉ — ENVOYER MA DEMANDE"
@@ -1138,6 +1146,102 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   // ═══════════════════════════════════════════════════════════════════
+  // BOUTON DÉMO GRATUITE — Visible pour tous (accès libre)
+  // Permet de tester les 50 questions sans abonnement
+  // ═══════════════════════════════════════════════════════════════════
+  Widget _buildDemoButton() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const DemoExamenScreen(),
+            ),
+          );
+        },
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: AppColors.primary.withValues(alpha: 0.4),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.play_circle_outline_rounded,
+                  color: AppColors.primary,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Essayer la démo gratuite',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      '50 questions · Sans abonnement · Accès libre',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textLight,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD4A017).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text(
+                  'GRATUIT',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFFD4A017),
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
   // BOUTON "J'AI PAYÉ — ENVOYER MA DEMANDE" (Page d'accueil)
   // Envoie la demande à l'administrateur via ApiService
   // ═══════════════════════════════════════════════════════════════════
@@ -1251,9 +1355,9 @@ class _DashboardScreenState extends State<DashboardScreen>
             ),
           ],
         ),
-        content: const Text(
-          'Confirmez-vous avoir effectué le paiement de 12 000 FCFA via Orange Money ?\n\nVotre demande sera transmise à notre équipe qui activera votre accès premium.',
-          style: TextStyle(height: 1.5, fontSize: 14),
+        content: Text(
+          'Confirmez-vous avoir effectué le paiement de ${PromoService.prixActuel} via Orange Money ?\n\nVotre demande sera transmise à notre équipe qui activera votre accès premium.',
+          style: const TextStyle(height: 1.5, fontSize: 14),
         ),
         actions: [
           TextButton(
@@ -1496,18 +1600,28 @@ class _DashboardScreenState extends State<DashboardScreen>
                           ),
                           const SizedBox(height: 4),
                           RichText(
-                            text: const TextSpan(
+                            text: TextSpan(
                               children: [
+                                if (PromoService.promoActive)
+                                  TextSpan(
+                                    text: '${PromoService.ancienPrix.replaceAll(' FCFA', '')} ',
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.red,
+                                      decoration: TextDecoration.lineThrough,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                                 TextSpan(
-                                  text: '12 000 FCFA ',
-                                  style: TextStyle(
+                                  text: '${PromoService.prixActuel} ',
+                                  style: const TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w900,
                                     color: Color(0xFFD4A017),
                                   ),
                                 ),
-                                TextSpan(
-                                  text: '· jusqu\'au 31/12/2028',
+                                const TextSpan(
+                                  text: '· accès illimité',
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: AppColors.textLight,

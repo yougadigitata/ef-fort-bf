@@ -125,7 +125,7 @@ export default function DashboardPage({ onNavigate }: { onNavigate: (page: Page)
   ];
 
   const tauxConversion = totalUsers > 0 ? ((abonnes / totalUsers) * 100).toFixed(1) : '0';
-  const revenuEstime = abonnes * 12000;
+  const revenuEstime = abonnes * 5000;
 
   return (
     <div>
@@ -237,7 +237,7 @@ export default function DashboardPage({ onNavigate }: { onNavigate: (page: Page)
             {revenuEstime.toLocaleString('fr-FR')} FCFA
           </div>
           <div style={{ color: '#64748b', fontSize: 15, marginTop: 6 }}>
-            {abonnes} × 12 000 FCFA
+            {abonnes} × 5 000 FCFA
           </div>
           <div style={{ marginTop: 10, padding: '6px 10px', background: 'rgba(26,92,56,0.15)', borderRadius: 6, fontSize: 15, color: '#4ade80' }}>
             Accès illimité jusqu'au 31/12/2028

@@ -240,7 +240,35 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                     ),
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 20),
+                  // Bouton démo gratuite (visible pour tous, sans connexion)
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/demo-examen');
+                      },
+                      icon: const Icon(Icons.play_circle_outline_rounded,
+                          color: Color(0xFFD4A017), size: 20),
+                      label: const Text(
+                        'Essayer la démo gratuite (sans abonnement)',
+                        style: TextStyle(
+                          color: Color(0xFFD4A017),
+                          fontWeight: FontWeight.w800,
+                          fontSize: 13,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(
+                            color: Color(0xFFD4A017), width: 1.5),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
