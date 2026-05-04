@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../services/bell_service.dart';
+import '../services/promo_service.dart';
 import 'login_screen.dart';
 
 // ══════════════════════════════════════════════════════════════════════
@@ -51,7 +52,7 @@ class _BienvenueScreenState extends State<BienvenueScreen>
     '🏆  Conçue par des Burkinabè, pour des Burkinabè',
     '⏱️  Simulation Examen · Conditions Réelles',
     '🤝  Communauté Burkinabè Active 24h/24',
-    '👑  Premium : 12 000 FCFA = 2+ ans d\'accès',
+    '👑  Premium : ${PromoService.prixActuel} = 2+ ans d\'accès',
   ];
 
   @override
@@ -251,6 +252,10 @@ class _BienvenueScreenState extends State<BienvenueScreen>
 
                       // Bouton d'entrée
                       _buildSection(6, _buildCTAButton()),
+                      const SizedBox(height: 12),
+
+                      // Bouton démo gratuite (visible pour tous, sans connexion)
+                      _buildSection(6, _buildDemoButton()),
                       const SizedBox(height: 16),
 
                       // Footer
@@ -876,8 +881,10 @@ class _BienvenueScreenState extends State<BienvenueScreen>
           const SizedBox(height: 12),
 
           // Détails premium
-          _buildPremiumDetail('💰', '12 000 FCFA seulement',
-              'Pour plus de 2 ans d\'accès illimité complet'),
+          _buildPremiumDetail('💰', '${PromoService.prixActuel} seulement',
+              PromoService.promoActive
+                  ? 'Promo au lieu de ${PromoService.ancienPrix} — jusqu\'au ${PromoService.dateFinPromoLisible}'
+                  : 'Pour plus de 2 ans d\'accès illimité complet'),
           _buildPremiumDetail('📅', 'Valable jusqu\'en 2028',
               'Pas d\'abonnement mensuel — payez une fois, profitez 2+ ans !'),
           _buildPremiumDetail('🇧🇫', 'Prix burkinabè juste',
@@ -999,6 +1006,47 @@ class _BienvenueScreenState extends State<BienvenueScreen>
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  // ── Bouton démo gratuite (sans abonnement, visible pour tous) ───────
+  Widget _buildDemoButton() {
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushNamed(context, '/demo-examen');
+      },
+      child: Container(
+        width: double.infinity,
+        height: 56,
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: const Color(0xFFD4A017).withValues(alpha: 0.7),
+            width: 2,
+          ),
+        ),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.play_circle_outline_rounded,
+                color: Color(0xFFD4A017), size: 22),
+            SizedBox(width: 10),
+            Flexible(
+              child: Text(
+                'Essayer la démo gratuite (sans abonnement)',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFFD4A017),
+                  letterSpacing: 0.2,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
         ),
       ),
     );

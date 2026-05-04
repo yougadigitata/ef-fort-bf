@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
+import '../services/promo_service.dart';
 import '../utils/safe_launcher.dart';
 import 'login_screen.dart';
 import 'admin_screen.dart';
@@ -260,34 +261,36 @@ class _ProfilScreenState extends State<ProfilScreen>
                       const SizedBox(height: 6),
                       // Prix barré ancien + nouveau prix
                       Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                        Text(
-                          '25 000 FCFA',
-                          style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w600,
-                            color: AppColors.white.withValues(alpha: 0.6),
-                            decoration: TextDecoration.lineThrough,
-                            decorationColor: AppColors.white.withValues(alpha: 0.6),
+                        if (PromoService.promoActive)
+                          Text(
+                            PromoService.ancienPrix,
+                            style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w600,
+                              color: AppColors.white.withValues(alpha: 0.6),
+                              decoration: TextDecoration.lineThrough,
+                              decorationColor: AppColors.white.withValues(alpha: 0.6),
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 10),
-                        const Text(
-                          '12 000 FCFA',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: AppColors.white),
+                        if (PromoService.promoActive) const SizedBox(width: 10),
+                        Text(
+                          PromoService.prixActuel,
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: AppColors.white),
                         ),
                       ]),
                       const SizedBox(height: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.red.withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.5)),
+                      if (PromoService.promoActive)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.red.withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.5)),
+                          ),
+                          child: Text(
+                            '🔥 OFFRE SPÉCIALE — Expire le ${PromoService.dateFinPromoLisible}',
+                            style: const TextStyle(fontSize: 14, color: AppColors.white, fontWeight: FontWeight.w700),
+                          ),
                         ),
-                        child: const Text(
-                          '🔥 OFFRE SPÉCIALE — Expire le 15 mai 2026',
-                          style: TextStyle(fontSize: 14, color: AppColors.white, fontWeight: FontWeight.w700),
-                        ),
-                      ),
                       const SizedBox(height: 8),
                       const _CountdownWidget(),
                       const SizedBox(height: 12),
@@ -531,9 +534,9 @@ class _ProfilScreenState extends State<ProfilScreen>
                             style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
                           ),
                           const SizedBox(height: 4),
-                          const Text(
-                            '*144*10*65 46 70 70*12000#',
-                            style: TextStyle(
+                          Text(
+                            PromoService.codeUssd,
+                            style: const TextStyle(
                               fontSize: 16,
                               color: AppColors.textLight,
                               fontFamily: 'monospace',
@@ -583,7 +586,7 @@ class _ProfilScreenState extends State<ProfilScreen>
   }
 
   Future<void> _composeOrangeMoney() async {
-    const String code = '*144*10*65467070*12000%23';
+    final String code = PromoService.codeUssdUri;
     final Uri telUri = Uri(scheme: 'tel', path: code);
     // Tentative directe (plus fiable sur Android 11+)
     bool launched = false;
@@ -608,9 +611,9 @@ class _ProfilScreenState extends State<ProfilScreen>
                   color: Colors.orange.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Text(
-                  '*144*10*65 46 70 70*12000#',
-                  style: TextStyle(
+                child: Text(
+                  PromoService.codeUssd,
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w800,
                     fontFamily: 'monospace',
@@ -619,7 +622,7 @@ class _ProfilScreenState extends State<ProfilScreen>
                 ),
               ),
               const SizedBox(height: 12),
-              const Text('Composez ce code sur votre téléphone pour payer 12 000 FCFA', textAlign: TextAlign.center),
+              Text('Composez ce code sur votre téléphone pour payer ${PromoService.prixActuel}', textAlign: TextAlign.center),
             ],
           ),
           actions: [

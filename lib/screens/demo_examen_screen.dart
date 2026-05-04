@@ -1,10 +1,14 @@
 import 'dart:async';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:printing/printing.dart';
 import '../core/theme/app_colors.dart';
 import '../data/demoQuestions.dart';
 import '../services/bell_service.dart';
+import '../services/pdf_service.dart';
 import '../widgets/logo_widget.dart';
 import '../widgets/math_text_widget.dart';
+import 'abonnement_screen.dart';
 
 // ══════════════════════════════════════════════════════════════
 // DEMO EXAMEN SCREEN — Démo gratuite EF-FORT.BF
@@ -436,27 +440,7 @@ class _DemoExamScreenState extends State<DemoExamScreen> {
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
-          showDialog(
-            context: context,
-            builder: (ctx) => AlertDialog(
-              title: const Text('Quitter la démo ?'),
-              content: const Text('Votre progression sera perdue.'),
-              actions: [
-                TextButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    child: const Text('Continuer')),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    _timer?.cancel();
-                    Navigator.pop(context);
-                  },
-                  child: const Text('Quitter',
-                      style: TextStyle(color: AppColors.error)),
-                ),
-              ],
-            ),
-          );
+          _showEncouragementExitDialog();
         }
       },
       child: Scaffold(
@@ -480,7 +464,7 @@ class _DemoExamScreenState extends State<DemoExamScreen> {
           ),
           leading: IconButton(
             icon: const Icon(Icons.close),
-            onPressed: () => Navigator.maybePop(context),
+            onPressed: _showEncouragementExitDialog,
           ),
           actions: [
             Center(
@@ -1038,6 +1022,94 @@ class _DemoExamScreenState extends State<DemoExamScreen> {
     );
   }
 
+  // ════════════════════════════════════════════════════════════════
+  // DIALOG DE SORTIE ANTICIPÉE — Message d'encouragement bienveillant
+  // ════════════════════════════════════════════════════════════════
+  // L'utilisateur peut quitter à tout moment, mais on l'encourage
+  // chaleureusement à rester pour découvrir les 50 questions.
+  void _showEncouragementExitDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Text('💚', style: TextStyle(fontSize: 26)),
+            SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Tu quittes déjà ?',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.2)),
+              ),
+              child: const Text(
+                'Prends le temps de découvrir les 50 questions. '
+                'Cette démo est gratuite, sans abonnement.\n\n'
+                'Reste un peu, tu pourrais être surpris(e) ! 🚀',
+                style: TextStyle(
+                  fontSize: 14.5,
+                  height: 1.55,
+                  color: AppColors.textDark,
+                  fontFamily: 'Georgia',
+                ),
+              ),
+            ),
+          ],
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _timer?.cancel();
+              Navigator.pop(context);
+            },
+            child: const Text(
+              'Quitter quand même',
+              style: TextStyle(
+                  color: AppColors.error, fontWeight: FontWeight.w600),
+            ),
+          ),
+          ElevatedButton.icon(
+            onPressed: () => Navigator.pop(ctx),
+            icon: const Icon(Icons.play_arrow_rounded, size: 20),
+            label: const Text(
+              'Rester et continuer',
+              style: TextStyle(fontWeight: FontWeight.w800),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showConfirmSubmit(int answeredCount) {
     showDialog(
       context: context,
@@ -1068,7 +1140,7 @@ class _DemoExamScreenState extends State<DemoExamScreen> {
 // ══════════════════════════════════════════════════════════════
 // ÉCRAN DES RÉSULTATS — score + correction détaillée
 // ══════════════════════════════════════════════════════════════
-class DemoResultScreen extends StatelessWidget {
+class DemoResultScreen extends StatefulWidget {
   final int score, total, bonnes, mauvaises, sansReponse, tempsUtilise;
   final List<Map<String, dynamic>> questions;
   final Map<int, Set<String>> answers;
@@ -1086,6 +1158,147 @@ class DemoResultScreen extends StatelessWidget {
     required this.answers,
     required this.scoreParMatiere,
   });
+
+  @override
+  State<DemoResultScreen> createState() => _DemoResultScreenState();
+}
+
+class _DemoResultScreenState extends State<DemoResultScreen> {
+  bool _generatingSujet = false;
+  bool _generatingCorrection = false;
+
+  // Raccourcis pour accéder aux propriétés du widget
+  int get score => widget.score;
+  int get total => widget.total;
+  int get bonnes => widget.bonnes;
+  int get mauvaises => widget.mauvaises;
+  int get sansReponse => widget.sansReponse;
+  int get tempsUtilise => widget.tempsUtilise;
+  List<Map<String, dynamic>> get questions => widget.questions;
+  Map<int, Set<String>> get answers => widget.answers;
+  Map<String, List<int>> get scoreParMatiere => widget.scoreParMatiere;
+
+  // ────────────────────────────────────────────────────────────
+  // Conversion des questions de la démo → PdfQuestion (pour PdfService)
+  // ────────────────────────────────────────────────────────────
+  List<PdfQuestion> _toPdfQuestions({required bool withAnswers}) {
+    final result = <PdfQuestion>[];
+    for (int i = 0; i < questions.length; i++) {
+      final q = questions[i];
+      final options = <String, String>{};
+      for (final l in ['A', 'B', 'C', 'D', 'E']) {
+        final key = 'option_${l.toLowerCase()}';
+        final v = (q[key] ?? '').toString();
+        if (v.trim().isNotEmpty) options[l] = v;
+      }
+
+      if (!withAnswers) {
+        result.add(PdfQuestion(
+          numero: i + 1,
+          categorie: (q['categorie'] ?? q['matiere'] ?? '').toString(),
+          enonce: (q['enonce'] ?? '').toString(),
+          options: options,
+          pointsMax: 1,
+        ));
+        continue;
+      }
+
+      final bonneStr = (q['bonne_reponse'] ?? '').toString().toUpperCase();
+      final bonneSet = bonneStr
+          .split('')
+          .where((c) => ['A', 'B', 'C', 'D', 'E'].contains(c))
+          .toSet();
+      final choisies = answers[i] ?? <String>{};
+      final correct = choisies.isNotEmpty &&
+          choisies.containsAll(bonneSet) &&
+          bonneSet.containsAll(choisies);
+      final noAns = choisies.isEmpty;
+      final bonneDisplay = (bonneSet.toList()..sort()).join('+');
+      final choisiesDisplay =
+          choisies.isEmpty ? '' : (choisies.toList()..sort()).join('+');
+
+      result.add(PdfQuestion(
+        numero: i + 1,
+        categorie: (q['categorie'] ?? q['matiere'] ?? '').toString(),
+        enonce: (q['enonce'] ?? '').toString(),
+        reponseEleve: choisiesDisplay,
+        bonneReponse: bonneDisplay,
+        explication: (q['explication'] ?? '').toString(),
+        points: correct ? 1 : 0,
+        pointsMax: 1,
+        correct: correct,
+        nonRepondu: noAns,
+        options: options,
+      ));
+    }
+    return result;
+  }
+
+  // ────────────────────────────────────────────────────────────
+  // Génère le PDF SUJET (50 questions seulement, sans réponses)
+  // ────────────────────────────────────────────────────────────
+  Future<void> _generatePdfSujet() async {
+    if (_generatingSujet) return;
+    setState(() => _generatingSujet = true);
+    try {
+      final pdfBytes = await PdfService.genererSujetVierge(
+        nomCandidat: 'Candidat – Démo gratuite',
+        sujet: 'Démo gratuite EF-FORT.BF — 50 questions',
+        questions: _toPdfQuestions(withAnswers: false),
+        duree: '1h30',
+        titrePdf: 'Démo gratuite – Sujet (50 questions)',
+      );
+      await Printing.sharePdf(
+        bytes: pdfBytes,
+        filename: 'EF-FORT_Demo_Sujet.pdf',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur PDF sujet : $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _generatingSujet = false);
+    }
+  }
+
+  // ────────────────────────────────────────────────────────────
+  // Génère le PDF CORRECTION (50 questions + réponses + explications)
+  // ────────────────────────────────────────────────────────────
+  Future<void> _generatePdfCorrection() async {
+    if (_generatingCorrection) return;
+    setState(() => _generatingCorrection = true);
+    try {
+      final Uint8List pdfBytes = await PdfService.genererCopieCorrigee(
+        kind: PdfKind.examen,
+        nomCandidat: 'Candidat – Démo gratuite',
+        sujet: 'Démo gratuite EF-FORT.BF — 50 questions',
+        questions: _toPdfQuestions(withAnswers: true),
+        scoreObtenu: bonnes,
+        scoreTotal: total,
+        titrePdf: 'Démo gratuite – Correction détaillée (50 questions)',
+      );
+      await Printing.sharePdf(
+        bytes: pdfBytes,
+        filename: 'EF-FORT_Demo_Correction.pdf',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur PDF correction : $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _generatingCorrection = false);
+    }
+  }
 
   String get _mention {
     final pct = total > 0 ? score / total * 100 : 0;
@@ -1473,23 +1686,240 @@ class DemoResultScreen extends StatelessWidget {
               );
             }),
 
-            const SizedBox(height: 20),
-            SizedBox(
+            const SizedBox(height: 24),
+
+            // ══════════════════════════════════════════════════
+            // SECTION PDF — Sujet + Correction
+            // ══════════════════════════════════════════════════
+            Container(
               width: double.infinity,
-              height: 56,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.popUntil(context, (route) => route.isFirst);
-                },
-                icon: const Icon(Icons.home_rounded, size: 20),
-                label: const Text('Retour à l\'accueil',
-                    style: TextStyle(fontSize: 16)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.white,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.25),
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(Icons.picture_as_pdf_rounded,
+                          color: AppColors.primary, size: 22),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Téléchargez vos PDF',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.textDark,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Imprimez ou partagez vos copies — qualité professionnelle, logo EF-FORT.BF inclus.',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textLight,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  // Bouton PDF Sujet
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: OutlinedButton.icon(
+                      onPressed: _generatingSujet ? null : _generatePdfSujet,
+                      icon: _generatingSujet
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.primary,
+                              ),
+                            )
+                          : const Icon(Icons.description_outlined, size: 20),
+                      label: const Text(
+                        'PDF — Sujet (50 questions)',
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w700),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.primary,
+                        side: BorderSide(
+                            color: AppColors.primary.withValues(alpha: 0.5),
+                            width: 1.5),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Bouton PDF Correction
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton.icon(
+                      onPressed:
+                          _generatingCorrection ? null : _generatePdfCorrection,
+                      icon: _generatingCorrection
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.fact_check_outlined, size: 20),
+                      label: const Text(
+                        'PDF — Correction détaillée',
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w700),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // ══════════════════════════════════════════════════
+            // PARCOURS FINAL — Message d'encouragement + boutons
+            // ══════════════════════════════════════════════════
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [AppColors.primary, AppColors.primaryDark],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.35),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  const Text('🎉', style: TextStyle(fontSize: 38)),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Bravo !',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Tu as découvert notre démo gratuite. '
+                    'Continue ton aventure avec EF-FORT.BF et donne-toi '
+                    'toutes les chances de réussir tes concours !',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white.withValues(alpha: 0.95),
+                      height: 1.55,
+                      fontFamily: 'Georgia',
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  // Bouton "S'abonner maintenant" (or)
+                  SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AbonnementScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.workspace_premium_rounded,
+                          size: 22),
+                      label: const Text(
+                        "S'abonner maintenant",
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFD4A017),
+                        foregroundColor: Colors.white,
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  // Bouton "Entrer au cœur de l'application"
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        // Retour à l'accueil (splash → flux normal)
+                        Navigator.popUntil(
+                            context, (route) => route.isFirst);
+                      },
+                      icon: const Icon(Icons.dashboard_rounded, size: 20),
+                      label: const Text(
+                        "Entrer au cœur de l'application",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        side: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.7),
+                            width: 1.5),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 40),

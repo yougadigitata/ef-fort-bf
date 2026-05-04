@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
+import '../services/promo_service.dart';
 import '../utils/safe_launcher.dart';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -53,8 +54,8 @@ class _AbonnementScreenState extends State<AbonnementScreen>
   /// Stratégie : https://wa.me/ en mode externalApplication — plus fiable
   /// (l'OS redirige vers l'app WhatsApp si installée, sinon navigateur)
   Future<void> _launchWhatsAppPreuve() async {
-    const message =
-        'Bonjour EF-FORT.BF, j\'ai effectué le paiement de 12 000 FCFA via Orange Money. '
+    final message =
+        'Bonjour EF-FORT.BF, j\'ai effectué le paiement de ${PromoService.prixActuel} via Orange Money. '
         'Je vous envoie la capture de confirmation.';
     final encoded = Uri.encodeComponent(message);
     final uri = Uri.parse('https://wa.me/22665467070?text=$encoded');
@@ -85,8 +86,8 @@ class _AbonnementScreenState extends State<AbonnementScreen>
   /// Le '#' doit être encodé en %23. On utilise externalApplication pour
   /// forcer la résolution vers l'app Téléphone (jamais vers un WebView).
   Future<void> _launchUSSD() async {
-    const ussdCode = '*144*10*65467070*12000#';
-    final uri = Uri.parse('tel:*144*10*65467070*12000%23');
+    final ussdCode = PromoService.codeUssd;
+    final uri = Uri.parse('tel:${PromoService.codeUssdUri}');
 
     bool launched = false;
     // Essai 1 : externalApplication — force l'ouverture hors WebView
@@ -103,15 +104,15 @@ class _AbonnementScreenState extends State<AbonnementScreen>
     if (!launched && mounted) {
       // Fallback : copier dans le presse-papier + message explicatif
       // ignore: unawaited_futures
-      Clipboard.setData(const ClipboardData(text: ussdCode));
+      Clipboard.setData(ClipboardData(text: ussdCode));
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(
-            '📋 Code USSD copié ! Ouvrez votre app Téléphone et collez :\n*144*10*65467070*12000#',
+            '📋 Code USSD copié ! Ouvrez votre app Téléphone et collez :\n${PromoService.codeUssd}',
           ),
-          backgroundColor: Color(0xFFFF7900),
-          duration: Duration(seconds: 8),
+          backgroundColor: const Color(0xFFFF7900),
+          duration: const Duration(seconds: 8),
         ),
       );
     }
@@ -153,9 +154,9 @@ class _AbonnementScreenState extends State<AbonnementScreen>
             ),
           ],
         ),
-        content: const Text(
-          'Confirmez-vous avoir effectué le paiement de 12 000 FCFA via Orange Money ?\n\nVotre demande sera transmise à notre équipe qui activera votre accès premium.',
-          style: TextStyle(height: 1.5, fontSize: 14),
+        content: Text(
+          'Confirmez-vous avoir effectué le paiement de ${PromoService.prixActuel} via Orange Money ?\n\nVotre demande sera transmise à notre équipe qui activera votre accès premium.',
+          style: const TextStyle(height: 1.5, fontSize: 14),
         ),
         actions: [
           TextButton(
@@ -438,16 +439,17 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                         crossAxisAlignment: CrossAxisAlignment.baseline,
                         textBaseline: TextBaseline.alphabetic,
                         children: [
-                          const Text(
-                            '25 000',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.red,
-                              decoration: TextDecoration.lineThrough,
-                              fontWeight: FontWeight.w600,
+                          if (PromoService.promoActive)
+                            Text(
+                              PromoService.ancienPrix.replaceAll(' FCFA', ''),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.red,
+                                decoration: TextDecoration.lineThrough,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
+                          if (PromoService.promoActive) const SizedBox(width: 12),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                             decoration: BoxDecoration(
@@ -455,9 +457,9 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(color: const Color(0xFFD4A017), width: 2),
                             ),
-                            child: const Text(
-                              '12 000 FCFA',
-                              style: TextStyle(
+                            child: Text(
+                              PromoService.prixActuel,
+                              style: const TextStyle(
                                 fontSize: 26,
                                 fontWeight: FontWeight.w900,
                                 color: Color(0xFFD4A017),
@@ -468,17 +470,19 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                         ],
                       ),
                       const SizedBox(height: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppColors.success.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
+                      if (PromoService.promoActive)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.success.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '🔥 Promo ${PromoService.prixActuel} au lieu de ${PromoService.ancienPrix} — valable jusqu\'au ${PromoService.dateFinPromoLisible}',
+                            style: const TextStyle(fontSize: 15, color: AppColors.success, fontWeight: FontWeight.w700),
+                            textAlign: TextAlign.center,
+                          ),
                         ),
-                        child: const Text(
-                          '🔥 Offre spéciale valable jusqu\'au 15 mai 2026 — Ne ratez pas cette chance !',
-                          style: TextStyle(fontSize: 15, color: AppColors.success, fontWeight: FontWeight.w700),
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -664,7 +668,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
                       ],
                     ),
                     const SizedBox(height: 16),
-                    _etapeSimple('1', 'Envoyez 12 000 FCFA via Orange Money', 'Numéro : 65 46 70 70\nCode USSD : *144*10*65467070*12000#', const Color(0xFFFF7900),
+                    _etapeSimple('1', 'Envoyez ${PromoService.prixActuel} via Orange Money', 'Numéro : 65 46 70 70\nCode USSD : ${PromoService.codeUssd}', const Color(0xFFFF7900),
                       action: ElevatedButton.icon(
                         onPressed: _launchUSSD,
                         icon: const Text('📱', style: TextStyle(fontSize: 16)),
@@ -865,7 +869,7 @@ class _AbonnementScreenState extends State<AbonnementScreen>
       {'icon': '📄', 'titre': '10 000+ Copies PDF Imprimables', 'desc': 'Chaque QCM traité génère un PDF avec corrections. Imprimez, partagez, révisez partout, même sans internet.'},
       {'icon': '🤝', 'titre': 'Communauté Active & Entraide', 'desc': 'Des milliers de candidats s\'entraident. Posez vos questions, obtenez des réponses. Vous n\'êtes jamais seul.'},
       {'icon': '📰', 'titre': 'Actualités Concours en Temps Réel', 'desc': 'Ne ratez AUCUNE ouverture de concours, AUCUNE date limite, AUCUNE opportunité au Burkina Faso.'},
-      {'icon': '💰', 'titre': 'Paiement Unique — Offre Limitée', 'desc': '🔥 Payez 12 000 FCFA (au lieu de 25 000 FCFA) UNE SEULE FOIS. Offre valable jusqu\'au 15 mai 2026 uniquement !'},
+      {'icon': '💰', 'titre': 'Paiement Unique — Offre Limitée', 'desc': PromoService.promoActive ? '🔥 Payez ${PromoService.prixActuel} (au lieu de ${PromoService.ancienPrix}) UNE SEULE FOIS. Offre valable jusqu\'au ${PromoService.dateFinPromoLisible} uniquement !' : '🔥 Payez ${PromoService.prixActuel} UNE SEULE FOIS pour un accès illimité !'},
     ];
     return items.map((item) {
       final icon = item['icon'] ?? item['icon'];
@@ -1004,8 +1008,15 @@ class OffreCountdownWidget extends StatefulWidget {
 class _OffreCountdownWidgetState extends State<OffreCountdownWidget> {
   Timer? _timer;
   Duration _remaining = Duration.zero;
-  // Date limite : 15 mai 2026 à minuit (prolongation de la promo)
-  static final DateTime _deadline = DateTime(2026, 5, 15, 23, 59, 59);
+  // Date limite : pilotée par PromoService (prolongation auto)
+  static DateTime get _deadline => DateTime(
+        PromoService.dateFinPromo.year,
+        PromoService.dateFinPromo.month,
+        PromoService.dateFinPromo.day,
+        23,
+        59,
+        59,
+      );
 
   @override
   void initState() {
@@ -1074,9 +1085,9 @@ class _OffreCountdownWidgetState extends State<OffreCountdownWidget> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
             decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(20)),
-            child: const Text(
-              '🔥 12 000 FCFA au lieu de 25 000 FCFA — Économisez 13 000 FCFA !',
-              style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700),
+            child: Text(
+              '🔥 ${PromoService.prixActuel} au lieu de ${PromoService.ancienPrix} — Économisez ${PromoService.economies} !',
+              style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700),
               textAlign: TextAlign.center,
             ),
           ),
