@@ -262,7 +262,7 @@ app.get('/api/examens/:id/questions', async (c) => {
   const serieNum = parsedSerie === 3 ? 3 : parsedSerie === 2 ? 2 : 1;
   const db = getDB(c.env);
 
-  // ── MISSION 7 : ANTI-FRAUDE — Les examens types sont réservés aux abonnés ──
+  // ── ANTI-FRAUDE — Série 1 gratuite pour tous, Séries 2 et 3 réservées aux abonnés ──
   const authHeaderExam = c.req.header('Authorization');
   let isAbonneExam = false;
   let isAdminExam = false;
@@ -279,11 +279,13 @@ app.get('/api/examens/:id/questions', async (c) => {
       }
     } catch (_) {}
   }
-  if (!isAbonneExam && !isAdminExam) {
+  // Série 1 est accessible à tous (non-abonnés compris)
+  // Séries 2 et 3 sont réservées aux abonnés Premium et admins
+  if (!isAbonneExam && !isAdminExam && serieNum > 1) {
     return c.json({
       error: 'Accès réservé aux abonnés Premium.',
       code: 'PREMIUM_REQUIRED',
-      message: 'Les examens types sont réservés aux abonnés. Abonnez-vous pour y accéder.',
+      message: 'Les séries 2 et 3 sont réservées aux abonnés. Abonnez-vous pour y accéder.',
     }, 403);
   }
 

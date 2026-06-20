@@ -187,9 +187,9 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
   static const int _minSecondsRequired = 300; // 5 minutes
 
   void _finirSerie() {
-    // Admin bypass : l'admin peut soumettre à tout moment sans attendre 5 min
-    // Vérification anti-fraude : au moins 5 minutes doivent s'être écoulées (utilisateurs normaux seulement)
-    if (!ApiService.isAdmin && _secondsElapsed < _minSecondsRequired) {
+    // Admin et abonnés bypass : peuvent soumettre à tout moment sans attendre 5 min
+    // Vérification anti-fraude : au moins 5 minutes doivent s'être écoulées (non-abonnés seulement)
+    if (!ApiService.isAdmin && !ApiService.isAbonne && _secondsElapsed < _minSecondsRequired) {
       final remaining = _minSecondsRequired - _secondsElapsed;
       final m = (remaining ~/ 60).toString().padLeft(2, '0');
       final s = (remaining % 60).toString().padLeft(2, '0');
@@ -215,7 +215,7 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text(
-                'Pour garantir un apprentissage sérieux, vous devez passer au moins 5 minutes sur cette série.',
+                'Pour garantir un apprentissage sérieux, les utilisateurs sans abonnement doivent passer au moins 5 minutes sur cette série.\n\nAbonnez-vous pour soumettre librement !',
                 style: TextStyle(fontSize: 14, height: 1.5, color: Color(0xFF555555)),
                 textAlign: TextAlign.center,
               ),

@@ -54,7 +54,7 @@ class _SimulationLaunchScreenState extends State<SimulationLaunchScreen> {
       'icon': Icons.timer_rounded,
       'emoji': '⏱',
       'titre': '1h30 chrono',
-      'sous_titre': 'Soumission impossible avant 30 minutes',
+      'sous_titre': 'Les abonnés peuvent soumettre à tout moment — non-abonnés : 30 min minimum',
       'color': const Color(0xFF2980B9),
     },
     {
@@ -330,7 +330,7 @@ class _SimulationLaunchScreenState extends State<SimulationLaunchScreen> {
       'Une réponse incorrecte entraîne une pénalité de points.',
       'Il est permis de ne pas répondre à une question si vous n\'êtes pas certain.',
       'La durée de l\'épreuve est de 2 heures.',
-      'Vous ne pouvez pas soumettre votre copie avant 30 minutes.',
+      'Vous ne pouvez pas soumettre votre copie avant 30 minutes (règle non-abonnés).',
       'Toute tentative de fraude entraîne l\'annulation de votre résultat.',
       'Bonne chance !',
     ];
@@ -623,8 +623,8 @@ class ExamRulesSlide extends StatelessWidget {
                       'Certaines questions peuvent avoir plusieurs bonnes réponses. Cochez toutes les bonnes réponses.'),
                   _buildRule('5. Pénalité pour erreur',
                       'Une mauvaise réponse entraîne une pénalité. Sans réponse = 0 point, ne pénalise pas.'),
-                  _buildRule('6. Minimum 30 minutes obligatoire',
-                      'Vous ne pourrez soumettre votre copie qu\'après 30 minutes de composition.'),
+                  _buildRule('6. Minimum 30 minutes (non-abonnés)',
+                      'Les abonnés Premium peuvent soumettre à tout moment. Les autres utilisateurs doivent attendre 30 minutes.'),
                   _buildRule('7. Soumission automatique',
                       'À l\'expiration du temps, votre copie sera soumise automatiquement avec les réponses cochées.'),
                   _buildRule('8. Alertes de temps',
@@ -786,15 +786,17 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
   static const int _minSecondsBeforeSubmit = 30 * 60;
   static const int _durationSeconds = 90 * 60; // 1h30
 
-  // ── Admin bypass : l'admin peut soumettre à tout moment ──
+  // ── Admin et abonnés bypass : peuvent soumettre à tout moment ──
   bool get _isAdminUser => ApiService.isAdmin;
+  bool get _isAbonneUser => ApiService.isAbonne;
 
   bool get _canSubmit =>
       _isAdminUser ||
+      _isAbonneUser ||
       _remainingSeconds <= (_durationSeconds - _minSecondsBeforeSubmit);
 
   int get _secondsBeforeCanSubmit =>
-      (!_isAdminUser && _remainingSeconds > (_durationSeconds - _minSecondsBeforeSubmit))
+      (!_isAdminUser && !_isAbonneUser && _remainingSeconds > (_durationSeconds - _minSecondsBeforeSubmit))
           ? _remainingSeconds - (_durationSeconds - _minSecondsBeforeSubmit)
           : 0;
 
@@ -1006,7 +1008,7 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                 'Vous pouvez cocher plusieurs cases par question',
                 'Une mauvaise réponse entraîne une pénalité',
                 'Sans réponse : 0 point (ne pénalise pas)',
-                'Soumission impossible avant 30 minutes',
+                'Abonnés Premium : soumission libre à tout moment',
                 'Une question peut avoir plusieurs réponses exactes',
               ].map((c) => Padding(
                 padding: const EdgeInsets.only(bottom: 6),
@@ -1869,6 +1871,29 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                     ),
                   ),
                 ],
+                if (_isAbonneUser && !_isAdminUser) ...[
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                    margin: const EdgeInsets.only(bottom: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE8F5E9),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.verified_rounded, size: 14, color: AppColors.primary),
+                        SizedBox(width: 5),
+                        Text(
+                          'ABONNÉ PREMIUM — Soumission débloquée',
+                          style: TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w700),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 SizedBox(
                   width: double.infinity,
                   height: 60,
@@ -1908,7 +1933,7 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
                     ),
                   ),
                   const Text(
-                    'Vous ne pouvez pas soumettre avant 30 minutes.',
+                    'Abonnez-vous Premium pour soumettre librement à tout moment.',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 11, color: AppColors.textLight),
                   ),
