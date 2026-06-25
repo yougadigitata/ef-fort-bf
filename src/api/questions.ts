@@ -27,35 +27,62 @@ questions.get('/matieres', async (c) => {
   const matieresFiltrees = (matieres ?? []).filter(m => CODES_OFFICIELS.includes(m.code));
   const matiereIds = matieresFiltrees.map(m => m.id);
 
-  // ⚡ OPTIMISATION v7.1 : 2 requêtes globales (comme v7.0) - plus efficace que N count() parallèles
+  // ⚡ CORRECTION v7.4 : Appels REST directs pour le comptage
+  // Supabase JS client a une limite interne de 1000 lignes — contournement via fetch direct
   const countMap: Record<string, number> = {};
   const seriesMap: Record<string, number> = {};
 
-  // Requête 1 : tous les matiere_id des questions
+  // Récupérer les variables d'environnement pour l'appel direct
+  const supaUrl = (c.env as any).SUPABASE_URL as string;
+  const supaKey = (c.env as any).SUPABASE_KEY as string;
+
+  // Requête 1 : comptage direct par matière via API REST Supabase (Content-Range header)
   try {
-    const { data: allQ } = await db
-      .from('questions')
-      .select('matiere_id')
-      .in('matiere_id', matiereIds)
-      .limit(10000);
-    for (const q of (allQ ?? [])) {
-      const mid = q.matiere_id as string;
-      countMap[mid] = (countMap[mid] ?? 0) + 1;
-    }
+    await Promise.all(matiereIds.map(async (mid) => {
+      try {
+        const resp = await fetch(
+          `${supaUrl}/rest/v1/questions?select=matiere_id&matiere_id=eq.${mid}&limit=1`,
+          {
+            headers: {
+              'apikey': supaKey,
+              'Authorization': `Bearer ${supaKey}`,
+              'Prefer': 'count=exact',
+              'Range': '0-0',
+            },
+          }
+        );
+        const cr = resp.headers.get('Content-Range') ?? '';
+        // Format: "0-0/353"
+        if (cr.includes('/')) {
+          const total = parseInt(cr.split('/')[1], 10);
+          if (!isNaN(total)) countMap[mid] = total;
+        }
+      } catch (_) {}
+    }));
   } catch (_) {}
 
-  // Requête 2 : tous les matiere_id des séries actives
+  // Requête 2 : comptage des séries par matière
   try {
-    const { data: allS } = await db
-      .from('series_qcm')
-      .select('matiere_id')
-      .in('matiere_id', matiereIds)
-      .eq('actif', true)
-      .limit(2000);
-    for (const s of (allS ?? [])) {
-      const mid = s.matiere_id as string;
-      seriesMap[mid] = (seriesMap[mid] ?? 0) + 1;
-    }
+    await Promise.all(matiereIds.map(async (mid) => {
+      try {
+        const resp = await fetch(
+          `${supaUrl}/rest/v1/series_qcm?select=matiere_id&matiere_id=eq.${mid}&actif=eq.true&limit=1`,
+          {
+            headers: {
+              'apikey': supaKey,
+              'Authorization': `Bearer ${supaKey}`,
+              'Prefer': 'count=exact',
+              'Range': '0-0',
+            },
+          }
+        );
+        const cr = resp.headers.get('Content-Range') ?? '';
+        if (cr.includes('/')) {
+          const total = parseInt(cr.split('/')[1], 10);
+          if (!isNaN(total)) seriesMap[mid] = total;
+        }
+      } catch (_) {}
+    }));
   } catch (_) {}
 
   const result = matieresFiltrees.map(m => ({
