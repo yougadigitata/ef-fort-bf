@@ -90,3 +90,7 @@ android/key.properties
 android/app/release-key.jks
 android/release-key.jks
 dist/
+
+# Keystore et clés de signature
+android/key.properties
+android/release-key.jks
