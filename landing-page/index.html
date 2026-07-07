@@ -7,7 +7,7 @@
   <meta name="keywords" content="YouDis, Youga Digital Services, Marc LOMPO, formation digitale, intelligence artificielle, création de contenu, Burkina Faso, Ouagadougou, EF-FORT.BF, application mobile gratuite">
   <meta property="og:title" content="YouDis – Youga Digital Services | Marc LOMPO">
   <meta property="og:description" content="Je transforme vos idées en solutions digitales simples, efficaces et durables. Formations & Services digitaux à Ouagadougou.">
-  <meta property="og:image" content="assets/images/formation-ia.jpg">
+  <meta property="og:image" content="assets/images/logo-youdis-official.png">
   <meta property="og:url" content="https://ef-fort-bf-app.pages.dev">
   <title>YouDis – Youga Digital Services | Marc LOMPO</title>
 
@@ -155,6 +155,19 @@
       align-items: center;
       gap: 10px;
       text-decoration: none;
+    }
+
+    .nav-logo-img {
+      height: 48px;
+      width: auto;
+      object-fit: contain;
+      transition: var(--transition);
+      filter: drop-shadow(0 2px 6px rgba(37,99,235,0.18));
+    }
+
+    .nav-logo-img:hover {
+      transform: scale(1.04);
+      filter: drop-shadow(0 4px 12px rgba(37,99,235,0.28));
     }
 
     .nav-logo-text {
@@ -1438,6 +1451,93 @@
     .hour-item span { font-size: 0.7rem; color: var(--gray-mid); }
 
     /* ============================================
+       BANNIÈRE SERVICES YOUDIS
+    ============================================ */
+    .youdis-banner-wrap {
+      margin-top: 56px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .youdis-banner-img {
+      width: 100%;
+      max-width: 900px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      transition: var(--transition);
+      border: 2px solid rgba(37,99,235,0.08);
+    }
+
+    .youdis-banner-img:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 28px 80px rgba(37,99,235,0.18);
+    }
+
+    /* ============================================
+       SECTION PROMO VISUELS
+    ============================================ */
+    .promo-visuels-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+    }
+
+    .promo-visuel-card {
+      position: relative;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+      cursor: pointer;
+    }
+
+    .promo-visuel-card img {
+      width: 100%;
+      height: 360px;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.5s ease;
+    }
+
+    .promo-visuel-card:hover img {
+      transform: scale(1.05);
+    }
+
+    .promo-visuel-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(0deg, rgba(10,20,50,0.92) 0%, rgba(10,20,50,0.3) 60%, transparent 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 28px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .promo-visuel-card:hover .promo-visuel-overlay {
+      opacity: 1;
+    }
+
+    .promo-visuel-overlay h3 {
+      color: var(--white);
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .promo-visuel-overlay p {
+      color: rgba(255,255,255,0.75);
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+    }
+
+    /* Sur mobile, overlay toujours visible */
+    @media (hover: none) {
+      .promo-visuel-overlay { opacity: 1; }
+    }
+
+    /* ============================================
        FOOTER
     ============================================ */
     footer {
@@ -1620,12 +1720,14 @@
       .about-inner { grid-template-columns: 1fr; }
       .contact-grid { grid-template-columns: 1fr; }
       .footer-top { grid-template-columns: 1fr 1fr; }
+      .promo-visuels-grid { grid-template-columns: 1fr; gap: 20px; }
     }
 
     @media (max-width: 768px) {
       section { padding: 60px 0; }
       .nav-links { display: none; }
       .nav-hamburger { display: flex; }
+      .nav-logo-img { height: 40px; }
       .hero-stats { gap: 20px; }
       .stat-number { font-size: 1.4rem; }
       .services-grid { grid-template-columns: 1fr; }
@@ -1635,6 +1737,10 @@
       .footer-bottom { flex-direction: column; text-align: center; }
       .hero-actions { flex-direction: column; }
       .btn-primary, .btn-orange, .btn-outline { justify-content: center; }
+      .promo-visuels-grid { grid-template-columns: 1fr; }
+      .promo-visuel-card img { height: 260px; }
+      .promo-visuel-overlay { opacity: 1; }
+      .youdis-banner-img { border-radius: var(--radius-md); }
     }
 
     @media (max-width: 480px) {
@@ -1642,6 +1748,9 @@
       .section-container { padding: 0 16px; }
       .hero-container { padding: 40px 16px; }
       .float-whatsapp { bottom: 20px; right: 20px; width: 52px; height: 52px; font-size: 1.3rem; }
+      .nav-logo-img { height: 36px; }
+      .promo-visuel-card img { height: 220px; }
+      .promo-visuel-overlay h3 { font-size: 1rem; }
     }
 
     /* ============================================
@@ -1661,7 +1770,7 @@
 
   <!-- ======= LOADER ======= -->
   <div id="loader">
-    <div class="loader-logo">You<span>Dis</span></div>
+    <img src="assets/images/logo-youdis-official.png" alt="YouDis" style="height:64px;width:auto;object-fit:contain;margin-bottom:16px;" />
     <div class="loader-dots">
       <div class="dot dot-1"></div>
       <div class="dot dot-2"></div>
@@ -1676,10 +1785,7 @@
   <header id="mainHeader">
     <nav>
       <a href="#hero" class="nav-logo">
-        <div class="nav-logo-text">
-          <span class="nav-logo-title">You<span>Dis</span></span>
-          <span class="nav-logo-sub">Youga Digital Services</span>
-        </div>
+        <img src="assets/images/logo-youdis-official.png" alt="YouDis - Youga Digital Services" class="nav-logo-img">
       </a>
 
       <ul class="nav-links">
@@ -1761,7 +1867,7 @@
       <div class="hero-visual" data-animate data-animate-delay="2">
         <div class="hero-image-wrap">
           <div class="hero-circle-deco"></div>
-          <img src="assets/images/formation-ia.jpg" alt="Marc LOMPO - YouDis" class="hero-image-main">
+          <img src="assets/images/markus-lompo-transformation.jpg" alt="Marc LOMPO - Votre transformation digitale commence là" class="hero-image-main">
           <div class="hero-badge-float top-right">
             <div class="badge-float-icon blue"><i class="fas fa-brain"></i></div>
             <div class="badge-float-text">
@@ -1895,6 +2001,41 @@
         </div>
 
       </div>
+
+      <!-- Bannière visuelle YouDis Services -->
+      <div class="youdis-banner-wrap" data-animate>
+        <img src="assets/images/youdis-services-list.jpg" alt="YouDis – Nos Services : Formations, Services digitaux, IA, Création de contenu, Cybersécurité" class="youdis-banner-img" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= PROMO VISUELS SECTION ======= -->
+  <section id="promo-visuels" style="padding:60px 0;background:linear-gradient(135deg,#0f172a 0%,#1a3c8f 50%,#0f172a 100%);">
+    <div class="section-container">
+      <div class="section-header centered" data-animate>
+        <div class="section-tag" style="background:rgba(249,115,22,0.2);border-color:rgba(249,115,22,0.4);color:#fb923c;"><i class="fas fa-star"></i> Nos Réalisations</div>
+        <h2 class="section-title" style="color:#fff;">Votre projet <span style="color:var(--orange-primary);">prend vie</span> avec YouDis</h2>
+        <div class="divider" style="margin:16px auto 24px;"></div>
+        <p class="section-desc" style="color:rgba(255,255,255,0.75);margin:0 auto 40px;">Création d'affiches professionnelles, logiciels sur mesure pour entreprises et solutions digitales complètes. YouDis accompagne votre croissance.</p>
+      </div>
+      <div class="promo-visuels-grid">
+        <div class="promo-visuel-card" data-animate data-animate-delay="1">
+          <img src="assets/images/youdis-creation-affiches.jpg" alt="Création d'Affiches avec l'IA – YouDis" />
+          <div class="promo-visuel-overlay">
+            <h3>Création d'Affiches avec l'IA</h3>
+            <p>Rapide · Percutant · Professionnel</p>
+            <a href="https://wa.me/22672662161?text=Bonjour%20Marc%2C%20je%20veux%20une%20affiche%20professionnelle%20pour%20mon%20projet." target="_blank" class="btn-orange" style="padding:10px 20px;font-size:0.85rem;"><i class="fab fa-whatsapp"></i> Commander</a>
+          </div>
+        </div>
+        <div class="promo-visuel-card" data-animate data-animate-delay="2">
+          <img src="assets/images/youdis-logiciel-entreprises.jpg" alt="Création de Logiciel pour Entreprises – YouDis" />
+          <div class="promo-visuel-overlay">
+            <h3>Logiciel & Apps sur Mesure</h3>
+            <p>Vos idées prennent vie · Performance décuplée</p>
+            <a href="https://wa.me/22672662161?text=Bonjour%20Marc%2C%20je%20veux%20d%C3%A9velopper%20un%20logiciel%20ou%20une%20application%20pour%20mon%20entreprise." target="_blank" class="btn-orange" style="padding:10px 20px;font-size:0.85rem;"><i class="fab fa-whatsapp"></i> Discuter</a>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -1916,22 +2057,22 @@
         <!-- Formation 1 : IA -->
         <div class="formation-card" data-animate data-animate-delay="1">
           <div class="formation-image">
-            <img src="assets/images/formation-ia.jpg" alt="Formation IA - YouDis">
-            <span class="formation-badge">Disponible</span>
+            <img src="assets/images/markus-lompo-marketing-digital.jpg" alt="Formation Marketing Digital + IA - YouDis">
+            <span class="formation-badge">Populaire</span>
           </div>
           <div class="formation-body">
-            <div class="formation-category">Intelligence Artificielle</div>
-            <h3 class="formation-title">Maîtrise de l'Intelligence Artificielle</h3>
-            <p class="formation-desc">Boostez votre productivité avec l'IA. Apprenez à utiliser Claude AI, le codage assisté, la rédaction automatisée et la création de contenu avec l'IA.</p>
+            <div class="formation-category">Marketing Digital + IA</div>
+            <h3 class="formation-title">Marketing Digital en Afrique + Intelligence Artificielle</h3>
+            <p class="formation-desc">Boostez votre présence en ligne, automatisez, innovez et développez votre activité grâce au marketing digital et à l'IA. Solutions pensées pour l'Afrique.</p>
             <ul class="formation-points">
-              <li><i class="fas fa-circle"></i> Claude AI & prompts avancés</li>
-              <li><i class="fas fa-circle"></i> Codage assisté par l'IA</li>
-              <li><i class="fas fa-circle"></i> Rédaction & copywriting IA</li>
-              <li><i class="fas fa-circle"></i> Création de contenu automatisée</li>
+              <li><i class="fas fa-circle"></i> Stratégie digitale & marketing de contenu</li>
+              <li><i class="fas fa-circle"></i> Réseaux sociaux & publicité en ligne</li>
+              <li><i class="fas fa-circle"></i> Intelligence Artificielle appliquée</li>
+              <li><i class="fas fa-circle"></i> Monétisation & freelance en Afrique</li>
             </ul>
             <div class="formation-cta">
               <div class="formation-price"><strong>Sur inscription</strong></div>
-              <a href="https://wa.me/22672662161?text=Bonjour%20Marc%2C%20je%20suis%20int%C3%A9ress%C3%A9(e)%20par%20la%20formation%20Intelligence%20Artificielle.%20Pouvez-vous%20me%20donner%20plus%20d%27informations%20?" class="btn-formation" target="_blank">
+              <a href="https://wa.me/22672662161?text=Bonjour%20Marc%2C%20je%20suis%20int%C3%A9ress%C3%A9(e)%20par%20la%20formation%20Marketing%20Digital%20%2B%20IA.%20Pouvez-vous%20me%20donner%20plus%20d%27informations%20?" class="btn-formation" target="_blank">
                 <i class="fab fa-whatsapp"></i> Je m'inscris
               </a>
             </div>
@@ -1941,22 +2082,22 @@
         <!-- Formation 2 : Création contenu & monétisation -->
         <div class="formation-card" data-animate data-animate-delay="2">
           <div class="formation-image">
-            <img src="assets/images/formation-contenu-video.jpg" alt="Formation Création Contenu - YouDis">
-            <span class="formation-badge">Populaire</span>
+            <img src="assets/images/markus-lompo-creation-contenu.jpg" alt="Formation Création de Contenu & Devenir Créateur - YouDis">
+            <span class="formation-badge">Nouveau</span>
           </div>
           <div class="formation-body">
             <div class="formation-category">Création & Monétisation</div>
-            <h3 class="formation-title">Création de Contenu, Montage Vidéo & Monétisation</h3>
-            <p class="formation-desc">Maîtrisez les outils des créateurs de demain. Créez du contenu impactant sur YouTube, TikTok & Instagram, et monétisez votre audience.</p>
+            <h3 class="formation-title">Devenir Créateur — Innover, Inspirer, Impacter</h3>
+            <p class="formation-desc">Transformez vos idées en contenu qui marque. Audiovisuel, montage, création percutante et IA — les outils pros des créateurs de demain, à votre portée.</p>
             <ul class="formation-points">
-              <li><i class="fas fa-circle"></i> Stratégie de contenu social media</li>
-              <li><i class="fas fa-circle"></i> Montage vidéo pro (Premiere Pro & CapCut)</li>
-              <li><i class="fas fa-circle"></i> Croissance organique & communauté</li>
-              <li><i class="fas fa-circle"></i> Monétisation & revenus durables</li>
+              <li><i class="fas fa-circle"></i> Production vidéo professionnelle (Audiovisuel)</li>
+              <li><i class="fas fa-circle"></i> Montage photo & vidéo créatif</li>
+              <li><i class="fas fa-circle"></i> Création de contenu percutant</li>
+              <li><i class="fas fa-circle"></i> Intelligence Artificielle pour créateurs</li>
             </ul>
             <div class="formation-cta">
               <div class="formation-price"><strong>Sur inscription</strong></div>
-              <a href="https://wa.me/22672662161?text=Bonjour%20Marc%2C%20je%20suis%20int%C3%A9ress%C3%A9(e)%20par%20la%20formation%20Cr%C3%A9ation%20de%20Contenu%20%26%20Mon%C3%A9tisation.%20Pouvez-vous%20me%20donner%20plus%20d%27informations%20?" class="btn-formation" target="_blank">
+              <a href="https://wa.me/22672662161?text=Bonjour%20Marc%2C%20je%20suis%20int%C3%A9ress%C3%A9(e)%20par%20la%20formation%20Devenir%20Créateur.%20Pouvez-vous%20me%20donner%20plus%20d%27informations%20?" class="btn-formation" target="_blank">
                 <i class="fab fa-whatsapp"></i> Je m'inscris
               </a>
             </div>
@@ -1966,22 +2107,22 @@
         <!-- Formation 3 : Jeux vidéo -->
         <div class="formation-card" data-animate data-animate-delay="3">
           <div class="formation-image">
-            <img src="assets/images/formation-jeux.jpg" alt="Formation Jeux Vidéo - YouDis">
+            <img src="assets/images/youdis-formation-logiciel-saas.jpg" alt="Formation Création de Logiciel et SaaS - YouDis">
             <span class="formation-badge">Nouveau</span>
           </div>
           <div class="formation-body">
-            <div class="formation-category">Jeux & Gamification</div>
-            <h3 class="formation-title">Développement de Jeux Vidéo & Gamification</h3>
-            <p class="formation-desc">Transformez vos idées en jeux mémorables. Apprenez la conception de jeux, le développement 2D/3D et les mécaniques de gamification pour votre marque.</p>
+            <div class="formation-category">Développement & SaaS</div>
+            <h3 class="formation-title">Formation Création de Logiciel et de SaaS</h3>
+            <p class="formation-desc">De l'idée au logiciel — créez l'avenir ! Apprenez à concevoir et développer des logiciels et produits SaaS professionnels avec les technologies modernes.</p>
             <ul class="formation-points">
-              <li><i class="fas fa-circle"></i> Conception & game design</li>
-              <li><i class="fas fa-circle"></i> Développement 2D & 3D</li>
-              <li><i class="fas fa-circle"></i> Mécaniques & gamification</li>
-              <li><i class="fas fa-circle"></i> Publication & monétisation</li>
+              <li><i class="fas fa-circle"></i> Apprendre par la pratique (API, JS, PHP, Python)</li>
+              <li><i class="fas fa-circle"></i> Maîtriser les technologies modernes</li>
+              <li><i class="fas fa-circle"></i> Créer vos propres logiciels et SaaS</li>
+              <li><i class="fas fa-circle"></i> Attestation incluse + Boostez votre avenir</li>
             </ul>
             <div class="formation-cta">
               <div class="formation-price"><strong>Sur inscription</strong></div>
-              <a href="https://wa.me/22672662161?text=Bonjour%20Marc%2C%20je%20suis%20int%C3%A9ress%C3%A9(e)%20par%20la%20formation%20D%C3%A9veloppement%20de%20Jeux%20Vid%C3%A9o.%20Pouvez-vous%20me%20donner%20plus%20d%27informations%20?" class="btn-formation" target="_blank">
+              <a href="https://wa.me/22672662161?text=Bonjour%20Marc%2C%20je%20suis%20int%C3%A9ress%C3%A9(e)%20par%20la%20formation%20Cr%C3%A9ation%20de%20Logiciel%20et%20SaaS.%20Pouvez-vous%20me%20donner%20plus%20d%27informations%20?" class="btn-formation" target="_blank">
                 <i class="fab fa-whatsapp"></i> Je m'inscris
               </a>
             </div>
@@ -2123,7 +2264,7 @@
     <div class="section-container">
       <div class="about-inner">
         <div class="about-image-side" data-animate>
-          <img src="assets/images/formation-contenu-video.jpg" alt="Marc LOMPO - Fondateur YouDis" class="about-image-main">
+          <img src="assets/images/markus-lompo-transformation.jpg" alt="Marc LOMPO - Fondateur YouDis" class="about-image-main">
           <div class="about-circle-deco"></div>
           <div class="about-experience-badge">
             <strong><i class="fas fa-award"></i></strong>
@@ -2275,7 +2416,7 @@
     <div class="footer-inner">
       <div class="footer-top">
         <div class="footer-brand">
-          <div class="footer-logo">You<span>Dis</span></div>
+          <img src="assets/images/logo-youdis-official.png" alt="YouDis - Youga Digital Services" style="height:56px;width:auto;object-fit:contain;margin-bottom:8px;display:block;" />
           <div class="footer-tagline">Youga Digital Services</div>
           <p>Je transforme vos idées en solutions digitales simples, efficaces et durables. Basé à Ouagadougou, Burkina Faso.</p>
           <div class="footer-socials">
