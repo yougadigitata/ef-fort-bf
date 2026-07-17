@@ -7,8 +7,9 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
     "hono": "^4.2.0",
-    "@supabase/supabase-js": "^2.39.0"
+    "pg": "^8.22.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240208.0",

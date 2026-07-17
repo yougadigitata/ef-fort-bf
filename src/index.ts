@@ -1378,6 +1378,213 @@ app.get('/api/user/dashboard-stats', async (c) => {
   });
 });
 
+// ══════════════════════════════════════════════════════════════
+// POST /api/admin/run-migration — Migration e-learning v9 (Agent 4)
+// Crée les tables chapitres, lecons, user_progress_lecon
+// Sécurisé par secret: EfFortMigration2026!
+// ══════════════════════════════════════════════════════════════
+app.post('/api/admin/run-migration', async (c) => {
+  const body = await c.req.json().catch(() => ({})) as any;
+  if (body['secret'] !== 'EfFortMigration2026!') {
+    return c.json({ error: 'Secret invalide.' }, 403);
+  }
+
+  const supabaseUrl = (c.env as any).SUPABASE_URL || 'https://xqifdbgqxyrlhrkwlyir.supabase.co';
+  const serviceKey = (c.env as any).SUPABASE_KEY || '';
+  const results: string[] = [];
+
+  // Utiliser l'API pg-meta interne Supabase pour créer les tables
+  // Approche : Créer une fonction PostgreSQL via l'API Supabase REST, puis l'appeler
+  
+  // Étape 1: Tester si les tables existent déjà via REST
+  const checkResp = await fetch(`${supabaseUrl}/rest/v1/chapitres?select=id&limit=1`, {
+    headers: { 'apikey': serviceKey, 'Authorization': `Bearer ${serviceKey}` },
+  });
+  
+  if (checkResp.ok || checkResp.status === 200) {
+    results.push('✅ Tables déjà créées!');
+    const { data: ch } = await import('./lib/db').then(m => {
+      const db = m.getDB({ SUPABASE_URL: supabaseUrl, SUPABASE_KEY: serviceKey, JWT_SECRET: '' });
+      return db.from('chapitres').select('count(*)');
+    });
+    return c.json({ success: true, message: 'Tables déjà existantes', results });
+  }
+
+  // Étape 2: Créer la table via l'API Supabase Auth avec SQL brut
+  // Méthode: Supabase expose une API de requête SQL via le header Content-Type: text/plain
+  const sqlStatements = [
+    `CREATE TABLE IF NOT EXISTS public.chapitres (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), matiere_id UUID NOT NULL REFERENCES public.matieres(id) ON DELETE CASCADE, titre TEXT NOT NULL, description TEXT, ordre INTEGER NOT NULL DEFAULT 0, created_at TIMESTAMPTZ DEFAULT NOW())`,
+    `CREATE TABLE IF NOT EXISTS public.lecons (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), chapitre_id UUID NOT NULL REFERENCES public.chapitres(id) ON DELETE CASCADE, titre TEXT NOT NULL, contenu TEXT, video_url TEXT, ordre INTEGER NOT NULL DEFAULT 0, duree_minutes INTEGER DEFAULT 10, created_at TIMESTAMPTZ DEFAULT NOW())`,
+    `ALTER TABLE public.questions ADD COLUMN IF NOT EXISTS chapitre_id UUID REFERENCES public.chapitres(id) ON DELETE SET NULL`,
+    `CREATE TABLE IF NOT EXISTS public.user_progress_lecon (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), user_id UUID NOT NULL, lecon_id UUID NOT NULL REFERENCES public.lecons(id) ON DELETE CASCADE, termine BOOLEAN DEFAULT FALSE, date_termine TIMESTAMPTZ, created_at TIMESTAMPTZ DEFAULT NOW(), UNIQUE(user_id, lecon_id))`,
+    `CREATE INDEX IF NOT EXISTS idx_chapitres_matiere ON public.chapitres(matiere_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_lecons_chapitre ON public.lecons(chapitre_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_upl_user ON public.user_progress_lecon(user_id)`,
+    `ALTER TABLE public.chapitres ENABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE public.lecons ENABLE ROW LEVEL SECURITY`,
+    `ALTER TABLE public.user_progress_lecon ENABLE ROW LEVEL SECURITY`,
+  ];
+
+  // Essayer via pg-meta internal API
+  for (const sql of sqlStatements) {
+    try {
+      // Méthode pg-meta
+      const r1 = await fetch(`${supabaseUrl}/pg-meta/v1/query`, {
+        method: 'POST',
+        headers: {
+          'apikey': serviceKey,
+          'Authorization': `Bearer ${serviceKey}`,
+          'Content-Type': 'application/json',
+          'x-pg-meta-host': 'supabase',
+        },
+        body: JSON.stringify({ query: sql }),
+      });
+      if (r1.ok) {
+        results.push(`✅ ${sql.substring(0, 60)}...`);
+        continue;
+      }
+      results.push(`⚠️ pg-meta: ${r1.status} — ${sql.substring(0, 40)}`);
+    } catch (e: any) {
+      results.push(`❌ ${e.message} — ${sql.substring(0, 40)}`);
+    }
+  }
+
+  return c.json({ 
+    success: true, 
+    results,
+    message: 'Migration tentée via pg-meta',
+    note: 'Si les tables ne sont pas créées, exécuter le SQL manuellement dans Supabase Dashboard',
+    sql_url: 'https://supabase.com/dashboard/project/xqifdbgqxyrlhrkwlyir/sql/new',
+  });
+});
+
+// ══════════════════════════════════════════════════════════════
+// POST /api/admin/seed-chapitres — Insérer les 9 chapitres initiaux
+// Nécessite que les tables soient déjà créées
+// ══════════════════════════════════════════════════════════════
+app.post('/api/admin/seed-chapitres', async (c) => {
+  const body = await c.req.json().catch(() => ({})) as any;
+  if (body['secret'] !== 'EfFortMigration2026!') {
+    return c.json({ error: 'Secret invalide.' }, 403);
+  }
+
+  const { getDB } = await import('./lib/db');
+  const db = getDB(c.env);
+
+  const chapitres = [
+    { matiere_id: '9497ca2c-dc1b-43dd-8b7a-af11dde7039d', titre: 'Chapitre 1 : Introduction au Droit', description: 'Notions fondamentales du droit burkinabè', ordre: 1 },
+    { matiere_id: '9497ca2c-dc1b-43dd-8b7a-af11dde7039d', titre: 'Chapitre 2 : Droit Constitutionnel', description: 'Constitution du Burkina Faso, institutions', ordre: 2 },
+    { matiere_id: '9497ca2c-dc1b-43dd-8b7a-af11dde7039d', titre: 'Chapitre 3 : Droit Administratif', description: 'Actes administratifs et contentieux', ordre: 3 },
+    { matiere_id: 'd1560595-b4d9-45d2-af70-8bdf7016af72', titre: 'Chapitre 1 : Grammaire et Orthographe', description: 'Règles grammaticales et conjugaison', ordre: 1 },
+    { matiere_id: 'd1560595-b4d9-45d2-af70-8bdf7016af72', titre: 'Chapitre 2 : Expression Écrite', description: 'Rédaction, résumé et synthèse', ordre: 2 },
+    { matiere_id: 'd1560595-b4d9-45d2-af70-8bdf7016af72', titre: 'Chapitre 3 : Littérature Francophone', description: 'Auteurs africains au programme', ordre: 3 },
+    { matiere_id: '54f53d06-2d5d-4d82-91bc-4bfff904c12b', titre: 'Chapitre 1 : Logique et Raisonnement', description: 'Séries numériques et suites logiques', ordre: 1 },
+    { matiere_id: '54f53d06-2d5d-4d82-91bc-4bfff904c12b', titre: 'Chapitre 2 : Figures et Matrices', description: 'Tests visuels et rotations', ordre: 2 },
+    { matiere_id: '54f53d06-2d5d-4d82-91bc-4bfff904c12b', titre: 'Chapitre 3 : Calcul Mental', description: 'Rapidité et résolution de problèmes', ordre: 3 },
+  ];
+
+  const inserted: string[] = [];
+  const errors: string[] = [];
+
+  for (const ch of chapitres) {
+    const { error } = await db.from('chapitres').insert(ch);
+    if (error) {
+      if (error.message.includes('duplicate') || error.code === '23505') {
+        inserted.push(`ℹ️ Déjà existant: ${ch.titre}`);
+      } else {
+        errors.push(`❌ ${ch.titre}: ${error.message}`);
+      }
+    } else {
+      inserted.push(`✅ Inséré: ${ch.titre}`);
+    }
+  }
+
+  // Vérification
+  const { data: count } = await db.from('chapitres').select('id', { count: 'exact', head: true });
+
+  return c.json({ 
+    success: errors.length === 0,
+    inserted,
+    errors,
+    total_chapitres: count ?? 'N/A',
+  });
+});
+
+// ══════════════════════════════════════════════════════════════
+// POST /api/admin/seed-lecons — Insérer des leçons de démo
+// ══════════════════════════════════════════════════════════════
+app.post('/api/admin/seed-lecons', async (c) => {
+  const body = await c.req.json().catch(() => ({})) as any;
+  if (body['secret'] !== 'EfFortMigration2026!') {
+    return c.json({ error: 'Secret invalide.' }, 403);
+  }
+
+  const { getDB } = await import('./lib/db');
+  const db = getDB(c.env);
+
+  // Récupérer le premier chapitre de Droit
+  const { data: chapitres } = await db
+    .from('chapitres')
+    .select('id, titre, matiere_id')
+    .eq('matiere_id', '9497ca2c-dc1b-43dd-8b7a-af11dde7039d')
+    .order('ordre', { ascending: true })
+    .limit(3);
+
+  if (!chapitres || chapitres.length === 0) {
+    return c.json({ error: 'Aucun chapitre trouvé. Exécutez d\'abord seed-chapitres.' }, 400);
+  }
+
+  const leconsParChapitre: Record<string, any[]> = {
+    0: [ // Chapitre 1: Introduction au Droit
+      { titre: 'Leçon 1 : Les sources du droit', contenu: 'La loi, les règlements, la jurisprudence et la coutume constituent les principales sources du droit. Au Burkina Faso, la Constitution du 2 juin 1991 est la norme suprême. Elle organise les pouvoirs de l\'État et garantit les droits fondamentaux des citoyens burkinabè.', ordre: 1, duree_minutes: 15 },
+      { titre: 'Leçon 2 : Les branches du droit', contenu: 'Le droit se divise en deux grandes branches : le droit public et le droit privé. Le droit public régit les rapports entre l\'État et les individus (droit constitutionnel, administratif, fiscal). Le droit privé régit les rapports entre particuliers (droit civil, commercial, du travail).', ordre: 2, duree_minutes: 20 },
+      { titre: 'Leçon 3 : Les personnes juridiques', contenu: 'En droit, on distingue les personnes physiques (êtres humains) et les personnes morales (entreprises, associations, État). Chaque personne juridique possède une capacité juridique qui lui permet d\'acquérir des droits et de contracter des obligations.', ordre: 3, duree_minutes: 18 },
+    ],
+    1: [ // Chapitre 2: Droit Constitutionnel
+      { titre: 'Leçon 1 : La Constitution du Burkina Faso', contenu: 'La Constitution burkinabè adoptée le 2 juin 1991 établit un État unitaire, démocratique et laïc. Elle consacre la souveraineté nationale, la séparation des pouvoirs et les droits fondamentaux. Elle a été révisée à plusieurs reprises pour adapter l\'organisation de l\'État.', ordre: 1, duree_minutes: 22 },
+      { titre: 'Leçon 2 : Les institutions de l\'État', contenu: 'Les institutions burkinabè comprennent : le Président du Faso (pouvoir exécutif), le Gouvernement, l\'Assemblée législative de la Transition (ALT), et le Pouvoir judiciaire. Chaque institution a des attributions précises définies par la Constitution.', ordre: 2, duree_minutes: 25 },
+    ],
+    2: [ // Chapitre 3: Droit Administratif
+      { titre: 'Leçon 1 : L\'administration publique', contenu: 'L\'administration publique au Burkina Faso comprend l\'administration centrale (ministères), l\'administration territoriale (régions, provinces, communes) et les établissements publics. Elle est soumise au principe de légalité et doit agir dans le respect des textes en vigueur.', ordre: 1, duree_minutes: 20 },
+      { titre: 'Leçon 2 : Les actes administratifs', contenu: 'Les actes administratifs unilatéraux (décrets, arrêtés, décisions) et les contrats administratifs (marchés publics, concessions) constituent les principales formes d\'action de l\'administration. Ils peuvent faire l\'objet d\'un recours devant les juridictions administratives.', ordre: 2, duree_minutes: 18 },
+    ],
+  };
+
+  const inserted: string[] = [];
+  const errors: string[] = [];
+
+  for (let i = 0; i < chapitres.length; i++) {
+    const chapitre = chapitres[i];
+    const lecons = leconsParChapitre[i] || [];
+    
+    for (const lecon of lecons) {
+      const { error } = await db.from('lecons').insert({
+        ...lecon,
+        chapitre_id: chapitre.id,
+      });
+      
+      if (error) {
+        if (error.code === '23505') {
+          inserted.push(`ℹ️ Déjà existante: ${lecon.titre}`);
+        } else {
+          errors.push(`❌ ${lecon.titre}: ${error.message}`);
+        }
+      } else {
+        inserted.push(`✅ Leçon créée: ${lecon.titre}`);
+      }
+    }
+  }
+
+  const { count: totalLecons } = await db.from('lecons').select('*', { count: 'exact', head: true });
+
+  return c.json({ 
+    success: errors.length === 0,
+    inserted,
+    errors,
+    total_lecons: totalLecons ?? 0,
+  });
+});
+
 // 404
 app.notFound((c) => c.json({ error: 'Route introuvable.' }, 404));
 
