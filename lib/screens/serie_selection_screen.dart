@@ -297,23 +297,17 @@ class _SerieSelectionScreenState extends State<SerieSelectionScreen> {
     final titre = serie['titre'] ?? 'Série $num';
     final nbQ = serie['nb_questions'] ?? 20;
     final duree = serie['duree_minutes'] ?? 45;
-    // RÈGLE STRICTE : seule la 1ère série (index 0) est GRATUITE pour tous
-    // Les champs est_demo en BDD sont ignorés — seul l'index 0 compte
-    final isFreeAllowed = index == 0;
-    final isLocked = !ApiService.isAbonne && !isFreeAllowed;
-    // Badge GRATUIT visible uniquement pour non-abonnés sur la série 1
-    final showGratuitBadge = isFreeAllowed && !ApiService.isAbonne;
+    // ✅ Toutes les séries sont libres
+    final isFreeAllowed = true;
+    final isLocked = false;
+    final showGratuitBadge = false;
     // 🔥 Badge populaire : séries 1, 3, 5, 8, 10 (les plus consultées)
     final popularIndices = [0, 2, 4, 7, 9];
     final isPopular = popularIndices.contains(index);
 
     return GestureDetector(
       onTap: () {
-        if (isLocked) {
-          // Montrer bannière premium
-          _showPremiumDialog();
-          return;
-        }
+        // ✅ Accès libre
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -336,10 +330,10 @@ class _SerieSelectionScreenState extends State<SerieSelectionScreen> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isFreeAllowed && !ApiService.isAbonne
+            color: false
                 ? _waGreen.withValues(alpha: 0.5)
                 : Colors.grey.shade200,
-            width: isFreeAllowed && !ApiService.isAbonne ? 1.5 : 1,
+            width: false ? 1.5 : 1,
           ),
           boxShadow: [
             BoxShadow(
@@ -356,12 +350,12 @@ class _SerieSelectionScreenState extends State<SerieSelectionScreen> {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: isFreeAllowed && !ApiService.isAbonne
+                color: false
                     ? _waGreen.withValues(alpha: 0.15)
                     : _color.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isFreeAllowed && !ApiService.isAbonne
+                  color: false
                       ? _waGreen.withValues(alpha: 0.5)
                       : _color.withValues(alpha: 0.3),
                   width: 1.5,
@@ -373,7 +367,7 @@ class _SerieSelectionScreenState extends State<SerieSelectionScreen> {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
-                    color: isFreeAllowed && !ApiService.isAbonne ? _waDarkGreen : _color,
+                    color: false ? _waDarkGreen : _color,
                   ),
                 ),
               ),
@@ -450,8 +444,7 @@ class _SerieSelectionScreenState extends State<SerieSelectionScreen> {
                       const SizedBox(width: 8),
                       _infoChip(Icons.timer_outlined, '$duree min'),
                       const SizedBox(width: 8),
-                      if (isLocked)
-                        _infoChip(Icons.lock_outline, 'Premium', color: Colors.orange),
+
                       if (showGratuitBadge)
                         _infoChip(Icons.lock_open_outlined, 'Gratuit', color: _waGreen),
                     ],
@@ -463,9 +456,7 @@ class _SerieSelectionScreenState extends State<SerieSelectionScreen> {
             // Flèche
             Icon(
               Icons.chevron_right_rounded,
-              color: isLocked
-                  ? Colors.orange
-                  : _waGreen,
+              color: _waGreen,
               size: 24,
             ),
           ],

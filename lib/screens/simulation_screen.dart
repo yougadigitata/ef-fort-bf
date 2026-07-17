@@ -9,7 +9,6 @@ import '../services/bell_service.dart';
 import '../services/pdf_service.dart';
 import '../widgets/logo_widget.dart';
 import '../widgets/math_text_widget.dart';
-import 'abonnement_screen.dart';
 
 // ══════════════════════════════════════════════════════════════
 // SIMULATION SCREEN v6 — MEGA PROMPT v3.0
@@ -956,7 +955,7 @@ class _SimulationExamScreenState extends State<SimulationExamScreen> {
               Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const AbonnementScreen()),
+                MaterialPageRoute(builder: (_) => Container()),
               );
             },
             icon: const Icon(Icons.star_rounded, size: 18),

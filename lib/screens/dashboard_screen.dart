@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
 import '../services/bell_service.dart';
-import '../services/promo_service.dart';
 import '../widgets/logo_widget.dart';
-import 'abonnement_screen.dart';
 import 'demo_examen_screen.dart';
 import 'actualites_chat_screen.dart';
 import 'entraide_screen.dart';
@@ -187,7 +185,8 @@ class _DashboardScreenState extends State<DashboardScreen>
     final prenom = user?['prenom'] ?? 'Candidat';
     final nom = user?['nom'] ?? '';
     final niveau = user?['niveau'] ?? 'BAC';
-    final isAbonne = user?['abonnement_actif'] == true;
+    // ✅ ACCÈS LIBRE : tous les utilisateurs ont accès complet
+    const isAbonne = true;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -198,13 +197,12 @@ class _DashboardScreenState extends State<DashboardScreen>
           child: CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
-              // ─── SECTION 1 : En-tête PREMIUM animé ─────────────────
+              // ─── SECTION 1 : En-tête animé ─────────────────
               SliverToBoxAdapter(
                 child: _buildPremiumHeader(prenom, nom, niveau, isAbonne),
               ),
 
               // ─── SECTION 1b : Bandeau ACTUALITÉS défilant AGRANDI ──
-              //    (occupe l'espace de l'ancienne bannière de bienvenue)
               if (_loadingActu)
                 const SliverToBoxAdapter(
                   child: Padding(
@@ -225,26 +223,13 @@ class _DashboardScreenState extends State<DashboardScreen>
               ),
 
               // ─── SECTION 3a : Bouton DÉMO GRATUITE ─────────────────
-              //                 (visible pour tous, accès libre) ──────
               SliverToBoxAdapter(
                 child: _buildDemoButton(),
               ),
 
-              // ─── SECTION 3b : Bouton "J'AI PAYÉ — ENVOYER MA DEMANDE"
-              //                 (visible uniquement si non abonné) ────
-              if (!isAbonne)
-                SliverToBoxAdapter(
-                  child: _buildDemandeAbonnementButton(),
-                ),
-
               // ─── SECTION 4 : Matières rapides ──────────────────────
               SliverToBoxAdapter(
                 child: _buildMatieresSection(),
-              ),
-
-              // ─── SECTION 6 : Abonnement animé ───────────────────────
-              SliverToBoxAdapter(
-                child: _buildAbonnementSection(isAbonne),
               ),
 
               // ─── SECTION 7 : Communauté ──────────────────────────────
@@ -702,32 +687,25 @@ class _DashboardScreenState extends State<DashboardScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        gradient: isAbonne
-            ? const LinearGradient(
-                colors: [Color(0xFFD4A017), Color(0xFFB8860B)],
-              )
-            : null,
-        color: isAbonne ? null : Colors.white.withValues(alpha: 0.15),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1A5C38), Color(0xFF0E3D24)],
+        ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isAbonne
-              ? const Color(0xFFF0C040)
-              : Colors.white.withValues(alpha: 0.3),
+          color: const Color(0xFF4CAF50),
           width: 1.5,
         ),
-        boxShadow: isAbonne
-            ? [
-                BoxShadow(
-                  color: const Color(0xFFD4A017).withValues(alpha: 0.5),
-                  blurRadius: 10,
-                ),
-              ]
-            : null,
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1A5C38).withValues(alpha: 0.5),
+            blurRadius: 10,
+          ),
+        ],
       ),
-      child: Text(
-        isAbonne ? '👑 Premium' : '🔓 Gratuit',
-        style: const TextStyle(
-          fontSize: 14,
+      child: const Text(
+        '🔓 100% Gratuit',
+        style: TextStyle(
+          fontSize: 13,
           fontWeight: FontWeight.w700,
           color: Colors.white,
         ),
@@ -1245,219 +1223,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   // BOUTON "J'AI PAYÉ — ENVOYER MA DEMANDE" (Page d'accueil)
   // Envoie la demande à l'administrateur via ApiService
   // ═══════════════════════════════════════════════════════════════════
-  Widget _buildDemandeAbonnementButton() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: const Color(0xFF25D366).withValues(alpha: 0.35),
-            width: 1.5,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF25D366).withValues(alpha: 0.12),
-              blurRadius: 14,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Bouton principal
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton.icon(
-                onPressed: _envoyerDemandeDepuisAccueil,
-                icon: const Text('📩', style: TextStyle(fontSize: 22)),
-                label: const Text(
-                  'J\'AI PAYÉ — ENVOYER MA DEMANDE',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0.3,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF25D366),
-                  foregroundColor: Colors.white,
-                  elevation: 6,
-                  shadowColor: const Color(0xFF25D366).withValues(alpha: 0.5),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            // Explication sous le bouton
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('💡', style: TextStyle(fontSize: 16)),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Si vous avez effectué votre paiement via Orange Money, soumettez votre demande ici. Notre équipe vous débloquera l\'accès premium.',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textLight,
-                      height: 1.4,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Envoie la demande d'abonnement depuis la page d'accueil
-  Future<void> _envoyerDemandeDepuisAccueil() async {
-    // Vérifier que l'utilisateur est connecté
-    if (!ApiService.isLoggedIn) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Vous devez être connecté pour envoyer une demande.',
-          ),
-          backgroundColor: AppColors.error,
-          duration: Duration(seconds: 5),
-        ),
-      );
-      return;
-    }
-
-    // Afficher un dialogue de confirmation
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: const Row(
-          children: [
-            Text('📩', style: TextStyle(fontSize: 20)),
-            SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                'Envoyer ma demande',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-              ),
-            ),
-          ],
-        ),
-        content: Text(
-          'Confirmez-vous avoir effectué le paiement de ${PromoService.prixActuel} via Orange Money ?\n\nVotre demande sera transmise à notre équipe qui activera votre accès premium.',
-          style: const TextStyle(height: 1.5, fontSize: 14),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Annuler', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF25D366),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            child: const Text(
-              'Confirmer',
-              style: TextStyle(fontWeight: FontWeight.w800),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm != true || !mounted) return;
-
-    // Afficher un indicateur de chargement
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
-      ),
-    );
-
-    final result = await ApiService.demanderAbonnement('Orange Money');
-    if (!mounted) return;
-    Navigator.pop(context); // Fermer le loader
-
-    if (result['success'] == true) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            '✅ Demande envoyée ! Notre équipe va vous contacter très prochainement.',
-          ),
-          backgroundColor: AppColors.success,
-          duration: Duration(seconds: 6),
-        ),
-      );
-    } else if (result['pending'] == true) {
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: const Row(
-            children: [
-              Text('⌛', style: TextStyle(fontSize: 18)),
-              SizedBox(width: 10),
-              Text(
-                'Demande en cours',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-              ),
-            ],
-          ),
-          content: const Text(
-            'Votre demande est déjà en cours de traitement.\nNotre équipe vous contacte très prochainement.',
-            style: TextStyle(height: 1.5, fontSize: 14),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text(
-                'OK',
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    } else if (result['already_subscribed'] == true) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Votre abonnement est déjà actif !'),
-          backgroundColor: AppColors.success,
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['error'] ?? 'Erreur lors de l\'envoi'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-    }
-  }
+  // Bouton de demande d'abonnement supprimé (accès 100% gratuit)
 
   // ═══════════════════════════════════════════════════════════════════
   // SECTION MATIÈRES avec entrée animée en cascade
@@ -1519,166 +1285,9 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  // ═══════════════════════════════════════════════════════════════════
-  // SECTION ABONNEMENT
-  // ═══════════════════════════════════════════════════════════════════
-  Widget _buildAbonnementSection(bool isAbonne) {
-    return AnimatedBuilder(
-      animation: _cardSlideAnim,
-      builder: (_, child) {
-        return Transform.translate(
-          offset: Offset(0, 40 * (1 - _cardSlideAnim.value)),
-          child: Opacity(
-            opacity: _cardSlideAnim.value,
-            child: child,
-          ),
-        );
-      },
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-        child: GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const AbonnementScreen()),
-            );
-          },
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(
-                color: const Color(0xFFD4A017).withValues(alpha: 0.35),
-                width: 1.5,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFD4A017).withValues(alpha: 0.1),
-                  blurRadius: 18,
-                  offset: const Offset(0, 6),
-                ),
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFD4A017), Color(0xFFE8B520)],
-                        ),
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFFD4A017).withValues(alpha: 0.3),
-                            blurRadius: 8,
-                          ),
-                        ],
-                      ),
-                      child: const Text('💳', style: TextStyle(fontSize: 20)),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Débloquer EF-FORT Complet',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.textDark,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          RichText(
-                            text: TextSpan(
-                              children: [
-                                if (PromoService.promoActive)
-                                  TextSpan(
-                                    text: '${PromoService.ancienPrix.replaceAll(' FCFA', '')} ',
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.red,
-                                      decoration: TextDecoration.lineThrough,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                TextSpan(
-                                  text: '${PromoService.prixActuel} ',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w900,
-                                    color: Color(0xFFD4A017),
-                                  ),
-                                ),
-                                const TextSpan(
-                                  text: '· accès illimité',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: AppColors.textLight,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Icon(Icons.arrow_forward_ios_rounded,
-                        color: AppColors.primary, size: 16),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 6,
-                  children: [
-                    _buildAdvantageTag('✅ Questions illimitées'),
-                    _buildAdvantageTag('📄 PDF corrigés'),
-                    _buildAdvantageTag('🤝 Entraide'),
-                    _buildAdvantageTag('🏆 Simulations'),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const AbonnementScreen()),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      elevation: 4,
-                      shadowColor: AppColors.primary.withValues(alpha: 0.4),
-                    ),
-                    child: const Text(
-                      '🚀  VOIR L\'OFFRE PREMIUM',
-                      style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  // Section abonnement supprimée (accès 100% gratuit)
+  // ignore: unused_element
+  Widget _buildAbonnementSection(bool isAbonne) => const SizedBox.shrink();
 
   Widget _buildAdvantageTag(String text) {
     return Container(

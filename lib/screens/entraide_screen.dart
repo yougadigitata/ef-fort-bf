@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
-import 'abonnement_screen.dart';
 
 // ══════════════════════════════════════════════════════════════
 // ENTRAIDE v7.0 — Interface communautaire enrichie
@@ -455,11 +454,10 @@ class _EntraideScreenState extends State<EntraideScreen>
   Widget build(BuildContext context) {
     final user = ApiService.currentUser;
     final isAdmin = ApiService.isAdmin;
-    final isAbonne = ApiService.isAbonne;
+    const isAbonne = true; // ✅ Accès libre
     final pinnedCount = _messages.where((m) => m['is_pinned'] == true).length;
 
-    // ── Mur Premium : Entraide réservée aux abonnés ──────────────────
-    if (!isAbonne && !isAdmin) {
+    if (false) { // Mur premium supprimé
       return Scaffold(
         backgroundColor: const Color(0xFFF0F4F1),
         appBar: AppBar(
@@ -518,7 +516,7 @@ class _EntraideScreenState extends State<EntraideScreen>
                         width: double.infinity,
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const AbonnementScreen()));
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => Container()));
                           },
                           icon: const Icon(Icons.star_rounded),
                           label: const Text("S'abonner maintenant", style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),

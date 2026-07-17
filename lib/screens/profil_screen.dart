@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
-import '../services/promo_service.dart';
 import '../utils/safe_launcher.dart';
 import 'login_screen.dart';
 import 'admin_screen.dart';
@@ -17,6 +16,7 @@ class ProfilScreen extends StatefulWidget {
 
 class _ProfilScreenState extends State<ProfilScreen>
     with TickerProviderStateMixin {
+  // ignore: unused_field
   bool _loadingAbonnement = false;
 
   // Animations fluides style "À propos"
@@ -69,28 +69,7 @@ class _ProfilScreenState extends State<ProfilScreen>
     super.dispose();
   }
 
-  Future<void> _demanderAbonnement(String moyen) async {
-    setState(() => _loadingAbonnement = true);
-    final result = await ApiService.demanderAbonnement(moyen);
-    if (!mounted) return;
-    setState(() => _loadingAbonnement = false);
-
-    if (result['success'] == true) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('✅ Demande envoyée ! Notre équipe EF-FORT activera votre accès rapidement.'),
-          backgroundColor: AppColors.success,
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['error']?.toString() ?? 'Erreur'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-    }
-  }
+  // _demanderAbonnement supprimé (accès 100% gratuit)
 
   Future<void> _openWhatsApp() async {
     final uri = Uri.parse('https://wa.me/22665467070?text=Bonjour%20EF-FORT%2C%20je%20souhaite%20m%27abonner%20%C3%A0%20EF-FORT.BF');
@@ -116,7 +95,8 @@ class _ProfilScreenState extends State<ProfilScreen>
     final telephone = user?['telephone'] ?? '';
     final niveau = user?['niveau'] ?? 'BAC';
     final isAdmin = user?['is_admin'] == true;
-    final isAbonne = user?['abonnement_actif'] == true;
+    // ✅ ACCÈS LIBRE : tous les utilisateurs ont accès complet
+    const isAbonne = true;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF0F4F1),
@@ -216,9 +196,9 @@ class _ProfilScreenState extends State<ProfilScreen>
                           children: [
                             _buildBadge('Niveau $niveau', Icons.school_outlined, Colors.white.withValues(alpha: 0.2)),
                             _buildBadge(
-                              isAbonne ? '✅ ABONNÉ' : '🆓 GRATUIT',
-                              isAbonne ? Icons.workspace_premium_rounded : Icons.lock_open_rounded,
-                              isAbonne ? AppColors.success.withValues(alpha: 0.25) : Colors.orange.withValues(alpha: 0.25),
+                              '🔓 ACCÈS COMPLET',
+                              Icons.lock_open_rounded,
+                              AppColors.success.withValues(alpha: 0.25),
                             ),
                             if (isAdmin)
                               _buildBadge('👑 ADMIN', Icons.admin_panel_settings_rounded, Colors.purple.withValues(alpha: 0.25)),
@@ -239,153 +219,31 @@ class _ProfilScreenState extends State<ProfilScreen>
                   opacity: _contentAnim,
                   child: Column(
                     children: [
-              if (!isAbonne) ...[
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 20),
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFD4A017), Color(0xFFB8860B)],
-                    ),
-                    borderRadius: BorderRadius.circular(18),
-                    boxShadow: [BoxShadow(color: AppColors.secondary.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 4))],
-                  ),
-                  child: Column(
-                    children: [
-                      const Icon(Icons.workspace_premium_rounded, color: AppColors.white, size: 40),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Abonnement Premium',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.white),
-                      ),
-                      const SizedBox(height: 6),
-                      // Prix barré ancien + nouveau prix
-                      Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                        if (PromoService.promoActive)
-                          Text(
-                            PromoService.ancienPrix,
-                            style: TextStyle(
-                              fontSize: 14, fontWeight: FontWeight.w600,
-                              color: AppColors.white.withValues(alpha: 0.6),
-                              decoration: TextDecoration.lineThrough,
-                              decorationColor: AppColors.white.withValues(alpha: 0.6),
-                            ),
-                          ),
-                        if (PromoService.promoActive) const SizedBox(width: 10),
-                        Text(
-                          PromoService.prixActuel,
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: AppColors.white),
-                        ),
-                      ]),
-                      const SizedBox(height: 4),
-                      if (PromoService.promoActive)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.red.withValues(alpha: 0.3),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.5)),
-                          ),
-                          child: Text(
-                            '🔥 OFFRE SPÉCIALE — Expire le ${PromoService.dateFinPromoLisible}',
-                            style: const TextStyle(fontSize: 14, color: AppColors.white, fontWeight: FontWeight.w700),
-                          ),
-                        ),
-                      const SizedBox(height: 8),
-                      const _CountdownWidget(),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Accès illimité à +10 000 QCM\nSimulations d\'examen illimitées\nCorrections détaillées',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 16, color: AppColors.white, height: 1.6),
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
+              // ✅ Badge accès complet gratuit
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.check_circle_rounded, color: AppColors.success, size: 28),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: _openWhatsApp,
-                              icon: const Icon(Icons.chat_rounded, size: 18),
-                              label: const Text('WhatsApp', style: TextStyle(fontWeight: FontWeight.w700)),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.white,
-                                foregroundColor: AppColors.primary,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: _loadingAbonnement
-                                  ? null
-                                  : () => _showPaymentDialog(),
-                              icon: _loadingAbonnement
-                                  ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary))
-                                  : const Icon(Icons.payment_rounded, size: 18),
-                              label: const Text('J\'ai paye', style: TextStyle(fontWeight: FontWeight.w700)),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.white,
-                                foregroundColor: AppColors.secondary,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              ),
-                            ),
-                          ),
+                          Text('🔓 Accès complet activé', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.success)),
+                          Text('Toutes les matières, séries, examens et simulations sont disponibles gratuitement.', style: TextStyle(fontSize: 13, color: AppColors.textLight, height: 1.4)),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 12),
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 20),
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFF3E0),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFFF7900).withValues(alpha: 0.3)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.info_outline_rounded, color: Color(0xFFFF7900), size: 18),
-                      const SizedBox(width: 10),
-                      const Expanded(
-                        child: Text(
-                          'Paiement via Orange Money — 65 46 70 70\nActivation sous 24h après vérification',
-                          style: TextStyle(fontSize: 15, color: AppColors.textDark, height: 1.5),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-              if (isAbonne)
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 20),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColors.success.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
-                  ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.check_circle_rounded, color: AppColors.success, size: 28),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Abonnement actif', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.success)),
-                            Text('Accès illimité jusqu\'au 31/12/2028', style: TextStyle(fontSize: 15, color: AppColors.textLight)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              ),
               const SizedBox(height: 20),
               if (isAdmin)
                 _buildMenuItem(
@@ -482,156 +340,7 @@ class _ProfilScreenState extends State<ProfilScreen>
     );
   }
 
-  void _showPaymentDialog() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Paiement par Orange Money', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 6),
-            Text(
-              'Mode de paiement disponible',
-              style: TextStyle(fontSize: 16, color: AppColors.textLight),
-            ),
-            const SizedBox(height: 16),
-            // Orange Money UNIQUEMENT
-            GestureDetector(
-              onTap: () {
-                Navigator.pop(ctx);
-                _demanderAbonnement('Orange Money');
-              },
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.orange.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.phone_android, color: Colors.orange, size: 26),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Orange Money',
-                            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            PromoService.codeUssd,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              color: AppColors.textLight,
-                              fontFamily: 'monospace',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.pop(ctx);
-                        _composeOrangeMoney();
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.orange,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Text(
-                          'Composer',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Center(
-              child: Text(
-                'Tapez "Composer" pour lancer la composition automatique',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, color: AppColors.textLight),
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _composeOrangeMoney() async {
-    final String code = PromoService.codeUssdUri;
-    final Uri telUri = Uri(scheme: 'tel', path: code);
-    // Tentative directe (plus fiable sur Android 11+)
-    bool launched = false;
-    try {
-      launched = await launchUrl(telUri);
-    } catch (_) {
-      launched = false;
-    }
-    if (!launched) {
-      if (!mounted) return;
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('Code Orange Money', style: TextStyle(fontWeight: FontWeight.w700)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  PromoService.codeUssd,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    fontFamily: 'monospace',
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text('Composez ce code sur votre téléphone pour payer ${PromoService.prixActuel}', textAlign: TextAlign.center),
-            ],
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Fermer')),
-          ],
-        ),
-      );
-    }
-  }
+  // Dialogs de paiement supprimés (accès 100% gratuit)
 
   void _showAboutDialog() {
     Navigator.push(

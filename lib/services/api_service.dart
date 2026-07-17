@@ -30,7 +30,8 @@ class ApiService {
   static String? get token => _token;
   static bool get isLoggedIn => _token != null;
   static bool get isAdmin => _currentUser?['is_admin'] == true;
-  static bool get isAbonne => _currentUser?['abonnement_actif'] == true;
+  // ✅ ACCÈS LIBRE : tous les utilisateurs connectés ont accès complet
+  static bool get isAbonne => true;
 
   static Future<Map<String, dynamic>> login(String telephone, String password) async {
     try {

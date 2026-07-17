@@ -225,8 +225,8 @@ class _ExamenImmersifAccueilScreenState
 
   @override
   Widget build(BuildContext context) {
-    // Guard abonnement — les examens immersifs sont réservés aux abonnés
-    if (!ApiService.isAbonne && !ApiService.isAdmin) {
+    // ✅ Accès libre pour tous
+    if (false) {
       return Scaffold(
         backgroundColor: const Color(0xFFF0F4F1),
         appBar: AppBar(
@@ -651,10 +651,7 @@ class _ExamenImmersifAccueilScreenState
 
     return GestureDetector(
       onTap: () {
-        if (!ApiService.isAbonne && !ApiService.isAdmin) {
-          _showAbonnementRequired();
-          return;
-        }
+        // ✅ Accès libre
         HapticFeedback.lightImpact();
         setState(() => _selectedExamen = isSelected ? null : examen);
       },
@@ -767,10 +764,7 @@ class _ExamenImmersifAccueilScreenState
 
     return GestureDetector(
       onTap: () {
-        if (!ApiService.isAbonne && !ApiService.isAdmin) {
-          _showAbonnementRequired();
-          return;
-        }
+        // ✅ Accès libre
         HapticFeedback.lightImpact();
         setState(() => _selectedExamen = isSelected ? null : examen);
       },

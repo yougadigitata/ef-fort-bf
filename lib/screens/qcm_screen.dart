@@ -5,7 +5,7 @@ import '../services/api_service.dart';
 import '../services/bell_service.dart';
 import '../services/pdf_service.dart';
 import '../widgets/math_text_widget.dart';
-import 'abonnement_screen.dart';
+
 
 // ══════════════════════════════════════════════════════════════
 // QCM SCREEN — TÂCHE 6 : Nouvelle présentation académique
@@ -252,18 +252,7 @@ class _QcmScreenState extends State<QcmScreen> {
                       ),
                     ),
                     const Spacer(),
-                    if (!ApiService.isAbonne)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.orange.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Text(
-                          'Essai gratuit',
-                          style: TextStyle(fontSize: 11, color: Colors.orange, fontWeight: FontWeight.w600),
-                        ),
-                      ),
+
                   ],
                 ),
                 const SizedBox(height: 14),
@@ -805,11 +794,7 @@ class _QcmScreenState extends State<QcmScreen> {
             ),
           ),
 
-          // Bannière abonnement si gratuit
-          if (!ApiService.isAbonne) ...[
-            const SizedBox(height: 16),
-            _buildPremiumBanner(),
-          ],
+
 
           const SizedBox(height: 40),
         ],
@@ -902,61 +887,6 @@ class _QcmScreenState extends State<QcmScreen> {
     }
   }
 
-  Widget _buildPremiumBanner() {    return GestureDetector(
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AbonnementScreen())),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF1A5C38), Color(0xFF2E7D53)],
-          ),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Row(
-          children: [
-            const Text('🔒', style: TextStyle(fontSize: 24)),
-            const SizedBox(width: 12),
-            const Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Vous avez utilisé votre essai gratuit.',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Text(
-                    'Abonnez-vous pour accéder à toutes les séries illimitées.',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.white70,
-                      height: 1.4,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFD4A017),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Text(
-                'M\'abonner',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // _buildPremiumBanner supprimé (accès 100% gratuit)
+  Widget _buildPremiumBanner() => const SizedBox.shrink();
 }

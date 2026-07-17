@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
-import 'abonnement_screen.dart';
 import 'examen_screen.dart';
 import 'examen_immersif_screen.dart';
 
@@ -214,11 +213,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
               child: ElevatedButton.icon(
                 onPressed: () {
                   // Vérification abonnement
-                  final isAbonne = ApiService.isAbonne || ApiService.isAdmin;
-                  if (!isAbonne) {
-                    _showAbonnementDialog();
-                    return;
-                  }
+                  // ✅ Accès libre
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -227,15 +222,11 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
                   );
                 },
                 icon: Icon(
-                  (ApiService.isAbonne || ApiService.isAdmin)
-                      ? Icons.play_circle_filled_rounded
-                      : Icons.lock_rounded,
+                  Icons.play_circle_filled_rounded,
                   size: 26,
                 ),
                 label: Text(
-                  (ApiService.isAbonne || ApiService.isAdmin)
-                      ? 'ACCÉDER AUX EXAMENS TYPES'
-                      : '🔒 RÉSERVÉ AUX ABONNÉS',
+                  'ACCÉDER AUX EXAMENS TYPES',
                   style: const TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w800,
@@ -244,9 +235,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: (ApiService.isAbonne || ApiService.isAdmin)
-                      ? AppColors.primary
-                      : Colors.orange,
+                  backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
@@ -540,7 +529,7 @@ class _ExamenSelectionScreenState extends State<ExamenSelectionScreen>
               Navigator.pop(ctx);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const AbonnementScreen()),
+                MaterialPageRoute(builder: (_) => Container()),
               );
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),

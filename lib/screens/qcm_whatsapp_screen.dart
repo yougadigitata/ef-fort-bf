@@ -6,7 +6,6 @@ import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
 import '../services/pdf_service.dart';
 import '../widgets/math_text_widget.dart';
-import 'abonnement_screen.dart';
 
 // ══════════════════════════════════════════════════════════════════════
 // QCM WHATSAPP SCREEN — Style bulles WhatsApp vert/gris
@@ -183,13 +182,11 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
     }
   }
 
-  // ══ Vérification verrou anti-fraude (5 minutes minimum) ═══════════
-  static const int _minSecondsRequired = 300; // 5 minutes
+  // ✅ Vérification anti-fraude supprimée (accès 100% gratuit)
+  static const int _minSecondsRequired = 0;
 
   void _finirSerie() {
-    // Admin et abonnés bypass : peuvent soumettre à tout moment sans attendre 5 min
-    // Vérification anti-fraude : au moins 5 minutes doivent s'être écoulées (non-abonnés seulement)
-    if (!ApiService.isAdmin && !ApiService.isAbonne && _secondsElapsed < _minSecondsRequired) {
+    if (false) { // bloc supprimé
       final remaining = _minSecondsRequired - _secondsElapsed;
       final m = (remaining ~/ 60).toString().padLeft(2, '0');
       final s = (remaining % 60).toString().padLeft(2, '0');
@@ -467,7 +464,7 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
                 _buildReponsesBubble(),
 
                 // Bannière abonnement
-                if (!ApiService.isAbonne && _currentIndex >= 4) ...[
+                if (false && _currentIndex >= 4) ...[  // Bannière premium supprimée
                   const SizedBox(height: 12),
                   _buildPremiumBanner(),
                 ],
@@ -1626,42 +1623,7 @@ class _QcmWhatsappScreenState extends State<QcmWhatsappScreen>
   }
 
   // ── Bannière Premium ──────────────────────────────────────────────
-  Widget _buildPremiumBanner() {
-    return GestureDetector(
-      onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const AbonnementScreen())),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFFD4A017), Color(0xFFE67E22)],
-          ),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Row(
-          children: [
-            const Text('👑', style: TextStyle(fontSize: 28)),
-            const SizedBox(width: 12),
-            const Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Accès illimité avec Premium',
-                      style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                          fontSize: 14)),
-                  Text('10 000+ QCM par matière · Corrections · Timer',
-                      style: TextStyle(color: Colors.white70, fontSize: 12)),
-                ],
-              ),
-            ),
-            const Icon(Icons.arrow_forward_ios_rounded,
-                color: Colors.white, size: 16),
-          ],
-        ),
-      ),
-    );
-  }
+  // _buildPremiumBanner supprimé (accès 100% gratuit)
+  Widget _buildPremiumBanner() => const SizedBox.shrink();
+
 }

@@ -9,7 +9,6 @@ import '../services/bell_service.dart';
 import '../services/pdf_service.dart';
 import '../widgets/logo_widget.dart';
 import '../widgets/math_text_widget.dart';
-import 'abonnement_screen.dart';
 
 // ══════════════════════════════════════════════════════════════
 // DEMO EXAMEN SCREEN — Démo gratuite EF-FORT.BF
@@ -2068,7 +2067,7 @@ class _DemoResultScreenState extends State<DemoResultScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const AbonnementScreen(),
+                            builder: (_) => Container(),
                           ),
                         );
                       },
