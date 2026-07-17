@@ -1062,6 +1062,320 @@ app.post('/api/admin/apply-rls', async (c) => {
   });
 });
 
+// ══════════════════════════════════════════════════════════════
+// MIGRATION E-LEARNING — Étape 1 : user_progress + description matieres
+// POST /api/admin/migrate-elearning (admin requis)
+// ══════════════════════════════════════════════════════════════
+app.post('/api/admin/migrate-elearning', async (c) => {
+  const h = c.req.header('Authorization');
+  if (!h?.startsWith('Bearer ')) return c.json({ error: 'Auth requise.' }, 401);
+  const payload = await verifyJWT(h.slice(7));
+  if (!payload || !payload['is_admin']) return c.json({ error: 'Admin requis.' }, 403);
+
+  const supabaseUrl = (c.env as any).SUPABASE_URL || 'https://xqifdbgqxyrlhrkwlyir.supabase.co';
+  const serviceKey  = (c.env as any).SUPABASE_SERVICE_KEY || (c.env as any).SUPABASE_KEY || '';
+  const supabaseRef = supabaseUrl.replace('https://', '').replace('.supabase.co', '');
+
+  const results: any[] = [];
+
+  const sqlStatements = [
+    // 1. Ajouter colonne description à matieres
+    `ALTER TABLE public.matieres ADD COLUMN IF NOT EXISTS description TEXT`,
+    // 2. Créer table user_progress
+    `CREATE TABLE IF NOT EXISTS public.user_progress (
+      id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+      user_id UUID NOT NULL,
+      question_id BIGINT NOT NULL,
+      reponse_donnee TEXT,
+      est_correct BOOLEAN NOT NULL DEFAULT FALSE,
+      matiere_id UUID,
+      serie_id UUID,
+      date_reponse TIMESTAMPTZ DEFAULT NOW(),
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )`,
+    // 3. Index performances
+    `CREATE INDEX IF NOT EXISTS idx_user_progress_user_id ON public.user_progress(user_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_user_progress_matiere ON public.user_progress(user_id, matiere_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_user_progress_date ON public.user_progress(user_id, date_reponse)`,
+    // 4. RLS
+    `ALTER TABLE public.user_progress ENABLE ROW LEVEL SECURITY`,
+    `DO $$ BEGIN 
+       IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='user_progress' AND policyname='user_progress_service') THEN
+         CREATE POLICY user_progress_service ON public.user_progress TO service_role USING (true) WITH CHECK (true);
+       END IF; END $$`,
+    `DO $$ BEGIN 
+       IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='user_progress' AND policyname='user_progress_self') THEN
+         CREATE POLICY user_progress_self ON public.user_progress USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+       END IF; END $$`,
+  ];
+
+  const mgmtUrl = `https://api.supabase.com/v1/projects/${supabaseRef}/database/query`;
+
+  for (const sql of sqlStatements) {
+    try {
+      const resp = await fetch(mgmtUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${serviceKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: sql }),
+      });
+      const data = await resp.json() as any;
+      results.push({ sql: sql.substring(0, 80).trim() + '...', ok: resp.ok, status: resp.status, error: data?.message });
+    } catch (e: any) {
+      results.push({ sql: sql.substring(0, 80).trim() + '...', ok: false, error: e.message });
+    }
+  }
+
+  // Mettre à jour les descriptions des matières
+  const descriptions: Record<string, string> = {
+    'Sciences PC/SVT': 'Physique, Chimie et Sciences de la Vie et de la Terre pour les concours',
+    'Psychotechnique': 'Tests de logique, raisonnement abstrait et aptitudes mentales',
+    'Droit': 'Droit constitutionnel, administratif, civil et pénal — bases juridiques',
+    'Économie': 'Microéconomie, macroéconomie, finances publiques et développement',
+    'Mathématiques': 'Algèbre, géométrie, analyse et statistiques niveau lycée et concours',
+    'Sciences Physiques': 'Mécanique, optique, électricité et thermodynamique',
+    'SVT': 'Biologie, géologie et sciences de la vie',
+    'Culture Générale': 'Histoire, géographie, institutions et culture africaine',
+    'Actualité Internationale': 'Événements mondiaux, géopolitique et actualités récentes',
+    'Guide Panafricain': "Géographie africaine, institutions de l'UA et intégration régionale",
+    'Figure Africaine': "Personnalités marquantes de l'Afrique — leaders, intellectuels, artistes",
+    'Force Armée Nationale': 'Structure des FAN, hiérarchie militaire et concours militaires',
+    'Français': 'Grammaire, orthographe, expression écrite et compréhension de textes',
+    'Anglais': 'Compréhension orale et écrite, vocabulaire et expression en anglais',
+    'Informatique': 'Bureautique, réseaux, bases de données et notions fondamentales',
+    'Communication': 'Communication administrative, rédaction professionnelle et relations publiques',
+    'Histoire-Géographie': 'Histoire du Burkina Faso, géographie nationale et régionale africaine',
+    'Burkina Faso': "Institutions, culture, histoire et géographie du pays des Hommes Intègres",
+    'Alliance des États du Sahel': "Histoire, missions et structure de l'AES — Burkina, Mali, Niger",
+    'Examens Blancs': "Sessions complètes d'examens blancs toutes matières pour s'entraîner",
+    'Préparation haut niveau': 'Programme intensif pour les candidats visant les meilleures performances',
+  };
+
+  const db = getDB(c.env);
+  let descUpdated = 0;
+  for (const [nom, description] of Object.entries(descriptions)) {
+    try {
+      const { error } = await db.from('matieres').update({ description }).eq('nom', nom);
+      if (!error) descUpdated++;
+    } catch (_) {}
+  }
+
+  const success = results.filter(r => r.ok).length;
+  return c.json({
+    success: true,
+    message: `Migration e-learning: ${success}/${results.length} SQL OK, ${descUpdated} descriptions mises à jour`,
+    sql_results: results,
+    descriptions_updated: descUpdated,
+  });
+});
+
+// ── GET /api/user/progress — Récupérer la progression détaillée ──
+app.get('/api/user/progress', async (c) => {
+  const h = c.req.header('Authorization');
+  if (!h?.startsWith('Bearer ')) return c.json({ error: 'Auth requise.' }, 401);
+  const payload = await verifyJWT(h.slice(7));
+  if (!payload) return c.json({ error: 'Token invalide.' }, 401);
+  const userId = (payload as any).id as string;
+
+  const db = getDB(c.env);
+
+  // Récupérer la progression par matière (table progression existante)
+  const { data: progression } = await db
+    .from('progression')
+    .select('*')
+    .eq('user_id', userId);
+
+  // Récupérer les sessions d'examen
+  const { data: sessions } = await db
+    .from('sessions_examen')
+    .select('score, total_questions, type_session, date_debut')
+    .eq('user_id', userId)
+    .eq('termine', true)
+    .order('date_debut', { ascending: false })
+    .limit(20);
+
+  // Récupérer les matières pour enrichir la réponse
+  const { data: matieres } = await db
+    .from('matieres')
+    .select('id, nom, icone, couleur, description');
+
+  const matiereMap: Record<string, any> = {};
+  for (const m of (matieres ?? [])) {
+    matiereMap[(m as any).id] = m;
+  }
+
+  // Calculer les stats globales
+  let totalVues = 0, totalCorrectes = 0;
+  const progressByMatiere: any[] = [];
+
+  for (const p of (progression ?? [])) {
+    const vues = (p as any).questions_vues ?? 0;
+    const correctes = (p as any).questions_correctes ?? 0;
+    totalVues += vues;
+    totalCorrectes += correctes;
+
+    const mat = matiereMap[(p as any).matiere_id];
+    progressByMatiere.push({
+      matiere_id: (p as any).matiere_id,
+      matiere_nom: mat?.nom ?? 'Matière',
+      matiere_icone: mat?.icone ?? '📚',
+      matiere_couleur: mat?.couleur ?? '#1A5C38',
+      questions_vues: vues,
+      questions_correctes: correctes,
+      taux_reussite: vues > 0 ? Math.round((correctes / vues) * 100) : 0,
+      note_sur_20: vues > 0 ? parseFloat(((correctes / vues) * 20).toFixed(1)) : 0,
+    });
+  }
+
+  const tauxGlobal = totalVues > 0 ? Math.round((totalCorrectes / totalVues) * 100) : 0;
+  const noteSur20 = totalVues > 0 ? parseFloat(((totalCorrectes / totalVues) * 20).toFixed(1)) : 0;
+
+  // Scores des sessions
+  const sessScores = (sessions ?? []).map((s: any) => ({
+    score: s.score,
+    total: s.total_questions,
+    pourcentage: s.total_questions > 0 ? Math.round((s.score / s.total_questions) * 100) : 0,
+    type: s.type_session,
+    date: s.date_debut,
+  }));
+  const scoreMoyen = sessScores.length > 0
+    ? Math.round(sessScores.reduce((a, b) => a + b.pourcentage, 0) / sessScores.length)
+    : 0;
+
+  return c.json({
+    success: true,
+    stats: {
+      total_questions_repondues: totalVues,
+      total_bonnes_reponses: totalCorrectes,
+      taux_reussite_global: tauxGlobal,
+      note_sur_20: noteSur20,
+      nb_simulations: sessScores.length,
+      score_moyen_simulation: scoreMoyen,
+    },
+    par_matiere: progressByMatiere.sort((a, b) => b.questions_vues - a.questions_vues),
+    sessions_recentes: sessScores.slice(0, 5),
+  });
+});
+
+// ── POST /api/user/progress — Enregistrer une réponse détaillée ──
+app.post('/api/user/progress', async (c) => {
+  const h = c.req.header('Authorization');
+  if (!h?.startsWith('Bearer ')) return c.json({ error: 'Auth requise.' }, 401);
+  const payload = await verifyJWT(h.slice(7));
+  if (!payload) return c.json({ error: 'Token invalide.' }, 401);
+  const userId = (payload as any).id as string;
+
+  const body = await c.req.json().catch(() => null) as any;
+  if (!body?.question_id) return c.json({ error: 'question_id requis.' }, 400);
+
+  const { question_id, reponse_donnee, est_correct, matiere_id, serie_id } = body;
+
+  // Enregistrer dans user_progress (si la table existe)
+  const supabaseUrl = (c.env as any).SUPABASE_URL || 'https://xqifdbgqxyrlhrkwlyir.supabase.co';
+  const serviceKey  = (c.env as any).SUPABASE_SERVICE_KEY || (c.env as any).SUPABASE_KEY || '';
+
+  try {
+    const resp = await fetch(`${supabaseUrl}/rest/v1/user_progress`, {
+      method: 'POST',
+      headers: {
+        'apikey': serviceKey,
+        'Authorization': `Bearer ${serviceKey}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        question_id: Number(question_id),
+        reponse_donnee: reponse_donnee ?? null,
+        est_correct: Boolean(est_correct),
+        matiere_id: matiere_id ?? null,
+        serie_id: serie_id ?? null,
+        date_reponse: new Date().toISOString(),
+      }),
+    });
+
+    if (!resp.ok && resp.status !== 404) {
+      const err = await resp.text();
+      return c.json({ success: false, error: err }, 500);
+    }
+  } catch (_) {}
+
+  // Toujours mettre à jour la table progression (agrégée par matière)
+  if (matiere_id) {
+    const db = getDB(c.env);
+    const { data: existing } = await db.from('progression')
+      .select('id, questions_vues, questions_correctes')
+      .eq('user_id', userId)
+      .eq('matiere_id', matiere_id)
+      .limit(1);
+
+    if (!existing || existing.length === 0) {
+      await db.from('progression').insert({
+        user_id: userId,
+        matiere_id,
+        questions_vues: 1,
+        questions_correctes: est_correct ? 1 : 0,
+      });
+    } else {
+      const cur = existing[0] as any;
+      await db.from('progression')
+        .update({
+          questions_vues: (cur.questions_vues ?? 0) + 1,
+          questions_correctes: (cur.questions_correctes ?? 0) + (est_correct ? 1 : 0),
+          derniere_activite: new Date().toISOString(),
+        })
+        .eq('id', cur.id);
+    }
+  }
+
+  return c.json({ success: true });
+});
+
+// ── GET /api/user/dashboard-stats — Stats complètes pour le dashboard ──
+app.get('/api/user/dashboard-stats', async (c) => {
+  const h = c.req.header('Authorization');
+  if (!h?.startsWith('Bearer ')) return c.json({ error: 'Auth requise.' }, 401);
+  const payload = await verifyJWT(h.slice(7));
+  if (!payload) return c.json({ error: 'Token invalide.' }, 401);
+  const userId = (payload as any).id as string;
+  const db = getDB(c.env);
+
+  const { data: progression } = await db.from('progression')
+    .select('questions_vues, questions_correctes')
+    .eq('user_id', userId);
+
+  const { data: sessions } = await db.from('sessions_examen')
+    .select('score, total_questions')
+    .eq('user_id', userId).eq('termine', true);
+
+  let totalVues = 0, totalCorrectes = 0;
+  for (const p of (progression ?? [])) {
+    totalVues += (p as any).questions_vues ?? 0;
+    totalCorrectes += (p as any).questions_correctes ?? 0;
+  }
+
+  const tauxGlobal = totalVues > 0 ? Math.round((totalCorrectes / totalVues) * 100) : 0;
+  const noteSur20 = parseFloat(((tauxGlobal / 100) * 20).toFixed(1));
+
+  const sessScores = (sessions ?? []).map((s: any) =>
+    s.total_questions > 0 ? (s.score / s.total_questions) * 100 : 0
+  );
+  const scoreMoyen = sessScores.length > 0
+    ? parseFloat((sessScores.reduce((a, b) => a + b, 0) / sessScores.length).toFixed(1))
+    : 0;
+
+  return c.json({
+    nb_simulations: sessScores.length,
+    score_moyen: scoreMoyen,
+    questions_repondues: totalVues,
+    bonnes_reponses: totalCorrectes,
+    taux_reussite: tauxGlobal,
+    note_sur_20: noteSur20,
+  });
+});
+
 // 404
 app.notFound((c) => c.json({ error: 'Route introuvable.' }, 404));
 

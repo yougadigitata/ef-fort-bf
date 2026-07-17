@@ -116,6 +116,8 @@ class _QcmScreenState extends State<QcmScreen> {
         } else {
           BellService.playWrong();
         }
+        // Enregistrer chaque réponse individuellement dans user_progress
+        _saveReponseIndividuelle(_currentIndex, correct);
       }
     }
     // Afficher la correction immédiate si une réponse a été choisie
@@ -156,6 +158,27 @@ class _QcmScreenState extends State<QcmScreen> {
       );
     } catch (_) {
       // Silencieux — ne pas bloquer l'UI en cas d'erreur réseau
+    }
+  }
+
+  /// Enregistrer une réponse individuelle dans user_progress
+  Future<void> _saveReponseIndividuelle(int questionIndex, bool estCorrect) async {
+    if (widget.matiereId == null) return;
+    try {
+      final q = _questions[questionIndex] as Map<String, dynamic>;
+      final questionId = (q['id'] ?? q['numero'] ?? questionIndex).toString();
+      final choisies = _selectedAnswers[questionIndex];
+      final reponseDonnee = choisies != null ? (choisies.toList()..sort()).join(',') : null;
+
+      await ProgressionService.enregistrerReponse(
+        questionId: questionId,
+        estCorrect: estCorrect,
+        matiereId: widget.matiereId,
+        serieId: null,
+        reponseDonnee: reponseDonnee,
+      );
+    } catch (_) {
+      // Silencieux
     }
   }
 

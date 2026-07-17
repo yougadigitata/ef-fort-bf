@@ -5,7 +5,7 @@ import 'api_service.dart';
 
 // ══════════════════════════════════════════════════════════════
 // PROGRESSION SERVICE — Suivi de l'apprentissage e-learning
-// Utilise les tables: progression, sessions_examen
+// Utilise les tables: progression (agrégée), user_progress (détaillée)
 // ══════════════════════════════════════════════════════════════
 
 const String _supabaseUrl = 'https://xqifdbgqxyrlhrkwlyir.supabase.co';
@@ -79,7 +79,7 @@ class MatiereStats {
 }
 
 class ProgressionService {
-  // ── Enregistrer une réponse (dans la table progression) ─────────
+  // ── Enregistrer une réponse dans user_progress ET progression ──
   static Future<bool> enregistrerReponse({
     required String questionId,
     required bool estCorrect,
@@ -91,7 +91,17 @@ class ProgressionService {
       final userId = ApiService.currentUser?['id'] as String?;
       if (userId == null) return false;
 
-      // Mise à jour de la table 'progression' (par matière)
+      // 1. Enregistrer dans user_progress via le Worker (si la table existe)
+      await _enregistrerDansUserProgress(
+        userId: userId,
+        questionId: questionId,
+        estCorrect: estCorrect,
+        matiereId: matiereId,
+        serieId: serieId,
+        reponseDonnee: reponseDonnee,
+      );
+
+      // 2. Mise à jour de la table 'progression' (par matière — agrégé)
       if (matiereId != null) {
         await _updateProgressionMatiere(
           userId: userId,
@@ -100,12 +110,44 @@ class ProgressionService {
         );
       }
 
-      // Enregistrer aussi dans une table locale (SharedPreferences)
-      // pour les stats immédiates sans rechargement
       return true;
     } catch (e) {
       if (kDebugMode) debugPrint('enregistrerReponse error: $e');
       return false;
+    }
+  }
+
+  /// Enregistrer dans user_progress via Worker API
+  static Future<void> _enregistrerDansUserProgress({
+    required String userId,
+    required String questionId,
+    required bool estCorrect,
+    String? matiereId,
+    String? serieId,
+    String? reponseDonnee,
+  }) async {
+    try {
+      final token = ApiService.token;
+      if (token == null) return;
+
+      // Via le Worker (qui gère user_progress ET progression)
+      await http.post(
+        Uri.parse('${apiBase}/user/progress'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'question_id': int.tryParse(questionId) ?? 0,
+          'est_correct': estCorrect,
+          'matiere_id': matiereId,
+          'serie_id': serieId,
+          'reponse_donnee': reponseDonnee,
+        }),
+      ).timeout(const Duration(seconds: 5));
+    } catch (e) {
+      // Silencieux — le fallback via progression reste actif
+      if (kDebugMode) debugPrint('_enregistrerDansUserProgress: $e');
     }
   }
 
@@ -169,6 +211,52 @@ class ProgressionService {
     try {
       final userId = ApiService.currentUser?['id'] as String?;
       if (userId == null) return UserStats.empty();
+
+      // Essayer d'abord via le Worker enrichi
+      try {
+        final token = ApiService.token;
+        if (token != null) {
+          final resp = await http.get(
+            Uri.parse('${apiBase}/user/progress'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+          ).timeout(const Duration(seconds: 8));
+
+          if (resp.statusCode == 200) {
+            final data = jsonDecode(resp.body) as Map<String, dynamic>;
+            if (data['success'] == true && data['stats'] != null) {
+              final stats = data['stats'] as Map<String, dynamic>;
+              final parMatiere = (data['par_matiere'] as List?) ?? [];
+
+              final Map<String, MatiereStats> statsByMatiere = {};
+              for (final m in parMatiere) {
+                final pm = m as Map<String, dynamic>;
+                final matId = pm['matiere_id'] as String? ?? '';
+                statsByMatiere[matId] = MatiereStats(
+                  matiereId: matId,
+                  matiereNom: pm['matiere_nom'] as String? ?? 'Matière',
+                  questionsVues: (pm['questions_vues'] as num?)?.toInt() ?? 0,
+                  questionsCorrectes: (pm['questions_correctes'] as num?)?.toInt() ?? 0,
+                  icone: pm['matiere_icone'] as String? ?? '📚',
+                  couleurHex: pm['matiere_couleur'] as String? ?? '#1A5C38',
+                );
+              }
+
+              return UserStats(
+                nbQuestionsRepondues: (stats['total_questions_repondues'] as num?)?.toInt() ?? 0,
+                nbBonnesReponses: (stats['total_bonnes_reponses'] as num?)?.toInt() ?? 0,
+                nbSimulations: (stats['nb_simulations'] as num?)?.toInt() ?? 0,
+                scoreMoyenSimulation: (stats['score_moyen_simulation'] as num?)?.toDouble() ?? 0.0,
+                statsByMatiere: statsByMatiere,
+              );
+            }
+          }
+        }
+      } catch (_) {
+        // Fallback vers Supabase direct
+      }
 
       // 1. Récupérer les progressions par matière
       final progressionUrl =
