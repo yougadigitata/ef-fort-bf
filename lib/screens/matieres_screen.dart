@@ -43,6 +43,33 @@ const Set<String> _seriesMatieresIds = {
   'svt', 'pana', 'sp', 'psy', 'pc', 'enaref', 'haut',
 };
 
+/// Descriptions pédagogiques des matières (vocabulaire e-learning)
+const Map<String, String> _matiereDescriptions = {
+  'psy':    'Tests de logique, séries numériques et raisonnement abstrait.',
+  'psycho': 'Tests de logique, séries numériques et raisonnement abstrait.',
+  'droit2': 'Droit constitutionnel, administratif et civil burkinabè.',
+  'eco2':   'Micro-économie, macro-économie et économie du développement.',
+  'maths':  'Algèbre, analyse, probabilités et statistiques appliquées.',
+  'pc':     'Physique, Chimie et Sciences de la Vie pour les concours.',
+  'sp':     'Sciences Physiques : mécanique, optique, électricité.',
+  'svt':    'Sciences de la Vie et de la Terre : biologie et géologie.',
+  'hg':     'Histoire de l\'Afrique et géographie du Burkina Faso.',
+  'fr':     'Grammaire, expression écrite, littérature francophone.',
+  'ang':    'Anglais des affaires et communication internationale.',
+  'info':   'Informatique, algorithmique et systèmes d\'information.',
+  'comm':   'Techniques de communication orale et écrite professionnelle.',
+  'cg':     'Culture générale, actualité africaine et institutions.',
+  'bf':     'Histoire, géographie et institutions du Burkina Faso.',
+  'burkina_faso': 'Histoire, géographie et institutions du Burkina Faso.',
+  'aes':    'Alliance des États du Sahel : histoire et enjeux.',
+  'armee':  'Connaissances militaires et civiques pour les forces armées.',
+  'actu':   'Actualité internationale et géopolitique africaine.',
+  'pana':   'Panafricanisme, histoire et leaders africains.',
+  'histo':  'Figures historiques et leadership africain contemporain.',
+  'enaref': 'Finances publiques, comptabilité et gestion de l\'État.',
+  'haut':   'Préparation aux concours de haut niveau : culture et analyse.',
+};
+
 /// v8.0 — Matières DYNAMIQUES — Design liste harmonisé
 class MatieresScreen extends StatefulWidget {
   const MatieresScreen({super.key});
@@ -155,7 +182,7 @@ class _MatieresScreenState extends State<MatieresScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${count}Matières QCM',
+                        '${count}Apprendre — QCM',
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w800,
@@ -164,7 +191,7 @@ class _MatieresScreenState extends State<MatieresScreen>
                         ),
                       ),
                       const Text(
-                        'Choisissez votre matière',
+                        'Choisissez une matière et commencez',
                         style: TextStyle(
                           fontSize: 12,
                           color: Color(0xFFD4A017),
@@ -306,6 +333,9 @@ class _MatieresScreenState extends State<MatieresScreen>
     final icone = _getIcone(matiere);
     final hasMatId = matiereId.isNotEmpty;
     final isSeriesMode = _seriesMatieresIds.contains(matiereCode) && hasMatId;
+    // Description e-learning (locale)
+    final description = _matiereDescriptions[matiereCode]
+        ?? 'Entraînez-vous avec des séries de QCM corrigés pour $nom.';
 
     // Badge TOP / NEW
     String? badgeLabel;
@@ -343,6 +373,7 @@ class _MatieresScreenState extends State<MatieresScreen>
                 label: nom,
                 couleur: color,
                 icone: icone,
+                matiereId: matiereId.isNotEmpty ? matiereId : null,
               ),
             ),
           );
@@ -444,6 +475,17 @@ class _MatieresScreenState extends State<MatieresScreen>
                         ),
                       ),
                     ],
+                    const SizedBox(height: 3),
+                    Text(
+                      description,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textLight,
+                        height: 1.3,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
                 ),
               ),

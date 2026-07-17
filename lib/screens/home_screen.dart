@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
-import '../services/api_service.dart';
 import '../services/bell_service.dart';
 import 'dashboard_screen.dart';
 import 'matieres_screen.dart';
 import 'examen_selection_screen.dart';
 import 'entraide_screen.dart';
 import 'profil_screen.dart';
+import 'mes_progres_screen.dart';
+
+// ══════════════════════════════════════════════════════════════
+// HOME SCREEN v2.0 — Navigation e-learning redesignée
+// 5 onglets : Accueil · Apprendre · S'entraîner · Entraide · Progrès
+// ══════════════════════════════════════════════════════════════
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -26,6 +31,10 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() => _currentIndex = 1);
   }
 
+  void _goToProgres() {
+    setState(() => _currentIndex = 4);
+  }
+
   // ── Navigation libre — accès complet pour tous ───────────────────
   void _navigateToIndex(int index) {
     BellService.playWelcome();
@@ -38,11 +47,13 @@ class _HomeScreenState extends State<HomeScreen> {
       DashboardScreen(
         onGoToSimulation: _goToSimulation,
         onGoToMatieres: _goToMatieres,
+        onGoToProgres: _goToProgres,
       ),
-      const MatieresScreen(),
-      const ExamenSelectionScreen(),   // Phase 3 : 10 examens
-      const EntraideScreen(),
-      const ProfilScreen(),
+      const MatieresScreen(),          // "Apprendre" — QCM par matière
+      const ExamenSelectionScreen(),   // "S'entraîner" — Examens & simulations
+      const EntraideScreen(),          // Communauté
+      const MesProgresScreen(),        // "Mes Progrès" — Tableau de bord
+      const ProfilScreen(),            // Profil (accessible depuis Profil)
     ];
 
     return Scaffold(
@@ -68,10 +79,10 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildNavItem(0, '🏠', 'Accueil'),
-                _buildNavItem(1, '📚', 'Matières'),
-                _buildNavItem(2, '🎓', 'Concours'),
+                _buildNavItem(1, '📚', 'Apprendre'),
+                _buildNavItem(2, '🎯', 'S\'entraîner'),
                 _buildNavItem(3, '🤝', 'Entraide'),
-                _buildNavItem(4, '👤', 'Profil'),
+                _buildNavItem(4, '📊', 'Progrès'),
               ],
             ),
           ),

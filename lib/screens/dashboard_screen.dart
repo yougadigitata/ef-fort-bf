@@ -11,7 +11,8 @@ import 'entraide_screen.dart';
 class DashboardScreen extends StatefulWidget {
   final VoidCallback? onGoToSimulation;
   final VoidCallback? onGoToMatieres;
-  const DashboardScreen({super.key, this.onGoToSimulation, this.onGoToMatieres});
+  final VoidCallback? onGoToProgres;
+  const DashboardScreen({super.key, this.onGoToSimulation, this.onGoToMatieres, this.onGoToProgres});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -230,6 +231,11 @@ class _DashboardScreenState extends State<DashboardScreen>
               // ─── SECTION 4 : Matières rapides ──────────────────────
               SliverToBoxAdapter(
                 child: _buildMatieresSection(),
+              ),
+
+              // ─── SECTION 5 : Bouton MES PROGRÈS ───────────────────
+              SliverToBoxAdapter(
+                child: _buildProgresButton(),
               ),
 
               // ─── SECTION 7 : Communauté ──────────────────────────────
@@ -1303,6 +1309,94 @@ class _DashboardScreenState extends State<DashboardScreen>
           fontSize: 14,
           color: AppColors.primary,
           fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // BOUTON MES PROGRÈS — Accès rapide au tableau de bord e-learning
+  // ═══════════════════════════════════════════════════════════════════
+  Widget _buildProgresButton() {
+    return GestureDetector(
+      onTap: () => widget.onGoToProgres?.call(),
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: const Color(0xFF1A5C38).withValues(alpha: 0.25),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF1A5C38).withValues(alpha: 0.08),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF1A5C38), Color(0xFF2D8F5E)],
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Text('📊', style: TextStyle(fontSize: 22)),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Mes Progrès',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF1A1A2E),
+                    ),
+                  ),
+                  Text(
+                    'Note sur 20 · Taux de réussite · Statistiques',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1A5C38).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Voir',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1A5C38),
+                    ),
+                  ),
+                  SizedBox(width: 4),
+                  Icon(Icons.arrow_forward_ios_rounded,
+                      size: 10, color: Color(0xFF1A5C38)),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

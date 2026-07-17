@@ -4,12 +4,13 @@ import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
 import '../services/bell_service.dart';
 import '../services/pdf_service.dart';
+import '../services/progression_service.dart';
 import '../widgets/math_text_widget.dart';
 
 
 // ══════════════════════════════════════════════════════════════
-// QCM SCREEN — TÂCHE 6 : Nouvelle présentation académique
-// Multi-sélection · Correction en fin de série · Polices sérieuses
+// QCM SCREEN — v2.0 e-learning
+// Multi-sélection · Corrections immédiates · Progression enregistrée
 // ══════════════════════════════════════════════════════════════
 
 class QcmScreen extends StatefulWidget {
@@ -17,6 +18,7 @@ class QcmScreen extends StatefulWidget {
   final String label;
   final Color? couleur;
   final String? icone;
+  final String? matiereId; // Pour enregistrer la progression par matière
 
   const QcmScreen({
     super.key,
@@ -24,6 +26,7 @@ class QcmScreen extends StatefulWidget {
     required this.label,
     this.couleur,
     this.icone,
+    this.matiereId,
   });
 
   @override
@@ -41,6 +44,8 @@ class _QcmScreenState extends State<QcmScreen> {
   final Set<int> _skipped = {};
   // Indique si on a soumis la série
   bool _serieTerminee = false;
+  // Indique si on affiche la correction immédiate (après validation d'une question)
+  bool _showingCorrection = false;
 
   @override
   void initState() {
@@ -78,6 +83,7 @@ class _QcmScreenState extends State<QcmScreen> {
     setState(() {
       _skipped.add(_currentIndex);
       _selectedAnswers.remove(_currentIndex);
+      _showingCorrection = false;
     });
     if (_currentIndex < _questions.length - 1) {
       setState(() => _currentIndex++);
@@ -87,6 +93,17 @@ class _QcmScreenState extends State<QcmScreen> {
   }
 
   void _validerEtSuivre() {
+    // Si on est en mode correction immédiate → passer à la suivante
+    if (_showingCorrection) {
+      setState(() => _showingCorrection = false);
+      if (_currentIndex < _questions.length - 1) {
+        setState(() => _currentIndex++);
+      } else {
+        _showCorrectionFin();
+      }
+      return;
+    }
+
     // Son bonne/mauvaise réponse si une réponse est sélectionnée
     if (!_serieTerminee && _selectedAnswers.containsKey(_currentIndex)) {
       final q = _questions[_currentIndex] as Map<String, dynamic>;
@@ -101,6 +118,13 @@ class _QcmScreenState extends State<QcmScreen> {
         }
       }
     }
+    // Afficher la correction immédiate si une réponse a été choisie
+    if (_selectedAnswers.containsKey(_currentIndex) &&
+        _selectedAnswers[_currentIndex]!.isNotEmpty) {
+      setState(() => _showingCorrection = true);
+      return;
+    }
+    // Pas de réponse → passer directement
     if (_currentIndex < _questions.length - 1) {
       setState(() => _currentIndex++);
     } else {
@@ -114,7 +138,25 @@ class _QcmScreenState extends State<QcmScreen> {
     Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) BellService.playApplause();
     });
-    // Scroll vers le haut et afficher la correction complète
+    // Enregistrer la progression dans Supabase
+    _saveProgression();
+  }
+
+  /// Sauvegarder la progression de cette session QCM
+  Future<void> _saveProgression() async {
+    if (widget.matiereId == null) return;
+    final score = _calculerScore();
+    final total = _questions.length;
+    if (total == 0) return;
+    try {
+      await ProgressionService.enregistrerSessionQCM(
+        matiereId: widget.matiereId!,
+        questionsVues: total,
+        questionsCorrectes: score,
+      );
+    } catch (_) {
+      // Silencieux — ne pas bloquer l'UI en cas d'erreur réseau
+    }
   }
 
   // Calculer le score
@@ -181,7 +223,9 @@ class _QcmScreenState extends State<QcmScreen> {
               ? _buildEmpty()
               : _serieTerminee
                   ? _buildCorrectionComplete()
-                  : _buildQuestion(),
+                  : _showingCorrection
+                      ? _buildCorrectionImmediate()
+                      : _buildQuestion(),
     );
   }
 
@@ -433,6 +477,288 @@ class _QcmScreenState extends State<QcmScreen> {
                     ),
                   ),
                 ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Correction immédiate après chaque réponse (e-learning) ──────
+  Widget _buildCorrectionImmediate() {
+    final q = _questions[_currentIndex] as Map<String, dynamic>;
+    final bonnes = _getBonnesReponses(q);
+    final choisies = _selectedAnswers[_currentIndex] ?? {};
+    final correct = choisies.isNotEmpty &&
+        choisies.containsAll(bonnes) &&
+        bonnes.containsAll(choisies);
+    final explication = (q['explication'] ?? '').toString();
+    final bonneStr = (bonnes.toList()..sort()).join(', ');
+
+    final options = {
+      'A': q['option_a']?.toString() ?? '',
+      'B': q['option_b']?.toString() ?? '',
+      'C': q['option_c']?.toString() ?? '',
+      'D': q['option_d']?.toString() ?? '',
+      'E': q['option_e']?.toString() ?? '',
+    };
+
+    return Column(
+      children: [
+        // Barre progression
+        LinearProgressIndicator(
+          value: (_currentIndex + 1) / _questions.length,
+          backgroundColor: Colors.grey.withValues(alpha: 0.2),
+          valueColor: AlwaysStoppedAnimation<Color>(_couleur),
+          minHeight: 4,
+        ),
+
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Bandeau résultat
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: correct
+                        ? AppColors.success.withValues(alpha: 0.1)
+                        : AppColors.error.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: correct
+                          ? AppColors.success.withValues(alpha: 0.4)
+                          : AppColors.error.withValues(alpha: 0.4),
+                      width: 2,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        correct ? '✅' : '❌',
+                        style: const TextStyle(fontSize: 28),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              correct ? 'Bonne réponse !' : 'Mauvaise réponse',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w900,
+                                color: correct ? AppColors.success : AppColors.error,
+                              ),
+                            ),
+                            if (!correct)
+                              Text(
+                                'Réponse correcte : $bonneStr',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.success,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Question rappel
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1A5C38).withValues(alpha: 0.04),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: const Color(0xFF1A5C38).withValues(alpha: 0.12),
+                    ),
+                  ),
+                  child: MathTextWidget(
+                    text: (q['enonce'] ?? q['question'] ?? '').toString(),
+                    textStyle: const TextStyle(
+                      fontSize: 15,
+                      fontFamily: 'Georgia',
+                      height: 1.5,
+                      color: AppColors.textDark,
+                    ),
+                    mathSize: 16.0,
+                  ),
+                ),
+
+                const SizedBox(height: 14),
+
+                // Options avec indication bonne/mauvaise
+                ...options.entries.map((opt) {
+                  final l = opt.key;
+                  final t = opt.value;
+                  if (t.isEmpty) return const SizedBox.shrink();
+
+                  final isBonne = bonnes.contains(l);
+                  final isChoisie = choisies.contains(l);
+
+                  Color bg = Colors.transparent;
+                  Color border = Colors.grey.withValues(alpha: 0.2);
+                  Widget? icon;
+
+                  if (isBonne) {
+                    bg = AppColors.success.withValues(alpha: 0.08);
+                    border = AppColors.success.withValues(alpha: 0.5);
+                    icon = const Icon(Icons.check_circle, color: AppColors.success, size: 20);
+                  } else if (isChoisie) {
+                    bg = AppColors.error.withValues(alpha: 0.08);
+                    border = AppColors.error.withValues(alpha: 0.4);
+                    icon = const Icon(Icons.cancel, color: AppColors.error, size: 20);
+                  }
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+                    decoration: BoxDecoration(
+                      color: bg,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: border),
+                    ),
+                    child: Row(
+                      children: [
+                        Text(
+                          '$l. ',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                            color: isBonne
+                                ? AppColors.success
+                                : isChoisie
+                                    ? AppColors.error
+                                    : AppColors.textLight,
+                          ),
+                        ),
+                        Expanded(
+                          child: MathTextWidget(
+                            text: t,
+                            textStyle: TextStyle(
+                              fontSize: 15,
+                              fontFamily: 'Georgia',
+                              color: isBonne
+                                  ? AppColors.success
+                                  : isChoisie
+                                      ? AppColors.error
+                                      : AppColors.textDark,
+                              fontWeight: isBonne ? FontWeight.w600 : FontWeight.normal,
+                            ),
+                            mathSize: 16.0,
+                          ),
+                        ),
+                        if (icon != null) icon,
+                      ],
+                    ),
+                  );
+                }),
+
+                // Explication / Correction détaillée
+                if (explication.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF8E7),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color(0xFFD4A017).withValues(alpha: 0.4),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(Icons.lightbulb_rounded,
+                                color: Color(0xFFD4A017), size: 18),
+                            SizedBox(width: 8),
+                            Text(
+                              'Explication',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF8B6914),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        MathTextWidget(
+                          text: explication,
+                          textStyle: const TextStyle(
+                            fontSize: 14,
+                            fontStyle: FontStyle.italic,
+                            height: 1.6,
+                            color: Color(0xFF5D4037),
+                          ),
+                          mathSize: 15.0,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        ),
+
+        // Bouton SUIVANT
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            border: Border(
+              top: BorderSide(color: Colors.grey.withValues(alpha: 0.15), width: 1),
+            ),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _validerEtSuivre,
+                  icon: Icon(
+                    _currentIndex < _questions.length - 1
+                        ? Icons.arrow_forward_rounded
+                        : Icons.check_circle_rounded,
+                    size: 22,
+                  ),
+                  label: Text(
+                    _currentIndex < _questions.length - 1
+                        ? 'QUESTION SUIVANTE'
+                        : 'VOIR LES RÉSULTATS',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 16,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _couleur,
+                    foregroundColor: AppColors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    elevation: 3,
+                  ),
+                ),
               ),
             ),
           ),
