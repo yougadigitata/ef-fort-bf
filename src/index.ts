@@ -8,6 +8,7 @@ import abonnements from './api/abonnements';
 import admin       from './api/admin';
 import adminCms    from './api/admin-cms';
 import entraide    from './api/entraide';
+import cours       from './api/chapitres';
 import { getDB }   from './lib/db';
 import { verifyJWT } from './lib/auth';
 
@@ -28,6 +29,7 @@ app.route('/api/abonnements',  abonnements);
 app.route('/api/admin',        admin);
 app.route('/api/admin-cms',    adminCms);    // CMS v6.0 — Gestion QCM
 app.route('/api/entraide',     entraide);
+app.route('/api/cours',        cours);        // e-learning v2 — Chapitres & Leçons
 
 // ── GET /api/statuts — Statuts Entraide v3 (actifs < 24h) ──
 // Utilise la table messages_entraide (champ telephone_partage = type)
@@ -631,7 +633,7 @@ app.get('/api/health', (c) => c.json({
   app: 'EF-FORT.BF API',
   version: '10.0.0',
   timestamp: new Date().toISOString(),
-  features: ['21-matieres', '5326-questions', 'simulation-v3', 'examens-blancs', 'pdf-export-v2', 'entraide-v6-no-migration', 'simulations-admin', 'freemium-v2', 'annonces-crud', 'admin-delete', 'reponses-admin-sans-migration', 'series3-examens-types', 'nouvelles-series-cg-hg-sp'],
+  features: ['21-matieres', '5326-questions', 'simulation-v3', 'examens-blancs', 'pdf-export-v2', 'entraide-v6-no-migration', 'simulations-admin', 'freemium-v2', 'annonces-crud', 'admin-delete', 'reponses-admin-sans-migration', 'series3-examens-types', 'nouvelles-series-cg-hg-sp', 'elearning-v2-chapitres-lecons'],
 }));
 
 // ── POST /api/admin/migrate-parent-id — Migration parent_id entraide ──

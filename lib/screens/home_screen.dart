@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../services/bell_service.dart';
 import 'dashboard_screen.dart';
+import 'cours_list_screen.dart';
 import 'matieres_screen.dart';
 import 'examen_selection_screen.dart';
 import 'entraide_screen.dart';
@@ -24,15 +25,15 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
 
   void _goToSimulation() {
-    setState(() => _currentIndex = 2);
+    setState(() => _currentIndex = 3);
   }
 
   void _goToMatieres() {
-    setState(() => _currentIndex = 1);
+    setState(() => _currentIndex = 2);
   }
 
   void _goToProgres() {
-    setState(() => _currentIndex = 4);
+    setState(() => _currentIndex = 5);
   }
 
   // ── Navigation libre — accès complet pour tous ───────────────────
@@ -49,6 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
         onGoToMatieres: _goToMatieres,
         onGoToProgres: _goToProgres,
       ),
+      const CoursListScreen(),         // "Cours" — Chapitres & Leçons e-learning v2
       const MatieresScreen(),          // "Apprendre" — QCM par matière
       const ExamenSelectionScreen(),   // "S'entraîner" — Examens & simulations
       const EntraideScreen(),          // Communauté
@@ -74,15 +76,16 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: SafeArea(
           child: SizedBox(
-            height: 65,
+            height: 62,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildNavItem(0, '🏠', 'Accueil'),
-                _buildNavItem(1, '📚', 'Apprendre'),
-                _buildNavItem(2, '🎯', 'S\'entraîner'),
-                _buildNavItem(3, '🤝', 'Entraide'),
-                _buildNavItem(4, '📊', 'Progrès'),
+                _buildNavItem(1, '🎓', 'Cours'),
+                _buildNavItem(2, '📚', 'QCM'),
+                _buildNavItem(3, '🎯', 'Examens'),
+                _buildNavItem(4, '🤝', 'Entraide'),
+                _buildNavItem(5, '📊', 'Progrès'),
               ],
             ),
           ),
@@ -97,7 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return _NavItemBounce(
       onTap: () => _navigateToIndex(index),
       child: SizedBox(
-        width: 64,
+        width: 55,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
