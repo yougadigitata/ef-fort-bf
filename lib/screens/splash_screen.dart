@@ -1,19 +1,17 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
+import '../services/api_service.dart';
 import '../services/bell_service.dart';
 import '../widgets/logo_widget.dart';
+import 'home_screen.dart';
 import 'onboarding_screen.dart';
 
 // ══════════════════════════════════════════════════════════════════════
-// SPLASH SCREEN — EF-FORT.BF v2.1 (Particules + Son rétabli)
-// FLUX FIGÉ (verrouillé) :
-//   1. SplashScreen    → Animation logo + SON d'intro + bulles
-//   2. OnboardingScreen → 5 slides pédagogiques
-//   3. BienvenueScreen  → Animation bienvenue premium + SON
-//   4. LoginScreen      → Authentification
-//   5. Dashboard        → Espace utilisateur
-// NE PAS MODIFIER L'ORDRE DE CES ÉTAPES
+// SPLASH SCREEN — EF-FORT.BF v9.0 (Auth persistante)
+// FLUX INTELLIGENT :
+//   1. Vérifier si session stockée → si oui, aller directement au dashboard
+//   2. Si non → OnboardingScreen → LoginScreen
 // ══════════════════════════════════════════════════════════════════════
 
 class SplashScreen extends StatefulWidget {
@@ -31,7 +29,6 @@ class _SplashScreenState extends State<SplashScreen>
   late Animation<double> _scaleAnim;
   late Animation<double> _particleAnim;
 
-  // Bulles fixes générées une seule fois
   final List<_Bubble> _bubbles = [];
   final math.Random _rng = math.Random(42);
 
@@ -48,20 +45,15 @@ class _SplashScreenState extends State<SplashScreen>
     )..repeat();
 
     _fadeAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-          parent: _controller,
-          curve: const Interval(0.0, 0.6, curve: Curves.easeOut)),
+      CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.6, curve: Curves.easeOut)),
     );
     _scaleAnim = Tween<double>(begin: 0.7, end: 1.0).animate(
-      CurvedAnimation(
-          parent: _controller,
-          curve: const Interval(0.0, 0.6, curve: Curves.elasticOut)),
+      CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.6, curve: Curves.elasticOut)),
     );
     _particleAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _particleController, curve: Curves.linear),
     );
 
-    // Générer les bulles (positions aléatoires fixes)
     for (int i = 0; i < 18; i++) {
       _bubbles.add(_Bubble(
         x: _rng.nextDouble(),
@@ -74,44 +66,46 @@ class _SplashScreenState extends State<SplashScreen>
     }
 
     _controller.forward();
-    // ── Son d'introduction de la première animation ──────────────────
     _playIntroSound();
-    _checkAuth();
+    _checkAuthAndNavigate();
   }
 
-  /// Joue le son d'intro au lancement du Splash Screen (première animation)
   Future<void> _playIntroSound() async {
-    // Petit délai pour laisser l'animation démarrer avant le son
     await Future.delayed(const Duration(milliseconds: 400));
     if (!mounted) return;
     try {
       await BellService.playStart();
-    } catch (_) {
-      // Silencieux en cas d'erreur
+    } catch (_) {}
+  }
+
+  /// ── LOGIQUE D'AUTH INTELLIGENTE ──────────────────────────────────
+  /// Si l'utilisateur a déjà une session stockée → HomeScreen directement
+  /// Sinon → OnboardingScreen
+  Future<void> _checkAuthAndNavigate() async {
+    // Laisser l'animation se jouer (minimum 2.5s)
+    await Future.delayed(const Duration(milliseconds: 2500));
+    if (!mounted) return;
+
+    // Tenter de charger le token sauvegardé
+    final hasSession = await ApiService.loadToken();
+
+    if (!mounted) return;
+
+    if (hasSession && ApiService.currentUser != null) {
+      // ✅ Session valide → aller directement au dashboard sans repasser par login
+      Navigator.pushReplacement(
+        context,
+        _fadeRoute(const HomeScreen()),
+      );
+    } else {
+      // ❌ Pas de session → flux normal (onboarding → login)
+      Navigator.pushReplacement(
+        context,
+        _fadeRoute(const OnboardingScreen()),
+      );
     }
   }
 
-  Future<void> _checkAuth() async {
-    await Future.delayed(const Duration(seconds: 3));
-    if (!mounted) return;
-
-    // ┌───────────────────────────────────────────────────────────────────────┐
-    // │ FLUX COMPLÈTE D'ACCUEIL (à chaque ouverture de l'application)     │
-    // │ 1. SplashScreen (animation logo + son)                              │
-    // │ 2. OnboardingScreen (5 slides) - TOUJOURS AFFICHÉ                   │
-    // │ 3. BienvenueScreen (animation bienvenue + son) OU                    │
-    // │    PostLoginWelcomeScreen (si utilisateur déjà connecté)          │
-    // │ 4. Dashboard / HomeScreen                                           │
-    // └───────────────────────────────────────────────────────────────────────┘
-    
-    // TOUJOURS afficher l'onboarding (5 slides) après le splash screen
-    Navigator.pushReplacement(
-      context,
-      _fadeRoute(const OnboardingScreen()),
-    );
-  }
-
-  /// Transition fade douce depuis le splash
   Route _fadeRoute(Widget page) {
     return PageRouteBuilder(
       pageBuilder: (_, __, ___) => page,
@@ -145,80 +139,74 @@ class _SplashScreenState extends State<SplashScreen>
         ),
         child: Stack(
           children: [
-            // ── Bulles / particules animées en fond ──────────────
+            // ── Bulles animées en fond ──
             AnimatedBuilder(
               animation: _particleAnim,
-              builder: (_, __) {
-                return CustomPaint(
-                  size: size,
-                  painter: _BubblePainter(
-                    bubbles: _bubbles,
-                    progress: _particleAnim.value,
-                  ),
-                );
-              },
+              builder: (_, __) => CustomPaint(
+                size: size,
+                painter: _BubblePainter(bubbles: _bubbles, progress: _particleAnim.value),
+              ),
             ),
 
-            // ── Contenu principal animé ──────────────────────────
+            // ── Contenu principal ──
             Positioned.fill(
               child: Center(
                 child: AnimatedBuilder(
-              animation: _controller,
-              builder: (context, child) {
-                return Opacity(
-                  opacity: _fadeAnim.value,
-                  child: Transform.scale(
-                    scale: _scaleAnim.value,
-                    alignment: Alignment.center,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const LogoWidget(size: 160, borderRadius: 24),
-                        const SizedBox(height: 32),
-                        const Text(
-                          'EF-FORT.BF',
-                          style: TextStyle(
-                            fontSize: 36,
-                            fontWeight: FontWeight.w900,
-                            color: AppColors.white,
-                            letterSpacing: 2,
-                          ),
+                  animation: _controller,
+                  builder: (context, child) {
+                    return Opacity(
+                      opacity: _fadeAnim.value,
+                      child: Transform.scale(
+                        scale: _scaleAnim.value,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const LogoWidget(size: 160, borderRadius: 24),
+                            const SizedBox(height: 32),
+                            const Text(
+                              'EF-FORT.BF',
+                              style: TextStyle(
+                                fontSize: 36,
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.white,
+                                letterSpacing: 2,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'E-Learning Burkina',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: AppColors.secondary,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 1.5,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'Apprends. Pratique. Réussis.',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: AppColors.white,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                            const SizedBox(height: 60),
+                            const SizedBox(
+                              width: 28,
+                              height: 28,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                color: AppColors.secondary,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Concours Directs',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: AppColors.secondary,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 1.5,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'Prépare-toi. Bats-toi. Décroche-le.',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: AppColors.white,
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
-                        const SizedBox(height: 60),
-                        const SizedBox(
-                          width: 28,
-                          height: 28,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            color: AppColors.secondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -229,49 +217,31 @@ class _SplashScreenState extends State<SplashScreen>
   }
 }
 
-// ── Modèle d'une bulle ───────────────────────────────────────────────
 class _Bubble {
-  final double x;     // position X relative [0..1]
-  final double y;     // position Y de départ relative [0..1]
-  final double size;  // diamètre en pixels
-  final double speed; // vitesse relative
-  final double opacity;
-  final double phase; // décalage de phase [0..1]
-
+  final double x, y, size, speed, opacity, phase;
   const _Bubble({
-    required this.x,
-    required this.y,
-    required this.size,
-    required this.speed,
-    required this.opacity,
-    required this.phase,
+    required this.x, required this.y, required this.size,
+    required this.speed, required this.opacity, required this.phase,
   });
 }
 
-// ── Peintre des bulles animées ───────────────────────────────────────
 class _BubblePainter extends CustomPainter {
   final List<_Bubble> bubbles;
-  final double progress; // [0..1] en boucle
+  final double progress;
 
   const _BubblePainter({required this.bubbles, required this.progress});
 
   @override
   void paint(Canvas canvas, Size size) {
     for (final b in bubbles) {
-      // Progression propre à chaque bulle (avec phase)
       final p = ((progress * b.speed + b.phase) % 1.0);
-      // La bulle monte de bas en haut
       final x = b.x * size.width + math.sin(p * math.pi * 2 + b.phase * 6) * 18;
       final y = size.height - (p * (size.height + b.size * 2)) + b.y * 40;
-
       final paint = Paint()
         ..color = Colors.white.withValues(alpha: b.opacity * (1.0 - p * 0.6))
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.5;
-
       canvas.drawCircle(Offset(x, y), b.size / 2, paint);
-
-      // Petite étoile dans la bulle (toutes les 3 bulles)
       if (bubbles.indexOf(b) % 3 == 0) {
         final paintFill = Paint()
           ..color = Colors.white.withValues(alpha: b.opacity * 0.3)

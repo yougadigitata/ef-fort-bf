@@ -4,6 +4,7 @@ import '../services/api_service.dart';
 import '../services/bell_service.dart';
 import '../widgets/logo_widget.dart';
 import 'qcm_screen.dart';
+import 'qcm_lineaire_screen.dart';
 import 'serie_selection_screen.dart';
 
 // ══════════════════════════════════════════════════════════════
@@ -351,33 +352,16 @@ class _MatieresScreenState extends State<MatieresScreen>
     return _AnimatedTapCard(
       onTap: () {
         BellService.playClick();
-        if (isSeriesMode) {
-          Navigator.push(
-            context,
-            _buildSlideRoute(
-              SerieSelectionScreen(
-                matiereId: matiereId,
-                matiereCode: matiereCode,
-                matiereNom: nom,
-                icone: icone,
-                couleur: color,
-              ),
-            ),
-          );
-        } else {
-          Navigator.push(
-            context,
-            _buildSlideRoute(
-              QcmScreen(
-                matiere: matiereCode,
-                label: nom,
-                couleur: color,
-                icone: icone,
-                matiereId: matiereId.isNotEmpty ? matiereId : null,
-              ),
-            ),
-          );
-        }
+        // Proposer le choix du mode QCM
+        _showModeQcmDialog(
+          context,
+          matiereCode: matiereCode,
+          matiereId: matiereId,
+          nom: nom,
+          icone: icone,
+          color: color,
+          isSeriesMode: isSeriesMode,
+        );
       },
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 6),
@@ -521,6 +505,245 @@ class _MatieresScreenState extends State<MatieresScreen>
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  /// Dialogue de sélection du mode QCM
+  void _showModeQcmDialog(
+    BuildContext context, {
+    required String matiereCode,
+    required String matiereId,
+    required String nom,
+    required String icone,
+    required Color color,
+    required bool isSeriesMode,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Titre
+            Text(
+              nom,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+                color: color,
+              ),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'Choisissez votre mode d\'entraînement',
+              style: TextStyle(fontSize: 14, color: AppColors.textLight),
+            ),
+            const SizedBox(height: 20),
+
+            // Mode Libre (Linéaire) — mis en avant
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [color, color.withValues(alpha: 0.7)],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    Navigator.push(
+                      context,
+                      _buildSlideRoute(
+                        QcmLineaireScreen(
+                          matiere: matiereCode,
+                          label: nom,
+                          couleur: color,
+                          icone: icone,
+                          matiereId: matiereId.isNotEmpty ? matiereId : null,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Row(
+                      children: [
+                        Text('⚡', style: TextStyle(fontSize: 32)),
+                        SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    'Mode Libre',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Container(
+                                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      'NOUVEAU',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w900,
+                                        color: Colors.orange,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                'Feedback immédiat · Émoticônes · Résumé + PDF\nUne question à la fois, avec explication instantanée',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.white,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 18),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // Mode Série (ancien mode)
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: color.withValues(alpha: 0.4), width: 1.5),
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    if (isSeriesMode) {
+                      Navigator.push(
+                        context,
+                        _buildSlideRoute(
+                          SerieSelectionScreen(
+                            matiereId: matiereId,
+                            matiereCode: matiereCode,
+                            matiereNom: nom,
+                            icone: icone,
+                            couleur: color,
+                          ),
+                        ),
+                      );
+                    } else {
+                      Navigator.push(
+                        context,
+                        _buildSlideRoute(
+                          QcmScreen(
+                            matiere: matiereCode,
+                            label: nom,
+                            couleur: color,
+                            icone: icone,
+                            matiereId: matiereId.isNotEmpty ? matiereId : null,
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        Text('📚', style: TextStyle(fontSize: 28)),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                isSeriesMode ? 'Mode Séries' : 'Mode Classique',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w800,
+                                  color: color,
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                isSeriesMode
+                                    ? 'Choisissez une série · Questions groupées'
+                                    : 'Questions mixtes · Correction en fin de série',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textLight,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(Icons.arrow_forward_ios_rounded, color: color, size: 16),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // Annuler
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Annuler', style: TextStyle(color: AppColors.textLight)),
+            ),
+          ],
         ),
       ),
     );

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../services/bell_service.dart';
 import 'dashboard_screen.dart';
-import 'cours_list_screen.dart';
+import 'apprendre_screen.dart';
 import 'matieres_screen.dart';
 import 'examen_selection_screen.dart';
 import 'entraide_screen.dart';
@@ -10,8 +10,8 @@ import 'profil_screen.dart';
 import 'mes_progres_screen.dart';
 
 // ══════════════════════════════════════════════════════════════
-// HOME SCREEN v2.0 — Navigation e-learning redesignée
-// 5 onglets : Accueil · Apprendre · S'entraîner · Entraide · Progrès
+// HOME SCREEN v9.0 — Navigation e-learning redesignée
+// 6 onglets : Accueil · Apprendre · QCM · S'entraîner · Entraide · Progrès
 // ══════════════════════════════════════════════════════════════
 
 class HomeScreen extends StatefulWidget {
@@ -50,8 +50,8 @@ class _HomeScreenState extends State<HomeScreen> {
         onGoToMatieres: _goToMatieres,
         onGoToProgres: _goToProgres,
       ),
-      const CoursListScreen(),         // "Cours" — Chapitres & Leçons e-learning v2
-      const MatieresScreen(),          // "Apprendre" — QCM par matière
+      const ApprendreScreen(),         // "Apprendre" — Hub apprentissage (cours + tableau de bord + services)
+      const MatieresScreen(),          // "QCM" — Pratique par matière
       const ExamenSelectionScreen(),   // "S'entraîner" — Examens & simulations
       const EntraideScreen(),          // Communauté
       const MesProgresScreen(),        // "Mes Progrès" — Tableau de bord
@@ -81,8 +81,8 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildNavItem(0, '🏠', 'Accueil'),
-                _buildNavItem(1, '🎓', 'Cours'),
-                _buildNavItem(2, '📚', 'QCM'),
+                _buildNavItem(1, '🎓', 'Apprendre'),
+                _buildNavItem(2, '📝', 'QCM'),
                 _buildNavItem(3, '🎯', 'Examens'),
                 _buildNavItem(4, '🤝', 'Entraide'),
                 _buildNavItem(5, '📊', 'Progrès'),
