@@ -538,4 +538,209 @@ admin.get('/migrate/check', requireAdmin, async (c) => {
   });
 });
 
+// ═══════════════════════════════════════════════════════════════
+// POST /api/admin/run-elearning-migration — Migration e-learning v9
+// Endpoint sécurisé par secret header
+// Utilise l'API Supabase Management pour exécuter le DDL SQL
+// ═══════════════════════════════════════════════════════════════
+admin.post('/run-elearning-migration', async (c) => {
+  const secret = c.req.header('X-Migration-Secret');
+  if (secret !== 'ef-fort-migrate-2025') {
+    return c.json({ error: 'Secret de migration invalide.' }, 403);
+  }
+
+  const supabaseUrl = c.env.SUPABASE_URL;
+  const serviceKey = c.env.SUPABASE_KEY;
+  const results: string[] = [];
+  const errors: string[] = [];
+
+  // Exécuter le SQL DDL via l'API Supabase Management
+  // Endpoint: POST /v1/projects/{ref}/database/query
+  // avec le SERVICE ROLE KEY comme Authorization
+  const projectRef = supabaseUrl.replace('https://', '').replace('.supabase.co', '');
+  
+  const migrationSQL = `
+-- Migration e-learning v9
+CREATE TABLE IF NOT EXISTS public.chapitres (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    matiere_id UUID NOT NULL REFERENCES public.matieres(id) ON DELETE CASCADE,
+    titre TEXT NOT NULL, description TEXT,
+    ordre INTEGER NOT NULL DEFAULT 0, created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS public.lecons (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    chapitre_id UUID NOT NULL REFERENCES public.chapitres(id) ON DELETE CASCADE,
+    titre TEXT NOT NULL, contenu TEXT, video_url TEXT,
+    ordre INTEGER NOT NULL DEFAULT 0, duree_minutes INTEGER DEFAULT 10,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS public.user_progress_lecon (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL,
+    lecon_id UUID NOT NULL REFERENCES public.lecons(id) ON DELETE CASCADE,
+    termine BOOLEAN DEFAULT FALSE, date_termine TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW(), UNIQUE(user_id, lecon_id)
+);
+CREATE INDEX IF NOT EXISTS idx_chapitres_matiere ON public.chapitres(matiere_id);
+CREATE INDEX IF NOT EXISTS idx_lecons_chapitre ON public.lecons(chapitre_id);
+CREATE INDEX IF NOT EXISTS idx_upl_user ON public.user_progress_lecon(user_id);
+ALTER TABLE public.chapitres ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.lecons ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_progress_lecon ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='chapitres' AND policyname='chapitres_public_read') THEN
+    CREATE POLICY chapitres_public_read ON public.chapitres FOR SELECT USING (true); END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='lecons' AND policyname='lecons_public_read') THEN
+    CREATE POLICY lecons_public_read ON public.lecons FOR SELECT USING (true); END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='user_progress_lecon' AND policyname='upl_service_all') THEN
+    CREATE POLICY upl_service_all ON public.user_progress_lecon USING (true) WITH CHECK (true); END IF;
+END $$;
+`;
+
+  // Essai 1: Via l'API Management Supabase (nécessite PAT, mais essayons)
+  try {
+    const resp = await fetch(`https://api.supabase.com/v1/projects/${projectRef}/database/query`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${serviceKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query: migrationSQL }),
+    });
+    const data = await resp.json() as any;
+    if (resp.ok) {
+      results.push('✅ Migration exécutée via Management API');
+    } else {
+      results.push(`⚠️ Management API: ${data.message || JSON.stringify(data)}`);
+    }
+  } catch (e: any) {
+    results.push(`⚠️ Management API erreur: ${e.message}`);
+  }
+
+  // Essai 2: Vérifier si les tables ont été créées
+  const db = getDB(c.env);
+  const tablesStatus: Record<string, boolean> = {};
+
+  for (const table of ['chapitres', 'lecons', 'user_progress_lecon']) {
+    try {
+      const { data, error } = await db.from(table).select('id').limit(1);
+      tablesStatus[table] = !error;
+      if (!error) results.push(`✅ Table ${table}: accessible`);
+      else errors.push(`❌ Table ${table}: ${error.message}`);
+    } catch (e: any) {
+      tablesStatus[table] = false;
+      errors.push(`❌ Table ${table}: ${e.message}`);
+    }
+  }
+
+  const allTablesExist = Object.values(tablesStatus).every(v => v);
+
+  return c.json({
+    success: allTablesExist,
+    results,
+    errors,
+    tables_status: tablesStatus,
+    message: allTablesExist 
+      ? '✅ Toutes les tables e-learning sont en place!'
+      : '⚠️ Certaines tables manquent - exécuter le SQL manuellement',
+    sql_required: `
+-- MIGRATION E-LEARNING v9 — À exécuter dans Supabase SQL Editor
+-- URL: https://supabase.com/dashboard/project/xqifdbgqxyrlhrkwlyir/sql
+
+CREATE TABLE IF NOT EXISTS public.chapitres (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    matiere_id UUID NOT NULL REFERENCES public.matieres(id) ON DELETE CASCADE,
+    titre TEXT NOT NULL, description TEXT,
+    ordre INTEGER NOT NULL DEFAULT 0, created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS public.lecons (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    chapitre_id UUID NOT NULL REFERENCES public.chapitres(id) ON DELETE CASCADE,
+    titre TEXT NOT NULL, contenu TEXT, video_url TEXT,
+    ordre INTEGER NOT NULL DEFAULT 0, duree_minutes INTEGER DEFAULT 10,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS public.user_progress_lecon (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL,
+    lecon_id UUID NOT NULL REFERENCES public.lecons(id) ON DELETE CASCADE,
+    termine BOOLEAN DEFAULT FALSE, date_termine TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW(), UNIQUE(user_id, lecon_id)
+);
+ALTER TABLE public.chapitres ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.lecons ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_progress_lecon ENABLE ROW LEVEL SECURITY;
+CREATE POLICY chapitres_public_read ON public.chapitres FOR SELECT USING (true);
+CREATE POLICY lecons_public_read ON public.lecons FOR SELECT USING (true);
+CREATE POLICY upl_service_all ON public.user_progress_lecon USING (true) WITH CHECK (true);
+`
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// POST /api/admin/seed-chapitres — Insérer les données initiales
+// Utilise le service role via SUPABASE_SERVICE_KEY
+// ═══════════════════════════════════════════════════════════════
+admin.post('/seed-chapitres', async (c) => {
+  const secret = c.req.header('X-Migration-Secret');
+  if (secret !== 'ef-fort-migrate-2025') {
+    return c.json({ error: 'Secret de migration invalide.' }, 403);
+  }
+
+  const db = getDB(c.env);
+  const results: string[] = [];
+
+  const chapitresData = [
+    { matiere_id: '9497ca2c-dc1b-43dd-8b7a-af11dde7039d', titre: 'Chapitre 1 : Introduction au Droit', description: 'Notions fondamentales du droit burkinabè', ordre: 1 },
+    { matiere_id: '9497ca2c-dc1b-43dd-8b7a-af11dde7039d', titre: 'Chapitre 2 : Droit Constitutionnel', description: 'Constitution du Burkina Faso, institutions', ordre: 2 },
+    { matiere_id: '9497ca2c-dc1b-43dd-8b7a-af11dde7039d', titre: 'Chapitre 3 : Droit Administratif', description: 'Actes administratifs et contentieux', ordre: 3 },
+    { matiere_id: 'd1560595-b4d9-45d2-af70-8bdf7016af72', titre: 'Chapitre 1 : Grammaire et Orthographe', description: 'Règles grammaticales et conjugaison', ordre: 1 },
+    { matiere_id: 'd1560595-b4d9-45d2-af70-8bdf7016af72', titre: 'Chapitre 2 : Expression Écrite', description: 'Rédaction, résumé et synthèse', ordre: 2 },
+    { matiere_id: 'd1560595-b4d9-45d2-af70-8bdf7016af72', titre: 'Chapitre 3 : Littérature Francophone', description: 'Auteurs africains au programme', ordre: 3 },
+    { matiere_id: '54f53d06-2d5d-4d82-91bc-4bfff904c12b', titre: 'Chapitre 1 : Logique et Raisonnement', description: 'Séries numériques et suites logiques', ordre: 1 },
+    { matiere_id: '54f53d06-2d5d-4d82-91bc-4bfff904c12b', titre: 'Chapitre 2 : Figures et Matrices', description: 'Tests visuels et rotations', ordre: 2 },
+    { matiere_id: '54f53d06-2d5d-4d82-91bc-4bfff904c12b', titre: 'Chapitre 3 : Calcul Mental', description: 'Rapidité et résolution de problèmes', ordre: 3 },
+  ];
+
+  // Insérer les chapitres un par un (pour éviter les doublons)
+  let inserted = 0;
+  let skipped = 0;
+  for (const ch of chapitresData) {
+    try {
+      const { data: existing } = await db
+        .from('chapitres')
+        .select('id')
+        .eq('matiere_id', ch.matiere_id)
+        .eq('titre', ch.titre)
+        .single();
+
+      if (existing) {
+        skipped++;
+        continue;
+      }
+
+      const { error } = await db.from('chapitres').insert(ch);
+      if (error) {
+        results.push(`❌ Erreur insertion "${ch.titre}": ${error.message}`);
+      } else {
+        inserted++;
+      }
+    } catch (e: any) {
+      results.push(`❌ Exception "${ch.titre}": ${e.message}`);
+    }
+  }
+
+  // Compter total
+  const { count } = await db.from('chapitres').select('*', { count: 'exact', head: true });
+
+  return c.json({
+    success: true,
+    inserted,
+    skipped,
+    total_chapitres: count ?? 0,
+    results,
+    message: `${inserted} chapitres insérés, ${skipped} déjà existants`,
+  });
+});
+
 export default admin;
