@@ -10,7 +10,7 @@ questions.get('/matieres', async (c) => {
   // Récupérer toutes les matières officielles (triées par ordre)
   const { data: matieres, error: mErr } = await db
     .from('matieres')
-    .select('id, nom, code, icone, couleur, ordre')
+    .select('id, nom, code, icone, couleur, ordre, description')
     .order('ordre', { ascending: true })
     .limit(50);
 
@@ -95,6 +95,7 @@ questions.get('/matieres', async (c) => {
     abonne_only: false,
     matiere_id: m.id,
     ordre: m.ordre ?? 99,
+    description: m.description ?? null,
   })).sort((a, b) => a.ordre - b.ordre);
 
   // Headers de cache (5 minutes)
