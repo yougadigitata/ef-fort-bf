@@ -3,15 +3,13 @@ import '../core/theme/app_colors.dart';
 import '../services/bell_service.dart';
 import 'dashboard_screen.dart';
 import 'apprendre_screen.dart';
-import 'matieres_screen.dart';
+import 'explorer_screen.dart';
 import 'examen_selection_screen.dart';
-import 'entraide_screen.dart';
 import 'profil_screen.dart';
-import 'mes_progres_screen.dart';
 
 // ══════════════════════════════════════════════════════════════
-// HOME SCREEN v9.0 — Navigation e-learning redesignée
-// 6 onglets : Accueil · Apprendre · QCM · S'entraîner · Entraide · Progrès
+// HOME SCREEN v10.0 — Navigation e-learning style Coursera
+// 5 onglets : Accueil · Explorer · Apprendre · Formations · Profil
 // ══════════════════════════════════════════════════════════════
 
 class HomeScreen extends StatefulWidget {
@@ -24,19 +22,22 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
 
-  void _goToSimulation() {
-    setState(() => _currentIndex = 3);
+  void _goToExplorer() {
+    setState(() => _currentIndex = 1);
   }
 
-  void _goToMatieres() {
+  void _goToApprendre() {
     setState(() => _currentIndex = 2);
   }
 
-  void _goToProgres() {
-    setState(() => _currentIndex = 5);
+  void _goToFormations() {
+    setState(() => _currentIndex = 3);
   }
 
-  // ── Navigation libre — accès complet pour tous ───────────────────
+  void _goToProfil() {
+    setState(() => _currentIndex = 4);
+  }
+
   void _navigateToIndex(int index) {
     BellService.playWelcome();
     setState(() => _currentIndex = index);
@@ -46,16 +47,15 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final pages = [
       DashboardScreen(
-        onGoToSimulation: _goToSimulation,
-        onGoToMatieres: _goToMatieres,
-        onGoToProgres: _goToProgres,
+        onGoToExplorer: _goToExplorer,
+        onGoToMatieres: _goToApprendre,
+        onGoToSimulation: _goToFormations,
+        onGoToProgres: _goToApprendre,
       ),
-      const ApprendreScreen(),         // "Apprendre" — Hub apprentissage (cours + tableau de bord + services)
-      const MatieresScreen(),          // "QCM" — Pratique par matière
-      const ExamenSelectionScreen(),   // "S'entraîner" — Examens & simulations
-      const EntraideScreen(),          // Communauté
-      const MesProgresScreen(),        // "Mes Progrès" — Tableau de bord
-      const ProfilScreen(),            // Profil (accessible depuis Profil)
+      const ExplorerScreen(),         // Explorer les domaines
+      const ApprendreScreen(),         // Apprendre — tableau de bord + cours + certifications
+      const ExamenSelectionScreen(),   // Formations — Examens & simulations
+      const ProfilScreen(),            // Profil
     ];
 
     return Scaffold(
@@ -63,72 +63,79 @@ class _HomeScreenState extends State<HomeScreen> {
         index: _currentIndex,
         children: pages,
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 16,
-              offset: const Offset(0, -3),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: SizedBox(
-            height: 62,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(0, '🏠', 'Accueil'),
-                _buildNavItem(1, '🎓', 'Apprendre'),
-                _buildNavItem(2, '📝', 'QCM'),
-                _buildNavItem(3, '🎯', 'Examens'),
-                _buildNavItem(4, '🤝', 'Entraide'),
-                _buildNavItem(5, '📊', 'Progrès'),
-              ],
-            ),
+      bottomNavigationBar: _buildBottomNav(),
+    );
+  }
+
+  Widget _buildBottomNav() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        border: const Border(top: BorderSide(color: AppColors.divider, width: 1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 16,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: SizedBox(
+          height: 64,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildNavItem(0, Icons.home_rounded, Icons.home_outlined, 'Accueil'),
+              _buildNavItem(1, Icons.explore_rounded, Icons.explore_outlined, 'Explorer'),
+              _buildNavItem(2, Icons.school_rounded, Icons.school_outlined, 'Apprendre'),
+              _buildNavItem(3, Icons.assignment_rounded, Icons.assignment_outlined, 'Examens'),
+              _buildNavItem(4, Icons.person_rounded, Icons.person_outlined, 'Profil'),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildNavItem(int index, String emoji, String label) {
+  Widget _buildNavItem(
+    int index,
+    IconData activeIcon,
+    IconData inactiveIcon,
+    String label,
+  ) {
     final isActive = _currentIndex == index;
 
     return _NavItemBounce(
       onTap: () => _navigateToIndex(index),
       child: SizedBox(
-        width: 55,
+        width: 64,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
+              duration: const Duration(milliseconds: 220),
               curve: Curves.easeOutCubic,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               decoration: BoxDecoration(
                 color: isActive
-                    ? AppColors.primary.withValues(alpha: 0.12)
+                    ? AppColors.primary.withValues(alpha: 0.1)
                     : Colors.transparent,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(20),
               ),
-              child: AnimatedDefaultTextStyle(
-                duration: const Duration(milliseconds: 200),
-                style: TextStyle(
-                  fontSize: isActive ? 27 : 22,
-                ),
-                child: Text(emoji),
+              child: Icon(
+                isActive ? activeIcon : inactiveIcon,
+                size: 24,
+                color: isActive ? AppColors.primary : AppColors.textSubtle,
               ),
             ),
             const SizedBox(height: 2),
             AnimatedDefaultTextStyle(
               duration: const Duration(milliseconds: 200),
               style: TextStyle(
-                fontSize: 10,
-                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                color: isActive ? AppColors.primary : AppColors.textLight,
+                fontSize: 11,
+                fontWeight: isActive ? FontWeight.w700 : FontWeight.w400,
+                color: isActive ? AppColors.primary : AppColors.textSubtle,
               ),
               child: Text(label),
             ),
@@ -139,11 +146,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// ── Micro-interaction rebond sur les items de navigation ─────────────
+// ── Micro-interaction rebond ─────────────────────────────────────
 class _NavItemBounce extends StatefulWidget {
   final Widget child;
   final VoidCallback onTap;
-
   const _NavItemBounce({required this.child, required this.onTap});
 
   @override
@@ -161,7 +167,7 @@ class _NavItemBounceState extends State<_NavItemBounce>
     _ctrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 80),
-      reverseDuration: const Duration(milliseconds: 250),
+      reverseDuration: const Duration(milliseconds: 200),
     );
     _scale = Tween<double>(begin: 1.0, end: 0.85).animate(
       CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),

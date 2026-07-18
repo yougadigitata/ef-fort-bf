@@ -4,7 +4,7 @@ import '../services/api_service.dart';
 import '../services/cours_service.dart';
 import '../services/bell_service.dart';
 import '../widgets/logo_widget.dart';
-import 'cours_detail_screen.dart';
+import 'domaine_detail_screen.dart';
 
 // ══════════════════════════════════════════════════════════════
 // COURS LIST SCREEN — e-learning v2.0
@@ -290,7 +290,7 @@ class _CoursListScreenState extends State<CoursListScreen>
         Navigator.push(
           context,
           PageRouteBuilder(
-            pageBuilder: (_, animation, __) => CoursDetailScreen(
+            pageBuilder: (_, animation, __) => DomaineDetailScreen(
               matiereId: matiereId,
               matiereNom: nom,
               matiereCode: code,

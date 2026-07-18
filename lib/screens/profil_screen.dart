@@ -3,9 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../core/theme/app_colors.dart';
 import '../services/api_service.dart';
+import '../services/progression_service.dart';
 import '../utils/safe_launcher.dart';
 import 'login_screen.dart';
 import 'admin_screen.dart';
+
+// ══════════════════════════════════════════════════════════════
+// PROFIL SCREEN v10.0 — Inspiré Coursera
+// Statistiques · Compte · Paramètres · À propos
+// ══════════════════════════════════════════════════════════════
 
 class ProfilScreen extends StatefulWidget {
   const ProfilScreen({super.key});
@@ -16,17 +22,13 @@ class ProfilScreen extends StatefulWidget {
 
 class _ProfilScreenState extends State<ProfilScreen>
     with TickerProviderStateMixin {
-  // ignore: unused_field
-  bool _loadingAbonnement = false;
+  UserStats? _stats;
+  bool _loadingStats = true;
 
-  // Animations fluides style "À propos"
   late AnimationController _headerCtrl;
   late AnimationController _contentCtrl;
-  late AnimationController _pulseCtrl;
-
   late Animation<double> _headerAnim;
   late Animation<double> _contentAnim;
-  late Animation<double> _pulseAnim;
   late Animation<Offset> _slideAnim;
 
   @override
@@ -34,30 +36,23 @@ class _ProfilScreenState extends State<ProfilScreen>
     super.initState();
     _headerCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 700),
     );
     _contentCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
     );
-    _pulseCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1800),
-    )..repeat(reverse: true);
-
     _headerAnim = CurvedAnimation(parent: _headerCtrl, curve: Curves.easeOutCubic);
     _contentAnim = CurvedAnimation(parent: _contentCtrl, curve: Curves.easeOut);
-    _pulseAnim = Tween<double>(begin: 0.98, end: 1.02).animate(
-      CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut),
-    );
     _slideAnim = Tween<Offset>(
-      begin: const Offset(0, 0.15),
+      begin: const Offset(0, 0.12),
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _contentCtrl, curve: Curves.easeOut));
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _headerCtrl.forward();
       await _contentCtrl.forward();
+      _loadStats();
     });
   }
 
@@ -65,14 +60,21 @@ class _ProfilScreenState extends State<ProfilScreen>
   void dispose() {
     _headerCtrl.dispose();
     _contentCtrl.dispose();
-    _pulseCtrl.dispose();
     super.dispose();
   }
 
-  // _demanderAbonnement supprimé (accès 100% gratuit)
+  Future<void> _loadStats() async {
+    try {
+      final stats = await ProgressionService.getUserStats();
+      if (mounted) setState(() { _stats = stats; _loadingStats = false; });
+    } catch (_) {
+      if (mounted) setState(() => _loadingStats = false);
+    }
+  }
 
   Future<void> _openWhatsApp() async {
-    final uri = Uri.parse('https://wa.me/22665467070?text=Bonjour%20EF-FORT%2C%20je%20souhaite%20m%27abonner%20%C3%A0%20EF-FORT.BF');
+    final uri = Uri.parse(
+        'https://wa.me/22665467070?text=Bonjour%20EF-FORT.BF%2C%20j%27ai%20besoin%20d%27aide');
     await SafeLauncher.launch(context, uri,
         fallbackMessage: 'Contactez-nous sur WhatsApp au 65 46 70 70');
   }
@@ -87,6 +89,12 @@ class _ProfilScreenState extends State<ProfilScreen>
     );
   }
 
+  Future<void> _openSite() async {
+    final uri = Uri.parse('https://ef-fort.bf');
+    await SafeLauncher.launch(context, uri,
+        fallbackMessage: 'Site : https://ef-fort.bf');
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = ApiService.currentUser;
@@ -95,183 +103,474 @@ class _ProfilScreenState extends State<ProfilScreen>
     final telephone = user?['telephone'] ?? '';
     final niveau = user?['niveau'] ?? 'BAC';
     final isAdmin = user?['is_admin'] == true;
-    // ✅ ACCÈS LIBRE : tous les utilisateurs ont accès complet
-    const isAbonne = true;
+    final initiales = _initiales(prenom, nom);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F4F1),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            children: [
-              // ── Header animé ──
-              FadeTransition(
+      backgroundColor: AppColors.background,
+      body: CustomScrollView(
+        slivers: [
+          // ── App bar avec avatar ────────────────────────────────
+          SliverAppBar(
+            expandedHeight: 200,
+            pinned: true,
+            backgroundColor: AppColors.primary,
+            surfaceTintColor: Colors.transparent,
+            actions: [
+              if (isAdmin)
+                IconButton(
+                  icon: const Icon(Icons.admin_panel_settings_outlined, color: Colors.white),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AdminScreen()),
+                  ),
+                  tooltip: 'Administration',
+                ),
+            ],
+            flexibleSpace: FlexibleSpaceBar(
+              background: FadeTransition(
                 opacity: _headerAnim,
-                child: SlideTransition(
-                  position: Tween<Offset>(
-                    begin: const Offset(0, -0.1),
-                    end: Offset.zero,
-                  ).animate(_headerAnim),
-                  child: Container(
-                    width: double.infinity,
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [AppColors.primary, AppColors.primaryDark],
-                      ),
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(32),
-                        bottomRight: Radius.circular(32),
-                      ),
-                    ),
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-                    child: Column(
-                      children: [
-                        // Avatar animé avec pulse
-                        ScaleTransition(
-                          scale: _pulseAnim,
-                          child: Container(
-                            width: 90,
-                            height: 90,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white.withValues(alpha: 0.15),
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.3),
-                                width: 3,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.2),
-                                  blurRadius: 20,
-                                  spreadRadius: 5,
-                                ),
-                              ],
-                            ),
-                            child: ClipOval(
-                              child: Image.asset(
-                                'assets/images/logo_effort.png',
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => Center(
-                                  child: Text(
-                                    prenom.isNotEmpty ? prenom[0].toUpperCase() : 'U',
-                                    style: const TextStyle(
-                                      fontSize: 26,
-                                      fontWeight: FontWeight.w900,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Nom complet
-                        Text(
-                          '$prenom $nom',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                            letterSpacing: 0.3,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          telephone,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.white.withValues(alpha: 0.75),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-
-                        // Badges niveau + statut
-                        Wrap(
-                          spacing: 8,
-                          children: [
-                            _buildBadge('Niveau $niveau', Icons.school_outlined, Colors.white.withValues(alpha: 0.2)),
-                            _buildBadge(
-                              '🔓 ACCÈS COMPLET',
-                              Icons.lock_open_rounded,
-                              AppColors.success.withValues(alpha: 0.25),
-                            ),
-                            if (isAdmin)
-                              _buildBadge('👑 ADMIN', Icons.admin_panel_settings_rounded, Colors.purple.withValues(alpha: 0.25)),
-                          ],
-                        ),
-                      ],
+                child: Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF0056D2), Color(0xFF003FA3)],
                     ),
                   ),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // ── Contenu animé en slide + fade ──
-              SlideTransition(
-                position: _slideAnim,
-                child: FadeTransition(
-                  opacity: _contentAnim,
-                  child: Column(
+                  child: Stack(
                     children: [
-              // ✅ Badge accès complet gratuit
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.success.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.check_circle_rounded, color: AppColors.success, size: 28),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('🔓 Accès complet activé', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.success)),
-                          Text('Toutes les matières, séries, examens et simulations sont disponibles gratuitement.', style: TextStyle(fontSize: 13, color: AppColors.textLight, height: 1.4)),
-                        ],
+                      Positioned(
+                        top: -20, right: -20,
+                        child: Container(
+                          width: 160, height: 160,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withValues(alpha: 0.05),
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              if (isAdmin)
-                _buildMenuItem(
-                  Icons.admin_panel_settings_rounded,
-                  'Panel Administration',
-                  'Gerer les questions, utilisateurs et abonnements',
-                  AppColors.red,
-                  () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminScreen())),
-                ),
-              _buildMenuItem(
-                Icons.info_outline_rounded,
-                'À propos d\'EF-FORT.BF',
-                'Mission, équipe et contact',
-                AppColors.primary,
-                () => _showAboutDialog(),
-              ),
-              _buildMenuItem(
-                Icons.logout_rounded,
-                'Deconnexion',
-                'Se deconnecter de l\'application',
-                AppColors.error,
-                () => _showLogoutConfirm(),
-              ),
-              const SizedBox(height: 40),
+                      SafeArea(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Avatar
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 64,
+                                    height: 64,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(alpha: 0.2),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.white.withValues(alpha: 0.4),
+                                        width: 2.5,
+                                      ),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        initiales,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '$prenom $nom',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          telephone.isNotEmpty ? '+226 $telephone' : 'Apprenant',
+                                          style: TextStyle(
+                                            color: Colors.white.withValues(alpha: 0.8),
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Row(
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                              decoration: BoxDecoration(
+                                                color: Colors.white.withValues(alpha: 0.2),
+                                                borderRadius: BorderRadius.circular(4),
+                                              ),
+                                              child: Text(
+                                                'Niveau $niveau',
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                              decoration: BoxDecoration(
+                                                color: AppColors.secondary.withValues(alpha: 0.8),
+                                                borderRadius: BorderRadius.circular(4),
+                                              ),
+                                              child: const Text(
+                                                '✓ Accès complet',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ),
+              title: const Text(
+                'Mon profil',
+                style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ),
+          // ── Contenu ───────────────────────────────────────────
+          SliverToBoxAdapter(
+            child: SlideTransition(
+              position: _slideAnim,
+              child: FadeTransition(
+                opacity: _contentAnim,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Statistiques
+                    _buildStatsSection(),
+                    const SizedBox(height: 8),
+                    // Compte
+                    _buildSection(
+                      title: 'Mon compte',
+                      items: [
+                        _buildMenuItem(
+                          icon: Icons.person_outline_rounded,
+                          label: prenom.isNotEmpty ? '$prenom $nom' : 'Profil',
+                          subtitle: 'Informations personnelles',
+                          onTap: () {},
+                        ),
+                        _buildDivider(),
+                        _buildMenuItem(
+                          icon: Icons.phone_outlined,
+                          label: telephone.isNotEmpty ? '+226 $telephone' : 'Téléphone',
+                          subtitle: 'Numéro de contact',
+                          onTap: () {},
+                        ),
+                        _buildDivider(),
+                        _buildMenuItem(
+                          icon: Icons.school_outlined,
+                          label: 'Niveau $niveau',
+                          subtitle: 'Niveau d\'études',
+                          onTap: () {},
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    // Support
+                    _buildSection(
+                      title: 'Aide & Support',
+                      items: [
+                        _buildMenuItem(
+                          icon: Icons.support_agent_outlined,
+                          label: 'Contacter le support',
+                          subtitle: 'WhatsApp · 65 46 70 70',
+                          trailing: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF25D366).withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Text(
+                              'WhatsApp',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF25D366),
+                              ),
+                            ),
+                          ),
+                          onTap: _openWhatsApp,
+                        ),
+                        _buildDivider(),
+                        _buildMenuItem(
+                          icon: Icons.language_outlined,
+                          label: 'Site web EF-FORT.BF',
+                          subtitle: 'https://ef-fort.bf',
+                          onTap: _openSite,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    // À propos
+                    _buildAboutSection(),
+                    const SizedBox(height: 8),
+                    // Admin
+                    if (isAdmin)
+                      _buildSection(
+                        title: 'Administration',
+                        items: [
+                          _buildMenuItem(
+                            icon: Icons.admin_panel_settings_outlined,
+                            label: 'Panneau d\'administration',
+                            subtitle: 'Gérer les questions, utilisateurs',
+                            color: AppColors.primary,
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const AdminScreen()),
+                            ),
+                          ),
+                        ],
+                      ),
+                    if (isAdmin) const SizedBox(height: 8),
+                    // Déconnexion
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: _showLogoutConfirm,
+                          icon: const Icon(Icons.logout_rounded, size: 18, color: AppColors.error),
+                          label: const Text(
+                            'Se déconnecter',
+                            style: TextStyle(color: AppColors.error, fontWeight: FontWeight.w600),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: AppColors.error, width: 1.5),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Footer
+                    const SizedBox(height: 24),
+                    Center(
+                      child: Column(
+                        children: [
+                          const Text(
+                            'EF-FORT.BF',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 14,
+                              color: AppColors.primary,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            'La plateforme d\'apprentissage N°1 au Burkina Faso',
+                            style: TextStyle(fontSize: 11, color: AppColors.textSubtle),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            '© EF-FORT.BF 2026 — Tous droits réservés',
+                            style: TextStyle(fontSize: 11, color: AppColors.textSubtle),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 80),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatsSection() {
+    final total = _stats?.nbQuestionsRepondues ?? 0;
+    final taux = _stats?.tauxReussiteGlobal ?? 0.0;
+    final note = _stats?.noteSur20 ?? 0.0;
+    final simus = _stats?.nbSimulations ?? 0;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.divider),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Mes statistiques',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textDark,
+            ),
+          ),
+          const SizedBox(height: 14),
+          if (_loadingStats)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2),
+              ),
+            )
+          else ...[
+            Row(
+              children: [
+                Expanded(child: _buildStatItem('$total', 'Questions', Icons.quiz_outlined, AppColors.primary)),
+                Expanded(child: _buildStatItem('${taux.toStringAsFixed(0)}%', 'Réussite', Icons.trending_up, AppColors.secondary)),
+                Expanded(child: _buildStatItem('${note.toStringAsFixed(1)}/20', 'Note', Icons.star_outline, const Color(0xFFD97706))),
+                Expanded(child: _buildStatItem('$simus', 'Examens', Icons.assignment_outlined, const Color(0xFF7C3AED))),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatItem(String value, String label, IconData icon, Color color) {
+    return Column(
+      children: [
+        Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: color, size: 22),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w800,
+            color: color,
+          ),
+        ),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 11, color: AppColors.textLight),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSection({required String title, required List<Widget> items}) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 8),
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textLight,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.divider),
+            ),
+            child: Column(children: items),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenuItem({
+    required IconData icon,
+    required String label,
+    String? subtitle,
+    Color? color,
+    Widget? trailing,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+          child: Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: (color ?? AppColors.textMedium).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Icon(icon, color: color ?? AppColors.textMedium, size: 20),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: color ?? AppColors.textDark,
+                      ),
+                    ),
+                    if (subtitle != null)
+                      Text(
+                        subtitle,
+                        style: const TextStyle(fontSize: 12, color: AppColors.textLight),
+                      ),
+                  ],
+                ),
+              ),
+              trailing ??
+                  Icon(
+                    Icons.chevron_right,
+                    size: 18,
+                    color: AppColors.textSubtle,
+                  ),
             ],
           ),
         ),
@@ -279,1657 +578,150 @@ class _ProfilScreenState extends State<ProfilScreen>
     );
   }
 
-  Widget _buildBadge(String label, IconData icon, Color bg) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+  Widget _buildDivider() {
+    return const Divider(
+      height: 1,
+      thickness: 1,
+      color: AppColors.divider,
+      indent: 68,
+    );
+  }
+
+  Widget _buildAboutSection() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 12, color: Colors.white),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: const TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.w700),
+          const Padding(
+            padding: EdgeInsets.only(left: 4, bottom: 8),
+            child: Text(
+              'À PROPOS',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textLight,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF0056D2), Color(0xFF009E49)],
+              ),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Text(
+                        'EF-FORT.BF',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                    ),
+                    const Spacer(),
+                    const Text('🇧🇫', style: TextStyle(fontSize: 24)),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'La plateforme N°1 d\'apprentissage et de préparation aux concours de la Fonction Publique du Burkina Faso.',
+                  style: TextStyle(color: Colors.white, fontSize: 13, height: 1.5),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    _buildFeatureChip('100% Gratuit'),
+                    const SizedBox(width: 8),
+                    _buildFeatureChip('Certifié'),
+                    const SizedBox(width: 8),
+                    _buildFeatureChip('Burkina 🇧🇫'),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: _openSite,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      side: const BorderSide(color: Colors.white, width: 1.5),
+                      padding: const EdgeInsets.symmetric(vertical: 11),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: const Text(
+                      'Visiter notre site',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildMenuItem(IconData icon, String title, String subtitle, Color color, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8)],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: color, size: 22),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: AppColors.textDark)),
-                  const SizedBox(height: 2),
-                  Text(subtitle, style: TextStyle(fontSize: 15, color: AppColors.textLight)),
-                ],
-              ),
-            ),
-            Icon(Icons.chevron_right_rounded, color: AppColors.textLight.withValues(alpha: 0.5)),
-          ],
-        ),
+  Widget _buildFeatureChip(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(20),
       ),
-    );
-  }
-
-  // Dialogs de paiement supprimés (accès 100% gratuit)
-
-  void _showAboutDialog() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const _AboutScreen()),
+      child: Text(
+        label,
+        style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+      ),
     );
   }
 
   void _showLogoutConfirm() {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Deconnexion'),
-        content: const Text('Voulez-vous vraiment vous deconnecter ?'),
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Se déconnecter ?', style: TextStyle(fontWeight: FontWeight.w700)),
+        content: const Text('Vous devrez vous reconnecter pour accéder à vos formations.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annuler'),
+          ),
           TextButton(
             onPressed: () {
-              Navigator.pop(ctx);
+              Navigator.pop(context);
               _logout();
             },
-            child: const Text('Deconnexion', style: TextStyle(color: AppColors.error)),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// PAGE À PROPOS - PREMIUM ANIMÉE
-// ═══════════════════════════════════════════════════════════════
-class _AboutScreen extends StatefulWidget {
-  const _AboutScreen();
-
-  @override
-  State<_AboutScreen> createState() => _AboutScreenState();
-}
-
-class _AboutScreenState extends State<_AboutScreen>
-    with TickerProviderStateMixin {
-  int _activeTab = 0; // 0=Mission, 1=Cyber Edu, 2=Contact
-
-  // Animation controllers
-  late AnimationController _particleCtrl;
-  late AnimationController _shimmerCtrl;
-  late AnimationController _pulseCtrl;
-  late AnimationController _floatCtrl;
-  late AnimationController _rotateCtrl;
-  late AnimationController _slideCtrl;
-
-  late Animation<double> _particleAnim;
-  late Animation<double> _shimmerAnim;
-  late Animation<double> _pulseAnim;
-  late Animation<double> _floatAnim;
-  late Animation<double> _rotateAnim;
-  late Animation<double> _slideAnim;
-
-  @override
-  void initState() {
-    super.initState();
-    _initAnimations();
-    _slideCtrl.forward();
-  }
-
-  void _initAnimations() {
-    _particleCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 6),
-    )..repeat();
-
-    _shimmerCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2000),
-    )..repeat();
-
-    _pulseCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1600),
-    )..repeat(reverse: true);
-
-    _floatCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 3200),
-    )..repeat(reverse: true);
-
-    _rotateCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 15),
-    )..repeat();
-
-    _slideCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
-
-    _particleAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _particleCtrl, curve: Curves.linear),
-    );
-    _shimmerAnim = Tween<double>(begin: -1.5, end: 2.5).animate(
-      CurvedAnimation(parent: _shimmerCtrl, curve: Curves.easeInOut),
-    );
-    _pulseAnim = Tween<double>(begin: 0.97, end: 1.03).animate(
-      CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut),
-    );
-    _floatAnim = Tween<double>(begin: -5.0, end: 5.0).animate(
-      CurvedAnimation(parent: _floatCtrl, curve: Curves.easeInOut),
-    );
-    _rotateAnim = Tween<double>(begin: 0.0, end: 2 * math.pi).animate(
-      CurvedAnimation(parent: _rotateCtrl, curve: Curves.linear),
-    );
-    _slideAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _slideCtrl, curve: Curves.easeOutCubic),
-    );
-  }
-
-  @override
-  void dispose() {
-    _particleCtrl.dispose();
-    _shimmerCtrl.dispose();
-    _pulseCtrl.dispose();
-    _floatCtrl.dispose();
-    _rotateCtrl.dispose();
-    _slideCtrl.dispose();
-    super.dispose();
-  }
-
-  Future<void> _openWhatsApp() async {
-    final uri = Uri.parse(
-        'https://wa.me/22665467070?text=Bonjour%20EF-FORT%2C%20j%27ai%20une%20question%20sur%20l%27application.');
-    await SafeLauncher.launch(context, uri,
-        fallbackMessage: 'Contactez-nous sur WhatsApp au 65 46 70 70');
-  }
-
-  Future<void> _openEmail() async {
-    final uri = Uri.parse('mailto:effortbf2026@gmail.com?subject=Question%20EF-FORT.BF');
-    await SafeLauncher.launch(context, uri,
-        fallbackMessage: 'Écrivez-nous à effortbf2026@gmail.com');
-  }
-
-  Future<void> _shareApp() async {
-    final uri = Uri.parse(
-        'https://wa.me/?text=Je%20vous%20recommande%20EF-FORT.BF%20-%20La%20plateforme%20N%C2%B01%20d%27apprentissage%20et%20d%27%C3%A9ducation%20au%20Burkina%20Faso%20%F0%9F%87%A7%F0%9F%87%AB%20%F0%9F%9A%80%20https%3A%2F%2Fef-fort-bf.pages.dev');
-    await SafeLauncher.launch(context, uri,
-        fallbackMessage: 'Partagez le lien : https://ef-fort-bf.pages.dev');
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          // ── AppBar PREMIUM animée avec particules ──
-          SliverAppBar(
-            expandedHeight: 230,
-            pinned: true,
-            stretch: true,
-            flexibleSpace: FlexibleSpaceBar(
-              background: AnimatedBuilder(
-                animation: Listenable.merge([_particleAnim, _shimmerAnim, _rotateAnim, _floatAnim]),
-                builder: (_, __) {
-                  return Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Color(0xFF0A2E1A),
-                          Color(0xFF1A5C38),
-                          Color(0xFF0F3D24),
-                        ],
-                      ),
-                    ),
-                    child: Stack(
-                      children: [
-                        // Particules dorées
-                        CustomPaint(
-                          painter: _AboutParticlePainter(progress: _particleAnim.value),
-                          size: Size.infinite,
-                        ),
-                        // Cercle rotatif décoratif
-                        Positioned(
-                          right: -40,
-                          top: -40,
-                          child: Transform.rotate(
-                            angle: _rotateAnim.value,
-                            child: Container(
-                              width: 160,
-                              height: 160,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: const Color(0xFFD4A017).withValues(alpha: 0.12),
-                                  width: 2,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          left: -20,
-                          bottom: -20,
-                          child: Transform.rotate(
-                            angle: -_rotateAnim.value * 0.7,
-                            child: Container(
-                              width: 100,
-                              height: 100,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: const Color(0xFFD4A017).withValues(alpha: 0.08),
-                                  width: 1.5,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        // Contenu de l'en-tête
-                        SafeArea(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const SizedBox(height: 44),
-                              // Logo avec halo doré pulsant
-                              AnimatedBuilder(
-                                animation: _pulseAnim,
-                                builder: (_, child) => Transform.scale(
-                                  scale: _pulseAnim.value,
-                                  child: child,
-                                ),
-                                child: Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    // Halo extérieur
-                                    Container(
-                                      width: 106,
-                                      height: 106,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        gradient: RadialGradient(
-                                          colors: [
-                                            const Color(0xFFD4A017).withValues(alpha: 0.25),
-                                            const Color(0xFFD4A017).withValues(alpha: 0.0),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    // Bordure dorée
-                                    Container(
-                                      width: 96,
-                                      height: 96,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        gradient: const LinearGradient(
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                          colors: [Color(0xFFD4A017), Color(0xFFF0C040)],
-                                        ),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: const Color(0xFFD4A017).withValues(alpha: 0.5),
-                                            blurRadius: 20,
-                                            spreadRadius: 2,
-                                          ),
-                                        ],
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(3),
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.white,
-                                          ),
-                                          child: ClipOval(
-                                            child: Image.asset(
-                                              'assets/images/logo_effort.png',
-                                              fit: BoxFit.contain,
-                                              errorBuilder: (ctx, err, _) => Container(
-                                                decoration: const BoxDecoration(
-                                                  gradient: LinearGradient(
-                                                    colors: [AppColors.primary, AppColors.primaryDark],
-                                                  ),
-                                                ),
-                                                child: const Column(
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  children: [
-                                                    Text('🎓', style: TextStyle(fontSize: 16)),
-                                                    Text('EF-FORT', style: TextStyle(
-                                                      color: Colors.white, fontSize: 14,
-                                                      fontWeight: FontWeight.w900,
-                                                    )),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              // Titre avec shimmer
-                              ShaderMask(
-                                shaderCallback: (bounds) {
-                                  return LinearGradient(
-                                    begin: Alignment.centerLeft,
-                                    end: Alignment.centerRight,
-                                    colors: [
-                                      Colors.white.withValues(alpha: 0.7),
-                                      const Color(0xFFD4A017),
-                                      Colors.white.withValues(alpha: 0.7),
-                                    ],
-                                    stops: [
-                                      (_shimmerAnim.value - 0.4).clamp(0.0, 1.0),
-                                      _shimmerAnim.value.clamp(0.0, 1.0),
-                                      (_shimmerAnim.value + 0.4).clamp(0.0, 1.0),
-                                    ],
-                                  ).createShader(bounds);
-                                },
-                                child: const Text(
-                                  'EF-FORT.BF',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 2,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              // Badge animé flottant
-                              AnimatedBuilder(
-                                animation: _floatAnim,
-                                builder: (_, child) => Transform.translate(
-                                  offset: Offset(0, _floatAnim.value * 0.4),
-                                  child: child,
-                                ),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      colors: [Color(0xFFD4A017), Color(0xFFE8B520)],
-                                    ),
-                                    borderRadius: BorderRadius.circular(20),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: const Color(0xFFD4A017).withValues(alpha: 0.4),
-                                        blurRadius: 10,
-                                      ),
-                                    ],
-                                  ),
-                                  child: const Text(
-                                    '🏆 Plateforme N°1 au Burkina Faso',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-            backgroundColor: AppColors.primaryDark,
-            foregroundColor: Colors.white,
-            title: const Text('À propos', style: TextStyle(fontWeight: FontWeight.w700)),
-          ),
-
-          // ── Onglets de navigation Premium ──
-          SliverToBoxAdapter(
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              child: Row(
-                children: [
-                  _buildPremiumTab(0, '🎯 Mission', Icons.flag_rounded),
-                  const SizedBox(width: 8),
-                  _buildPremiumTab(1, '🔐 Cyber Edu', Icons.security_rounded),
-                  const SizedBox(width: 8),
-                  _buildPremiumTab(2, '📞 Contact', Icons.contact_support_rounded),
-                ],
-              ),
-            ),
-          ),
-
-          // ── Contenu selon onglet ──
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: AnimatedBuilder(
-                animation: _slideAnim,
-                builder: (_, child) => Transform.translate(
-                  offset: Offset(0, 10 * (1 - _slideAnim.value)),
-                  child: Opacity(
-                    opacity: _slideAnim.value,
-                    child: child,
-                  ),
-                ),
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  child: _activeTab == 0
-                      ? _buildMissionTab()
-                      : _activeTab == 1
-                          ? _buildCyberEduTab()
-                          : _buildContactTab(),
-                ),
-              ),
-            ),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: const Text('Déconnecter', style: TextStyle(fontWeight: FontWeight.w700)),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPremiumTab(int index, String label, IconData icon) {
-    final isActive = _activeTab == index;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          setState(() => _activeTab = index);
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
-          decoration: BoxDecoration(
-            gradient: isActive
-                ? const LinearGradient(
-                    colors: [AppColors.primary, Color(0xFF2D8F5E)],
-                  )
-                : null,
-            color: isActive ? null : AppColors.background,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: isActive
-                  ? AppColors.primary
-                  : AppColors.primary.withValues(alpha: 0.2),
-              width: isActive ? 1.5 : 1,
-            ),
-            boxShadow: isActive
-                ? [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AnimatedScale(
-                scale: isActive ? 1.15 : 1.0,
-                duration: const Duration(milliseconds: 200),
-                child: Icon(
-                  icon,
-                  size: 18,
-                  color: isActive ? Colors.white : AppColors.primary,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: isActive ? Colors.white : AppColors.primary,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMissionTab() {
-    return Column(
-      key: const ValueKey('mission'),
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Badge Plateforme N°1 animé
-        AnimatedBuilder(
-          animation: _floatAnim,
-          builder: (_, child) => Transform.translate(
-            offset: Offset(0, _floatAnim.value * 0.3),
-            child: child,
-          ),
-          child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFFD4A017), Color(0xFFE8B82A), Color(0xFFF0C030)],
-            ),
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFD4A017).withValues(alpha: 0.4),
-                blurRadius: 18,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              AnimatedBuilder(
-                animation: _pulseAnim,
-                builder: (_, child) => Transform.scale(
-                  scale: _pulseAnim.value,
-                  child: child,
-                ),
-                child: const Text('🏆', style: TextStyle(fontSize: 16)),
-              ),
-              const SizedBox(width: 14),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Plateforme N°1',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    SizedBox(height: 2),
-                    Text(
-                      'd\'apprentissage et d\'éducation au Burkina Faso',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    SizedBox(height: 6),
-                    Text(
-                      '🇧🇫 Conçu par des Burkinabè, pour des Burkinabè',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        ),
-        const SizedBox(height: 16),
-        _buildInfoCard(
-          icon: '🎯',
-          title: 'Notre Mission',
-          color: AppColors.primary,
-          content: 'Au Burkina Faso, se préparer aux concours ressemble trop souvent à un combat sans repères : peu de ressources fiables, peu d\'encadrement, beaucoup d\'incertitudes.\n\nC\'est pour répondre à ce défi qu\'EF-FORT a été conçu : une direction claire, une pratique régulière et la confiance nécessaire pour réussir.',
-        ),
-        const SizedBox(height: 12),
-        _buildInfoCard(
-          icon: '🚀',
-          title: 'Ce que vous obtenez',
-          color: const Color(0xFF2196F3),
-          content: '',
-          widget: Column(
-            children: [
-              _buildFeatureRow('📚', 'Séries de QCM par matière', 'Entraînement ciblé et progressif'),
-              _buildFeatureRow('⏱️', 'Simulations d\'examens réels', 'Conditions authentiques de concours'),
-              _buildFeatureRow('👥', 'Espace d\'entraide', 'Apprendre ensemble, réussir ensemble'),
-              _buildFeatureRow('📊', 'Suivi de progression', 'Mesurez votre évolution en temps réel'),
-              _buildFeatureRow('🔔', 'Actualités concours', 'Ne ratez plus aucune ouverture'),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        // Stats clés
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.primary.withValues(alpha: 0.15)),
-          ),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  _buildStatBox('10,000+', 'Questions QCM', '📝'),
-                  const SizedBox(width: 10),
-                  _buildStatBox('50+', 'Concours couverts', '🏛️'),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  _buildStatBox('100%', 'Gratuit d\'abord', '🎁'),
-                  const SizedBox(width: 10),
-                  _buildStatBox('24/7', 'Disponible partout', '📱'),
-                ],
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        // Bouton partager
-        GestureDetector(
-          onTap: _shareApp,
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppColors.primary, AppColors.primaryLight],
-              ),
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.3),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.share_rounded, color: Colors.white, size: 22),
-                SizedBox(width: 10),
-                Text(
-                  'Partager EF-FORT.BF',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        // QR Code d'installation PWA
-        GestureDetector(
-          onTap: () {
-            showDialog(
-              context: context,
-              builder: (ctx) => Dialog(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        '📲 Installer l\'application',
-                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Color(0xFF1A1A2E)),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Scannez ce QR code avec votre téléphone pour installer EF-FORT.BF via Chrome (PWA)',
-                        style: TextStyle(fontSize: 13, color: Colors.grey, height: 1.5),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFF1A5C38), width: 2),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.network(
-                            'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Fef-fort-bf.pages.dev&color=1A5C38&bgcolor=ffffff&qzone=1',
-                            width: 200,
-                            height: 200,
-                            fit: BoxFit.contain,
-                            errorBuilder: (_, __, ___) => Container(
-                              width: 200,
-                              height: 200,
-                              color: Colors.grey.shade100,
-                              child: const Center(child: Text('ef-fort-bf.pages.dev', style: TextStyle(fontSize: 12, color: Colors.grey))),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFDCF8C6),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Text(
-                          'ef-fort-bf.pages.dev',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF128C7E)),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: () async {
-                                final uri = Uri.parse('https://ef-fort-bf.pages.dev');
-                                await SafeLauncher.launch(context, uri,
-                                    fallbackMessage: 'Ouvrez : https://ef-fort-bf.pages.dev');
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF1A5C38),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                              ),
-                              child: const Text('Ouvrir', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx),
-                            child: const Text('Fermer'),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-          child: Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFF1A5C38).withValues(alpha: 0.4), width: 1.5),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.qr_code_rounded, color: Color(0xFF1A5C38), size: 22),
-                SizedBox(width: 10),
-                Text(
-                  'QR Code d\'installation (PWA)',
-                  style: TextStyle(
-                    color: Color(0xFF1A5C38),
-                    fontWeight: FontWeight.w800,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        // Citation
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                AppColors.primary.withValues(alpha: 0.05),
-                AppColors.secondary.withValues(alpha: 0.05),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.primary.withValues(alpha: 0.15)),
-          ),
-          child: Column(
-            children: [
-              const Text('❝', style: TextStyle(fontSize: 26, color: AppColors.primary)),
-              const SizedBox(height: 8),
-              const Text(
-                'La chance ne sourit pas au hasard, elle rencontre toujours un effort bien préparé.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  fontStyle: FontStyle.italic,
-                  color: AppColors.textDark,
-                  height: 1.6,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text('— EF-FORT.BF',
-                style: TextStyle(fontSize: 16, color: AppColors.textLight, fontWeight: FontWeight.w600)),
-            ],
-          ),
-        ),
-        const SizedBox(height: 30),
-      ],
-    );
-  }
-
-  Widget _buildCyberEduTab() {
-    return Column(
-      key: const ValueKey('cyber'),
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Bannière ebook
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFF1A1A2E), Color(0xFF16213E), Color(0xFF0F3460)],
-            ),
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF0F3460).withValues(alpha: 0.4),
-                blurRadius: 15,
-                offset: const Offset(0, 5),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              const Text('🔐', style: TextStyle(fontSize: 32)),
-              const SizedBox(height: 10),
-              const Text(
-                'Cybercriminalité en Afrique',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE94560).withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFFE94560).withValues(alpha: 0.5)),
-                ),
-                child: const Text(
-                  'Le "Qui est Qui" de l\'Internet en Afrique',
-                  style: TextStyle(color: Color(0xFFE94560), fontSize: 14, fontWeight: FontWeight.w700),
-                ),
-              ),
-              const SizedBox(height: 14),
-              Text(
-                'Comprendre, se protéger et contribuer à un numérique éthique',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 16, height: 1.5),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        // Alerte sécurité
-        Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFFF3CD),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFD4A017).withValues(alpha: 0.5)),
-          ),
-          child: const Row(
-            children: [
-              Text('⚠️', style: TextStyle(fontSize: 16)),
-              SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'L\'éducation numérique est la meilleure arme contre la cybercriminalité. Lire pour se protéger !',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF856404)),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        // Préface
-        _buildEbookSection(
-          emoji: '📖',
-          title: 'Préface — Votre renaissance numérique',
-          bgColor: const Color(0xFFF0F7FF),
-          borderColor: const Color(0xFF2196F3),
-          content: 'Les cybercriminels vous semblent être des génies intouchables. Vous pensez que la technologie appartient aux autres, que l\'Afrique est condamnée à être consommatrice plutôt que créatrice.\n\nCette lecture va littéralement reprogrammer votre ADN numérique. Vous allez comprendre les mécanismes cachés qui gouvernent notre monde connecté. Vous allez acquérir les clés pour transformer la menace cybercriminelle en opportunité technologique.\n\nTelle sera votre renaissance numérique.',
-        ),
-        const SizedBox(height: 12),
-
-        // Introduction
-        _buildEbookSection(
-          emoji: '🌍',
-          title: 'Introduction — L\'Afrique à la croisée des chemins',
-          bgColor: const Color(0xFFF0FFF4),
-          borderColor: AppColors.primary,
-          content: 'Nous vivons un moment historique unique. L\'Afrique détient 60% des jeunes de la planète, la croissance internet la plus rapide au monde, et paradoxalement, les taux de cybercriminalité les plus alarmants.\n\nAu Nigeria, le "yahoo yahoo" génère plus de revenus que l\'industrie pétrolière pour certaines régions. En Côte d\'Ivoire, Abidjan est devenue la capitale mondiale de l\'escroquerie francophone.\n\nMais cette même énergie créatrice pourrait révolutionner la cybersécurité mondiale. Le hacker qui vole aujourd\'hui pourrait protéger demain.',
-        ),
-        const SizedBox(height: 12),
-
-        // Partie 1
-        _buildPartBadge('PARTIE 1', 'L\'ÉCOSYSTÈME CRIMINEL', '🕸️',
-            '"Le même fleuve peut irriguer les champs ou inonder les villages."'),
-        const SizedBox(height: 12),
-
-        _buildEbookSection(
-          emoji: '👾',
-          title: 'Chapitre 1 — Hackers vs Brouteurs : deux espèces, une origine',
-          bgColor: const Color(0xFFFFF5F5),
-          borderColor: const Color(0xFFE53E3E),
-          content: 'Le vrai hacker est un esthète du code. Il voit la beauté dans un algorithme élégant. En Afrique, nous produisons des hackers d\'une créativité exceptionnelle, souvent par nécessité plutôt que par formation.\n\n• L\'hacker éthique : met son génie au service du bien\n• L\'hacker non éthique : met sa compétence au service du mal\n• Le brouteur : maîtrise l\'art de la manipulation émotionnelle. Il n\'y a pas de brouteur éthique.\n\nLa différence entre un hacker éthique et un cybercriminel n\'est souvent qu\'une question d\'opportunité et de mentorat.',
-        ),
-        const SizedBox(height: 12),
-
-        _buildEbookSection(
-          emoji: '💰',
-          title: 'Chapitre 2 — L\'économie souterraine qui défie les États',
-          bgColor: const Color(0xFFFFFBF0),
-          borderColor: const Color(0xFFD4A017),
-          content: 'La cybercriminalité africaine brasse des sommes qui dépassent le PIB de certains pays. Au Nigeria, les estimations varient entre 500 millions et 2 milliards de dollars annuels.\n\nToute une économie parallèle s\'est développée : des marchés spécialisés où s\'échangent les données volées, des "écoles" informelles qui forment aux techniques d\'arnaque.\n\nCette économie fonctionne comme une vraie industrie avec ses spécialisations et sa hiérarchie.',
-        ),
-        const SizedBox(height: 12),
-
-        _buildEbookSection(
-          emoji: '🤖',
-          title: 'Chapitre 3 — L\'Intelligence Artificielle au service du crime',
-          bgColor: const Color(0xFFF5F0FF),
-          borderColor: const Color(0xFF7C3AED),
-          content: 'L\'intelligence artificielle a révolutionné la cybercriminalité en rendant accessible à tous des techniques autrefois réservées aux experts : fausses vidéos (deepfakes), imitation de voix, génération de textes convaincants.\n\n🔴 Deepfakes vocaux : des escrocs imitent la voix de proches pour demander de l\'argent d\'urgence.\n\n🔴 Chatbots séducteurs : des programmes IA maintiennent simultanément des dizaines de relations amoureuses virtuelles pour arnaquer les victimes.',
-        ),
-        const SizedBox(height: 16),
-
-        // Partie 2
-        _buildPartBadge('PARTIE 2', 'LA RECONVERSION, VOIE DE LA RÉDEMPTION', '🌟',
-            '"Le diamant n\'est qu\'un charbon qui a résisté à la pression."'),
-        const SizedBox(height: 12),
-
-        _buildEbookSection(
-          emoji: '🦸',
-          title: 'Chapitre 4 — De prédateur à protecteur : l\'histoire de Samira',
-          bgColor: const Color(0xFFF0FFF4),
-          borderColor: AppColors.primary,
-          content: 'Samira dirigeait une équipe de brouteurs à Lagos. Diplômée en informatique du MIT, elle gagnait 100 000 dollars par mois dans le crime.\n\nLe déclic est venu quand l\'une de ses victimes s\'est suicidée. "Ce jour-là, j\'ai réalisé que j\'étais devenue un monstre."\n\nAujourd\'hui, Samira dirige CyberShield Africa, une entreprise de cybersécurité qui emploie 200 personnes, dont 80% d\'anciens cybercriminels reconvertis. Elle a créé la première "Hacker Academy" d\'Afrique de l\'Ouest.',
-        ),
-        const SizedBox(height: 12),
-
-        _buildEbookSection(
-          emoji: '📋',
-          title: 'Chapitre 5 — Le guide pratique de la reconversion',
-          bgColor: const Color(0xFFF0F7FF),
-          borderColor: const Color(0xFF2196F3),
-          content: 'Les activités illégales développent souvent des talents très recherchés dans le secteur légal. Ces compétences peuvent être légalement monétisées :\n\n✅ Audit de sécurité informatique\n✅ Formation en sensibilisation aux risques cyber\n✅ Développement de solutions de protection\n✅ Conseil en sécurisation des systèmes\n\nCertifications clés : CEH (Certified Ethical Hacker), CISSP, OSCP, GCIH',
-        ),
-        const SizedBox(height: 12),
-
-        _buildEbookSection(
-          emoji: '👨‍👩‍👧‍👦',
-          title: 'Chapitre 6 — Protéger sa famille en premier',
-          bgColor: const Color(0xFFFFF5F5),
-          borderColor: const Color(0xFFE53E3E),
-          content: 'Votre reconversion commence à la maison. Vos nouvelles compétences en cybersécurité doivent d\'abord protéger vos proches.\n\n🛡️ Sécuriser tous les appareils familiaux\n🔐 Activer l\'authentification à deux facteurs\n💾 Mettre en place des sauvegardes automatiques\n👁️ Apprendre à reconnaître les tentatives de phishing\n🔑 Enseigner les bonnes pratiques de mots de passe',
-        ),
-        const SizedBox(height: 16),
-
-        // Partie 3
-        _buildPartBadge('PARTIE 3', 'CONSTRUIRE L\'AFRIQUE CYBERSÉCURISÉE DE DEMAIN', '🌐', ''),
-        const SizedBox(height: 12),
-
-        // Cas Burkina Faso
-        Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFFF8E1),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFD4A017).withValues(alpha: 0.5), width: 2),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Text('🇧🇫', style: TextStyle(fontSize: 24)),
-                  const SizedBox(width: 10),
-                  const Expanded(
-                    child: Text(
-                      'Chapitre 7 — L\'arnaque 5M au Burkina Faso (2023)',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF7A5A00),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'L\'affaire de la plateforme 5M au Burkina Faso en 2023 montre que les cybercriminels n\'ont aucune limite. Des milliers de Burkinabè — pères de famille, jeunes diplômés, commerçants — ont été attirés par une plateforme de "trading quantitatif" promettant 20-30% de rendement par mois.\n\n"À notre grande surprise, la plateforme s\'arrêta un certain vendredi 4 août 2023. Certains y avaient adhéré le même jour et n\'ont pu rien retirer." — Sylas Bagré, porte-parole des victimes.',
-                style: TextStyle(fontSize: 16, height: 1.6, color: Color(0xFF856404)),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.red.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
-                ),
-                child: const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('🚨 La règle d\'or anti-arnaque :', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.red)),
-                    SizedBox(height: 6),
-                    Text('• Si c\'est trop beau pour être vrai, c\'est que ce n\'est pas vrai.\n• Vérifiez si l\'entreprise a un siège physique\n• Vérifiez l\'enregistrement auprès des autorités financières\n• Comprendre comment ils gagnent l\'argent promis', style: TextStyle(fontSize: 15, height: 1.5, color: Color(0xFF7A0000))),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-
-        _buildEbookSection(
-          emoji: '📱',
-          title: 'Chapitre 8 — Protection intelligente de votre téléphone',
-          bgColor: const Color(0xFFF0F7FF),
-          borderColor: const Color(0xFF2196F3),
-          content: '🔒 Activez le chiffrement complet de votre appareil\n🔑 Utilisez un gestionnaire de mots de passe\n📲 Activez l\'authentification à 2 facteurs partout\n🔄 Faites des mises à jour régulières du système\n🛡️ Installez uniquement depuis les stores officiels\n📵 Méfiez-vous des réseaux Wi-Fi publics non sécurisés',
-        ),
-        const SizedBox(height: 12),
-
-        _buildEbookSection(
-          emoji: '🚪',
-          title: 'Chapitre 9 — Fermer la porte aux voleurs numériques',
-          bgColor: const Color(0xFFF0FFF4),
-          borderColor: AppColors.primary,
-          content: 'Ne jamais cliquer sur des liens dans des SMS ou emails suspects. Ne jamais donner votre code OTP à qui que ce soit.\n\n🔴 Phishing : emails qui imitent votre banque ou administration\n🔴 SIM Swap : voler votre numéro de téléphone\n🔴 Faux sites web : copies parfaites de sites légitimes\n🔴 Arnaques sentimentales : relations amoureuses fictives en ligne\n\nUn organisme officiel ne demande JAMAIS votre mot de passe.',
-        ),
-        const SizedBox(height: 12),
-
-        _buildEbookSection(
-          emoji: '🌟',
-          title: 'Chapitre 10 — L\'Afrique, future Silicon Valley de la cybersécurité',
-          bgColor: const Color(0xFFFFFBF0),
-          borderColor: const Color(0xFFD4A017),
-          content: 'L\'Afrique peut devenir le continent qui forme les meilleurs experts en cybersécurité de la planète. Nous avons la créativité, la jeunesse et la motivation.\n\nCe choix ne se fera pas dans les palais présidentiels. Il se fera dans chaque famille, chaque école, chaque cybercafé où un jeune découvre ses talents numériques.\n\nÀ travers des plateformes comme EF-FORT.BF, nous construisons l\'Afrique numérique de demain. 🇧🇫🌍',
-        ),
-        const SizedBox(height: 20),
-
-        // Bouton d'incitation à aller sur contact
-        GestureDetector(
-          onTap: () => setState(() => _activeTab = 2),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFF1A1A2E), Color(0xFF0F3460)],
-              ),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('📞', style: TextStyle(fontSize: 16)),
-                SizedBox(width: 10),
-                Text(
-                  'Une question sur la cybersécurité ? Contactez-nous',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 30),
-      ],
-    );
-  }
-
-  Widget _buildContactTab() {
-    return Column(
-      key: const ValueKey('contact'),
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Invitation à consulter le profil
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AppColors.primary, AppColors.primaryLight],
-            ),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: const Column(
-            children: [
-              Text('👋', style: TextStyle(fontSize: 26)),
-              SizedBox(height: 8),
-              Text(
-                'Nous sommes là pour vous accompagner',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              SizedBox(height: 6),
-              Text(
-                'Notre équipe répond dans les 24h',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white70, fontSize: 16),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        _buildInfoCard(
-          icon: '📬',
-          title: 'Nous Contacter',
-          color: AppColors.secondary,
-          content: 'Notre équipe reste disponible pour vous accompagner :',
-          widget: Column(
-            children: [
-              GestureDetector(
-                onTap: _openEmail,
-                child: _buildContactRow(
-                  icon: Icons.email_rounded,
-                  iconColor: AppColors.primary,
-                  bgColor: AppColors.primary.withValues(alpha: 0.07),
-                  title: 'Email',
-                  subtitle: 'effortbf2026@gmail.com',
-                ),
-              ),
-              const SizedBox(height: 10),
-              GestureDetector(
-                onTap: _openWhatsApp,
-                child: _buildContactRow(
-                  icon: Icons.chat_rounded,
-                  iconColor: const Color(0xFF25D366),
-                  bgColor: const Color(0xFF25D366).withValues(alpha: 0.07),
-                  title: 'WhatsApp',
-                  subtitle: '+226 65 46 70 70',
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        // Invitation à explorer l'ebook
-        GestureDetector(
-          onTap: () => setState(() => _activeTab = 1),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFF1A1A2E), Color(0xFF0F3460)],
-              ),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Row(
-              children: [
-                const Text('🔐', style: TextStyle(fontSize: 16)),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Guide Cybersécurité gratuit',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 14),
-                      ),
-                      Text(
-                        'Lire notre guide : Cybercriminalité en Afrique →',
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 15),
-                      ),
-                    ],
-                  ),
-                ),
-                const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 16),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: GestureDetector(
-                onTap: _shareApp,
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppColors.primary, AppColors.primaryLight],
-                    ),
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.3),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: const Column(
-                    children: [
-                      Icon(Icons.share_rounded, color: Colors.white, size: 26),
-                      SizedBox(height: 6),
-                      Text('Partager l\'app', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('⭐ Merci pour votre soutien ! L\'app sera bientôt sur Play Store.'),
-                      backgroundColor: AppColors.secondary,
-                    ),
-                  );
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColors.secondaryLight,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: AppColors.secondary.withValues(alpha: 0.4)),
-                  ),
-                  child: const Column(
-                    children: [
-                      Icon(Icons.star_rounded, color: AppColors.secondary, size: 26),
-                      SizedBox(height: 6),
-                      Text('Noter l\'app', style: TextStyle(color: AppColors.secondary, fontWeight: FontWeight.w700, fontSize: 16)),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 30),
-      ],
-    );
-  }
-
-  Widget _buildInfoCard({required String icon, required String title, required Color color, required String content, Widget? widget}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 2))],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 4,
-                height: 22,
-                decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(2)),
-              ),
-              const SizedBox(width: 10),
-              Text(icon, style: const TextStyle(fontSize: 14)),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textDark)),
-              ),
-            ],
-          ),
-          if (content.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Text(content, style: const TextStyle(fontSize: 16, height: 1.65, color: AppColors.textDark)),
-          ],
-          if (widget != null) ...[
-            const SizedBox(height: 12),
-            widget,
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEbookSection({required String emoji, required String title, required Color bgColor, required Color borderColor, required String content}) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: borderColor.withValues(alpha: 0.4)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(emoji, style: const TextStyle(fontSize: 16)),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  title,
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.textDark),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(content, style: const TextStyle(fontSize: 16, height: 1.65, color: AppColors.textDark)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPartBadge(String partNum, String partTitle, String emoji, String quote) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.primaryDark,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Column(
-        children: [
-          Text(emoji, style: const TextStyle(fontSize: 16)),
-          const SizedBox(height: 6),
-          Text(partNum, style: const TextStyle(color: AppColors.secondary, fontSize: 14, fontWeight: FontWeight.w800, letterSpacing: 2)),
-          const SizedBox(height: 4),
-          Text(partTitle, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w900)),
-          if (quote.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text('$quote', textAlign: TextAlign.center, style: TextStyle(color: Colors.white.withValues(alpha: 0.65), fontSize: 15, fontStyle: FontStyle.italic)),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFeatureRow(String emoji, String title, String subtitle) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          Text(emoji, style: const TextStyle(fontSize: 16)),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textDark)),
-                Text(subtitle, style: const TextStyle(fontSize: 14, color: AppColors.textLight)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatBox(String value, String label, String emoji) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.primary.withValues(alpha: 0.15)),
-        ),
-        child: Column(
-          children: [
-            Text(emoji, style: const TextStyle(fontSize: 16)),
-            const SizedBox(height: 4),
-            Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: AppColors.primary)),
-            Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: AppColors.textLight)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildContactRow({required IconData icon, required Color iconColor, required Color bgColor, required String title, required String subtitle}) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: iconColor, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(fontSize: 15, color: AppColors.textLight)),
-                Text(subtitle, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textDark)),
-              ],
-            ),
-          ),
-          const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.textLight),
-        ],
-      ),
-    );
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-// PAINTER : Particules flottantes dorées pour la page À propos
-// ═══════════════════════════════════════════════════════════════════════
-class _AboutParticlePainter extends CustomPainter {
-  final double progress;
-  static final _random = math.Random(77);
-  static late List<_AboutParticle> _particles;
-  static bool _initialized = false;
-
-  _AboutParticlePainter({required this.progress}) {
-    if (!_initialized) {
-      _particles = List.generate(25, (i) => _AboutParticle(
-        x: _random.nextDouble(),
-        y: _random.nextDouble(),
-        size: 1.2 + _random.nextDouble() * 2.8,
-        speed: 0.12 + _random.nextDouble() * 0.2,
-        opacity: 0.2 + _random.nextDouble() * 0.55,
-        phase: _random.nextDouble(),
-      ));
-      _initialized = true;
-    }
-  }
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    for (final p in _particles) {
-      final phase = (progress * p.speed + p.phase) % 1.0;
-      final y = size.height * (1 - phase);
-      final x = p.x * size.width + math.sin(phase * 2 * math.pi + p.phase) * 15;
-      final alpha = math.sin(phase * math.pi) * p.opacity;
-
-      final paint = Paint()
-        ..color = const Color(0xFFD4A017).withValues(alpha: alpha)
-        ..style = PaintingStyle.fill;
-
-      if (p.size > 2.5) {
-        // Dessiner une petite étoile
-        final path = Path();
-        const pts = 4;
-        for (int i = 0; i < pts * 2; i++) {
-          final angle = (i * math.pi / pts) - math.pi / 2;
-          final r = i.isEven ? p.size * 1.2 : p.size * 0.4;
-          final px = x + r * math.cos(angle);
-          final py = y + r * math.sin(angle);
-          if (i == 0) path.moveTo(px, py);
-          else path.lineTo(px, py);
-        }
-        path.close();
-        canvas.drawPath(path, paint);
-      } else {
-        canvas.drawCircle(Offset(x, y), p.size, paint);
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(_AboutParticlePainter old) => old.progress != progress;
-}
-
-class _AboutParticle {
-  final double x, y, size, speed, opacity, phase;
-  _AboutParticle({
-    required this.x, required this.y, required this.size,
-    required this.speed, required this.opacity, required this.phase,
-  });
-}
-
-// ══════════════════════════════════════════════════════════════
-// WIDGET COMPTE À REBOURS — Expire le 15 mai 2026
-// ══════════════════════════════════════════════════════════════
-class _CountdownWidget extends StatefulWidget {
-  const _CountdownWidget();
-  @override
-  State<_CountdownWidget> createState() => _CountdownWidgetState();
-}
-
-class _CountdownWidgetState extends State<_CountdownWidget> {
-  late Duration _remaining;
-  late DateTime _expiry;
-
-  @override
-  void initState() {
-    super.initState();
-    _expiry = DateTime(2026, 5, 15, 23, 59, 59);
-    _updateRemaining();
-    _startTimer();
-  }
-
-  void _updateRemaining() {
-    final now = DateTime.now();
-    _remaining = _expiry.isAfter(now) ? _expiry.difference(now) : Duration.zero;
-  }
-
-  void _startTimer() {
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
-        setState(() => _updateRemaining());
-        _startTimer();
-      }
-    });
-  }
-
-  String _pad(int n) => n.toString().padLeft(2, '0');
-
-  @override
-  Widget build(BuildContext context) {
-    if (_remaining == Duration.zero) {
-      return const Text('Offre expirée', style: TextStyle(color: Colors.white70, fontSize: 15));
-    }
-    final days = _remaining.inDays;
-    final hours = _remaining.inHours % 24;
-    final minutes = _remaining.inMinutes % 60;
-    final seconds = _remaining.inSeconds % 60;
-    return Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-      _countUnit('$days', 'j'),
-      const Text(' : ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14)),
-      _countUnit(_pad(hours), 'h'),
-      const Text(' : ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14)),
-      _countUnit(_pad(minutes), 'min'),
-      const Text(' : ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14)),
-      _countUnit(_pad(seconds), 'sec'),
-    ]);
-  }
-
-  Widget _countUnit(String value, String label) {
-    return Column(children: [
-      Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: Colors.black26,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Text(value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16)),
-      ),
-      const SizedBox(height: 2),
-      Text(label, style: const TextStyle(color: Colors.white70, fontSize: 14)),
-    ]);
+  String _initiales(String prenom, String nom) {
+    final p = prenom.isNotEmpty ? prenom[0].toUpperCase() : '';
+    final n = nom.isNotEmpty ? nom[0].toUpperCase() : '';
+    return '$p$n'.isNotEmpty ? '$p$n' : '👤';
   }
 }
