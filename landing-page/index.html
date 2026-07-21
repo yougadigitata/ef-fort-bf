@@ -3,2769 +3,1920 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="YouDis - Youga Digital Services. Marc LOMPO transforme vos idées en solutions digitales simples, efficaces et durables. Formations IA, Création de Contenu, E-commerce, Développement d'Apps. Ouagadougou, Burkina Faso.">
-  <meta name="keywords" content="YouDis, Youga Digital Services, Marc LOMPO, formation digitale, intelligence artificielle, création de contenu, Burkina Faso, Ouagadougou, EF-FORT.BF, application mobile gratuite">
-  <meta property="og:title" content="YouDis – Youga Digital Services | Marc LOMPO">
-  <meta property="og:description" content="Je transforme vos idées en solutions digitales simples, efficaces et durables. Formations & Services digitaux à Ouagadougou.">
+  <meta name="description" content="YouDis - Youga Digital Services. Créez, Formez-vous, Réussissez. Services digitaux professionnels, formations IA, TikTok, UGC & e-learning 100% gratuit. Ouagadougou, Burkina Faso.">
+  <meta name="keywords" content="YouDis, Youga Digital Services, Marc LOMPO, formation digitale, intelligence artificielle, création de contenu, Burkina Faso, Ouagadougou, EF-FORT.BF, application mobile gratuite, TikTok, monétisation">
+  <meta property="og:title" content="YouDis – Solutions Digitales & Formations | Burkina Faso">
+  <meta property="og:description" content="Des solutions digitales qui transforment votre activité. Services, formations IA, e-learning gratuit. Contactez-nous sur WhatsApp.">
   <meta property="og:image" content="assets/images/logo-youdis-official.png">
   <meta property="og:url" content="https://ef-fort-bf-app.pages.dev">
-  <title>YouDis – Youga Digital Services | Marc LOMPO</title>
+  <title>YouDis – Solutions Digitales & Formations | Burkina Faso</title>
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
   <style>
-    /* ============================================
+    /* =============================================
        VARIABLES & RESET
-    ============================================ */
+    ============================================= */
     :root {
+      --blue-deep: #0d1b3e;
       --blue-primary: #1a3c8f;
       --blue-secondary: #2563eb;
       --blue-light: #3b82f6;
-      --blue-electric: #0ea5e9;
       --orange-primary: #f97316;
-      --orange-secondary: #ea580c;
-      --orange-light: #fb923c;
+      --orange-dark: #ea580c;
       --white: #ffffff;
       --white-soft: #f8fafc;
-      --gray-light: #e2e8f0;
-      --gray-mid: #94a3b8;
-      --gray-dark: #334155;
+      --gray-100: #f1f5f9;
+      --gray-200: #e2e8f0;
+      --gray-400: #94a3b8;
+      --gray-600: #475569;
+      --gray-800: #1e293b;
       --text-dark: #0f172a;
-      --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
-      --shadow-md: 0 8px 24px rgba(0,0,0,0.12);
-      --shadow-lg: 0 20px 60px rgba(0,0,0,0.15);
-      --shadow-blue: 0 8px 30px rgba(37,99,235,0.25);
-      --shadow-orange: 0 8px 30px rgba(249,115,22,0.25);
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+      --shadow-md: 0 8px 30px rgba(0,0,0,0.10);
+      --shadow-lg: 0 20px 60px rgba(0,0,0,0.14);
+      --shadow-blue: 0 8px 30px rgba(37,99,235,0.22);
+      --shadow-orange: 0 8px 30px rgba(249,115,22,0.22);
       --radius-sm: 8px;
-      --radius-md: 16px;
-      --radius-lg: 24px;
-      --radius-xl: 40px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --radius-xl: 32px;
       --radius-full: 9999px;
       --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    *, *::before, *::after {
-      margin: 0; padding: 0; box-sizing: border-box;
-    }
-
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
 
     body {
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Inter', sans-serif;
       color: var(--text-dark);
       background: var(--white);
       overflow-x: hidden;
+      line-height: 1.6;
     }
 
-    /* ============================================
+    /* =============================================
        LOADER
-    ============================================ */
+    ============================================= */
     #loader {
-      position: fixed;
-      inset: 0;
+      position: fixed; inset: 0;
       background: var(--white);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
       z-index: 9999;
       transition: opacity 0.5s ease, visibility 0.5s ease;
     }
+    #loader.hidden { opacity: 0; visibility: hidden; }
+    .loader-brand {
+      font-family: 'Poppins', sans-serif;
+      font-size: 2.2rem; font-weight: 800;
+      color: var(--blue-primary); letter-spacing: -1px;
+      margin-bottom: 32px;
+    }
+    .loader-brand span { color: var(--orange-primary); }
+    .loader-bar-wrap {
+      width: 200px; height: 4px;
+      background: var(--gray-200); border-radius: 2px; overflow: hidden;
+    }
+    .loader-bar {
+      height: 100%; background: linear-gradient(90deg, var(--blue-secondary), var(--orange-primary));
+      border-radius: 2px;
+      animation: loadBar 1.5s ease forwards;
+    }
+    @keyframes loadBar { from { width: 0; } to { width: 100%; } }
 
-    #loader.hidden {
-      opacity: 0;
-      visibility: hidden;
+    /* =============================================
+       PROGRESS BAR
+    ============================================= */
+    .progress-bar {
+      position: fixed; top: 0; left: 0;
+      height: 3px; background: linear-gradient(90deg, var(--blue-secondary), var(--orange-primary));
+      z-index: 10001; transition: width 0.1s ease;
     }
 
-    .loader-logo {
-      font-size: 2rem;
-      font-weight: 800;
-      color: var(--blue-primary);
-      margin-bottom: 30px;
-      letter-spacing: -1px;
-    }
-
-    .loader-logo span { color: var(--orange-primary); }
-
-    .loader-dots {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-    }
-
-    .loader-dots .dot {
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      animation: tiktok-spin 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
-    }
-
-    .dot-1 { background: var(--blue-secondary); animation-delay: 0s; }
-    .dot-2 { background: var(--white); border: 2px solid var(--gray-light); animation-delay: 0.2s; }
-    .dot-3 { background: var(--orange-primary); animation-delay: 0.4s; }
-
-    @keyframes tiktok-spin {
-      0%, 100% { transform: scale(1) translateY(0); }
-      50% { transform: scale(1.4) translateY(-8px); }
-    }
-
-    /* ============================================
+    /* =============================================
        SCROLLBAR
-    ============================================ */
+    ============================================= */
     ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--white-soft); }
+    ::-webkit-scrollbar-track { background: var(--gray-100); }
     ::-webkit-scrollbar-thumb { background: var(--blue-secondary); border-radius: 3px; }
 
-    /* ============================================
+    /* =============================================
        HEADER / NAV
-    ============================================ */
+    ============================================= */
     header {
-      position: fixed;
-      top: 0; left: 0; right: 0;
+      position: fixed; top: 0; left: 0; right: 0;
       z-index: 1000;
-      background: rgba(255,255,255,0.95);
+      background: rgba(255,255,255,0.96);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      border-bottom: 1px solid rgba(37,99,235,0.08);
+      border-bottom: 1px solid rgba(37,99,235,0.07);
       transition: var(--transition);
     }
-
-    header.scrolled {
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    }
+    header.scrolled { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
 
     nav {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 24px;
-      height: 72px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      max-width: 1260px; margin: 0 auto;
+      padding: 0 28px; height: 74px;
+      display: flex; align-items: center; justify-content: space-between;
     }
 
     .nav-logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      display: flex; align-items: center; gap: 10px;
       text-decoration: none;
     }
-
     .nav-logo-img {
-      height: 48px;
-      width: auto;
-      object-fit: contain;
+      height: 46px; width: auto; object-fit: contain;
+      filter: drop-shadow(0 2px 6px rgba(37,99,235,0.15));
       transition: var(--transition);
-      filter: drop-shadow(0 2px 6px rgba(37,99,235,0.18));
     }
-
-    .nav-logo-img:hover {
-      transform: scale(1.04);
-      filter: drop-shadow(0 4px 12px rgba(37,99,235,0.28));
-    }
-
-    .nav-logo-text {
-      display: flex;
-      flex-direction: column;
-    }
-
+    .nav-logo-img:hover { transform: scale(1.04); }
+    .nav-logo-text { display: flex; flex-direction: column; }
     .nav-logo-title {
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: var(--blue-primary);
-      line-height: 1;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.45rem; font-weight: 800;
+      color: var(--blue-primary); line-height: 1;
     }
-
     .nav-logo-title span { color: var(--orange-primary); }
-
     .nav-logo-sub {
-      font-size: 0.6rem;
-      color: var(--gray-mid);
-      font-weight: 500;
-      letter-spacing: 0.5px;
+      font-size: 0.58rem; color: var(--gray-400);
+      font-weight: 500; letter-spacing: 0.5px;
+      text-transform: uppercase;
     }
 
     .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      list-style: none;
+      display: flex; align-items: center; gap: 4px; list-style: none;
     }
-
     .nav-links a {
-      text-decoration: none;
-      color: var(--gray-dark);
-      font-size: 0.85rem;
-      font-weight: 500;
-      padding: 8px 12px;
-      border-radius: var(--radius-sm);
-      transition: var(--transition);
+      padding: 8px 14px; border-radius: var(--radius-full);
+      text-decoration: none; font-size: 0.88rem; font-weight: 500;
+      color: var(--gray-600); transition: var(--transition);
     }
+    .nav-links a:hover { background: var(--gray-100); color: var(--blue-primary); }
 
-    .nav-links a:hover {
-      color: var(--blue-secondary);
-      background: rgba(37,99,235,0.05);
-    }
-
-    .nav-cta {
-      background: linear-gradient(135deg, var(--orange-primary), var(--orange-secondary)) !important;
+    .nav-cta-btn {
+      background: var(--orange-primary) !important;
       color: var(--white) !important;
-      padding: 10px 20px !important;
-      border-radius: var(--radius-full) !important;
+      padding: 10px 22px !important;
       font-weight: 600 !important;
+      box-shadow: var(--shadow-orange);
+      border-radius: var(--radius-full) !important;
     }
-
-    .nav-cta:hover {
-      background: linear-gradient(135deg, var(--orange-secondary), #c2410c) !important;
-      transform: translateY(-1px);
-      box-shadow: var(--shadow-orange) !important;
+    .nav-cta-btn:hover {
+      background: var(--orange-dark) !important;
+      transform: translateY(-1px) !important;
+      box-shadow: 0 12px 36px rgba(249,115,22,0.32) !important;
     }
 
     .nav-hamburger {
-      display: none;
-      flex-direction: column;
-      gap: 5px;
-      cursor: pointer;
-      padding: 8px;
+      display: none; flex-direction: column;
+      gap: 5px; cursor: pointer; padding: 8px;
     }
-
     .nav-hamburger span {
-      display: block;
-      width: 24px;
-      height: 2px;
-      background: var(--blue-primary);
-      border-radius: 2px;
+      display: block; width: 24px; height: 2px;
+      background: var(--blue-primary); border-radius: 2px;
       transition: var(--transition);
     }
-
-    .nav-hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
-    .nav-hamburger.active span:nth-child(2) { opacity: 0; }
-    .nav-hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
 
     /* Mobile Menu */
     .mobile-menu {
-      display: none;
-      position: fixed;
-      top: 72px; left: 0; right: 0;
+      display: none; position: fixed;
+      top: 74px; left: 0; right: 0;
       background: var(--white);
-      padding: 20px 24px;
+      border-bottom: 1px solid var(--gray-200);
       box-shadow: var(--shadow-md);
+      padding: 20px 28px 28px;
       z-index: 999;
-      flex-direction: column;
-      gap: 4px;
     }
-
-    .mobile-menu.open { display: flex; }
-
+    .mobile-menu.open { display: block; }
     .mobile-menu a {
-      text-decoration: none;
-      color: var(--gray-dark);
-      font-size: 0.95rem;
-      font-weight: 500;
-      padding: 12px 16px;
+      display: block; padding: 12px 16px;
+      font-size: 0.95rem; font-weight: 500;
+      color: var(--gray-800); text-decoration: none;
       border-radius: var(--radius-sm);
       transition: var(--transition);
+      border-bottom: 1px solid var(--gray-100);
     }
-
-    .mobile-menu a:hover { background: var(--white-soft); color: var(--blue-secondary); }
-
-    .mobile-menu .mobile-cta {
-      background: linear-gradient(135deg, var(--orange-primary), var(--orange-secondary));
+    .mobile-menu a:last-child { border-bottom: none; }
+    .mobile-menu a:hover { background: var(--gray-100); color: var(--blue-primary); }
+    .mobile-cta {
+      display: block !important; text-align: center;
+      background: var(--orange-primary) !important;
       color: var(--white) !important;
-      text-align: center;
-      border-radius: var(--radius-full);
-      margin-top: 8px;
+      margin-top: 16px !important; border-radius: var(--radius-full) !important;
+      border-bottom: none !important;
+      font-weight: 700 !important;
     }
 
-    /* ============================================
+    /* =============================================
+       UTILITIES
+    ============================================= */
+    .container { max-width: 1260px; margin: 0 auto; padding: 0 28px; }
+    .section-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(37,99,235,0.08);
+      color: var(--blue-secondary);
+      padding: 6px 16px; border-radius: var(--radius-full);
+      font-size: 0.78rem; font-weight: 600;
+      letter-spacing: 0.5px; text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+      font-weight: 800; line-height: 1.2;
+      color: var(--text-dark); margin-bottom: 16px;
+    }
+    .section-subtitle {
+      font-size: 1.05rem; color: var(--gray-600);
+      max-width: 620px; margin: 0 auto;
+    }
+    .section-header { text-align: center; margin-bottom: 60px; }
+
+    /* Animations */
+    .fade-up {
+      opacity: 0; transform: translateY(28px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+    .fade-up-delay-1 { transition-delay: 0.1s; }
+    .fade-up-delay-2 { transition-delay: 0.2s; }
+    .fade-up-delay-3 { transition-delay: 0.3s; }
+    .fade-up-delay-4 { transition-delay: 0.4s; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 28px; border-radius: var(--radius-full);
+      font-weight: 600; font-size: 0.95rem;
+      text-decoration: none; cursor: pointer;
+      border: none; transition: var(--transition);
+      white-space: nowrap;
+    }
+    .btn-primary {
+      background: var(--orange-primary); color: var(--white);
+      box-shadow: var(--shadow-orange);
+    }
+    .btn-primary:hover {
+      background: var(--orange-dark); transform: translateY(-2px);
+      box-shadow: 0 14px 40px rgba(249,115,22,0.35);
+    }
+    .btn-secondary {
+      background: var(--blue-primary); color: var(--white);
+      box-shadow: var(--shadow-blue);
+    }
+    .btn-secondary:hover {
+      background: var(--blue-deep); transform: translateY(-2px);
+      box-shadow: 0 14px 40px rgba(26,60,143,0.35);
+    }
+    .btn-outline {
+      background: transparent; color: var(--blue-primary);
+      border: 2px solid var(--blue-primary);
+    }
+    .btn-outline:hover {
+      background: var(--blue-primary); color: var(--white);
+      transform: translateY(-2px);
+    }
+    .btn-white {
+      background: var(--white); color: var(--blue-primary);
+      box-shadow: var(--shadow-md);
+    }
+    .btn-white:hover {
+      background: var(--gray-100); transform: translateY(-2px);
+    }
+
+    /* =============================================
        HERO SECTION
-    ============================================ */
+    ============================================= */
     #hero {
       min-height: 100vh;
-      padding-top: 72px;
-      background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 50%, #fff7ed 100%);
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
+      background: linear-gradient(135deg, var(--blue-deep) 0%, var(--blue-primary) 55%, #1e40af 100%);
+      display: flex; align-items: center;
+      padding: 100px 0 80px;
+      position: relative; overflow: hidden;
     }
 
-    /* Cercles décoratifs Hero */
-    .hero-circle-1 {
-      position: absolute;
+    /* Geometric background shapes */
+    #hero::before {
+      content: '';
+      position: absolute; top: -120px; right: -120px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(249,115,22,0.12) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    #hero::after {
+      content: '';
+      position: absolute; bottom: -150px; left: -100px;
       width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(37,99,235,0.2) 0%, transparent 70%);
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(37,99,235,0.08) 0%, transparent 70%);
-      top: -100px; right: -100px;
-      pointer-events: none;
     }
 
-    .hero-circle-2 {
-      position: absolute;
-      width: 300px; height: 300px;
-      border-radius: 50%;
-      border: 2px solid rgba(249,115,22,0.12);
-      bottom: 80px; left: -80px;
-      pointer-events: none;
-      animation: rotate-slow 20s linear infinite;
-    }
-
-    .hero-circle-3 {
-      position: absolute;
-      width: 120px; height: 120px;
-      border-radius: 50%;
-      background: rgba(249,115,22,0.06);
-      top: 30%; left: 10%;
-      pointer-events: none;
-      animation: float 6s ease-in-out infinite;
-    }
-
-    .hero-circle-4 {
-      position: absolute;
-      width: 60px; height: 60px;
-      border-radius: 50%;
-      background: rgba(37,99,235,0.1);
-      top: 20%; right: 25%;
-      pointer-events: none;
-      animation: float 4s ease-in-out infinite reverse;
-    }
-
-    @keyframes rotate-slow {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
-    @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-20px); }
-    }
-
-    .hero-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 60px 24px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 60px;
-      align-items: center;
-      position: relative;
-      z-index: 1;
+    .hero-inner {
+      position: relative; z-index: 2;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 60px; align-items: center;
     }
 
     .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(37,99,235,0.08);
-      border: 1px solid rgba(37,99,235,0.15);
-      color: var(--blue-secondary);
-      font-size: 0.8rem;
-      font-weight: 600;
-      padding: 8px 16px;
-      border-radius: var(--radius-full);
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(249,115,22,0.15);
+      color: var(--orange-primary);
+      border: 1px solid rgba(249,115,22,0.3);
+      padding: 7px 16px; border-radius: var(--radius-full);
+      font-size: 0.8rem; font-weight: 600;
+      letter-spacing: 0.3px;
       margin-bottom: 24px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
     }
-
-    .hero-badge i { color: var(--orange-primary); font-size: 0.9rem; }
+    .hero-badge .dot {
+      width: 7px; height: 7px; background: var(--orange-primary);
+      border-radius: 50%; animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.4); }
+    }
 
     .hero-title {
-      font-size: clamp(2rem, 4vw, 3.2rem);
-      font-weight: 900;
-      line-height: 1.15;
-      color: var(--text-dark);
-      margin-bottom: 24px;
+      font-family: 'Poppins', sans-serif;
+      font-size: clamp(2.2rem, 4.5vw, 3.4rem);
+      font-weight: 800; line-height: 1.15;
+      color: var(--white); margin-bottom: 24px;
     }
-
-    .hero-title .highlight-blue { color: var(--blue-secondary); }
-    .hero-title .highlight-orange { color: var(--orange-primary); }
+    .hero-title .highlight {
+      color: var(--orange-primary);
+      position: relative;
+    }
+    .hero-title .highlight::after {
+      content: '';
+      position: absolute; bottom: 2px; left: 0; right: 0;
+      height: 3px; background: var(--orange-primary);
+      border-radius: 2px; opacity: 0.4;
+    }
 
     .hero-subtitle {
-      font-size: 1.05rem;
-      color: var(--gray-dark);
-      line-height: 1.7;
-      margin-bottom: 16px;
+      font-size: 1.05rem; color: rgba(255,255,255,0.78);
+      line-height: 1.7; margin-bottom: 40px;
+      max-width: 520px;
     }
 
-    .hero-slogan {
-      font-size: 1rem;
-      font-style: italic;
-      color: var(--orange-primary);
-      font-weight: 600;
-      margin-bottom: 36px;
-      border-left: 3px solid var(--orange-primary);
-      padding-left: 12px;
-    }
-
-    .hero-actions {
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    .btn-primary {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background: linear-gradient(135deg, var(--blue-secondary), var(--blue-primary));
-      color: var(--white);
-      text-decoration: none;
-      padding: 14px 28px;
-      border-radius: var(--radius-full);
-      font-weight: 700;
-      font-size: 0.95rem;
-      transition: var(--transition);
-      box-shadow: var(--shadow-blue);
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 40px rgba(37,99,235,0.35);
-    }
-
-    .btn-orange {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background: linear-gradient(135deg, var(--orange-primary), var(--orange-secondary));
-      color: var(--white);
-      text-decoration: none;
-      padding: 14px 28px;
-      border-radius: var(--radius-full);
-      font-weight: 700;
-      font-size: 0.95rem;
-      transition: var(--transition);
-      box-shadow: var(--shadow-orange);
-    }
-
-    .btn-orange:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 40px rgba(249,115,22,0.4);
-    }
-
-    .btn-outline {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background: transparent;
-      color: var(--blue-secondary);
-      text-decoration: none;
-      padding: 14px 28px;
-      border-radius: var(--radius-full);
-      font-weight: 600;
-      font-size: 0.95rem;
-      border: 2px solid var(--blue-secondary);
-      transition: var(--transition);
-    }
-
-    .btn-outline:hover {
-      background: var(--blue-secondary);
-      color: var(--white);
-      transform: translateY(-2px);
+    .hero-ctas {
+      display: flex; flex-wrap: wrap; gap: 16px;
+      margin-bottom: 52px;
     }
 
     .hero-stats {
-      display: flex;
-      gap: 32px;
-      margin-top: 40px;
+      display: flex; gap: 36px; flex-wrap: wrap;
+    }
+    .hero-stat {}
+    .hero-stat-number {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.7rem; font-weight: 800;
+      color: var(--white); line-height: 1;
+    }
+    .hero-stat-number span { color: var(--orange-primary); }
+    .hero-stat-label {
+      font-size: 0.78rem; color: rgba(255,255,255,0.55);
+      font-weight: 500; margin-top: 4px;
     }
 
-    .stat-item { text-align: left; }
-
-    .stat-number {
-      font-size: 1.8rem;
-      font-weight: 900;
-      color: var(--blue-primary);
-      line-height: 1;
-    }
-
-    .stat-number span { color: var(--orange-primary); }
-
-    .stat-label {
-      font-size: 0.75rem;
-      color: var(--gray-mid);
-      font-weight: 500;
-      margin-top: 4px;
-    }
-
+    /* Hero Visual (right side) */
     .hero-visual {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      position: relative; display: flex;
+      flex-direction: column; gap: 16px;
     }
 
-    .hero-image-wrap {
-      position: relative;
-      width: 100%;
-      max-width: 480px;
+    .hero-cards-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 16px;
     }
 
-    .hero-image-main {
-      width: 100%;
+    .hero-card {
+      background: rgba(255,255,255,0.07);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.12);
       border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-lg);
-      position: relative;
-      z-index: 2;
-      display: block;
+      padding: 24px 20px;
+      transition: var(--transition);
+    }
+    .hero-card:hover {
+      background: rgba(255,255,255,0.12);
+      transform: translateY(-4px);
+    }
+    .hero-card-icon {
+      width: 44px; height: 44px;
+      background: rgba(249,115,22,0.18);
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; margin-bottom: 12px;
+    }
+    .hero-card-icon.blue { background: rgba(37,99,235,0.2); }
+    .hero-card-icon.green { background: rgba(16,185,129,0.18); }
+    .hero-card-icon.purple { background: rgba(139,92,246,0.18); }
+    .hero-card-title {
+      font-size: 0.85rem; font-weight: 700;
+      color: var(--white); line-height: 1.3; margin-bottom: 4px;
+    }
+    .hero-card-desc {
+      font-size: 0.72rem; color: rgba(255,255,255,0.55);
     }
 
-    .hero-circle-deco {
-      position: absolute;
-      width: 120%;
-      height: 120%;
-      border-radius: 50%;
-      border: 2px dashed rgba(37,99,235,0.15);
-      top: -10%;
-      left: -10%;
-      animation: rotate-slow 30s linear infinite;
-      z-index: 1;
+    .hero-cta-banner {
+      background: rgba(249,115,22,0.12);
+      border: 1px solid rgba(249,115,22,0.25);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; flex-wrap: wrap;
     }
+    .hero-cta-banner-text {
+      font-size: 0.9rem; font-weight: 600;
+      color: var(--white);
+    }
+    .hero-cta-banner-text small {
+      display: block; font-size: 0.72rem;
+      color: rgba(255,255,255,0.55); font-weight: 400;
+    }
+    .btn-banner {
+      background: var(--orange-primary); color: var(--white);
+      padding: 10px 20px; border-radius: var(--radius-full);
+      font-weight: 700; font-size: 0.82rem;
+      text-decoration: none; white-space: nowrap;
+      transition: var(--transition);
+    }
+    .btn-banner:hover { background: var(--orange-dark); transform: scale(1.03); }
 
-    .hero-badge-float {
-      position: absolute;
+    /* =============================================
+       TRUST STRIP
+    ============================================= */
+    #trust-strip {
       background: var(--white);
-      border-radius: var(--radius-md);
-      padding: 12px 16px;
-      box-shadow: var(--shadow-md);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      z-index: 3;
-      animation: float 4s ease-in-out infinite;
+      border-bottom: 1px solid var(--gray-200);
+      padding: 20px 0;
     }
-
-    .hero-badge-float.top-right {
-      top: 8%;
-      right: -12%;
-      animation-delay: 0.5s;
+    .trust-strip-inner {
+      display: flex; align-items: center; justify-content: center;
+      gap: 48px; flex-wrap: wrap;
     }
-
-    .hero-badge-float.bottom-left {
-      bottom: 10%;
-      left: -12%;
-      animation-delay: 1s;
+    .trust-item {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 0.82rem; font-weight: 500; color: var(--gray-600);
     }
+    .trust-item i { color: var(--orange-primary); font-size: 1rem; }
 
-    .badge-float-icon {
-      width: 40px; height: 40px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.1rem;
-    }
-
-    .badge-float-icon.blue { background: rgba(37,99,235,0.1); color: var(--blue-secondary); }
-    .badge-float-icon.orange { background: rgba(249,115,22,0.1); color: var(--orange-primary); }
-
-    .badge-float-text strong { font-size: 0.85rem; color: var(--text-dark); display: block; }
-    .badge-float-text span { font-size: 0.7rem; color: var(--gray-mid); }
-
-    /* ============================================
-       SECTION GÉNÉRIQUE
-    ============================================ */
-    section { padding: 80px 0; }
-
-    .section-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 24px;
-    }
-
-    .section-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(249,115,22,0.08);
-      border: 1px solid rgba(249,115,22,0.15);
-      color: var(--orange-primary);
-      font-size: 0.75rem;
-      font-weight: 700;
-      padding: 6px 14px;
-      border-radius: var(--radius-full);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 16px;
-    }
-
-    .section-title {
-      font-size: clamp(1.6rem, 3vw, 2.4rem);
-      font-weight: 900;
-      color: var(--text-dark);
-      line-height: 1.2;
-      margin-bottom: 16px;
-    }
-
-    .section-title .accent { color: var(--blue-secondary); }
-    .section-title .accent-orange { color: var(--orange-primary); }
-
-    .section-desc {
-      font-size: 1rem;
-      color: var(--gray-dark);
-      line-height: 1.7;
-      max-width: 600px;
-      margin-bottom: 48px;
-    }
-
-    .section-header { margin-bottom: 48px; }
-
-    .section-header.centered { text-align: center; }
-    .section-header.centered .section-desc { margin: 0 auto 48px; }
-
-    /* Séparateur décoratif */
-    .divider {
-      width: 60px;
-      height: 4px;
-      background: linear-gradient(90deg, var(--orange-primary), var(--blue-secondary));
-      border-radius: 2px;
-      margin: 16px 0 24px;
-    }
-
-    .section-header.centered .divider { margin: 16px auto 24px; }
-
-    /* ============================================
+    /* =============================================
        SERVICES SECTION
-    ============================================ */
+    ============================================= */
     #services {
+      padding: 100px 0;
       background: var(--white-soft);
-      position: relative;
-      overflow: hidden;
-    }
-
-    #services::before {
-      content: '';
-      position: absolute;
-      width: 400px; height: 400px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(37,99,235,0.04) 0%, transparent 70%);
-      top: -100px; right: -100px;
-      pointer-events: none;
-    }
-
-    #services::after {
-      content: '';
-      position: absolute;
-      width: 200px; height: 200px;
-      border-radius: 50%;
-      border: 2px solid rgba(249,115,22,0.08);
-      bottom: 40px; left: 40px;
-      pointer-events: none;
-      animation: rotate-slow 25s linear infinite;
     }
 
     .services-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      grid-template-columns: repeat(3, 1fr);
       gap: 24px;
-      position: relative;
-      z-index: 1;
     }
 
     .service-card {
       background: var(--white);
+      border: 1px solid var(--gray-200);
       border-radius: var(--radius-lg);
-      padding: 32px;
-      border: 1px solid rgba(37,99,235,0.06);
+      padding: 32px 28px;
       transition: var(--transition);
       position: relative;
       overflow: hidden;
-      cursor: pointer;
     }
-
     .service-card::before {
       content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, var(--blue-secondary), var(--orange-primary));
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.3s ease;
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--blue-secondary), var(--blue-light));
+      opacity: 0; transition: var(--transition);
     }
-
-    .service-card:hover::before { transform: scaleX(1); }
-
     .service-card:hover {
       transform: translateY(-6px);
-      box-shadow: var(--shadow-md);
-      border-color: rgba(37,99,235,0.12);
+      box-shadow: var(--shadow-lg);
+      border-color: transparent;
     }
+    .service-card:hover::before { opacity: 1; }
 
-    .service-icon-wrap {
-      width: 64px; height: 64px;
-      border-radius: var(--radius-md);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.6rem;
-      margin-bottom: 20px;
-      transition: var(--transition);
+    .service-card-img {
+      width: 100%; height: 180px; object-fit: cover;
+      border-radius: var(--radius-md); margin-bottom: 20px;
     }
-
-    .service-card:hover .service-icon-wrap { transform: scale(1.1) rotate(5deg); }
-
-    .icon-blue { background: rgba(37,99,235,0.1); color: var(--blue-secondary); }
-    .icon-orange { background: rgba(249,115,22,0.1); color: var(--orange-primary); }
-    .icon-green { background: rgba(16,185,129,0.1); color: #10b981; }
-    .icon-purple { background: rgba(139,92,246,0.1); color: #8b5cf6; }
-    .icon-red { background: rgba(239,68,68,0.1); color: #ef4444; }
-    .icon-teal { background: rgba(20,184,166,0.1); color: #14b8a6; }
-
-    .service-title {
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: var(--text-dark);
+    .service-card-icon {
+      width: 52px; height: 52px;
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; margin-bottom: 16px;
+    }
+    .service-card-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: var(--radius-full);
+      font-size: 0.7rem; font-weight: 600;
       margin-bottom: 10px;
     }
-
-    .service-desc {
-      font-size: 0.875rem;
-      color: var(--gray-dark);
-      line-height: 1.6;
-      margin-bottom: 16px;
+    .badge-payant {
+      background: rgba(249,115,22,0.1); color: var(--orange-primary);
+      border: 1px solid rgba(249,115,22,0.2);
     }
-
-    .service-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
+    .badge-devis {
+      background: rgba(37,99,235,0.1); color: var(--blue-secondary);
+      border: 1px solid rgba(37,99,235,0.2);
     }
-
-    .tag {
-      font-size: 0.7rem;
-      font-weight: 600;
-      padding: 4px 10px;
-      border-radius: var(--radius-full);
-      background: var(--white-soft);
-      color: var(--gray-dark);
-      border: 1px solid var(--gray-light);
+    .service-card-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.05rem; font-weight: 700;
+      color: var(--text-dark); margin-bottom: 10px; line-height: 1.3;
     }
+    .service-card-desc {
+      font-size: 0.85rem; color: var(--gray-600);
+      line-height: 1.65; margin-bottom: 20px;
+    }
+    .service-card-tags {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px;
+    }
+    .service-tag {
+      padding: 3px 10px; border-radius: var(--radius-full);
+      font-size: 0.7rem; font-weight: 500;
+      background: var(--gray-100); color: var(--gray-600);
+    }
+    .service-card-cta {
+      display: flex; align-items: center; gap: 7px;
+      color: var(--blue-secondary); font-weight: 600;
+      font-size: 0.85rem; text-decoration: none;
+      transition: var(--transition);
+    }
+    .service-card-cta:hover { color: var(--orange-primary); gap: 11px; }
 
-    /* ============================================
+    /* Icon backgrounds */
+    .icon-orange { background: rgba(249,115,22,0.1); color: var(--orange-primary); }
+    .icon-blue { background: rgba(37,99,235,0.1); color: var(--blue-secondary); }
+    .icon-purple { background: rgba(139,92,246,0.1); color: #8b5cf6; }
+    .icon-green { background: rgba(16,185,129,0.1); color: #10b981; }
+    .icon-red { background: rgba(239,68,68,0.1); color: #ef4444; }
+    .icon-teal { background: rgba(20,184,166,0.1); color: #14b8a6; }
+    .icon-yellow { background: rgba(234,179,8,0.1); color: #eab308; }
+    .icon-indigo { background: rgba(99,102,241,0.1); color: #6366f1; }
+    .icon-pink { background: rgba(236,72,153,0.1); color: #ec4899; }
+    .icon-cyan { background: rgba(6,182,212,0.1); color: #06b6d4; }
+    .icon-lime { background: rgba(132,204,22,0.1); color: #84cc16; }
+
+    /* =============================================
        FORMATIONS SECTION
-    ============================================ */
+    ============================================= */
     #formations {
+      padding: 100px 0;
       background: var(--white);
-      position: relative;
-      overflow: hidden;
-    }
-
-    #formations::before {
-      content: '';
-      position: absolute;
-      width: 350px; height: 350px;
-      border-radius: 50%;
-      border: 3px solid rgba(249,115,22,0.06);
-      top: 60px; right: -60px;
-      animation: rotate-slow 20s linear infinite reverse;
-      pointer-events: none;
     }
 
     .formations-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      grid-template-columns: repeat(2, 1fr);
       gap: 28px;
-      position: relative;
-      z-index: 1;
     }
 
     .formation-card {
       background: var(--white);
+      border: 1px solid var(--gray-200);
       border-radius: var(--radius-lg);
       overflow: hidden;
-      border: 1px solid var(--gray-light);
       transition: var(--transition);
-      position: relative;
+      display: flex; flex-direction: column;
     }
-
     .formation-card:hover {
-      transform: translateY(-8px);
+      transform: translateY(-6px);
       box-shadow: var(--shadow-lg);
-      border-color: rgba(37,99,235,0.15);
+      border-color: transparent;
     }
 
-    .formation-image {
+    .formation-card-img {
+      width: 100%; height: 220px; object-fit: cover;
       position: relative;
-      height: 200px;
-      overflow: hidden;
+    }
+    .formation-card-img-wrap {
+      position: relative; overflow: hidden;
+    }
+    .formation-card-img-wrap img {
+      width: 100%; height: 220px; object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+    .formation-card:hover .formation-card-img-wrap img {
+      transform: scale(1.05);
+    }
+    .formation-tag {
+      position: absolute; top: 16px; left: 16px;
+      background: var(--orange-primary); color: var(--white);
+      padding: 5px 14px; border-radius: var(--radius-full);
+      font-size: 0.72rem; font-weight: 700;
+    }
+    .formation-new {
+      position: absolute; top: 16px; right: 16px;
+      background: #10b981; color: var(--white);
+      padding: 5px 14px; border-radius: var(--radius-full);
+      font-size: 0.72rem; font-weight: 700;
+    }
+    .formation-popular {
+      position: absolute; top: 16px; right: 16px;
+      background: #8b5cf6; color: var(--white);
+      padding: 5px 14px; border-radius: var(--radius-full);
+      font-size: 0.72rem; font-weight: 700;
     }
 
-    .formation-image img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.5s ease;
+    .formation-card-body {
+      padding: 28px 28px 24px;
+      flex: 1; display: flex; flex-direction: column;
     }
-
-    .formation-card:hover .formation-image img { transform: scale(1.05); }
-
-    .formation-badge {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      background: linear-gradient(135deg, var(--orange-primary), var(--orange-secondary));
-      color: var(--white);
-      font-size: 0.7rem;
-      font-weight: 700;
-      padding: 5px 12px;
-      border-radius: var(--radius-full);
-      text-transform: uppercase;
+    .formation-card-meta {
+      display: flex; align-items: center; gap: 16px;
+      margin-bottom: 14px;
     }
-
-    .formation-body {
-      padding: 24px;
+    .formation-meta-item {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 0.75rem; color: var(--gray-400); font-weight: 500;
     }
-
-    .formation-category {
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: var(--blue-secondary);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 8px;
+    .formation-card-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.1rem; font-weight: 700;
+      color: var(--text-dark); margin-bottom: 10px; line-height: 1.35;
     }
-
-    .formation-title {
-      font-size: 1.05rem;
-      font-weight: 800;
-      color: var(--text-dark);
-      margin-bottom: 10px;
-      line-height: 1.3;
+    .formation-card-desc {
+      font-size: 0.85rem; color: var(--gray-600);
+      line-height: 1.65; margin-bottom: 18px; flex: 1;
     }
-
-    .formation-desc {
-      font-size: 0.85rem;
-      color: var(--gray-dark);
-      line-height: 1.6;
-      margin-bottom: 16px;
+    .formation-modules {
+      list-style: none; margin-bottom: 20px;
     }
-
-    .formation-points {
-      list-style: none;
-      margin-bottom: 20px;
+    .formation-modules li {
+      display: flex; align-items: flex-start; gap: 8px;
+      font-size: 0.82rem; color: var(--gray-600);
+      padding: 5px 0;
+      border-bottom: 1px solid var(--gray-100);
     }
+    .formation-modules li:last-child { border-bottom: none; }
+    .formation-modules li i { color: var(--blue-secondary); margin-top: 2px; flex-shrink: 0; }
 
-    .formation-points li {
-      font-size: 0.8rem;
-      color: var(--gray-dark);
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      margin-bottom: 6px;
+    .formation-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-top: 16px; border-top: 1px solid var(--gray-100);
+      gap: 12px; flex-wrap: wrap;
     }
-
-    .formation-points li i {
-      color: var(--orange-primary);
-      font-size: 0.7rem;
-      margin-top: 3px;
-      flex-shrink: 0;
-    }
-
-    .formation-cta {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding-top: 16px;
-      border-top: 1px solid var(--gray-light);
-    }
-
     .formation-price {
-      font-size: 0.85rem;
-      color: var(--gray-mid);
-    }
-
-    .formation-price strong {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.85rem; font-weight: 700;
       color: var(--orange-primary);
-      font-size: 1rem;
     }
 
-    .btn-formation {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: linear-gradient(135deg, var(--blue-secondary), var(--blue-primary));
-      color: var(--white);
-      text-decoration: none;
-      padding: 10px 20px;
-      border-radius: var(--radius-full);
-      font-size: 0.8rem;
-      font-weight: 600;
-      transition: var(--transition);
+    /* Formation wide (full width) */
+    .formation-card.wide {
+      grid-column: span 2;
+      flex-direction: row;
+    }
+    .formation-card.wide .formation-card-img-wrap {
+      flex: 0 0 380px;
+    }
+    .formation-card.wide .formation-card-img-wrap img {
+      height: 100%;
     }
 
-    .btn-formation:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-blue);
-    }
-
-    /* Formation card sans image (style pilier) */
-    .formation-card.text-only {
-      background: linear-gradient(135deg, #f8faff 0%, #fff8f3 100%);
-    }
-
-    .formation-card.text-only .formation-body {
-      padding: 32px;
-    }
-
-    .formation-icon {
-      width: 56px; height: 56px;
-      border-radius: var(--radius-md);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      margin-bottom: 16px;
-    }
-
-    /* ============================================
-       APP EFFORT SECTION
-    ============================================ */
+    /* =============================================
+       E-LEARNING SECTION
+    ============================================= */
     #app-effort {
-      background: linear-gradient(135deg, var(--blue-primary) 0%, #1e40af 50%, #1a3070 100%);
-      position: relative;
-      overflow: hidden;
-      color: var(--white);
+      padding: 100px 0;
+      background: linear-gradient(135deg, var(--blue-deep) 0%, var(--blue-primary) 60%, #1e40af 100%);
+      position: relative; overflow: hidden;
     }
-
     #app-effort::before {
       content: '';
-      position: absolute;
-      width: 600px; height: 600px;
+      position: absolute; top: -100px; right: -100px;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(249,115,22,0.1) 0%, transparent 70%);
       border-radius: 50%;
-      background: rgba(255,255,255,0.03);
-      top: -200px; right: -200px;
-      pointer-events: none;
     }
 
-    #app-effort::after {
-      content: '';
-      position: absolute;
-      width: 300px; height: 300px;
-      border-radius: 50%;
-      border: 2px solid rgba(249,115,22,0.2);
-      bottom: -100px; left: 10%;
-      pointer-events: none;
-      animation: rotate-slow 20s linear infinite;
+    .elearning-inner {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 80px; align-items: center; position: relative; z-index: 2;
     }
 
-    .effort-inner {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 60px;
-      align-items: center;
-      position: relative;
-      z-index: 1;
+    .elearning-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(16,185,129,0.15);
+      color: #34d399; border: 1px solid rgba(16,185,129,0.25);
+      padding: 7px 16px; border-radius: var(--radius-full);
+      font-size: 0.78rem; font-weight: 600;
+      letter-spacing: 0.3px; margin-bottom: 22px;
     }
-
-    .effort-content .section-tag {
-      background: rgba(249,115,22,0.2);
-      border-color: rgba(249,115,22,0.3);
-      color: #fed7aa;
+    .elearning-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+      font-weight: 800; color: var(--white);
+      line-height: 1.2; margin-bottom: 20px;
     }
-
-    .effort-content .section-title { color: var(--white); }
-    .effort-content .section-title .accent { color: var(--orange-light); }
-
-    .effort-content .divider {
-      background: linear-gradient(90deg, var(--orange-primary), rgba(255,255,255,0.3));
+    .elearning-title span { color: var(--orange-primary); }
+    .elearning-desc {
+      font-size: 1rem; color: rgba(255,255,255,0.72);
+      line-height: 1.7; margin-bottom: 36px;
     }
+    .elearning-ctas { display: flex; gap: 16px; flex-wrap: wrap; }
 
-    .effort-desc {
-      font-size: 1rem;
-      color: rgba(255,255,255,0.8);
-      line-height: 1.7;
-      margin-bottom: 24px;
-    }
-
-    .effort-free-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background: rgba(249,115,22,0.2);
-      border: 2px solid var(--orange-primary);
-      border-radius: var(--radius-lg);
-      padding: 16px 24px;
-      margin-bottom: 32px;
-    }
-
-    .effort-free-badge i { font-size: 1.5rem; color: var(--orange-light); }
-
-    .effort-free-badge div strong {
-      display: block;
-      font-size: 1.1rem;
-      font-weight: 800;
-      color: var(--white);
-    }
-
-    .effort-free-badge div span {
-      font-size: 0.8rem;
-      color: rgba(255,255,255,0.7);
-    }
-
-    .effort-features {
-      list-style: none;
-      margin-bottom: 32px;
-    }
-
-    .effort-features li {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      margin-bottom: 12px;
-      color: rgba(255,255,255,0.85);
-      font-size: 0.9rem;
-    }
-
-    .effort-features li i { color: var(--orange-light); font-size: 0.85rem; margin-top: 3px; }
-
-    .effort-actions {
-      display: flex;
+    .elearning-features {
+      display: grid; grid-template-columns: 1fr 1fr;
       gap: 16px;
-      flex-wrap: wrap;
     }
-
-    .btn-download {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      background: var(--orange-primary);
-      color: var(--white);
-      text-decoration: none;
-      padding: 16px 28px;
-      border-radius: var(--radius-full);
-      font-weight: 700;
-      font-size: 1rem;
-      transition: var(--transition);
-      box-shadow: 0 8px 30px rgba(249,115,22,0.4);
-    }
-
-    .btn-download:hover {
-      background: var(--orange-secondary);
-      transform: translateY(-3px);
-      box-shadow: 0 16px 40px rgba(249,115,22,0.5);
-    }
-
-    .btn-download-sub { font-size: 0.7rem; display: block; opacity: 0.8; font-weight: 400; }
-
-    .btn-white-outline {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background: transparent;
-      color: var(--white);
-      text-decoration: none;
-      padding: 16px 28px;
-      border-radius: var(--radius-full);
-      font-weight: 600;
-      font-size: 0.95rem;
-      border: 2px solid rgba(255,255,255,0.3);
-      transition: var(--transition);
-    }
-
-    .btn-white-outline:hover {
-      background: rgba(255,255,255,0.1);
-      border-color: rgba(255,255,255,0.6);
-      transform: translateY(-2px);
-    }
-
-    .effort-visual {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .app-mockup-wrap {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .app-mockup-bg {
-      width: 260px; height: 260px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.06);
-      border: 2px solid rgba(255,255,255,0.1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
-
-    .app-mockup-bg::before {
-      content: '';
-      position: absolute;
-      width: 320px; height: 320px;
-      border-radius: 50%;
-      border: 2px dashed rgba(249,115,22,0.3);
-      animation: rotate-slow 15s linear infinite;
-    }
-
-    .app-mockup-bg::after {
-      content: '';
-      position: absolute;
-      width: 380px; height: 380px;
-      border-radius: 50%;
-      border: 1px dashed rgba(255,255,255,0.1);
-      animation: rotate-slow 25s linear infinite reverse;
-    }
-
-    .app-logo-effort {
-      width: 160px;
-      height: 160px;
-      border-radius: var(--radius-lg);
-      object-fit: contain;
-      background: rgba(255,255,255,0.08);
-      padding: 20px;
-      position: relative;
-      z-index: 2;
-      border: 2px solid rgba(255,255,255,0.15);
-    }
-
-    .effort-stat-float {
-      position: absolute;
-      background: rgba(255,255,255,0.12);
+    .elearning-feat {
+      background: rgba(255,255,255,0.07);
       backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.1);
       border-radius: var(--radius-md);
-      padding: 10px 14px;
-      font-size: 0.75rem;
-      color: var(--white);
-      font-weight: 600;
-      animation: float 4s ease-in-out infinite;
+      padding: 20px 18px;
+      transition: var(--transition);
+    }
+    .elearning-feat:hover {
+      background: rgba(255,255,255,0.12);
+      transform: translateY(-3px);
+    }
+    .elearning-feat-icon {
+      font-size: 1.6rem; margin-bottom: 10px;
+    }
+    .elearning-feat-number {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.5rem; font-weight: 800;
+      color: var(--orange-primary); line-height: 1;
+    }
+    .elearning-feat-label {
+      font-size: 0.78rem; color: rgba(255,255,255,0.6);
+      font-weight: 500; margin-top: 4px;
     }
 
-    .effort-stat-float.top { top: -10px; right: 10%; animation-delay: 0.3s; }
-    .effort-stat-float.bottom { bottom: -10px; left: 10%; animation-delay: 0.8s; }
-    .effort-stat-float i { color: var(--orange-light); margin-right: 6px; }
-
-    /* ============================================
-       A PROPOS SECTION
-    ============================================ */
-    #a-propos {
+    /* =============================================
+       WHY US SECTION
+    ============================================= */
+    #why-us {
+      padding: 100px 0;
       background: var(--white-soft);
-      position: relative;
-      overflow: hidden;
+    }
+
+    .why-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 28px;
+    }
+    .why-card {
+      text-align: center; padding: 40px 24px;
+      background: var(--white); border-radius: var(--radius-lg);
+      border: 1px solid var(--gray-200);
+      transition: var(--transition);
+    }
+    .why-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-md);
+      border-color: transparent;
+    }
+    .why-icon {
+      width: 68px; height: 68px;
+      border-radius: var(--radius-lg);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem; margin: 0 auto 20px;
+    }
+    .why-number {
+      font-family: 'Poppins', sans-serif;
+      font-size: 2.2rem; font-weight: 800;
+      color: var(--blue-primary); line-height: 1; margin-bottom: 8px;
+    }
+    .why-number span { color: var(--orange-primary); }
+    .why-title {
+      font-size: 0.95rem; font-weight: 700;
+      color: var(--text-dark); margin-bottom: 10px;
+    }
+    .why-desc {
+      font-size: 0.82rem; color: var(--gray-600); line-height: 1.6;
+    }
+
+    /* =============================================
+       ABOUT / TEAM SECTION
+    ============================================= */
+    #a-propos {
+      padding: 100px 0;
+      background: var(--white);
     }
 
     .about-inner {
-      display: grid;
-      grid-template-columns: 1fr 1.5fr;
-      gap: 60px;
-      align-items: center;
+      display: grid; grid-template-columns: 1fr 1.5fr;
+      gap: 80px; align-items: center;
     }
 
-    .about-image-side { position: relative; }
-
-    .about-image-main {
-      width: 100%;
-      border-radius: var(--radius-lg);
+    .about-photo-wrap {
+      position: relative;
+    }
+    .about-photo {
+      width: 100%; border-radius: var(--radius-xl);
       box-shadow: var(--shadow-lg);
-      display: block;
+      object-fit: cover; aspect-ratio: 4/5;
     }
-
-    .about-circle-deco {
-      position: absolute;
-      width: 100%;
-      height: 100%;
+    .about-brand-badge {
+      position: absolute; bottom: -20px; right: -20px;
+      background: var(--white);
+      box-shadow: var(--shadow-md);
       border-radius: var(--radius-lg);
-      border: 3px solid var(--orange-primary);
-      top: 16px; left: 16px;
-      z-index: -1;
-      opacity: 0.3;
+      padding: 16px 20px;
+      display: flex; align-items: center; gap: 12px;
     }
-
-    .about-experience-badge {
-      position: absolute;
-      bottom: -20px;
-      right: -20px;
-      background: linear-gradient(135deg, var(--orange-primary), var(--orange-secondary));
-      color: var(--white);
-      border-radius: var(--radius-md);
-      padding: 20px;
-      text-align: center;
-      box-shadow: var(--shadow-orange);
+    .about-brand-badge img {
+      height: 40px; width: auto;
     }
-
-    .about-experience-badge strong { font-size: 2rem; font-weight: 900; display: block; line-height: 1; }
-    .about-experience-badge span { font-size: 0.7rem; font-weight: 600; opacity: 0.9; }
-
-    .about-content .section-tag {
-      background: rgba(37,99,235,0.08);
-      border-color: rgba(37,99,235,0.15);
-      color: var(--blue-secondary);
+    .about-brand-info { line-height: 1.2; }
+    .about-brand-name {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.9rem; font-weight: 800;
+      color: var(--blue-primary);
+    }
+    .about-brand-name span { color: var(--orange-primary); }
+    .about-brand-sub {
+      font-size: 0.7rem; color: var(--gray-400); font-weight: 500;
     }
 
     .about-name {
-      font-size: 1.5rem;
-      font-weight: 900;
-      color: var(--blue-primary);
-      margin-bottom: 4px;
+      font-family: 'Poppins', sans-serif;
+      font-size: clamp(1.8rem, 3vw, 2.4rem);
+      font-weight: 800; color: var(--text-dark);
+      line-height: 1.2; margin-bottom: 6px;
     }
-
     .about-role {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--orange-primary);
-      margin-bottom: 24px;
+      font-size: 1rem; color: var(--orange-primary);
+      font-weight: 600; margin-bottom: 20px;
+    }
+    .about-desc {
+      font-size: 0.95rem; color: var(--gray-600);
+      line-height: 1.75; margin-bottom: 32px;
     }
 
-    .about-text {
-      font-size: 0.95rem;
-      color: var(--gray-dark);
-      line-height: 1.8;
-      margin-bottom: 16px;
+    .about-skills {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; margin-bottom: 36px;
+    }
+    .about-skill {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 0.83rem; color: var(--gray-600); font-weight: 500;
+    }
+    .about-skill i { color: var(--blue-secondary); font-size: 0.9rem; flex-shrink: 0; }
+
+    .about-quotes {
+      background: var(--gray-100); border-radius: var(--radius-lg);
+      padding: 24px 28px; margin-bottom: 32px;
+      border-left: 4px solid var(--orange-primary);
+    }
+    .about-quotes p {
+      font-size: 0.88rem; font-style: italic;
+      color: var(--gray-600); line-height: 1.7; margin-bottom: 8px;
+    }
+    .about-quotes p:last-child { margin-bottom: 0; }
+    .about-quotes strong { color: var(--blue-primary); font-style: normal; }
+
+    .about-ctas { display: flex; gap: 16px; flex-wrap: wrap; }
+
+    /* =============================================
+       TESTIMONIALS SECTION
+    ============================================= */
+    #testimonials {
+      padding: 100px 0;
+      background: var(--white-soft);
     }
 
-    .about-missions {
-      background: var(--white);
-      border-radius: var(--radius-md);
-      padding: 24px;
-      margin: 24px 0;
-      border-left: 4px solid var(--blue-secondary);
+    .testimonials-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 24px; margin-top: 60px;
     }
-
-    .about-missions h4 {
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: var(--blue-primary);
-      margin-bottom: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+    .testimonial-card {
+      background: var(--white); border-radius: var(--radius-lg);
+      border: 1px solid var(--gray-200); padding: 32px 28px;
+      transition: var(--transition);
     }
-
-    .mission-list {
-      list-style: none;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
+    .testimonial-card:hover { box-shadow: var(--shadow-md); transform: translateY(-4px); border-color: transparent; }
+    .testimonial-stars { color: #f59e0b; font-size: 0.9rem; margin-bottom: 16px; }
+    .testimonial-text {
+      font-size: 0.88rem; color: var(--gray-600);
+      line-height: 1.75; margin-bottom: 24px; font-style: italic;
     }
-
-    .mission-list li {
-      font-size: 0.82rem;
-      color: var(--gray-dark);
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .testimonial-author {
+      display: flex; align-items: center; gap: 12px;
     }
-
-    .mission-list li i { color: var(--orange-primary); font-size: 0.7rem; }
-
-    .about-slogans {
-      margin-top: 20px;
-    }
-
-    .slogan-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-
-    .slogan-item i { color: var(--orange-primary); margin-top: 3px; }
-
-    .slogan-item p {
-      font-size: 0.875rem;
-      font-style: italic;
-      color: var(--text-dark);
-      font-weight: 600;
-    }
-
-    /* ============================================
-       CONTACT SECTION
-    ============================================ */
-    #contact {
-      background: var(--white);
-      position: relative;
-      overflow: hidden;
-    }
-
-    #contact::before {
-      content: '';
-      position: absolute;
-      width: 500px; height: 500px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(37,99,235,0.04) 0%, transparent 70%);
-      bottom: -200px; right: -200px;
-      pointer-events: none;
-    }
-
-    .contact-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 48px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .contact-info h3 {
-      font-size: 1.4rem;
-      font-weight: 800;
-      color: var(--text-dark);
-      margin-bottom: 16px;
-    }
-
-    .contact-info p {
-      font-size: 0.95rem;
-      color: var(--gray-dark);
-      line-height: 1.7;
-      margin-bottom: 32px;
-    }
-
-    .contact-items { margin-bottom: 32px; }
-
-    .contact-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 16px;
-      margin-bottom: 20px;
-    }
-
-    .contact-icon {
-      width: 48px; height: 48px;
-      border-radius: var(--radius-md);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.1rem;
+    .testimonial-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; font-weight: 700; color: var(--white);
       flex-shrink: 0;
     }
+    .testimonial-name { font-weight: 700; font-size: 0.88rem; color: var(--text-dark); }
+    .testimonial-role { font-size: 0.75rem; color: var(--gray-400); }
 
-    .contact-icon.blue { background: rgba(37,99,235,0.08); color: var(--blue-secondary); }
-    .contact-icon.orange { background: rgba(249,115,22,0.08); color: var(--orange-primary); }
-    .contact-icon.green { background: rgba(16,185,129,0.08); color: #10b981; }
-
-    .contact-item-text strong {
-      display: block;
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: var(--text-dark);
-      margin-bottom: 4px;
-    }
-
-    .contact-item-text span, .contact-item-text a {
-      font-size: 0.85rem;
-      color: var(--gray-dark);
-      text-decoration: none;
-      line-height: 1.5;
-    }
-
-    .contact-item-text a:hover { color: var(--blue-secondary); }
-
-    .whatsapp-buttons {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .btn-whatsapp {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      background: linear-gradient(135deg, #25d366, #128c7e);
-      color: var(--white);
-      text-decoration: none;
-      padding: 16px 24px;
-      border-radius: var(--radius-md);
-      font-weight: 600;
-      transition: var(--transition);
-      box-shadow: 0 4px 20px rgba(37,211,102,0.25);
-    }
-
-    .btn-whatsapp:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 12px 30px rgba(37,211,102,0.4);
-    }
-
-    .btn-whatsapp i { font-size: 1.4rem; }
-
-    .btn-whatsapp-info strong { display: block; font-size: 0.9rem; }
-    .btn-whatsapp-info span { font-size: 0.75rem; opacity: 0.85; }
-
-    .contact-map-placeholder {
-      background: linear-gradient(135deg, #f0f7ff, #fff0e8);
-      border-radius: var(--radius-lg);
-      padding: 40px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      border: 2px dashed rgba(37,99,235,0.15);
-      height: 100%;
-      min-height: 300px;
-    }
-
-    .map-icon-wrap {
-      width: 80px; height: 80px;
-      border-radius: 50%;
-      background: rgba(37,99,235,0.08);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      color: var(--blue-secondary);
-      margin-bottom: 20px;
-    }
-
-    .contact-map-placeholder h4 {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--text-dark);
-      margin-bottom: 8px;
-    }
-
-    .contact-map-placeholder p {
-      font-size: 0.875rem;
-      color: var(--gray-mid);
-      line-height: 1.5;
-    }
-
-    .contact-map-placeholder strong { color: var(--orange-primary); }
-
-    .hours-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-top: 20px;
-      width: 100%;
-      max-width: 280px;
-    }
-
-    .hour-item {
+    /* =============================================
+       CONTACT SECTION
+    ============================================= */
+    #contact {
+      padding: 100px 0;
       background: var(--white);
+    }
+
+    .contact-inner {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 80px; align-items: start;
+    }
+
+    .contact-info-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.8rem; font-weight: 800;
+      color: var(--text-dark); margin-bottom: 16px; line-height: 1.3;
+    }
+    .contact-info-desc {
+      font-size: 0.95rem; color: var(--gray-600);
+      line-height: 1.7; margin-bottom: 36px;
+    }
+
+    .contact-channels { display: flex; flex-direction: column; gap: 16px; margin-bottom: 36px; }
+    .contact-channel {
+      display: flex; align-items: center; gap: 16px;
+      padding: 20px 22px; border-radius: var(--radius-md);
+      border: 1px solid var(--gray-200); background: var(--white-soft);
+      text-decoration: none; transition: var(--transition);
+    }
+    .contact-channel:hover {
+      box-shadow: var(--shadow-md); transform: translateX(4px);
+      border-color: transparent;
+    }
+    .contact-channel-icon {
+      width: 46px; height: 46px;
       border-radius: var(--radius-sm);
-      padding: 10px 12px;
-      text-align: center;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; flex-shrink: 0;
+    }
+    .channel-wa { background: rgba(37,211,102,0.12); color: #25d366; }
+    .channel-email { background: rgba(37,99,235,0.1); color: var(--blue-secondary); }
+    .contact-channel-label { font-size: 0.72rem; color: var(--gray-400); font-weight: 500; }
+    .contact-channel-value { font-size: 0.92rem; font-weight: 600; color: var(--text-dark); }
+
+    .contact-hours {
+      background: var(--gray-100); border-radius: var(--radius-md);
+      padding: 20px 22px;
+    }
+    .contact-hours-title {
+      font-size: 0.85rem; font-weight: 700;
+      color: var(--text-dark); margin-bottom: 12px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .contact-hours-title i { color: var(--orange-primary); }
+    .contact-hours-item {
+      display: flex; justify-content: space-between;
+      font-size: 0.8rem; color: var(--gray-600);
+      padding: 6px 0; border-bottom: 1px solid var(--gray-200);
+    }
+    .contact-hours-item:last-child { border-bottom: none; }
+
+    /* Contact Form */
+    .contact-form {
+      background: var(--white-soft);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-xl);
+      padding: 40px 36px;
+    }
+    .form-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.3rem; font-weight: 800;
+      color: var(--text-dark); margin-bottom: 28px;
+    }
+    .form-group { margin-bottom: 20px; }
+    .form-group label {
+      display: block; font-size: 0.83rem; font-weight: 600;
+      color: var(--gray-800); margin-bottom: 8px;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%; padding: 12px 16px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem; color: var(--text-dark);
+      background: var(--white); transition: var(--transition);
+      outline: none;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--blue-secondary);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+    .form-group textarea { resize: vertical; min-height: 120px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-submit {
+      width: 100%; padding: 15px;
+      background: var(--orange-primary); color: var(--white);
+      border: none; border-radius: var(--radius-full);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem; font-weight: 700;
+      cursor: pointer; transition: var(--transition);
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .form-submit:hover {
+      background: var(--orange-dark); transform: translateY(-2px);
+      box-shadow: var(--shadow-orange);
     }
 
-    .hour-item strong { display: block; font-size: 0.75rem; color: var(--blue-primary); margin-bottom: 2px; }
-    .hour-item span { font-size: 0.7rem; color: var(--gray-mid); }
-
-    /* ============================================
-       BANNIÈRE SERVICES YOUDIS
-    ============================================ */
-    .youdis-banner-wrap {
-      margin-top: 56px;
-      text-align: center;
-      position: relative;
-      z-index: 1;
-    }
-
-    .youdis-banner-img {
-      width: 100%;
-      max-width: 900px;
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-lg);
-      transition: var(--transition);
-      border: 2px solid rgba(37,99,235,0.08);
-    }
-
-    .youdis-banner-img:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 28px 80px rgba(37,99,235,0.18);
-    }
-
-    /* ============================================
-       SECTION PROMO VISUELS
-    ============================================ */
-    .promo-visuels-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 28px;
-    }
-
-    .promo-visuel-card {
-      position: relative;
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.3);
-      cursor: pointer;
-    }
-
-    .promo-visuel-card img {
-      width: 100%;
-      height: 360px;
-      object-fit: cover;
-      display: block;
-      transition: transform 0.5s ease;
-    }
-
-    .promo-visuel-card:hover img {
-      transform: scale(1.05);
-    }
-
-    .promo-visuel-overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(0deg, rgba(10,20,50,0.92) 0%, rgba(10,20,50,0.3) 60%, transparent 100%);
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      padding: 28px;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    .promo-visuel-card:hover .promo-visuel-overlay {
-      opacity: 1;
-    }
-
-    .promo-visuel-overlay h3 {
-      color: var(--white);
-      font-size: 1.25rem;
-      font-weight: 800;
-      margin-bottom: 6px;
-    }
-
-    .promo-visuel-overlay p {
-      color: rgba(255,255,255,0.75);
-      font-size: 0.85rem;
-      margin-bottom: 16px;
-    }
-
-    /* Sur mobile, overlay toujours visible */
-    @media (hover: none) {
-      .promo-visuel-overlay { opacity: 1; }
-    }
-
-    /* ============================================
+    /* =============================================
        FOOTER
-    ============================================ */
+    ============================================= */
     footer {
-      background: var(--text-dark);
-      color: rgba(255,255,255,0.7);
-      padding: 48px 0 24px;
+      background: var(--blue-deep);
+      color: rgba(255,255,255,0.65);
+      padding: 70px 0 0;
     }
-
     .footer-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 24px;
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 48px; padding-bottom: 48px;
     }
-
-    .footer-top {
-      display: grid;
-      grid-template-columns: 1.5fr 1fr 1fr 1fr;
-      gap: 40px;
-      margin-bottom: 40px;
+    .footer-brand-logo {
+      height: 44px; margin-bottom: 18px;
+      filter: brightness(0) invert(1);
     }
-
-    .footer-brand .footer-logo {
-      font-size: 1.6rem;
-      font-weight: 900;
-      color: var(--white);
-      margin-bottom: 4px;
+    .footer-brand-desc {
+      font-size: 0.83rem; line-height: 1.7; margin-bottom: 24px;
     }
-
-    .footer-brand .footer-logo span { color: var(--orange-primary); }
-
-    .footer-brand .footer-tagline {
-      font-size: 0.75rem;
-      color: rgba(255,255,255,0.4);
-      margin-bottom: 16px;
-    }
-
-    .footer-brand p {
-      font-size: 0.85rem;
-      line-height: 1.7;
-      margin-bottom: 20px;
-    }
-
     .footer-socials {
-      display: flex;
-      gap: 10px;
+      display: flex; gap: 10px;
     }
-
-    .social-link {
+    .footer-social {
       width: 36px; height: 36px;
-      border-radius: 50%;
       background: rgba(255,255,255,0.08);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: rgba(255,255,255,0.6);
-      text-decoration: none;
-      font-size: 0.9rem;
-      transition: var(--transition);
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,0.6); text-decoration: none;
+      font-size: 0.9rem; transition: var(--transition);
     }
+    .footer-social:hover { background: var(--orange-primary); color: var(--white); }
 
-    .social-link:hover { background: var(--orange-primary); color: var(--white); }
-
-    .footer-col h4 {
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: var(--white);
-      margin-bottom: 16px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+    .footer-col-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.88rem; font-weight: 700;
+      color: var(--white); margin-bottom: 20px;
+      letter-spacing: 0.3px;
     }
-
-    .footer-links {
-      list-style: none;
-    }
-
-    .footer-links li { margin-bottom: 8px; }
-
+    .footer-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
     .footer-links a {
-      font-size: 0.83rem;
-      color: rgba(255,255,255,0.6);
-      text-decoration: none;
-      transition: var(--transition);
+      color: rgba(255,255,255,0.55); text-decoration: none;
+      font-size: 0.82rem; transition: var(--transition);
     }
-
     .footer-links a:hover { color: var(--orange-primary); padding-left: 4px; }
 
     .footer-bottom {
-      border-top: 1px solid rgba(255,255,255,0.06);
-      padding-top: 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding: 24px 0;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px;
     }
-
-    .footer-bottom p {
-      font-size: 0.8rem;
-      color: rgba(255,255,255,0.4);
+    .footer-bottom-text { font-size: 0.8rem; }
+    .footer-bottom-links { display: flex; gap: 20px; }
+    .footer-bottom-links a {
+      font-size: 0.78rem; color: rgba(255,255,255,0.4);
+      text-decoration: none; transition: var(--transition);
     }
+    .footer-bottom-links a:hover { color: var(--orange-primary); }
 
-    .footer-bottom a { color: var(--orange-primary); text-decoration: none; }
-
-    /* ============================================
-       FLOATING WHATSAPP BUTTON
-    ============================================ */
-    .float-whatsapp {
-      position: fixed;
-      bottom: 32px;
-      right: 32px;
-      width: 60px; height: 60px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #25d366, #128c7e);
-      color: var(--white);
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.6rem;
+    /* WhatsApp floating */
+    .wa-float {
+      position: fixed; bottom: 28px; right: 28px;
       z-index: 998;
-      box-shadow: 0 8px 30px rgba(37,211,102,0.4);
-      transition: var(--transition);
-      animation: float 3s ease-in-out infinite;
+      display: flex; align-items: center; gap: 10px;
     }
-
-    .float-whatsapp:hover {
-      transform: scale(1.1);
-      box-shadow: 0 16px 40px rgba(37,211,102,0.5);
+    .wa-float-btn {
+      width: 58px; height: 58px;
+      background: #25d366; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; color: var(--white);
+      box-shadow: 0 6px 24px rgba(37,211,102,0.4);
+      text-decoration: none; transition: var(--transition);
+      animation: floatPulse 3s ease-in-out infinite;
     }
-
-    .float-whatsapp-label {
-      position: absolute;
-      right: 72px;
-      background: var(--text-dark);
-      color: var(--white);
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 6px 12px;
-      border-radius: var(--radius-full);
+    .wa-float-btn:hover { transform: scale(1.12); box-shadow: 0 10px 36px rgba(37,211,102,0.5); }
+    @keyframes floatPulse {
+      0%, 100% { box-shadow: 0 6px 24px rgba(37,211,102,0.4); }
+      50% { box-shadow: 0 6px 36px rgba(37,211,102,0.65); }
+    }
+    .wa-float-label {
+      background: var(--white); color: var(--gray-800);
+      padding: 8px 14px; border-radius: var(--radius-full);
+      font-size: 0.78rem; font-weight: 600;
+      box-shadow: var(--shadow-md);
       white-space: nowrap;
-      opacity: 0;
+      opacity: 0; transform: translateX(10px);
       transition: var(--transition);
-      pointer-events: none;
     }
+    .wa-float:hover .wa-float-label { opacity: 1; transform: translateX(0); }
 
-    .float-whatsapp:hover .float-whatsapp-label { opacity: 1; }
-
-    /* ============================================
-       ANIMATIONS SCROLL (OBSERVE)
-    ============================================ */
-    [data-animate] {
-      opacity: 0;
-      transform: translateY(30px);
-      transition: opacity 0.6s ease, transform 0.6s ease;
-    }
-
-    [data-animate].animated {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    [data-animate-delay="1"] { transition-delay: 0.1s; }
-    [data-animate-delay="2"] { transition-delay: 0.2s; }
-    [data-animate-delay="3"] { transition-delay: 0.3s; }
-    [data-animate-delay="4"] { transition-delay: 0.4s; }
-    [data-animate-delay="5"] { transition-delay: 0.5s; }
-    [data-animate-delay="6"] { transition-delay: 0.6s; }
-
-    /* ============================================
+    /* =============================================
        RESPONSIVE
-    ============================================ */
-    @media (max-width: 1024px) {
-      .hero-container { grid-template-columns: 1fr; gap: 40px; }
-      .hero-visual { order: -1; }
-      .hero-image-wrap { max-width: 380px; margin: 0 auto; }
-      .hero-badge-float.top-right { right: 0; }
-      .hero-badge-float.bottom-left { left: 0; }
-      .effort-inner { grid-template-columns: 1fr; gap: 40px; }
-      .effort-visual { order: -1; }
-      .about-inner { grid-template-columns: 1fr; }
-      .contact-grid { grid-template-columns: 1fr; }
-      .footer-top { grid-template-columns: 1fr 1fr; }
-      .promo-visuels-grid { grid-template-columns: 1fr; gap: 20px; }
+    ============================================= */
+    @media (max-width: 1100px) {
+      .services-grid { grid-template-columns: repeat(2, 1fr); }
+      .why-grid { grid-template-columns: repeat(2, 1fr); }
+      .footer-inner { grid-template-columns: 1fr 1fr; gap: 36px; }
+    }
+
+    @media (max-width: 900px) {
+      .hero-inner { grid-template-columns: 1fr; gap: 48px; }
+      .hero-visual { display: none; }
+      .hero-title { font-size: 2.2rem; }
+      .hero-stats { gap: 24px; }
+      .elearning-inner { grid-template-columns: 1fr; gap: 48px; }
+      .about-inner { grid-template-columns: 1fr; gap: 40px; }
+      .about-photo-wrap { max-width: 380px; margin: 0 auto; }
+      .contact-inner { grid-template-columns: 1fr; gap: 48px; }
+      .formations-grid { grid-template-columns: 1fr; }
+      .formation-card.wide { flex-direction: column; grid-column: span 1; }
+      .formation-card.wide .formation-card-img-wrap { flex: none; }
+      .testimonials-grid { grid-template-columns: 1fr 1fr; }
     }
 
     @media (max-width: 768px) {
-      section { padding: 60px 0; }
       .nav-links { display: none; }
       .nav-hamburger { display: flex; }
-      .nav-logo-img { height: 40px; }
-      .hero-stats { gap: 20px; }
-      .stat-number { font-size: 1.4rem; }
       .services-grid { grid-template-columns: 1fr; }
-      .formations-grid { grid-template-columns: 1fr; }
-      .mission-list { grid-template-columns: 1fr; }
-      .footer-top { grid-template-columns: 1fr; }
+      .why-grid { grid-template-columns: 1fr 1fr; }
+      .trust-strip-inner { gap: 20px; }
+      .trust-item span { display: none; }
+      .testimonials-grid { grid-template-columns: 1fr; }
+      .about-skills { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+      .elearning-features { grid-template-columns: 1fr 1fr; }
+      .footer-inner { grid-template-columns: 1fr; }
       .footer-bottom { flex-direction: column; text-align: center; }
-      .hero-actions { flex-direction: column; }
-      .btn-primary, .btn-orange, .btn-outline { justify-content: center; }
-      .promo-visuels-grid { grid-template-columns: 1fr; }
-      .promo-visuel-card img { height: 260px; }
-      .promo-visuel-overlay { opacity: 1; }
-      .youdis-banner-img { border-radius: var(--radius-md); }
+      .hero-ctas { flex-direction: column; }
+      .hero-ctas .btn { width: 100%; justify-content: center; }
     }
 
     @media (max-width: 480px) {
-      nav { padding: 0 16px; }
-      .section-container { padding: 0 16px; }
-      .hero-container { padding: 40px 16px; }
-      .float-whatsapp { bottom: 20px; right: 20px; width: 52px; height: 52px; font-size: 1.3rem; }
-      .nav-logo-img { height: 36px; }
-      .promo-visuel-card img { height: 220px; }
-      .promo-visuel-overlay h3 { font-size: 1rem; }
-    }
-
-    /* ============================================
-       PROGRESS BAR
-    ============================================ */
-    .progress-bar {
-      position: fixed;
-      top: 0; left: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--blue-secondary), var(--orange-primary));
-      z-index: 2000;
-      transition: width 0.1s linear;
-    }
-
-    /* ============================================
-       NOUVEAUX SERVICES SECTION
-    ============================================ */
-    .nouveaux-services-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 28px;
-      position: relative;
-      z-index: 1;
-    }
-
-    /* La 5e carte prend toute la largeur en bas */
-    .nouv-service-card--wide {
-      grid-column: 1 / -1;
-      display: grid;
-      grid-template-columns: 1fr 1.4fr;
-      align-items: center;
-    }
-
-    .nouv-service-card {
-      background: var(--white);
-      border-radius: var(--radius-lg);
-      border: 1px solid rgba(37,99,235,0.08);
-      overflow: hidden;
-      transition: var(--transition);
-      display: flex;
-      flex-direction: column;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .nouv-service-card:hover {
-      transform: translateY(-6px);
-      box-shadow: var(--shadow-md);
-      border-color: rgba(37,99,235,0.15);
-    }
-
-    /* Image wrapper */
-    .nouv-service-img-wrap {
-      position: relative;
-      overflow: hidden;
-      aspect-ratio: 4/3;
-    }
-
-    .nouv-service-card--wide .nouv-service-img-wrap {
-      aspect-ratio: auto;
-      height: 100%;
-      min-height: 320px;
-    }
-
-    .nouv-service-img-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: center top;
-      transition: transform 0.5s ease;
-    }
-
-    .nouv-service-card:hover .nouv-service-img-wrap img {
-      transform: scale(1.05);
-    }
-
-    /* Badge sur l'image */
-    .nouv-service-badge {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      padding: 6px 14px;
-      border-radius: var(--radius-full);
-      font-size: 0.72rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      backdrop-filter: blur(8px);
-    }
-
-    .badge-blue { background: rgba(37,99,235,0.85); color: #fff; }
-    .badge-blue-dark { background: rgba(26,60,143,0.88); color: #fff; }
-    .badge-tiktok { background: rgba(0,0,0,0.82); color: #fff; }
-    .badge-red { background: rgba(239,68,68,0.88); color: #fff; }
-    .badge-purple { background: rgba(139,92,246,0.88); color: #fff; }
-
-    /* Body de la carte */
-    .nouv-service-body {
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-    }
-
-    .nouv-service-title {
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--text-dark);
-      margin-bottom: 8px;
-      line-height: 1.35;
-    }
-
-    .nouv-service-desc {
-      font-size: 0.85rem;
-      color: var(--gray-dark);
-      line-height: 1.6;
-      margin-bottom: 16px;
-      flex: 1;
-    }
-
-    /* Sous-éléments */
-    .nouv-service-sub-items {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 20px;
-    }
-
-    .sub-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 0.82rem;
-      color: var(--gray-dark);
-      font-weight: 500;
-    }
-
-    .sub-icon {
-      width: 30px;
-      height: 30px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.75rem;
-      flex-shrink: 0;
-    }
-
-    /* Durée formation */
-    .nouv-service-duration {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 20px;
-      padding: 14px;
-      background: var(--white-soft);
-      border-radius: var(--radius-md);
-      border: 1px solid var(--gray-light);
-    }
-
-    .duration-circle {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--blue-primary), var(--blue-secondary));
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      box-shadow: var(--shadow-blue);
-    }
-
-    .duration-num {
-      font-size: 1rem;
-      font-weight: 800;
-      color: #fff;
-      line-height: 1;
-    }
-
-    .duration-label {
-      font-size: 0.55rem;
-      font-weight: 600;
-      color: rgba(255,255,255,0.8);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .nouv-service-duration p {
-      font-size: 0.8rem;
-      color: var(--gray-dark);
-      line-height: 1.5;
-    }
-
-    /* Statistiques UGC */
-    .ugc-stats-row {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
-
-    .ugc-stat {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex: 1;
-      min-width: 120px;
-      padding: 10px 12px;
-      background: var(--white-soft);
-      border-radius: var(--radius-md);
-      border: 1px solid var(--gray-light);
-    }
-
-    .ugc-stat-circle {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.65rem;
-      font-weight: 800;
-      color: #fff;
-      flex-shrink: 0;
-    }
-
-    .ugc-circle-blue { background: linear-gradient(135deg, var(--blue-primary), var(--blue-secondary)); }
-    .ugc-circle-orange { background: linear-gradient(135deg, var(--orange-secondary), var(--orange-primary)); }
-    .ugc-circle-green { background: linear-gradient(135deg, #059669, #10b981); }
-
-    .ugc-stat-info {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .ugc-stat-info strong {
-      font-size: 0.78rem;
-      color: var(--text-dark);
-      font-weight: 700;
-    }
-
-    .ugc-stat-growth {
-      font-size: 0.72rem;
-      color: #10b981;
-      font-weight: 700;
-    }
-
-    /* Boutons CTA */
-    .nouv-cta-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 12px 20px;
-      border-radius: var(--radius-full);
-      font-size: 0.85rem;
-      font-weight: 700;
-      text-decoration: none;
-      transition: var(--transition);
-      margin-top: auto;
-    }
-
-    .btn-blue {
-      background: linear-gradient(135deg, var(--blue-primary), var(--blue-secondary));
-      color: #fff;
-      box-shadow: var(--shadow-blue);
-    }
-
-    .btn-blue:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 35px rgba(37,99,235,0.35);
-    }
-
-    .btn-gradient {
-      background: linear-gradient(135deg, #000, #1a1a2e);
-      color: #fff;
-    }
-
-    .btn-gradient:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-    }
-
-    .btn-red {
-      background: linear-gradient(135deg, #dc2626, #ef4444);
-      color: #fff;
-      box-shadow: 0 8px 25px rgba(239,68,68,0.3);
-    }
-
-    .btn-red:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 35px rgba(239,68,68,0.4);
-    }
-
-    .btn-purple {
-      background: linear-gradient(135deg, #6d28d9, #8b5cf6);
-      color: #fff;
-      box-shadow: 0 8px 25px rgba(139,92,246,0.3);
-    }
-
-    .btn-purple:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 35px rgba(139,92,246,0.4);
-    }
-
-    /* ---- Responsive nouveaux services ---- */
-    @media (max-width: 1024px) {
-      .nouveaux-services-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .nouv-service-card--wide {
-        grid-column: 1 / -1;
-        grid-template-columns: 1fr 1.3fr;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .nouveaux-services-grid {
-        grid-template-columns: 1fr;
-      }
-      .nouv-service-card--wide {
-        grid-column: 1 / -1;
-        grid-template-columns: 1fr;
-      }
-      .nouv-service-card--wide .nouv-service-img-wrap {
-        min-height: auto;
-        aspect-ratio: 4/3;
-      }
-      .ugc-stats-row {
-        flex-direction: column;
-      }
+      .container { padding: 0 18px; }
+      .contact-form { padding: 28px 22px; }
+      .hero-stats { flex-direction: column; gap: 16px; }
+      .why-grid { grid-template-columns: 1fr; }
+      .elearning-features { grid-template-columns: 1fr; }
+      .hero-title { font-size: 1.9rem; }
+      .about-brand-badge { right: -8px; bottom: -8px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- ======= LOADER ======= -->
+  <!-- ========= LOADER ========= -->
   <div id="loader">
-    <img src="assets/images/logo-youdis-official.png" alt="YouDis" style="height:64px;width:auto;object-fit:contain;margin-bottom:16px;" />
-    <div class="loader-dots">
-      <div class="dot dot-1"></div>
-      <div class="dot dot-2"></div>
-      <div class="dot dot-3"></div>
-    </div>
+    <div class="loader-brand">You<span>Dis</span></div>
+    <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
   </div>
 
-  <!-- ======= PROGRESS BAR ======= -->
-  <div class="progress-bar" id="progressBar" style="width:0%"></div>
+  <!-- ========= PROGRESS BAR ========= -->
+  <div class="progress-bar" id="progressBar"></div>
 
-  <!-- ======= HEADER ======= -->
+  <!-- ========= HEADER ========= -->
   <header id="mainHeader">
     <nav>
       <a href="#hero" class="nav-logo">
-        <img src="assets/images/logo-youdis-official.png" alt="YouDis - Youga Digital Services" class="nav-logo-img">
+        <img src="assets/images/logo-youdis-official.png" alt="YouDis Logo" class="nav-logo-img">
+        <div class="nav-logo-text">
+          <span class="nav-logo-title">You<span>Dis</span></span>
+          <span class="nav-logo-sub">Youga Digital Services</span>
+        </div>
       </a>
 
       <ul class="nav-links">
         <li><a href="#services">Services</a></li>
-        <li><a href="#nouveaux-services">Solutions+</a></li>
         <li><a href="#formations">Formations</a></li>
-        <li><a href="#app-effort">App EF-FORT.BF</a></li>
+        <li><a href="#app-effort">E-Learning</a></li>
         <li><a href="#a-propos">À propos</a></li>
-        <li><a href="#contact" class="nav-cta"><i class="fab fa-whatsapp"></i> WhatsApp</a></li>
+        <li><a href="#contact">Contact</a></li>
+        <li><a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20un%20devis%20YouDis." target="_blank" class="nav-cta-btn">💬 Demander un devis</a></li>
       </ul>
 
       <div class="nav-hamburger" id="hamburger" onclick="toggleMenu()">
-        <span></span>
-        <span></span>
-        <span></span>
+        <span></span><span></span><span></span>
       </div>
     </nav>
   </header>
 
   <!-- Mobile Menu -->
   <div class="mobile-menu" id="mobileMenu">
-    <a href="#services" onclick="closeMenu()">Services</a>
-    <a href="#nouveaux-services" onclick="closeMenu()">Solutions+</a>
-    <a href="#formations" onclick="closeMenu()">Formations</a>
-    <a href="#app-effort" onclick="closeMenu()">App EF-FORT.BF</a>
-    <a href="#a-propos" onclick="closeMenu()">À propos</a>
-    <a href="https://wa.me/22672662161?text=Bonjour%20Marc%2C%20je%20vous%20contacte%20depuis%20le%20site%20YouDis." class="mobile-cta" target="_blank"><i class="fab fa-whatsapp"></i> Contacter sur WhatsApp</a>
+    <a href="#services" onclick="closeMenu()">📦 Services</a>
+    <a href="#formations" onclick="closeMenu()">🎓 Formations</a>
+    <a href="#app-effort" onclick="closeMenu()">📱 E-Learning gratuit</a>
+    <a href="#a-propos" onclick="closeMenu()">👤 À propos</a>
+    <a href="#contact" onclick="closeMenu()">✉️ Contact</a>
+    <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20un%20devis." target="_blank" class="mobile-cta" onclick="closeMenu()">💬 Demander un devis</a>
   </div>
 
-  <!-- ======= HERO ======= -->
+  <!-- ========= HERO SECTION ========= -->
   <section id="hero">
-    <div class="hero-circle-1"></div>
-    <div class="hero-circle-2"></div>
-    <div class="hero-circle-3"></div>
-    <div class="hero-circle-4"></div>
+    <div class="container">
+      <div class="hero-inner">
+        <!-- Left: Content -->
+        <div class="hero-content fade-up">
+          <div class="hero-badge">
+            <div class="dot"></div>
+            🇧🇫 Ouagadougou, Burkina Faso
+          </div>
 
-    <div class="hero-container">
-      <div class="hero-text">
-        <div class="hero-badge" data-animate>
-          <i class="fas fa-rocket"></i>
-          Youga Digital Services
-        </div>
-        <h1 class="hero-title" data-animate data-animate-delay="1">
-          Je transforme vos idées<br>en solutions <span class="highlight-blue">digitales</span><br>
-          <span class="highlight-orange">simples & durables</span>
-        </h1>
-        <div style="display:inline-block;background:#16a34a;color:white;padding:8px 20px;border-radius:20px;font-weight:700;font-size:1rem;margin:10px 0;">🔥 100% GRATUIT — Accès illimité</div>
-        <p class="hero-subtitle" data-animate data-animate-delay="2">
-          Bienvenue chez <strong>YouDis</strong> — votre partenaire pour la formation digitale,
-          le développement d'applications et la stratégie numérique.
-          Basé à <strong>Ouagadougou, Burkina Faso</strong>.
-        </p>
-        <p class="hero-slogan" data-animate data-animate-delay="3">
-          « Susciter l'envie de comprendre la technologie, faciliter la technologie pour tous. »
-        </p>
-        <div class="hero-actions" data-animate data-animate-delay="4">
-          <a href="#formations" class="btn-orange">
-            <i class="fas fa-graduation-cap"></i>
-            Nos Formations
-          </a>
-          <a href="https://wa.me/22672662161?text=Bonjour%20Marc%2C%20je%20vous%20contacte%20depuis%20le%20site%20YouDis.%20J'aimerais%20en%20savoir%20plus%20sur%20vos%20services." class="btn-primary" target="_blank">
-            <i class="fab fa-whatsapp"></i>
-            Discuter sur WhatsApp
-          </a>
-        </div>
-        <div class="hero-stats" data-animate data-animate-delay="5">
-          <div class="stat-item">
-            <div class="stat-number">6<span>+</span></div>
-            <div class="stat-label">Services digitaux</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-number">5<span>+</span></div>
-            <div class="stat-label">Formations disponibles</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-number">1<span></span></div>
-            <div class="stat-label">App 100% gratuite</div>
-          </div>
-        </div>
-      </div>
+          <h1 class="hero-title">
+            Des solutions digitales<br>
+            qui <span class="highlight">transforment</span><br>
+            votre activité
+          </h1>
 
-      <div class="hero-visual" data-animate data-animate-delay="2">
-        <div class="hero-image-wrap">
-          <div class="hero-circle-deco"></div>
-          <img src="assets/images/markus-lompo-transformation.jpg" alt="Marc LOMPO - Votre transformation digitale commence là" class="hero-image-main">
-          <div class="hero-badge-float top-right">
-            <div class="badge-float-icon blue"><i class="fas fa-brain"></i></div>
-            <div class="badge-float-text">
-              <strong>Intelligence Artificielle</strong>
-              <span>Claude AI & Codage</span>
+          <p class="hero-subtitle">
+            Services digitaux sur mesure, formations IA & TikTok, et une plateforme e-learning <strong style="color:rgba(255,255,255,0.92)">100% gratuite</strong>. Tout pour accélérer votre succès au Burkina Faso et en Afrique.
+          </p>
+
+          <div class="hero-ctas">
+            <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20commander%20un%20service%20YouDis." target="_blank" class="btn btn-primary">
+              <i class="fab fa-whatsapp"></i> Commandez maintenant
+            </a>
+            <a href="https://ef-fort-bf.pages.dev" target="_blank" class="btn btn-white">
+              <i class="fas fa-graduation-cap"></i> E-learning gratuit
+            </a>
+          </div>
+
+          <div class="hero-stats">
+            <div class="hero-stat">
+              <div class="hero-stat-number">11<span>+</span></div>
+              <div class="hero-stat-label">Services digitaux</div>
+            </div>
+            <div class="hero-stat">
+              <div class="hero-stat-number">8<span>+</span></div>
+              <div class="hero-stat-label">Formations disponibles</div>
+            </div>
+            <div class="hero-stat">
+              <div class="hero-stat-number">4 885</div>
+              <div class="hero-stat-label">Questions e-learning</div>
             </div>
           </div>
-          <div class="hero-badge-float bottom-left">
-            <div class="badge-float-icon orange"><i class="fas fa-rocket"></i></div>
-            <div class="badge-float-text">
-              <strong>Solutions digitales</strong>
-              <span>Burkina Faso & Afrique</span>
+        </div>
+
+        <!-- Right: Visual Cards -->
+        <div class="hero-visual fade-up fade-up-delay-2">
+          <div class="hero-cards-grid">
+            <div class="hero-card">
+              <div class="hero-card-icon">🤖</div>
+              <div class="hero-card-title">Formation IA</div>
+              <div class="hero-card-desc">Vidéos IA réalistes & automatisation</div>
             </div>
+            <div class="hero-card">
+              <div class="hero-card-icon blue">📱</div>
+              <div class="hero-card-title">Apps Mobiles</div>
+              <div class="hero-card-desc">Android, iOS & Flutter</div>
+            </div>
+            <div class="hero-card">
+              <div class="hero-card-icon green">🎵</div>
+              <div class="hero-card-title">TikTok & UGC</div>
+              <div class="hero-card-desc">Monétisation & influenceuses IA</div>
+            </div>
+            <div class="hero-card">
+              <div class="hero-card-icon purple">🎓</div>
+              <div class="hero-card-title">E-Learning</div>
+              <div class="hero-card-desc">100% gratuit — 4 885 questions</div>
+            </div>
+          </div>
+
+          <div class="hero-cta-banner">
+            <div class="hero-cta-banner-text">
+              🎓 EF-FORT.BF — Apprenez gratuitement
+              <small>4 885 questions · 21 matières · Progression personnalisée</small>
+            </div>
+            <a href="https://ef-fort-bf.pages.dev" target="_blank" class="btn-banner">Accéder →</a>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ======= SERVICES ======= -->
+  <!-- ========= TRUST STRIP ========= -->
+  <div id="trust-strip">
+    <div class="container">
+      <div class="trust-strip-inner">
+        <div class="trust-item"><i class="fas fa-shield-check"></i><span>Services professionnels certifiés</span></div>
+        <div class="trust-item"><i class="fas fa-bolt"></i><span>Livraison rapide & efficace</span></div>
+        <div class="trust-item"><i class="fas fa-headset"></i><span>Support WhatsApp 7j/7</span></div>
+        <div class="trust-item"><i class="fas fa-globe-africa"></i><span>Adapté au marché africain</span></div>
+        <div class="trust-item"><i class="fas fa-graduation-cap"></i><span>E-learning 100% gratuit</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========= SERVICES SECTION ========= -->
   <section id="services">
-    <div class="section-container">
-      <div class="section-header centered" data-animate>
-        <div class="section-tag"><i class="fas fa-briefcase"></i> Nos Services</div>
-        <h2 class="section-title">Solutions <span class="accent">digitales</span> sur mesure</h2>
-        <div class="divider"></div>
-        <p class="section-desc">
-          De la stratégie de marque au développement d'applications, en passant par la cybersécurité
-          et la création de contenu — YouDis vous accompagne à chaque étape de votre transformation numérique.
-        </p>
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge fade-up"><i class="fas fa-rocket"></i> Nos Services</div>
+        <h2 class="section-title fade-up fade-up-delay-1">Boostez votre activité<br>avec nos services digitaux</h2>
+        <p class="section-subtitle fade-up fade-up-delay-2">Des solutions concrètes pour transformer votre présence digitale, automatiser vos processus et multiplier vos revenus.</p>
       </div>
 
       <div class="services-grid">
-
-        <div class="service-card" data-animate data-animate-delay="1">
-          <div class="service-icon-wrap icon-blue">
-            <i class="fas fa-chess"></i>
+        <!-- Service 1 -->
+        <div class="service-card fade-up">
+          <img src="assets/images/service-digital-solutions.webp" alt="Solutions digitales sur mesure" class="service-card-img" loading="lazy">
+          <div class="service-card-badge badge-devis"><i class="fas fa-tag"></i> Sur devis</div>
+          <div class="service-card-title">Création de solutions digitales sur mesure</div>
+          <p class="service-card-desc">Applications, sites web et logiciels pour automatiser, connecter et valoriser votre activité. Du concept à la mise en ligne.</p>
+          <div class="service-card-tags">
+            <span class="service-tag">Applications mobiles</span>
+            <span class="service-tag">Sites web</span>
+            <span class="service-tag">Logiciels SaaS</span>
           </div>
-          <h3 class="service-title">Stratégie Digitale & Identité de Marque</h3>
-          <p class="service-desc">
-            Définissez votre positionnement, construisez une identité forte et déployez une stratégie
-            digitale cohérente pour vous démarquer dans votre secteur.
-          </p>
-          <div class="service-tags">
-            <span class="tag">Branding</span>
-            <span class="tag">Stratégie</span>
-            <span class="tag">Identité visuelle</span>
-          </div>
+          <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20un%20devis%20solution%20digitale." target="_blank" class="service-card-cta">Commander <i class="fas fa-arrow-right"></i></a>
         </div>
 
-        <div class="service-card" data-animate data-animate-delay="2">
-          <div class="service-icon-wrap icon-orange">
-            <i class="fas fa-mobile-alt"></i>
+        <!-- Service 2 -->
+        <div class="service-card fade-up fade-up-delay-1">
+          <div class="service-card-icon icon-blue"><i class="fas fa-mobile-alt"></i></div>
+          <div class="service-card-badge badge-devis"><i class="fas fa-tag"></i> Sur devis</div>
+          <div class="service-card-title">Développement d'applications mobiles</div>
+          <p class="service-card-desc">Donnez vie à vos idées avec des applications mobiles performantes. De la conception à la publication sur les stores.</p>
+          <div class="service-card-tags">
+            <span class="service-tag">Android</span>
+            <span class="service-tag">Flutter</span>
+            <span class="service-tag">iOS</span>
+            <span class="service-tag">Multiplateforme</span>
           </div>
-          <h3 class="service-title">Développement d'Applications Mobiles</h3>
-          <p class="service-desc">
-            Donnez vie à vos idées avec des applications mobiles performantes. Du concept à la publication,
-            je transforme votre vision en produit utilisable et efficace.
-          </p>
-          <div class="service-tags">
-            <span class="tag">Android</span>
-            <span class="tag">Flutter</span>
-            <span class="tag">iOS</span>
-            <span class="tag">Multiplatforme</span>
-          </div>
+          <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20développer%20une%20application%20mobile." target="_blank" class="service-card-cta">Commander <i class="fas fa-arrow-right"></i></a>
         </div>
 
-        <div class="service-card" data-animate data-animate-delay="3">
-          <div class="service-icon-wrap icon-red">
-            <i class="fas fa-shield-alt"></i>
+        <!-- Service 3 -->
+        <div class="service-card fade-up fade-up-delay-2">
+          <img src="assets/images/contenu-tiktok-ia.webp" alt="Monétisation TikTok" class="service-card-img" loading="lazy">
+          <div class="service-card-badge badge-payant"><i class="fas fa-star"></i> Service payant</div>
+          <div class="service-card-title">Monétisation de comptes TikTok</div>
+          <p class="service-card-desc">Nous monétisons vos comptes TikTok existants pour générer des revenus passifs de manière continue et professionnelle.</p>
+          <div class="service-card-tags">
+            <span class="service-tag">Revenus passifs</span>
+            <span class="service-tag">Gestion de compte</span>
+            <span class="service-tag">Stratégie contenu</span>
           </div>
-          <h3 class="service-title">Cybersécurité & Protection des Données</h3>
-          <p class="service-desc">
-            Protégez votre entreprise des cybermenaces. Audit de sécurité, formation des équipes
-            et mise en place de bonnes pratiques de protection des données.
-          </p>
-          <div class="service-tags">
-            <span class="tag">Audit</span>
-            <span class="tag">Sécurité</span>
-            <span class="tag">RGPD</span>
-          </div>
+          <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20monétiser%20mon%20TikTok." target="_blank" class="service-card-cta">Démarrer <i class="fas fa-arrow-right"></i></a>
         </div>
 
-        <div class="service-card" data-animate data-animate-delay="1">
-          <div class="service-icon-wrap icon-purple">
-            <i class="fas fa-video"></i>
+        <!-- Service 4 -->
+        <div class="service-card fade-up">
+          <div class="service-card-icon icon-purple"><i class="fas fa-palette"></i></div>
+          <div class="service-card-badge badge-devis"><i class="fas fa-tag"></i> Sur devis</div>
+          <div class="service-card-title">Stratégie Digitale & Identité de Marque</div>
+          <p class="service-card-desc">Définissez votre positionnement, construisez une identité forte et déployez une stratégie digitale cohérente pour vous démarquer.</p>
+          <div class="service-card-tags">
+            <span class="service-tag">Branding</span>
+            <span class="service-tag">Stratégie</span>
+            <span class="service-tag">Identité visuelle</span>
           </div>
-          <h3 class="service-title">Création de Contenu & Montage Vidéo</h3>
-          <p class="service-desc">
-            Captivez votre audience avec du contenu impactant. Vidéos, réels, shorts — maîtrisez
-            les outils des créateurs de demain avec Premiere Pro et CapCut.
-          </p>
-          <div class="service-tags">
-            <span class="tag">YouTube</span>
-            <span class="tag">TikTok</span>
-            <span class="tag">Instagram</span>
-            <span class="tag">Premiere Pro</span>
-          </div>
+          <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20une%20stratégie%20digitale." target="_blank" class="service-card-cta">En savoir plus <i class="fas fa-arrow-right"></i></a>
         </div>
 
-        <div class="service-card" data-animate data-animate-delay="2">
-          <div class="service-icon-wrap icon-teal">
-            <i class="fas fa-gamepad"></i>
+        <!-- Service 5 -->
+        <div class="service-card fade-up fade-up-delay-1">
+          <img src="assets/images/influenceuses-ugc-ia.webp" alt="UGC Influenceuses IA" class="service-card-img" loading="lazy">
+          <div class="service-card-badge badge-payant"><i class="fas fa-star"></i> Service payant</div>
+          <div class="service-card-title">Création d'influenceuses UGC avec l'IA</div>
+          <p class="service-card-desc">Créez des influenceuses virtuelles avec l'IA pour une publicité impactante sur les réseaux sociaux et multipliez vos ventes.</p>
+          <div class="service-card-tags">
+            <span class="service-tag">UGC</span>
+            <span class="service-tag">IA générative</span>
+            <span class="service-tag">Publicité</span>
           </div>
-          <h3 class="service-title">Développement de Jeux & Gamification</h3>
-          <p class="service-desc">
-            Créez des expériences immersives et engageantes. Conception de jeux 2D/3D et intégration
-            de mécaniques de gamification pour booster l'engagement de votre marque.
-          </p>
-          <div class="service-tags">
-            <span class="tag">Jeux 2D/3D</span>
-            <span class="tag">Gamification</span>
-            <span class="tag">Unity</span>
-          </div>
+          <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20créer%20une%20influenceuse%20IA." target="_blank" class="service-card-cta">Commander <i class="fas fa-arrow-right"></i></a>
         </div>
 
-        <div class="service-card" data-animate data-animate-delay="3">
-          <div class="service-icon-wrap icon-green">
-            <i class="fas fa-chalkboard-teacher"></i>
+        <!-- Service 6 -->
+        <div class="service-card fade-up fade-up-delay-2">
+          <div class="service-card-icon icon-red"><i class="fas fa-shield-alt"></i></div>
+          <div class="service-card-badge badge-devis"><i class="fas fa-tag"></i> Sur devis</div>
+          <div class="service-card-title">Cybersécurité & Protection des Données</div>
+          <p class="service-card-desc">Protégez votre entreprise des cybermenaces. Audit de sécurité, formation des équipes et mise en place de bonnes pratiques RGPD.</p>
+          <div class="service-card-tags">
+            <span class="service-tag">Audit sécurité</span>
+            <span class="service-tag">RGPD</span>
+            <span class="service-tag">Formation équipes</span>
           </div>
-          <h3 class="service-title">Coaching & Accompagnement Digital</h3>
-          <p class="service-desc">
-            Mentorat personnalisé pour entrepreneurs, créateurs et professionnels souhaitant maîtriser
-            le numérique et développer leurs compétences digitales durablement.
-          </p>
-          <div class="service-tags">
-            <span class="tag">Mentorat</span>
-            <span class="tag">Coaching</span>
-            <span class="tag">Formation</span>
-          </div>
+          <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20un%20audit%20cybersécurité." target="_blank" class="service-card-cta">Sécuriser maintenant <i class="fas fa-arrow-right"></i></a>
         </div>
 
-      </div>
-
-      <!-- Bannière visuelle YouDis Services -->
-      <div class="youdis-banner-wrap" data-animate>
-        <img src="assets/images/youdis-services-list.jpg" alt="YouDis – Nos Services : Formations, Services digitaux, IA, Création de contenu, Cybersécurité" class="youdis-banner-img" />
-      </div>
-    </div>
-  </section>
-
-  <!-- ======= NOUVEAUX SERVICES SECTION ======= -->
-  <section id="nouveaux-services" style="padding:80px 0;background:var(--white);position:relative;overflow:hidden;">
-    <!-- Décorations cercles -->
-    <div style="position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(249,115,22,0.04) 0%,transparent 70%);top:-150px;left:-150px;pointer-events:none;"></div>
-    <div style="position:absolute;width:300px;height:300px;border-radius:50%;border:2px solid rgba(37,99,235,0.06);bottom:60px;right:60px;pointer-events:none;animation:rotate-slow 30s linear infinite;"></div>
-    <div class="section-container">
-      <div class="section-header centered" data-animate>
-        <div class="section-tag" style="background:linear-gradient(135deg,rgba(249,115,22,0.12),rgba(37,99,235,0.12));border-color:rgba(249,115,22,0.3);color:var(--orange-primary);"><i class="fas fa-rocket"></i> Solutions Complémentaires</div>
-        <h2 class="section-title">Formations &amp; <span class="accent">Solutions Digitales</span></h2>
-        <div class="divider" style="margin:16px auto 24px;"></div>
-        <p class="section-desc">Des formations immersives et des solutions clés en main pour propulser votre présence digitale, monétiser vos comptes et maîtriser l'intelligence artificielle.</p>
-      </div>
-
-      <!-- Grille des 5 nouveaux services -->
-      <div class="nouveaux-services-grid">
-
-        <!-- Service 1 : Création & développement de solutions digitales -->
-        <article class="nouv-service-card" data-animate data-animate-delay="1">
-          <div class="nouv-service-img-wrap">
-            <img src="assets/images/service-digital-solutions.webp" alt="Création de solutions digitales sur mesure – YouDis" loading="lazy" />
-            <div class="nouv-service-badge badge-blue"><i class="fas fa-code"></i> Dev Digital</div>
+        <!-- Service 7 -->
+        <div class="service-card fade-up">
+          <img src="assets/images/formation-contenu-video.jpg" alt="Création contenu vidéo" class="service-card-img" loading="lazy">
+          <div class="service-card-badge badge-payant"><i class="fas fa-star"></i> Service payant</div>
+          <div class="service-card-title">Création de Contenu & Montage Vidéo</div>
+          <p class="service-card-desc">Captivez votre audience avec du contenu impactant. Vidéos, réels, shorts — maîtrisez les outils des créateurs de demain.</p>
+          <div class="service-card-tags">
+            <span class="service-tag">YouTube</span>
+            <span class="service-tag">TikTok</span>
+            <span class="service-tag">Premiere Pro</span>
+            <span class="service-tag">CapCut</span>
           </div>
-          <div class="nouv-service-body">
-            <h3 class="nouv-service-title">Création de solutions digitales sur mesure</h3>
-            <p class="nouv-service-desc">Des applications, sites web et logiciels pour automatiser, connecter et valoriser votre activité digitale.</p>
-            <div class="nouv-service-sub-items">
-              <div class="sub-item"><div class="sub-icon icon-blue"><i class="fas fa-desktop"></i></div><span>Logiciels sur mesure</span></div>
-              <div class="sub-item"><div class="sub-icon icon-orange"><i class="fas fa-mobile-alt"></i></div><span>Applications mobiles/web</span></div>
-              <div class="sub-item"><div class="sub-icon icon-teal"><i class="fas fa-globe"></i></div><span>Sites web professionnels</span></div>
-            </div>
-            <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20souhaite%20un%20devis%20pour%20une%20solution%20digitale." class="nouv-cta-btn btn-blue" target="_blank" rel="noopener">
-              <i class="fab fa-whatsapp"></i> Demander un devis
-            </a>
-          </div>
-        </article>
-
-        <!-- Service 2 : Formation vidéos IA réalistes -->
-        <article class="nouv-service-card" data-animate data-animate-delay="2">
-          <div class="nouv-service-img-wrap">
-            <img src="assets/images/formation-videos-ia.webp" alt="Formation Création de Vidéos IA Réalistes – YouDis" loading="lazy" />
-            <div class="nouv-service-badge badge-blue-dark"><i class="fas fa-video"></i> Formation IA</div>
-          </div>
-          <div class="nouv-service-body">
-            <h3 class="nouv-service-title">Création de vidéos IA réalistes</h3>
-            <p class="nouv-service-desc">Apprenez à produire des vidéos ultra-réalistes avec l'intelligence artificielle et générez des revenus en ligne.</p>
-            <div class="nouv-service-duration">
-              <div class="duration-circle"><span class="duration-num">2H</span><span class="duration-label">Formation</span></div>
-              <p>Maîtrisez les outils IA en seulement 2 heures. Formation express et pratique.</p>
-            </div>
-            <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20m%27inscrire%20%C3%A0%20la%20formation%20Vid%C3%A9os%20IA." class="nouv-cta-btn btn-blue" target="_blank" rel="noopener">
-              <i class="fab fa-whatsapp"></i> Je m'inscris
-            </a>
-          </div>
-        </article>
-
-        <!-- Service 3 : Contenu TikTok avec 3 outils IA -->
-        <article class="nouv-service-card" data-animate data-animate-delay="3">
-          <div class="nouv-service-img-wrap">
-            <img src="assets/images/contenu-tiktok-ia.webp" alt="Création de contenu TikTok avec 3 outils IA – YouDis" loading="lazy" />
-            <div class="nouv-service-badge badge-tiktok"><i class="fab fa-tiktok"></i> TikTok IA</div>
-          </div>
-          <div class="nouv-service-body">
-            <h3 class="nouv-service-title">Création de contenu TikTok avec l'IA</h3>
-            <p class="nouv-service-desc">Utilisez 3 outils IA puissants pour créer du contenu viral sur TikTok et monétiser efficacement votre compte.</p>
-            <div class="nouv-service-sub-items">
-              <div class="sub-item"><div class="sub-icon" style="background:rgba(0,0,0,0.06);color:#000;"><i class="fab fa-tiktok"></i></div><span>3 Outils IA inclus</span></div>
-              <div class="sub-item"><div class="sub-icon icon-orange"><i class="fas fa-coins"></i></div><span>Monétisation compte</span></div>
-            </div>
-            <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20m%27inscrire%20%C3%A0%20la%20formation%20TikTok%20IA." class="nouv-cta-btn btn-gradient" target="_blank" rel="noopener">
-              <i class="fab fa-whatsapp"></i> Je m'inscris
-            </a>
-          </div>
-        </article>
-
-        <!-- Service 4 : Monétisation de comptes TikTok -->
-        <article class="nouv-service-card" data-animate data-animate-delay="1">
-          <div class="nouv-service-img-wrap">
-            <img src="assets/images/monetisation-tiktok.webp" alt="Monétisation de comptes TikTok – YouDis" loading="lazy" />
-            <div class="nouv-service-badge badge-red"><i class="fas fa-dollar-sign"></i> Monétisation</div>
-          </div>
-          <div class="nouv-service-body">
-            <h3 class="nouv-service-title">Monétisation de comptes TikTok</h3>
-            <p class="nouv-service-desc">Nous monétisons vos comptes TikTok existants pour générer des revenus passifs de manière continue et professionnelle.</p>
-            <div class="nouv-service-sub-items">
-              <div class="sub-item"><div class="sub-icon icon-red"><i class="fas fa-chart-line"></i></div><span>Revenus passifs</span></div>
-              <div class="sub-item"><div class="sub-icon icon-orange"><i class="fas fa-users"></i></div><span>Gestion de compte</span></div>
-            </div>
-            <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20en%20savoir%20plus%20sur%20la%20mon%C3%A9tisation%20TikTok." class="nouv-cta-btn btn-red" target="_blank" rel="noopener">
-              <i class="fab fa-whatsapp"></i> En savoir plus
-            </a>
-          </div>
-        </article>
-
-        <!-- Service 5 : Formation influenceuses UGC avec l'IA -->
-        <article class="nouv-service-card nouv-service-card--wide" data-animate data-animate-delay="2">
-          <div class="nouv-service-img-wrap">
-            <img src="assets/images/influenceuses-ugc-ia.webp" alt="Création d'Influenceuses UGC avec l'IA – YouDis" loading="lazy" />
-            <div class="nouv-service-badge badge-purple"><i class="fas fa-magic"></i> UGC &amp; IA</div>
-          </div>
-          <div class="nouv-service-body">
-            <h3 class="nouv-service-title">Création d'Influenceuses UGC avec l'IA</h3>
-            <p class="nouv-service-desc">Créez des influenceuses virtuelles avec l'IA pour faire de la publicité impactante sur les réseaux sociaux.</p>
-            <!-- Statistiques -->
-            <div class="ugc-stats-row">
-              <div class="ugc-stat">
-                <div class="ugc-stat-circle ugc-circle-blue"><span>2,5M</span></div>
-                <div class="ugc-stat-info"><strong>Vues</strong><span class="ugc-stat-growth">+120%</span></div>
-              </div>
-              <div class="ugc-stat">
-                <div class="ugc-stat-circle ugc-circle-orange"><span>850K</span></div>
-                <div class="ugc-stat-info"><strong>Engagements</strong><span class="ugc-stat-growth">+95%</span></div>
-              </div>
-              <div class="ugc-stat">
-                <div class="ugc-stat-circle ugc-circle-green"><span>320K</span></div>
-                <div class="ugc-stat-info"><strong>Conversions</strong><span class="ugc-stat-growth">+150%</span></div>
-              </div>
-            </div>
-            <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20m%27inscrire%20%C3%A0%20la%20formation%20Influenceuses%20UGC." class="nouv-cta-btn btn-purple" target="_blank" rel="noopener">
-              <i class="fab fa-whatsapp"></i> Je m'inscris
-            </a>
-          </div>
-        </article>
-
-      </div><!-- fin .nouveaux-services-grid -->
-    </div>
-  </section>
-
-  <!-- ======= PROMO VISUELS SECTION ======= -->
-  <section id="promo-visuels" style="padding:60px 0;background:linear-gradient(135deg,#0f172a 0%,#1a3c8f 50%,#0f172a 100%);">
-    <div class="section-container">
-      <div class="section-header centered" data-animate>
-        <div class="section-tag" style="background:rgba(249,115,22,0.2);border-color:rgba(249,115,22,0.4);color:#fb923c;"><i class="fas fa-star"></i> Nos Réalisations</div>
-        <h2 class="section-title" style="color:#fff;">Votre projet <span style="color:var(--orange-primary);">prend vie</span> avec YouDis</h2>
-        <div class="divider" style="margin:16px auto 24px;"></div>
-        <p class="section-desc" style="color:rgba(255,255,255,0.75);margin:0 auto 40px;">Création d'affiches professionnelles, logiciels sur mesure pour entreprises et solutions digitales complètes. YouDis accompagne votre croissance.</p>
-      </div>
-      <div class="promo-visuels-grid">
-        <div class="promo-visuel-card" data-animate data-animate-delay="1">
-          <img src="assets/images/youdis-creation-affiches.jpg" alt="Création d'Affiches avec l'IA – YouDis" />
-          <div class="promo-visuel-overlay">
-            <h3>Création d'Affiches avec l'IA</h3>
-            <p>Rapide · Percutant · Professionnel</p>
-            <a href="https://wa.me/22672662161?text=Bonjour%20Marc%2C%20je%20veux%20une%20affiche%20professionnelle%20pour%20mon%20projet." target="_blank" class="btn-orange" style="padding:10px 20px;font-size:0.85rem;"><i class="fab fa-whatsapp"></i> Commander</a>
-          </div>
+          <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20commander%20du%20contenu%20vidéo." target="_blank" class="service-card-cta">Commander <i class="fas fa-arrow-right"></i></a>
         </div>
-        <div class="promo-visuel-card" data-animate data-animate-delay="2">
-          <img src="assets/images/youdis-logiciel-entreprises.jpg" alt="Création de Logiciel pour Entreprises – YouDis" />
-          <div class="promo-visuel-overlay">
-            <h3>Logiciel & Apps sur Mesure</h3>
-            <p>Vos idées prennent vie · Performance décuplée</p>
-            <a href="https://wa.me/22672662161?text=Bonjour%20Marc%2C%20je%20veux%20d%C3%A9velopper%20un%20logiciel%20ou%20une%20application%20pour%20mon%20entreprise." target="_blank" class="btn-orange" style="padding:10px 20px;font-size:0.85rem;"><i class="fab fa-whatsapp"></i> Discuter</a>
+
+        <!-- Service 8 -->
+        <div class="service-card fade-up fade-up-delay-1">
+          <div class="service-card-icon icon-teal"><i class="fas fa-chart-line"></i></div>
+          <div class="service-card-badge badge-payant"><i class="fas fa-star"></i> Service payant</div>
+          <div class="service-card-title">E-Commerce en Afrique</div>
+          <p class="service-card-desc">Du sourcing à la boutique en ligne — lancez et développez votre activité e-commerce adaptée au marché africain.</p>
+          <div class="service-card-tags">
+            <span class="service-tag">Boutique en ligne</span>
+            <span class="service-tag">Paiement mobile</span>
+            <span class="service-tag">Logistique</span>
           </div>
+          <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20lancer%20mon%20e-commerce." target="_blank" class="service-card-cta">Lancer ma boutique <i class="fas fa-arrow-right"></i></a>
+        </div>
+
+        <!-- Service 9 -->
+        <div class="service-card fade-up fade-up-delay-2">
+          <div class="service-card-icon icon-yellow"><i class="fas fa-gamepad"></i></div>
+          <div class="service-card-badge badge-devis"><i class="fas fa-tag"></i> Sur devis</div>
+          <div class="service-card-title">Développement de Jeux & Gamification</div>
+          <p class="service-card-desc">Créez des expériences immersives et engageantes. Jeux 2D/3D et mécaniques de gamification pour booster l'engagement de votre marque.</p>
+          <div class="service-card-tags">
+            <span class="service-tag">Jeux 2D/3D</span>
+            <span class="service-tag">Unity</span>
+            <span class="service-tag">Gamification</span>
+          </div>
+          <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20un%20devis%20pour%20un%20jeu." target="_blank" class="service-card-cta">Demander un devis <i class="fas fa-arrow-right"></i></a>
+        </div>
+
+        <!-- Service 10 -->
+        <div class="service-card fade-up">
+          <div class="service-card-icon icon-indigo"><i class="fas fa-share-alt"></i></div>
+          <div class="service-card-badge badge-payant"><i class="fas fa-star"></i> Service payant</div>
+          <div class="service-card-title">Vente & Automatisation sur les Réseaux Sociaux</div>
+          <p class="service-card-desc">Transformez votre audience en clients fidèles. Automatisez vos ventes et développez votre présence digitale de façon professionnelle.</p>
+          <div class="service-card-tags">
+            <span class="service-tag">Tunnels de vente</span>
+            <span class="service-tag">Chatbots</span>
+            <span class="service-tag">Publicité FB & IG</span>
+          </div>
+          <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20automatiser%20mes%20ventes." target="_blank" class="service-card-cta">Automatiser maintenant <i class="fas fa-arrow-right"></i></a>
+        </div>
+
+        <!-- Service 11 -->
+        <div class="service-card fade-up fade-up-delay-1">
+          <div class="service-card-icon icon-green"><i class="fas fa-chalkboard-teacher"></i></div>
+          <div class="service-card-badge badge-payant"><i class="fas fa-star"></i> Service payant</div>
+          <div class="service-card-title">Coaching & Accompagnement Digital</div>
+          <p class="service-card-desc">Mentorat personnalisé pour entrepreneurs, créateurs et professionnels souhaitant maîtriser le numérique et développer leurs compétences.</p>
+          <div class="service-card-tags">
+            <span class="service-tag">Mentorat</span>
+            <span class="service-tag">Coaching 1-on-1</span>
+            <span class="service-tag">Formation</span>
+          </div>
+          <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20du%20coaching%20digital." target="_blank" class="service-card-cta">Démarrer le coaching <i class="fas fa-arrow-right"></i></a>
+        </div>
+
+        <!-- CTA Card -->
+        <div class="service-card fade-up fade-up-delay-2" style="background: linear-gradient(135deg, var(--blue-deep), var(--blue-primary)); border-color: transparent; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; min-height:240px;">
+          <div style="font-size:2.5rem; margin-bottom:16px;">💡</div>
+          <h3 style="color:white; font-family:'Poppins',sans-serif; font-weight:800; font-size:1.1rem; margin-bottom:10px;">Besoin d'un service personnalisé ?</h3>
+          <p style="color:rgba(255,255,255,0.65); font-size:0.83rem; margin-bottom:24px; line-height:1.6;">Chaque projet est unique. Discutons de vos besoins pour trouver la meilleure solution.</p>
+          <a href="https://wa.me/22672662161?text=Bonjour%2C%20j%27ai%20un%20projet%20personnalisé." target="_blank" class="btn btn-primary" style="font-size:0.85rem; padding:12px 24px;">
+            <i class="fab fa-whatsapp"></i> Discuter sur WhatsApp
+          </a>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ======= FORMATIONS ======= -->
+  <!-- ========= FORMATIONS SECTION ========= -->
   <section id="formations">
-    <div class="section-container">
-      <div class="section-header centered" data-animate>
-        <div class="section-tag"><i class="fas fa-graduation-cap"></i> Formations</div>
-        <h2 class="section-title">Montez en compétences,<br><span class="accent-orange">générez des revenus</span></h2>
-        <div class="divider"></div>
-        <p class="section-desc">
-          Des formations pratiques et accessibles, conçues pour les entrepreneurs et professionnels africains.
-          Apprenez de A à Z, créez du contenu impactant, générez des revenus durables.
-        </p>
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge fade-up"><i class="fas fa-graduation-cap"></i> Formations</div>
+        <h2 class="section-title fade-up fade-up-delay-1">Formez-vous aux compétences<br>qui génèrent des revenus</h2>
+        <p class="section-subtitle fade-up fade-up-delay-2">Des formations pratiques, orientées résultats, pour maîtriser l'IA, TikTok, le e-commerce et la création de logiciels en Afrique.</p>
       </div>
 
       <div class="formations-grid">
-
-        <!-- Formation 1 : IA -->
-        <div class="formation-card" data-animate data-animate-delay="1">
-          <div class="formation-image">
-            <img src="assets/images/markus-lompo-marketing-digital.jpg" alt="Formation Marketing Digital + IA - YouDis">
-            <span class="formation-badge">Populaire</span>
+        <!-- Formation 1: Vidéos IA -->
+        <div class="formation-card fade-up">
+          <div class="formation-card-img-wrap">
+            <img src="assets/images/formation-videos-ia.webp" alt="Formation Vidéos IA réalistes" loading="lazy">
+            <span class="formation-tag">🤖 IA</span>
           </div>
-          <div class="formation-body">
-            <div class="formation-category">Marketing Digital + IA</div>
-            <h3 class="formation-title">Marketing Digital en Afrique + Intelligence Artificielle</h3>
-            <p class="formation-desc">Boostez votre présence en ligne, automatisez, innovez et développez votre activité grâce au marketing digital et à l'IA. Solutions pensées pour l'Afrique.</p>
-            <ul class="formation-points">
-              <li><i class="fas fa-circle"></i> Stratégie digitale & marketing de contenu</li>
-              <li><i class="fas fa-circle"></i> Réseaux sociaux & publicité en ligne</li>
-              <li><i class="fas fa-circle"></i> Intelligence Artificielle appliquée</li>
-              <li><i class="fas fa-circle"></i> Monétisation & freelance en Afrique</li>
+          <div class="formation-card-body">
+            <div class="formation-card-meta">
+              <span class="formation-meta-item"><i class="far fa-clock"></i> 2h</span>
+              <span class="formation-meta-item"><i class="fas fa-signal"></i> Débutant → Pro</span>
+            </div>
+            <h3 class="formation-card-title">Créez des vidéos IA ultra-réalistes et monétisez</h3>
+            <p class="formation-card-desc">Apprenez à produire des vidéos ultra-réalistes avec l'intelligence artificielle et générez des revenus en ligne dès aujourd'hui.</p>
+            <ul class="formation-modules">
+              <li><i class="fas fa-check-circle"></i> Outils IA de génération vidéo</li>
+              <li><i class="fas fa-check-circle"></i> Techniques de prompting avancées</li>
+              <li><i class="fas fa-check-circle"></i> Monétisation YouTube & TikTok</li>
             </ul>
-            <div class="formation-cta">
-              <div class="formation-price"><strong>Sur inscription</strong></div>
-              <a href="https://wa.me/22672662161?text=Bonjour%20Marc%2C%20je%20suis%20int%C3%A9ress%C3%A9(e)%20par%20la%20formation%20Marketing%20Digital%20%2B%20IA.%20Pouvez-vous%20me%20donner%20plus%20d%27informations%20?" class="btn-formation" target="_blank">
-                <i class="fab fa-whatsapp"></i> Je m'inscris
-              </a>
+            <div class="formation-footer">
+              <span class="formation-price">💰 Sur devis · WhatsApp</span>
+              <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20m%27inscrire%20formation%20Vidéos%20IA." target="_blank" class="btn btn-primary" style="font-size:0.82rem; padding:10px 20px;">Je m'inscris</a>
             </div>
           </div>
         </div>
 
-        <!-- Formation 2 : Création contenu & monétisation -->
-        <div class="formation-card" data-animate data-animate-delay="2">
-          <div class="formation-image">
-            <img src="assets/images/markus-lompo-creation-contenu.jpg" alt="Formation Création de Contenu & Devenir Créateur - YouDis">
-            <span class="formation-badge">Nouveau</span>
+        <!-- Formation 2: TikTok IA -->
+        <div class="formation-card fade-up fade-up-delay-1">
+          <div class="formation-card-img-wrap">
+            <img src="assets/images/contenu-tiktok-ia.webp" alt="Formation TikTok IA" loading="lazy">
+            <span class="formation-tag">🎵 TikTok</span>
           </div>
-          <div class="formation-body">
-            <div class="formation-category">Création & Monétisation</div>
-            <h3 class="formation-title">Devenir Créateur — Innover, Inspirer, Impacter</h3>
-            <p class="formation-desc">Transformez vos idées en contenu qui marque. Audiovisuel, montage, création percutante et IA — les outils pros des créateurs de demain, à votre portée.</p>
-            <ul class="formation-points">
-              <li><i class="fas fa-circle"></i> Production vidéo professionnelle (Audiovisuel)</li>
-              <li><i class="fas fa-circle"></i> Montage photo & vidéo créatif</li>
-              <li><i class="fas fa-circle"></i> Création de contenu percutant</li>
-              <li><i class="fas fa-circle"></i> Intelligence Artificielle pour créateurs</li>
+          <div class="formation-card-body">
+            <div class="formation-card-meta">
+              <span class="formation-meta-item"><i class="far fa-clock"></i> 3h</span>
+              <span class="formation-meta-item"><i class="fas fa-signal"></i> Tous niveaux</span>
+            </div>
+            <h3 class="formation-card-title">Créer du contenu TikTok viral avec 3 outils IA</h3>
+            <p class="formation-card-desc">Utilisez 3 outils IA puissants pour créer du contenu viral sur TikTok, développer votre audience et monétiser efficacement votre compte.</p>
+            <ul class="formation-modules">
+              <li><i class="fas fa-check-circle"></i> 3 outils IA TikTok inclus</li>
+              <li><i class="fas fa-check-circle"></i> Stratégie de croissance organique</li>
+              <li><i class="fas fa-check-circle"></i> Monétisation du compte</li>
             </ul>
-            <div class="formation-cta">
-              <div class="formation-price"><strong>Sur inscription</strong></div>
-              <a href="https://wa.me/22672662161?text=Bonjour%20Marc%2C%20je%20suis%20int%C3%A9ress%C3%A9(e)%20par%20la%20formation%20Devenir%20Créateur.%20Pouvez-vous%20me%20donner%20plus%20d%27informations%20?" class="btn-formation" target="_blank">
-                <i class="fab fa-whatsapp"></i> Je m'inscris
-              </a>
+            <div class="formation-footer">
+              <span class="formation-price">💰 Sur devis · WhatsApp</span>
+              <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20m%27inscrire%20formation%20TikTok%20IA." target="_blank" class="btn btn-primary" style="font-size:0.82rem; padding:10px 20px;">Je m'inscris</a>
             </div>
           </div>
         </div>
 
-        <!-- Formation 3 : Jeux vidéo -->
-        <div class="formation-card" data-animate data-animate-delay="3">
-          <div class="formation-image">
-            <img src="assets/images/youdis-formation-logiciel-saas.jpg" alt="Formation Création de Logiciel et SaaS - YouDis">
-            <span class="formation-badge">Nouveau</span>
+        <!-- Formation 3: UGC Influenceuses -->
+        <div class="formation-card fade-up">
+          <div class="formation-card-img-wrap">
+            <img src="assets/images/influenceuses-ugc-ia.webp" alt="Formation Influenceuses UGC IA" loading="lazy">
+            <span class="formation-tag">🌟 UGC</span>
+            <span class="formation-popular">🔥 Populaire</span>
           </div>
-          <div class="formation-body">
-            <div class="formation-category">Développement & SaaS</div>
-            <h3 class="formation-title">Formation Création de Logiciel et de SaaS</h3>
-            <p class="formation-desc">De l'idée au logiciel — créez l'avenir ! Apprenez à concevoir et développer des logiciels et produits SaaS professionnels avec les technologies modernes.</p>
-            <ul class="formation-points">
-              <li><i class="fas fa-circle"></i> Apprendre par la pratique (API, JS, PHP, Python)</li>
-              <li><i class="fas fa-circle"></i> Maîtriser les technologies modernes</li>
-              <li><i class="fas fa-circle"></i> Créer vos propres logiciels et SaaS</li>
-              <li><i class="fas fa-circle"></i> Attestation incluse + Boostez votre avenir</li>
+          <div class="formation-card-body">
+            <div class="formation-card-meta">
+              <span class="formation-meta-item"><i class="far fa-clock"></i> 4h</span>
+              <span class="formation-meta-item"><i class="fas fa-signal"></i> Intermédiaire</span>
+            </div>
+            <h3 class="formation-card-title">Créer des influenceuses UGC virtuelles avec l'IA</h3>
+            <p class="formation-card-desc">Créez des influenceuses virtuelles avec l'IA pour faire de la publicité impactante sur les réseaux sociaux et booster vos ventes.</p>
+            <ul class="formation-modules">
+              <li><i class="fas fa-check-circle"></i> Création de personnages IA réalistes</li>
+              <li><i class="fas fa-check-circle"></i> Scripts et mise en scène UGC</li>
+              <li><i class="fas fa-check-circle"></i> Campagnes publicitaires IA</li>
             </ul>
-            <div class="formation-cta">
-              <div class="formation-price"><strong>Sur inscription</strong></div>
-              <a href="https://wa.me/22672662161?text=Bonjour%20Marc%2C%20je%20suis%20int%C3%A9ress%C3%A9(e)%20par%20la%20formation%20Cr%C3%A9ation%20de%20Logiciel%20et%20SaaS.%20Pouvez-vous%20me%20donner%20plus%20d%27informations%20?" class="btn-formation" target="_blank">
-                <i class="fab fa-whatsapp"></i> Je m'inscris
-              </a>
+            <div class="formation-footer">
+              <span class="formation-price">💰 Sur devis · WhatsApp</span>
+              <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20m%27inscrire%20formation%20Influenceuses%20UGC." target="_blank" class="btn btn-primary" style="font-size:0.82rem; padding:10px 20px;">Je m'inscris</a>
             </div>
           </div>
         </div>
 
-        <!-- Formation 4 : E-commerce (text only) -->
-        <div class="formation-card text-only" data-animate data-animate-delay="1">
-          <div class="formation-body">
-            <div class="formation-icon icon-green"><i class="fas fa-shopping-cart"></i></div>
-            <div class="formation-category">Commerce Digital</div>
-            <h3 class="formation-title">E-Commerce en Afrique</h3>
-            <p class="formation-desc">Du sourcing à la boutique en ligne — lancez et développez votre activité e-commerce adaptée au marché africain.</p>
-            <ul class="formation-points">
-              <li><i class="fas fa-circle"></i> Sourcing & fournisseurs locaux</li>
-              <li><i class="fas fa-circle"></i> Création de boutique en ligne</li>
-              <li><i class="fas fa-circle"></i> Marketing & publicité digitale</li>
-              <li><i class="fas fa-circle"></i> Paiement mobile & logistique</li>
+        <!-- Formation 4: Marketing Digital + IA -->
+        <div class="formation-card fade-up fade-up-delay-1">
+          <div class="formation-card-img-wrap">
+            <img src="assets/images/formation-ia.jpg" alt="Formation Marketing Digital + IA" loading="lazy">
+            <span class="formation-tag">📈 Marketing</span>
+            <span class="formation-popular">⭐ Top vente</span>
+          </div>
+          <div class="formation-card-body">
+            <div class="formation-card-meta">
+              <span class="formation-meta-item"><i class="far fa-clock"></i> 8h</span>
+              <span class="formation-meta-item"><i class="fas fa-signal"></i> Débutant → Expert</span>
+            </div>
+            <h3 class="formation-card-title">Marketing Digital en Afrique + Intelligence Artificielle</h3>
+            <p class="formation-card-desc">Boostez votre présence en ligne, automatisez, innovez et développez votre activité grâce au marketing digital et à l'IA. Solutions pensées pour l'Afrique.</p>
+            <ul class="formation-modules">
+              <li><i class="fas fa-check-circle"></i> Stratégie digitale & contenu</li>
+              <li><i class="fas fa-check-circle"></i> Réseaux sociaux & publicité</li>
+              <li><i class="fas fa-check-circle"></i> IA appliquée au marketing</li>
+              <li><i class="fas fa-check-circle"></i> Monétisation & freelance Afrique</li>
             </ul>
-            <div class="formation-cta">
-              <div class="formation-price"><strong>Sur inscription</strong></div>
-              <a href="https://wa.me/22672662161?text=Bonjour%20Marc%2C%20je%20suis%20int%C3%A9ress%C3%A9(e)%20par%20la%20formation%20E-Commerce%20en%20Afrique.%20Pouvez-vous%20me%20donner%20plus%20d%27informations%20?" class="btn-formation" target="_blank">
-                <i class="fab fa-whatsapp"></i> Je m'inscris
-              </a>
+            <div class="formation-footer">
+              <span class="formation-price">💰 Sur devis · WhatsApp</span>
+              <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20m%27inscrire%20Marketing%20Digital%20IA." target="_blank" class="btn btn-primary" style="font-size:0.82rem; padding:10px 20px;">Je m'inscris</a>
             </div>
           </div>
         </div>
 
-        <!-- Formation 5 : Vente réseaux sociaux (text only) -->
-        <div class="formation-card text-only" data-animate data-animate-delay="2">
-          <div class="formation-body">
-            <div class="formation-icon icon-purple"><i class="fas fa-share-alt"></i></div>
-            <div class="formation-category">Réseaux Sociaux</div>
-            <h3 class="formation-title">Vendre & Automatiser sur les Réseaux Sociaux</h3>
-            <p class="formation-desc">Transformez votre audience en clients fidèles. Automatisez vos ventes et développez votre présence digitale de façon professionnelle.</p>
-            <ul class="formation-points">
-              <li><i class="fas fa-circle"></i> Stratégie réseaux sociaux</li>
-              <li><i class="fas fa-circle"></i> Tunnel de vente social media</li>
-              <li><i class="fas fa-circle"></i> Automatisation & chatbots</li>
-              <li><i class="fas fa-circle"></i> Publicité Facebook & Instagram</li>
+        <!-- Formation 5: Logiciel SaaS - WIDE -->
+        <div class="formation-card wide fade-up">
+          <div class="formation-card-img-wrap">
+            <img src="assets/images/youdis-formation-logiciel-saas.jpg" alt="Formation Création Logiciel SaaS" loading="lazy">
+            <span class="formation-tag">💻 Dev</span>
+            <span class="formation-new">🆕 Nouveau</span>
+          </div>
+          <div class="formation-card-body">
+            <div class="formation-card-meta">
+              <span class="formation-meta-item"><i class="far fa-clock"></i> 12h</span>
+              <span class="formation-meta-item"><i class="fas fa-signal"></i> Débutant → Pro</span>
+              <span class="formation-meta-item"><i class="fas fa-certificate"></i> Attestation incluse</span>
+            </div>
+            <h3 class="formation-card-title">Formation Création de Logiciel et de SaaS — De l'idée au produit</h3>
+            <p class="formation-card-desc">Apprenez à concevoir et développer des logiciels et produits SaaS professionnels avec les technologies modernes. Une formation unique adaptée à l'Afrique.</p>
+            <ul class="formation-modules">
+              <li><i class="fas fa-check-circle"></i> Apprendre par la pratique (API, JS, PHP, Python)</li>
+              <li><i class="fas fa-check-circle"></i> Maîtriser les technologies modernes</li>
+              <li><i class="fas fa-check-circle"></i> Créer vos propres logiciels et SaaS commerciaux</li>
+              <li><i class="fas fa-check-circle"></i> Attestation de formation + accompagnement post-formation</li>
             </ul>
-            <div class="formation-cta">
-              <div class="formation-price"><strong>Sur inscription</strong></div>
-              <a href="https://wa.me/22672662161?text=Bonjour%20Marc%2C%20je%20suis%20int%C3%A9ress%C3%A9(e)%20par%20la%20formation%20Vente%20sur%20les%20R%C3%A9seaux%20Sociaux.%20Pouvez-vous%20me%20donner%20plus%20d%27informations%20?" class="btn-formation" target="_blank">
-                <i class="fab fa-whatsapp"></i> Je m'inscris
-              </a>
+            <div class="formation-footer">
+              <span class="formation-price">💰 Sur devis · WhatsApp</span>
+              <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20m%27inscrire%20formation%20Logiciel%20SaaS." target="_blank" class="btn btn-primary" style="font-size:0.85rem; padding:12px 24px;">Je m'inscris maintenant</a>
             </div>
           </div>
         </div>
 
-        <!-- Formation 6 : Ebook (text only) -->
-        <div class="formation-card text-only" data-animate data-animate-delay="3">
-          <div class="formation-body">
-            <div class="formation-icon icon-orange"><i class="fas fa-book"></i></div>
-            <div class="formation-category">Écriture & Publication</div>
-            <h3 class="formation-title">Écrire & Publier un Livre / Ebook en un Temps Record</h3>
-            <p class="formation-desc">Transformez votre expertise en livre ou ebook. Structurez vos idées, rédigez efficacement et publiez votre œuvre pour en faire une source de revenus.</p>
-            <ul class="formation-points">
-              <li><i class="fas fa-circle"></i> Structure & plan de rédaction</li>
-              <li><i class="fas fa-circle"></i> Écriture assistée par l'IA</li>
-              <li><i class="fas fa-circle"></i> Design de couverture professionnel</li>
-              <li><i class="fas fa-circle"></i> Publication & vente en ligne</li>
+        <!-- Formation 6: Créateur de Contenu -->
+        <div class="formation-card fade-up">
+          <div class="formation-card-img-wrap">
+            <img src="assets/images/formation-contenu-video.jpg" alt="Formation Créateur de contenu" loading="lazy">
+            <span class="formation-tag">🎥 Création</span>
+            <span class="formation-new">🆕 Nouveau</span>
+          </div>
+          <div class="formation-card-body">
+            <div class="formation-card-meta">
+              <span class="formation-meta-item"><i class="far fa-clock"></i> 6h</span>
+              <span class="formation-meta-item"><i class="fas fa-signal"></i> Tous niveaux</span>
+            </div>
+            <h3 class="formation-card-title">Devenir Créateur — Innover, Inspirer, Impacter</h3>
+            <p class="formation-card-desc">Transformez vos idées en contenu qui marque. Audiovisuel, montage, création percutante et IA — les outils pros des créateurs de demain.</p>
+            <ul class="formation-modules">
+              <li><i class="fas fa-check-circle"></i> Production vidéo professionnelle</li>
+              <li><i class="fas fa-check-circle"></i> Montage photo & vidéo créatif</li>
+              <li><i class="fas fa-check-circle"></i> IA pour créateurs</li>
             </ul>
-            <div class="formation-cta">
-              <div class="formation-price"><strong>Sur inscription</strong></div>
-              <a href="https://wa.me/22672662161?text=Bonjour%20Marc%2C%20je%20suis%20int%C3%A9ress%C3%A9(e)%20par%20la%20formation%20Ebook.%20Pouvez-vous%20me%20donner%20plus%20d%27informations%20?" class="btn-formation" target="_blank">
-                <i class="fab fa-whatsapp"></i> Je m'inscris
-              </a>
+            <div class="formation-footer">
+              <span class="formation-price">💰 Sur devis · WhatsApp</span>
+              <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20m%27inscrire%20formation%20Créateur%20Contenu." target="_blank" class="btn btn-primary" style="font-size:0.82rem; padding:10px 20px;">Je m'inscris</a>
             </div>
           </div>
         </div>
 
+        <!-- Formation 7: E-Commerce -->
+        <div class="formation-card fade-up fade-up-delay-1">
+          <div class="formation-card-img-wrap">
+            <img src="assets/images/youdis-services-list.jpg" alt="Formation E-Commerce Afrique" loading="lazy">
+            <span class="formation-tag">🛒 E-Commerce</span>
+          </div>
+          <div class="formation-card-body">
+            <div class="formation-card-meta">
+              <span class="formation-meta-item"><i class="far fa-clock"></i> 5h</span>
+              <span class="formation-meta-item"><i class="fas fa-signal"></i> Débutant</span>
+            </div>
+            <h3 class="formation-card-title">E-Commerce en Afrique — De zéro à la vente</h3>
+            <p class="formation-card-desc">Du sourcing à la boutique en ligne : lancez et développez votre activité e-commerce adaptée au marché africain avec les bons outils.</p>
+            <ul class="formation-modules">
+              <li><i class="fas fa-check-circle"></i> Sourcing & fournisseurs locaux</li>
+              <li><i class="fas fa-check-circle"></i> Création boutique & marketing</li>
+              <li><i class="fas fa-check-circle"></i> Paiement mobile & logistique</li>
+            </ul>
+            <div class="formation-footer">
+              <span class="formation-price">💰 Sur devis · WhatsApp</span>
+              <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20m%27inscrire%20formation%20E-Commerce." target="_blank" class="btn btn-primary" style="font-size:0.82rem; padding:10px 20px;">Je m'inscris</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Formation 8: Réseaux Sociaux Vente -->
+        <div class="formation-card fade-up fade-up-delay-2">
+          <div class="formation-card-img-wrap">
+            <img src="assets/images/monetisation-tiktok.webp" alt="Vendre sur les réseaux sociaux" loading="lazy">
+            <span class="formation-tag">📱 Réseaux</span>
+          </div>
+          <div class="formation-card-body">
+            <div class="formation-card-meta">
+              <span class="formation-meta-item"><i class="far fa-clock"></i> 4h</span>
+              <span class="formation-meta-item"><i class="fas fa-signal"></i> Intermédiaire</span>
+            </div>
+            <h3 class="formation-card-title">Vendre & Automatiser sur les Réseaux Sociaux</h3>
+            <p class="formation-card-desc">Transformez votre audience en clients fidèles. Automatisez vos ventes et développez votre présence digitale de façon professionnelle.</p>
+            <ul class="formation-modules">
+              <li><i class="fas fa-check-circle"></i> Tunnel de vente social media</li>
+              <li><i class="fas fa-check-circle"></i> Automatisation & chatbots</li>
+              <li><i class="fas fa-check-circle"></i> Publicité Facebook & Instagram</li>
+            </ul>
+            <div class="formation-footer">
+              <span class="formation-price">💰 Sur devis · WhatsApp</span>
+              <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20m%27inscrire%20formation%20Vente%20Réseaux." target="_blank" class="btn btn-primary" style="font-size:0.82rem; padding:10px 20px;">Je m'inscris</a>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- ======= APP EF-FORT.BF ======= -->
+  <!-- ========= E-LEARNING SECTION ========= -->
   <section id="app-effort">
-    <div class="section-container">
-      <div class="effort-inner">
-        <div class="effort-content">
-          <div class="section-tag" data-animate><i class="fas fa-graduation-cap"></i> Plateforme E-Learning</div>
-          <h2 class="section-title" data-animate data-animate-delay="1">
-            <span class="accent">EF-FORT.BF</span><br>
-            Plateforme e-learning<br>100% <span class="accent">Gratuit</span>
+    <div class="container">
+      <div class="elearning-inner">
+        <!-- Left: Content -->
+        <div class="fade-up">
+          <div class="elearning-badge"><i class="fas fa-gift"></i> 100% Gratuit — Zéro paiement requis</div>
+          <h2 class="elearning-title">
+            EF-FORT.BF<br>
+            Plateforme e-learning<br>
+            <span>100% Gratuite</span>
           </h2>
-          <div class="divider" data-animate data-animate-delay="2"></div>
-
-          <div class="effort-free-badge" data-animate data-animate-delay="2">
-            <i class="fas fa-gift"></i>
-            <div>
-              <strong>Entièrement Gratuit</strong>
-              <span>4 885 questions corrigées · Progression personnalisée · Note sur 20</span>
-            </div>
-          </div>
-
-          <ul class="effort-features" data-animate data-animate-delay="3">
-            <li><i class="fas fa-check-circle"></i> <strong>4 885 questions</strong> avec corrections détaillées pour chaque réponse</li>
-            <li><i class="fas fa-check-circle"></i> <strong>21 matières</strong> : Droit, Économie, Français, Maths, Psychotechnique…</li>
-            <li><i class="fas fa-check-circle"></i> <strong>Tableau de bord</strong> : note sur 20, taux de réussite, progression par matière</li>
-            <li><i class="fas fa-check-circle"></i> <strong>Simulations d'examens</strong> en conditions réelles chronométrées</li>
-            <li><i class="fas fa-check-circle"></i> <strong>Génération de fiches PDF</strong> avec corrections pour réviser hors ligne</li>
-            <li><i class="fas fa-check-circle"></i> « La compétence est une arme, seul l'effort crée l'effort »</li>
-          </ul>
-
-          <div class="effort-actions" data-animate data-animate-delay="4">
-            <a href="https://ef-fort-bf.pages.dev" class="btn-download" target="_blank">
-              <i class="fas fa-globe" style="font-size:1.4rem"></i>
-              <span>
-                <span class="btn-download-sub">Accéder gratuitement</span>
-                EF-FORT.BF — Version Web
-              </span>
+          <p class="elearning-desc">
+            Développez vos compétences avec notre plateforme d'apprentissage gratuite. 4 885 questions corrigées, 21 matières et un tableau de bord personnalisé pour suivre votre progression — sans payer un seul franc.
+          </p>
+          <p style="color: rgba(255,255,255,0.5); font-size:0.82rem; font-style:italic; margin-bottom:28px;">
+            « La compétence est une arme, seul l'effort crée l'effort »
+          </p>
+          <div class="elearning-ctas">
+            <a href="https://ef-fort-bf.pages.dev" target="_blank" class="btn btn-primary">
+              <i class="fas fa-graduation-cap"></i> Accéder à l'application
             </a>
-            <a href="https://github.com/yougadigitata/ef-fort-bf/releases/latest/download/app-release.apk" class="btn-white-outline" target="_blank">
-              <i class="fab fa-android"></i>
-              Télécharger APK Android
+            <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20en%20savoir%20plus%20sur%20EF-FORT.BF." target="_blank" class="btn btn-white">
+              <i class="fab fa-whatsapp"></i> En savoir plus
             </a>
           </div>
         </div>
 
-        <div class="effort-visual" data-animate data-animate-delay="2">
-          <div class="app-mockup-wrap">
-            <div class="app-mockup-bg">
-              <img src="assets/images/logo-effort.png" alt="Logo EF-FORT.BF" class="app-logo-effort">
-            </div>
-            <div class="effort-stat-float top">
-              <i class="fas fa-chart-line"></i> Progression personnalisée
-            </div>
-            <div class="effort-stat-float bottom">
-              <i class="fas fa-star"></i> 4 885 questions corrigées
-            </div>
+        <!-- Right: Feature Cards -->
+        <div class="elearning-features fade-up fade-up-delay-2">
+          <div class="elearning-feat">
+            <div class="elearning-feat-icon">📚</div>
+            <div class="elearning-feat-number">4 885</div>
+            <div class="elearning-feat-label">Questions corrigées</div>
+          </div>
+          <div class="elearning-feat">
+            <div class="elearning-feat-icon">🎓</div>
+            <div class="elearning-feat-number">21</div>
+            <div class="elearning-feat-label">Matières disponibles</div>
+          </div>
+          <div class="elearning-feat">
+            <div class="elearning-feat-icon">📊</div>
+            <div class="elearning-feat-number">100%</div>
+            <div class="elearning-feat-label">Gratuit & sans inscription</div>
+          </div>
+          <div class="elearning-feat">
+            <div class="elearning-feat-icon">⏱️</div>
+            <div class="elearning-feat-number">24/7</div>
+            <div class="elearning-feat-label">Accès illimité</div>
+          </div>
+          <div class="elearning-feat">
+            <div class="elearning-feat-icon">📄</div>
+            <div class="elearning-feat-number">PDF</div>
+            <div class="elearning-feat-label">Fiches de révision générées</div>
+          </div>
+          <div class="elearning-feat">
+            <div class="elearning-feat-icon">🏆</div>
+            <div class="elearning-feat-number">Note /20</div>
+            <div class="elearning-feat-label">Suivi de progression</div>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ======= A PROPOS ======= -->
+  <!-- ========= WHY US SECTION ========= -->
+  <section id="why-us">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge fade-up"><i class="fas fa-star"></i> Pourquoi nous choisir</div>
+        <h2 class="section-title fade-up fade-up-delay-1">Ce qui nous distingue</h2>
+        <p class="section-subtitle fade-up fade-up-delay-2">YouDis combine expertise technique, accompagnement humain et solutions adaptées au contexte africain pour garantir votre succès.</p>
+      </div>
+
+      <div class="why-grid">
+        <div class="why-card fade-up">
+          <div class="why-icon icon-blue"><i class="fas fa-award"></i></div>
+          <div class="why-number">5<span>+</span></div>
+          <div class="why-title">Années d'expertise</div>
+          <p class="why-desc">Plus de 5 ans d'expérience en solutions digitales, IA et formation au Burkina Faso et en Afrique.</p>
+        </div>
+        <div class="why-card fade-up fade-up-delay-1">
+          <div class="why-icon icon-orange"><i class="fas fa-users"></i></div>
+          <div class="why-number">200<span>+</span></div>
+          <div class="why-title">Clients satisfaits</div>
+          <p class="why-desc">Plus de 200 entrepreneurs, créateurs et professionnels accompagnés dans leur transformation digitale.</p>
+        </div>
+        <div class="why-card fade-up fade-up-delay-2">
+          <div class="why-icon icon-green"><i class="fas fa-book-open"></i></div>
+          <div class="why-number">4 885</div>
+          <div class="why-title">Questions e-learning</div>
+          <p class="why-desc">Une plateforme e-learning 100% gratuite avec 4 885 questions corrigées dans 21 matières différentes.</p>
+        </div>
+        <div class="why-card fade-up fade-up-delay-3">
+          <div class="why-icon icon-purple"><i class="fas fa-handshake"></i></div>
+          <div class="why-number">100<span>%</span></div>
+          <div class="why-title">Accompagnement personnalisé</div>
+          <p class="why-desc">Chaque client bénéficie d'un suivi individualisé par WhatsApp pour garantir les meilleurs résultats.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========= ABOUT / TEAM SECTION ========= -->
   <section id="a-propos">
-    <div class="section-container">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge fade-up"><i class="fas fa-user-circle"></i> À propos</div>
+        <h2 class="section-title fade-up fade-up-delay-1">L'homme derrière YouDis</h2>
+      </div>
+
       <div class="about-inner">
-        <div class="about-image-side" data-animate>
-          <img src="assets/images/markus-lompo-transformation.jpg" alt="Marc LOMPO - Fondateur YouDis" class="about-image-main">
-          <div class="about-circle-deco"></div>
-          <div class="about-experience-badge">
-            <strong><i class="fas fa-award"></i></strong>
-            <span>YouDis<br>Youga Digital<br>Services</span>
+        <!-- Photo -->
+        <div class="about-photo-wrap fade-up">
+          <img src="assets/images/markus-lompo-transformation.jpg" alt="Marc LOMPO - Fondateur YouDis" class="about-photo">
+          <div class="about-brand-badge">
+            <img src="assets/images/logo-youdis-official.png" alt="Logo YouDis">
+            <div class="about-brand-info">
+              <div class="about-brand-name">You<span>Dis</span></div>
+              <div class="about-brand-sub">Youga Digital Services</div>
+            </div>
           </div>
         </div>
 
-        <div class="about-content" data-animate data-animate-delay="2">
-          <div class="section-tag"><i class="fas fa-user-tie"></i> À Propos</div>
-          <h2 class="section-title">Qui est <span class="accent">Marc LOMPO</span> ?</h2>
-          <div class="divider"></div>
-
-          <div class="about-name">Marc LOMPO</div>
-          <div class="about-role">Fondateur & Directeur de Youga Digital Services (YouDis)</div>
-
-          <p class="about-text">
-            Entrepreneur digital basé à <strong>Ouagadougou, Burkina Faso</strong>, Marc LOMPO est le fondateur
-            de <strong>YouDis — Youga Digital Services</strong>. Passionné par la technologie et le développement
-            de compétences, il a pour mission de rendre le numérique accessible à tous les Burkinabè et Africains.
+        <!-- Content -->
+        <div class="fade-up fade-up-delay-1">
+          <div class="section-badge" style="margin-bottom:16px;"><i class="fas fa-map-marker-alt"></i> Ouagadougou, Burkina Faso</div>
+          <h2 class="about-name">Marc LOMPO</h2>
+          <div class="about-role">Fondateur & Directeur — Youga Digital Services</div>
+          <p class="about-desc">
+            Entrepreneur digital passionné par la technologie, Marc LOMPO a fondé <strong>YouDis — Youga Digital Services</strong> avec une mission claire : rendre le numérique accessible à tous les Burkinabè et Africains. À travers ses formations, ses services digitaux et la plateforme <strong>EF-FORT.BF</strong> (100% gratuite), il accompagne entrepreneurs, créateurs et professionnels dans leur transformation digitale.
           </p>
 
-          <p class="about-text">
-            À travers ses formations, ses services digitaux et l'application <strong>EF-FORT.BF</strong> (100% gratuite),
-            Marc accompagne entrepreneurs, créateurs et professionnels dans leur transformation digitale.
-          </p>
-
-          <div class="about-missions">
-            <h4>Domaines d'expertise</h4>
-            <ul class="mission-list">
-              <li><i class="fas fa-circle"></i> Développement d'applications mobiles</li>
-              <li><i class="fas fa-circle"></i> Intelligence Artificielle & Automatisation</li>
-              <li><i class="fas fa-circle"></i> Création de contenu & Montage vidéo</li>
-              <li><i class="fas fa-circle"></i> Stratégie digitale & Branding</li>
-              <li><i class="fas fa-circle"></i> Cybersécurité & Protection des données</li>
-              <li><i class="fas fa-circle"></i> Formation & Coaching digital</li>
-            </ul>
+          <div class="about-skills">
+            <div class="about-skill"><i class="fas fa-check-circle"></i> Développement d'applications mobiles</div>
+            <div class="about-skill"><i class="fas fa-check-circle"></i> Intelligence Artificielle & Automatisation</div>
+            <div class="about-skill"><i class="fas fa-check-circle"></i> Création de contenu & Montage vidéo</div>
+            <div class="about-skill"><i class="fas fa-check-circle"></i> Stratégie digitale & Branding</div>
+            <div class="about-skill"><i class="fas fa-check-circle"></i> Cybersécurité & Protection des données</div>
+            <div class="about-skill"><i class="fas fa-check-circle"></i> Formation & Coaching digital</div>
           </div>
 
-          <div class="about-slogans">
-            <div class="slogan-item">
-              <i class="fas fa-quote-left"></i>
-              <p>« Susciter l'envie de comprendre la technologie. »</p>
+          <div class="about-quotes">
+            <p>« <strong>Susciter l'envie de comprendre la technologie.</strong> »</p>
+            <p>« <strong>Faciliter la technologie pour tous.</strong> »</p>
+            <p>« <strong>La compétence est une arme, seul l'effort crée l'effort.</strong> »</p>
+          </div>
+
+          <div class="about-ctas">
+            <a href="https://wa.me/22672662161?text=Bonjour%20Marc%2C%20je%20veux%20discuter%20d%27un%20projet." target="_blank" class="btn btn-primary">
+              <i class="fab fa-whatsapp"></i> Discuter sur WhatsApp
+            </a>
+            <a href="#contact" class="btn btn-outline">
+              <i class="fas fa-envelope"></i> Envoyer un message
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========= TESTIMONIALS SECTION ========= -->
+  <section id="testimonials">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge fade-up"><i class="fas fa-star"></i> Témoignages</div>
+        <h2 class="section-title fade-up fade-up-delay-1">Ce que disent nos clients</h2>
+        <p class="section-subtitle fade-up fade-up-delay-2">Des centaines de professionnels nous font confiance pour leur transformation digitale.</p>
+      </div>
+
+      <div class="testimonials-grid">
+        <div class="testimonial-card fade-up">
+          <div class="testimonial-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+          <p class="testimonial-text">« Marc m'a aidé à créer mon application mobile en quelques semaines seulement. Le résultat dépasse mes attentes ! Son accompagnement est exceptionnel et adapté au contexte africain. »</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar" style="background: var(--blue-secondary);">A</div>
+            <div>
+              <div class="testimonial-name">Aminata K.</div>
+              <div class="testimonial-role">Entrepreneuse, Ouagadougou</div>
             </div>
-            <div class="slogan-item">
-              <i class="fas fa-quote-left"></i>
-              <p>« Faciliter la technologie pour tous. »</p>
+          </div>
+        </div>
+
+        <div class="testimonial-card fade-up fade-up-delay-1">
+          <div class="testimonial-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+          <p class="testimonial-text">« La formation vidéos IA réalistes a transformé ma façon de créer du contenu. En 2 heures, j'ai appris à produire des vidéos professionnelles qui me génèrent des revenus sur YouTube. »</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar" style="background: var(--orange-primary);">S</div>
+            <div>
+              <div class="testimonial-name">Seydou T.</div>
+              <div class="testimonial-role">Créateur de contenu, Bobo-Dioulasso</div>
             </div>
-            <div class="slogan-item">
-              <i class="fas fa-quote-left"></i>
-              <p>« La compétence est une arme, seul l'effort crée l'effort. »</p>
+          </div>
+        </div>
+
+        <div class="testimonial-card fade-up fade-up-delay-2">
+          <div class="testimonial-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+          <p class="testimonial-text">« EF-FORT.BF est incroyable — 100% gratuit et des milliers de questions corrigées. J'ai pu me préparer efficacement à mes examens grâce à cette plateforme. Merci YouDis ! »</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar" style="background: #10b981;">F</div>
+            <div>
+              <div class="testimonial-name">Fatou D.</div>
+              <div class="testimonial-role">Étudiante, Burkina Faso</div>
             </div>
           </div>
         </div>
@@ -2773,297 +1924,265 @@
     </div>
   </section>
 
-  <!-- ======= CONTACT ======= -->
+  <!-- ========= CONTACT SECTION ========= -->
   <section id="contact">
-    <div class="section-container">
-      <div class="section-header centered" data-animate>
-        <div class="section-tag"><i class="fas fa-paper-plane"></i> Contact</div>
-        <h2 class="section-title">Parlons de votre <span class="accent">projet</span></h2>
-        <div class="divider"></div>
-        <p class="section-desc">
-          Vous avez un projet digital, une idée à concrétiser ou une question sur nos formations ?
-          Contactez-nous directement sur WhatsApp ou par email.
-        </p>
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge fade-up"><i class="fas fa-envelope"></i> Contact</div>
+        <h2 class="section-title fade-up fade-up-delay-1">Passons à l'action ensemble</h2>
+        <p class="section-subtitle fade-up fade-up-delay-2">Vous avez un projet, une question ou souhaitez vous inscrire à une formation ? Contactez-nous maintenant.</p>
       </div>
 
-      <div class="contact-grid">
-        <div class="contact-info" data-animate>
-          <h3>Entrer en contact</h3>
-          <p>
-            Pour toute demande de renseignement, inscription à une formation ou devis pour un service,
-            n'hésitez pas à nous contacter. Nous répondons rapidement sur WhatsApp.
-          </p>
+      <div class="contact-inner">
+        <!-- Left: Info -->
+        <div class="fade-up">
+          <h3 class="contact-info-title">Nous sommes là pour vous</h3>
+          <p class="contact-info-desc">Répondez à votre besoin en quelques clics. Nos experts vous répondent rapidement sur WhatsApp ou par email.</p>
 
-          <div class="contact-items">
-            <div class="contact-item">
-              <div class="contact-icon blue"><i class="fas fa-phone"></i></div>
-              <div class="contact-item-text">
-                <strong>Téléphone</strong>
-                <a href="tel:+22672662161">+226 72 66 21 61</a><br>
-                <a href="tel:+22666025511">+226 66 02 55 11</a>
+          <div class="contact-channels">
+            <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20vous%20contacte%20depuis%20le%20site%20YouDis." target="_blank" class="contact-channel">
+              <div class="contact-channel-icon channel-wa"><i class="fab fa-whatsapp"></i></div>
+              <div>
+                <div class="contact-channel-label">WhatsApp Principal</div>
+                <div class="contact-channel-value">+226 72 66 21 61</div>
               </div>
-            </div>
-            <div class="contact-item">
-              <div class="contact-icon orange"><i class="fas fa-envelope"></i></div>
-              <div class="contact-item-text">
-                <strong>Email</strong>
-                <a href="mailto:yougadigitata@gmail.com">yougadigitata@gmail.com</a>
+            </a>
+            <a href="https://wa.me/22651461745?text=Bonjour%2C%20je%20vous%20contacte%20depuis%20le%20site%20YouDis." target="_blank" class="contact-channel">
+              <div class="contact-channel-icon channel-wa"><i class="fab fa-whatsapp"></i></div>
+              <div>
+                <div class="contact-channel-label">WhatsApp Secondaire</div>
+                <div class="contact-channel-value">+226 51 46 17 45</div>
               </div>
-            </div>
-            <div class="contact-item">
-              <div class="contact-icon green"><i class="fas fa-map-marker-alt"></i></div>
-              <div class="contact-item-text">
-                <strong>Localisation</strong>
-                <span>Ouagadougou, Burkina Faso</span>
-              </div>
-            </div>
+            </a>
           </div>
 
-          <div class="whatsapp-buttons">
-            <a href="https://wa.me/22672662161?text=Bonjour%20Marc%2C%20je%20vous%20contacte%20depuis%20le%20site%20YouDis.%20J%27aimerais%20discuter%20de%20mon%20projet." class="btn-whatsapp" target="_blank">
-              <i class="fab fa-whatsapp"></i>
-              <div class="btn-whatsapp-info">
-                <strong>WhatsApp : +226 72 66 21 61</strong>
-                <span>Disponible pour formations & services</span>
-              </div>
-            </a>
-            <a href="https://wa.me/22665467070?text=Bonjour%2C%20je%20vous%20contacte%20depuis%20le%20site%20YouDis.%20J%27aimerais%20en%20savoir%20plus%20sur%20vos%20formations." class="btn-whatsapp" target="_blank">
-              <i class="fab fa-whatsapp"></i>
-              <div class="btn-whatsapp-info">
-                <strong>WhatsApp : +226 65 46 70 70</strong>
-                <span>Ligne formations & support</span>
-              </div>
-            </a>
+          <div class="contact-hours">
+            <div class="contact-hours-title"><i class="far fa-clock"></i> Horaires de réponse</div>
+            <div class="contact-hours-item"><span>Lun – Ven</span><span>08h00 – 20h00</span></div>
+            <div class="contact-hours-item"><span>Samedi</span><span>09h00 – 18h00</span></div>
+            <div class="contact-hours-item"><span>Dimanche</span><span>10h00 – 16h00</span></div>
           </div>
         </div>
 
-        <div class="contact-map-placeholder" data-animate data-animate-delay="2">
-          <div class="map-icon-wrap"><i class="fas fa-map-marker-alt"></i></div>
-          <h4>Ouagadougou, Burkina Faso</h4>
-          <p>Nous intervenons à Ouagadougou et partout en Afrique.<br>
-          <strong>Disponibilité en ligne 7j/7</strong> via WhatsApp.</p>
-
-          <div class="hours-grid">
-            <div class="hour-item">
-              <strong>Lun – Ven</strong>
-              <span>08h – 18h</span>
+        <!-- Right: Form -->
+        <div class="contact-form fade-up fade-up-delay-1">
+          <h3 class="form-title">Envoyez-nous un message</h3>
+          <form id="contactForm" onsubmit="sendToWhatsApp(event)">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="nom">Votre nom *</label>
+                <input type="text" id="nom" name="nom" placeholder="Ex: Aminata Koné" required>
+              </div>
+              <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="votre@email.com">
+              </div>
             </div>
-            <div class="hour-item">
-              <strong>Samedi</strong>
-              <span>09h – 15h</span>
+            <div class="form-group">
+              <label for="sujet">Je suis intéressé(e) par *</label>
+              <select id="sujet" name="sujet" required>
+                <option value="">Choisir un service/formation</option>
+                <option value="Service: Solutions digitales sur mesure">Service: Solutions digitales sur mesure</option>
+                <option value="Service: Application mobile">Service: Application mobile</option>
+                <option value="Service: Monétisation TikTok">Service: Monétisation TikTok</option>
+                <option value="Service: Stratégie digitale & branding">Service: Stratégie digitale & branding</option>
+                <option value="Service: Influenceuses UGC IA">Service: Influenceuses UGC IA</option>
+                <option value="Service: Cybersécurité">Service: Cybersécurité</option>
+                <option value="Service: Coaching digital">Service: Coaching digital</option>
+                <option value="Formation: Vidéos IA réalistes">Formation: Vidéos IA réalistes</option>
+                <option value="Formation: TikTok IA">Formation: TikTok IA</option>
+                <option value="Formation: Influenceuses UGC">Formation: Influenceuses UGC</option>
+                <option value="Formation: Marketing Digital + IA">Formation: Marketing Digital + IA</option>
+                <option value="Formation: Logiciel & SaaS">Formation: Logiciel & SaaS</option>
+                <option value="Formation: Créateur de contenu">Formation: Créateur de contenu</option>
+                <option value="Formation: E-Commerce Afrique">Formation: E-Commerce Afrique</option>
+                <option value="Application EF-FORT.BF gratuite">Application EF-FORT.BF gratuite</option>
+                <option value="Autre demande">Autre demande</option>
+              </select>
             </div>
-            <div class="hour-item" style="grid-column:1/-1">
-              <strong>WhatsApp</strong>
-              <span>Disponible 7j/7</span>
+            <div class="form-group">
+              <label for="message">Votre message *</label>
+              <textarea id="message" name="message" placeholder="Décrivez votre projet, vos besoins ou posez votre question..." required></textarea>
             </div>
-          </div>
+            <button type="submit" class="form-submit">
+              <i class="fab fa-whatsapp"></i> Envoyer via WhatsApp
+            </button>
+          </form>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ======= FOOTER ======= -->
+  <!-- ========= FOOTER ========= -->
   <footer>
-    <div class="footer-inner">
-      <div class="footer-top">
-        <div class="footer-brand">
-          <img src="assets/images/logo-youdis-official.png" alt="YouDis - Youga Digital Services" style="height:56px;width:auto;object-fit:contain;margin-bottom:8px;display:block;" />
-          <div class="footer-tagline">Youga Digital Services</div>
-          <p>Je transforme vos idées en solutions digitales simples, efficaces et durables. Basé à Ouagadougou, Burkina Faso.</p>
+    <div class="container">
+      <div class="footer-inner">
+        <!-- Brand -->
+        <div>
+          <img src="assets/images/logo-youdis-official.png" alt="YouDis Logo" class="footer-brand-logo">
+          <p class="footer-brand-desc">YouDis — Youga Digital Services. Votre partenaire pour la transformation digitale au Burkina Faso et en Afrique. Services, formations & e-learning gratuit.</p>
           <div class="footer-socials">
-            <a href="https://wa.me/22672662161" class="social-link" target="_blank"><i class="fab fa-whatsapp"></i></a>
-            <a href="mailto:yougadigitata@gmail.com" class="social-link"><i class="fas fa-envelope"></i></a>
-            <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
-            <a href="#" class="social-link"><i class="fab fa-tiktok"></i></a>
-            <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="footer-social" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="footer-social" title="TikTok"><i class="fab fa-tiktok"></i></a>
+            <a href="#" class="footer-social" title="YouTube"><i class="fab fa-youtube"></i></a>
+            <a href="https://wa.me/22672662161" target="_blank" class="footer-social" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
           </div>
         </div>
 
-        <div class="footer-col">
-          <h4>Services</h4>
+        <!-- Services -->
+        <div>
+          <div class="footer-col-title">Services</div>
           <ul class="footer-links">
+            <li><a href="#services">Solutions digitales</a></li>
+            <li><a href="#services">Applications mobiles</a></li>
+            <li><a href="#services">Monétisation TikTok</a></li>
             <li><a href="#services">Stratégie digitale</a></li>
-            <li><a href="#services">Développement d'apps</a></li>
             <li><a href="#services">Cybersécurité</a></li>
-            <li><a href="#services">Création de contenu</a></li>
-            <li><a href="#services">Jeux & Gamification</a></li>
             <li><a href="#services">Coaching digital</a></li>
           </ul>
         </div>
 
-        <div class="footer-col">
-          <h4>Formations</h4>
+        <!-- Formations -->
+        <div>
+          <div class="footer-col-title">Formations</div>
           <ul class="footer-links">
-            <li><a href="#formations">Intelligence Artificielle</a></li>
-            <li><a href="#formations">Création de contenu</a></li>
-            <li><a href="#formations">Jeux vidéo</a></li>
+            <li><a href="#formations">Vidéos IA réalistes</a></li>
+            <li><a href="#formations">TikTok & IA</a></li>
+            <li><a href="#formations">Influenceuses UGC</a></li>
+            <li><a href="#formations">Marketing Digital + IA</a></li>
+            <li><a href="#formations">Logiciel & SaaS</a></li>
             <li><a href="#formations">E-Commerce Afrique</a></li>
-            <li><a href="#formations">Réseaux sociaux</a></li>
-            <li><a href="#formations">Ebook & Publication</a></li>
           </ul>
         </div>
 
-        <div class="footer-col">
-          <h4>Application</h4>
+        <!-- Contact -->
+        <div>
+          <div class="footer-col-title">Contact</div>
           <ul class="footer-links">
-            <li><a href="#app-effort">EF-FORT.BF (Gratuit)</a></li>
-            <li><a href="#app-effort">Télécharger l'APK</a></li>
-            <li><a href="#contact">Support</a></li>
+            <li><a href="https://wa.me/22672662161" target="_blank">+226 72 66 21 61</a></li>
+            <li><a href="https://wa.me/22651461745" target="_blank">+226 51 46 17 45</a></li>
+            <li><a href="#a-propos">À propos de Marc</a></li>
+            <li><a href="https://ef-fort-bf.pages.dev" target="_blank">EF-FORT.BF (gratuit)</a></li>
           </ul>
-          <h4 style="margin-top:20px">Contact</h4>
-          <ul class="footer-links">
-            <li><a href="tel:+22672662161">+226 72 66 21 61</a></li>
-            <li><a href="mailto:yougadigitata@gmail.com">yougadigitata@gmail.com</a></li>
-            <li><a href="#contact">Ouagadougou, Burkina Faso</a></li>
-          </ul>
+          <div style="margin-top: 20px;">
+            <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20un%20devis." target="_blank" class="btn btn-primary" style="font-size: 0.82rem; padding: 10px 20px;">
+              <i class="fab fa-whatsapp"></i> Contactez-nous
+            </a>
+          </div>
         </div>
       </div>
 
       <div class="footer-bottom">
-        <p>&copy; 2024 <a href="#">YouDis – Youga Digital Services</a>. Marc LOMPO. Tous droits réservés.</p>
-        <p>Fait avec <i class="fas fa-heart" style="color: var(--orange-primary);"></i> à Ouagadougou, Burkina Faso</p>
+        <div class="footer-bottom-text">© 2025 YouDis — Youga Digital Services. Tous droits réservés.</div>
+        <div class="footer-bottom-links">
+          <a href="#">Mentions légales</a>
+          <a href="#">Confidentialité</a>
+          <a href="https://ef-fort-bf.pages.dev" target="_blank">EF-FORT.BF</a>
+        </div>
       </div>
     </div>
   </footer>
 
-  <!-- ======= FLOATING WHATSAPP ======= -->
-  <a href="https://wa.me/22672662161?text=Bonjour%20Marc%2C%20je%20vous%20contacte%20depuis%20le%20site%20YouDis." class="float-whatsapp" target="_blank">
-    <span class="float-whatsapp-label">Discuter sur WhatsApp</span>
-    <i class="fab fa-whatsapp"></i>
-  </a>
+  <!-- WhatsApp Floating Button -->
+  <div class="wa-float">
+    <span class="wa-float-label">Discutons sur WhatsApp</span>
+    <a href="https://wa.me/22672662161?text=Bonjour%20YouDis%2C%20je%20viens%20du%20site%20web." target="_blank" class="wa-float-btn" title="Contacter sur WhatsApp">
+      <i class="fab fa-whatsapp"></i>
+    </a>
+  </div>
 
-  <!-- ======= SCRIPTS ======= -->
+  <!-- ========= JAVASCRIPT ========= -->
   <script>
-    // ======= LOADER =======
+    // === LOADER ===
     window.addEventListener('load', () => {
       setTimeout(() => {
-        document.getElementById('loader').classList.add('hidden');
-      }, 1200);
+        const loader = document.getElementById('loader');
+        if (loader) { loader.classList.add('hidden'); }
+      }, 1600);
     });
 
-    // ======= HEADER SCROLL =======
-    const header = document.getElementById('mainHeader');
+    // === PROGRESS BAR ===
     window.addEventListener('scroll', () => {
-      if (window.scrollY > 20) {
-        header.classList.add('scrolled');
-      } else {
-        header.classList.remove('scrolled');
-      }
-      updateProgressBar();
-    });
-
-    // ======= PROGRESS BAR =======
-    function updateProgressBar() {
       const scrollTop = window.scrollY;
       const docHeight = document.documentElement.scrollHeight - window.innerHeight;
       const progress = (scrollTop / docHeight) * 100;
-      document.getElementById('progressBar').style.width = progress + '%';
-    }
-
-    // ======= HAMBURGER MENU =======
-    function toggleMenu() {
-      const hamburger = document.getElementById('hamburger');
-      const mobileMenu = document.getElementById('mobileMenu');
-      hamburger.classList.toggle('active');
-      mobileMenu.classList.toggle('open');
-    }
-
-    function closeMenu() {
-      document.getElementById('hamburger').classList.remove('active');
-      document.getElementById('mobileMenu').classList.remove('open');
-    }
-
-    // Close menu on outside click
-    document.addEventListener('click', (e) => {
-      const hamburger = document.getElementById('hamburger');
-      const mobileMenu = document.getElementById('mobileMenu');
-      if (!hamburger.contains(e.target) && !mobileMenu.contains(e.target)) {
-        hamburger.classList.remove('active');
-        mobileMenu.classList.remove('open');
-      }
+      const pb = document.getElementById('progressBar');
+      if (pb) pb.style.width = progress + '%';
     });
 
-    // ======= SCROLL ANIMATIONS =======
-    const animateElements = document.querySelectorAll('[data-animate]');
+    // === HEADER SCROLL EFFECT ===
+    const header = document.getElementById('mainHeader');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 40) { header.classList.add('scrolled'); }
+      else { header.classList.remove('scrolled'); }
+    });
 
+    // === MOBILE MENU ===
+    function toggleMenu() {
+      const menu = document.getElementById('mobileMenu');
+      const ham = document.getElementById('hamburger');
+      menu.classList.toggle('open');
+      ham.classList.toggle('active');
+    }
+    function closeMenu() {
+      document.getElementById('mobileMenu').classList.remove('open');
+      document.getElementById('hamburger').classList.remove('active');
+    }
+
+    // === SCROLL ANIMATIONS ===
+    const fadeEls = document.querySelectorAll('.fade-up');
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
-          entry.target.classList.add('animated');
-          // Optionally unobserve after animation
-          // observer.unobserve(entry.target);
+          entry.target.classList.add('visible');
         }
       });
-    }, {
-      threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px'
-    });
+    }, { threshold: 0.12 });
+    fadeEls.forEach(el => observer.observe(el));
 
-    animateElements.forEach(el => observer.observe(el));
-
-    // ======= SMOOTH SCROLL FOR NAV LINKS =======
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', (e) => {
-        const target = document.querySelector(anchor.getAttribute('href'));
-        if (target) {
-          e.preventDefault();
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      });
-    });
-
-    // ======= ACTIVE NAV SECTION HIGHLIGHT =======
+    // === ACTIVE NAV LINK ===
     const sections = document.querySelectorAll('section[id]');
     const navLinks = document.querySelectorAll('.nav-links a');
-
-    const sectionObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const id = entry.target.getAttribute('id');
-          navLinks.forEach(link => {
-            link.style.color = '';
-            if (link.getAttribute('href') === '#' + id) {
-              link.style.color = 'var(--blue-secondary)';
-            }
-          });
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop - 90;
+        if (window.scrollY >= sectionTop) { current = section.getAttribute('id'); }
+      });
+      navLinks.forEach(link => {
+        link.style.fontWeight = '500';
+        link.style.color = '';
+        if (link.getAttribute('href') === '#' + current) {
+          link.style.fontWeight = '700';
+          link.style.color = 'var(--blue-primary)';
         }
       });
-    }, { threshold: 0.4 });
+    });
 
-    sections.forEach(section => sectionObserver.observe(section));
-
-    // ======= COUNTER ANIMATION =======
-    function animateCounter(el, target, suffix = '') {
-      let current = 0;
-      const duration = 1500;
-      const increment = target / (duration / 16);
-      const timer = setInterval(() => {
-        current += increment;
-        if (current >= target) {
-          current = target;
-          clearInterval(timer);
-        }
-        el.textContent = Math.floor(current) + suffix;
-      }, 16);
+    // === CONTACT FORM → WHATSAPP ===
+    function sendToWhatsApp(e) {
+      e.preventDefault();
+      const nom = document.getElementById('nom').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const sujet = document.getElementById('sujet').value;
+      const message = document.getElementById('message').value.trim();
+      const text = `Bonjour YouDis 👋\n\n*Nom:* ${nom}\n${email ? '*Email:* ' + email + '\n' : ''}*Intérêt:* ${sujet}\n\n*Message:*\n${message}\n\n_(Envoyé depuis le site YouDis)_`;
+      const url = 'https://wa.me/22672662161?text=' + encodeURIComponent(text);
+      window.open(url, '_blank');
     }
 
-    // Trigger counters when hero section is visible
-    const heroStats = document.querySelector('.hero-stats');
-    if (heroStats) {
-      const heroObserver = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting) {
-          document.querySelectorAll('.stat-number').forEach(el => {
-            const text = el.textContent;
-            const num = parseInt(text);
-            const suffix = text.replace(/[0-9]/g, '');
-            animateCounter(el.querySelector('span') ? el : el, num, suffix);
-          });
-          heroObserver.unobserve(heroStats);
+    // === SMOOTH SCROLL for anchor links ===
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        const targetId = this.getAttribute('href');
+        if (targetId === '#') return;
+        const target = document.querySelector(targetId);
+        if (target) {
+          e.preventDefault();
+          window.scrollTo({ top: target.offsetTop - 74, behavior: 'smooth' });
         }
-      }, { threshold: 0.5 });
-      heroObserver.observe(heroStats);
-    }
+      });
+    });
   </script>
-
 </body>
 </html>
