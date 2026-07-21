@@ -63,7 +63,7 @@
     }
 
     /* =============================================
-       LOADER
+       LOADER – style TikTok (2 ronds tournants)
     ============================================= */
     #loader {
       position: fixed; inset: 0;
@@ -71,26 +71,86 @@
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       z-index: 9999;
-      transition: opacity 0.5s ease, visibility 0.5s ease;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
     }
-    #loader.hidden { opacity: 0; visibility: hidden; }
-    .loader-brand {
+    #loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+    /* Conteneur orbite */
+    .loader-orbit {
+      position: relative;
+      width: 160px; height: 160px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 28px;
+    }
+
+    /* Logo au centre */
+    .loader-logo-text {
       font-family: 'Poppins', sans-serif;
-      font-size: 2.2rem; font-weight: 800;
-      color: var(--blue-primary); letter-spacing: -1px;
-      margin-bottom: 32px;
+      font-size: 1.5rem; font-weight: 800;
+      color: var(--blue-primary);
+      letter-spacing: -0.5px;
+      text-align: center;
+      line-height: 1.1;
+      z-index: 2;
     }
-    .loader-brand span { color: var(--orange-primary); }
-    .loader-bar-wrap {
-      width: 200px; height: 4px;
-      background: var(--gray-200); border-radius: 2px; overflow: hidden;
+    .loader-logo-text span { color: var(--orange-primary); }
+    .loader-logo-sub {
+      display: block;
+      font-size: 0.45rem;
+      font-weight: 600;
+      color: var(--gray-400);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-top: 2px;
     }
-    .loader-bar {
-      height: 100%; background: linear-gradient(90deg, var(--blue-secondary), var(--orange-primary));
-      border-radius: 2px;
-      animation: loadBar 1.5s ease forwards;
+
+    /* Piste d'orbite (cercle en pointillés léger) */
+    .loader-orbit-track {
+      position: absolute; inset: 0;
+      border-radius: 50%;
+      border: 1.5px dashed rgba(26,60,143,0.12);
     }
-    @keyframes loadBar { from { width: 0; } to { width: 100%; } }
+
+    /* Rond bleu – tourne dans le sens horaire */
+    .loader-dot-blue {
+      position: absolute;
+      width: 18px; height: 18px;
+      background: var(--blue-primary);
+      border-radius: 50%;
+      box-shadow: 0 0 12px rgba(26,60,143,0.5);
+      top: 50%; left: 50%;
+      margin-top: -9px; margin-left: -9px;
+      transform-origin: 0 0;
+      animation: orbitCW 1.5s linear infinite;
+    }
+
+    /* Rond orange – tourne dans le sens anti-horaire */
+    .loader-dot-orange {
+      position: absolute;
+      width: 14px; height: 14px;
+      background: var(--orange-primary);
+      border-radius: 50%;
+      box-shadow: 0 0 10px rgba(249,115,22,0.55);
+      top: 50%; left: 50%;
+      margin-top: -7px; margin-left: -7px;
+      transform-origin: 0 0;
+      animation: orbitCCW 1.5s linear infinite;
+    }
+
+    @keyframes orbitCW {
+      0%   { transform: rotate(0deg)   translateX(68px) rotate(0deg); }
+      100% { transform: rotate(360deg) translateX(68px) rotate(-360deg); }
+    }
+    @keyframes orbitCCW {
+      0%   { transform: rotate(0deg)    translateX(54px) rotate(0deg); }
+      100% { transform: rotate(-360deg) translateX(54px) rotate(360deg); }
+    }
+
+    /* Texte sous l'orbite */
+    .loader-tagline {
+      font-size: 0.78rem; color: var(--gray-400);
+      font-weight: 500; letter-spacing: 0.4px;
+    }
 
     /* =============================================
        PROGRESS BAR
@@ -293,30 +353,69 @@
     }
 
     /* =============================================
-       HERO SECTION
+       HERO SECTION – fond blanc avec ellipses animées
     ============================================= */
     #hero {
       min-height: 100vh;
-      background: linear-gradient(135deg, var(--blue-deep) 0%, var(--blue-primary) 55%, #1e40af 100%);
+      background: #ffffff;
       display: flex; align-items: center;
       padding: 100px 0 80px;
       position: relative; overflow: hidden;
     }
 
-    /* Geometric background shapes */
-    #hero::before {
-      content: '';
-      position: absolute; top: -120px; right: -120px;
-      width: 600px; height: 600px;
-      background: radial-gradient(circle, rgba(249,115,22,0.12) 0%, transparent 70%);
+    /* Ellipses décoratives flottantes */
+    .hero-ellipse {
+      position: absolute;
       border-radius: 50%;
+      pointer-events: none;
     }
-    #hero::after {
-      content: '';
-      position: absolute; bottom: -150px; left: -100px;
-      width: 500px; height: 500px;
-      background: radial-gradient(circle, rgba(37,99,235,0.2) 0%, transparent 70%);
+    .hero-ellipse-1 {
+      width: 580px; height: 580px;
+      background: radial-gradient(circle, rgba(26,60,143,0.06) 0%, transparent 70%);
+      top: -180px; right: -150px;
+      animation: floatEllipse1 8s ease-in-out infinite;
+    }
+    .hero-ellipse-2 {
+      width: 420px; height: 420px;
+      background: radial-gradient(circle, rgba(249,115,22,0.07) 0%, transparent 70%);
+      bottom: -140px; left: -100px;
+      animation: floatEllipse2 10s ease-in-out infinite;
+    }
+    .hero-ellipse-3 {
+      width: 260px; height: 260px;
+      background: radial-gradient(circle, rgba(37,99,235,0.08) 0%, transparent 70%);
+      top: 30%; left: 42%;
+      animation: floatEllipse3 7s ease-in-out infinite;
+    }
+    .hero-ellipse-4 {
+      width: 160px; height: 160px;
+      border: 2px solid rgba(26,60,143,0.07);
+      top: 15%; right: 28%;
+      animation: floatEllipse4 9s ease-in-out infinite;
+    }
+    .hero-ellipse-5 {
+      width: 90px; height: 90px;
+      background: rgba(249,115,22,0.06);
       border-radius: 50%;
+      bottom: 20%; right: 12%;
+      animation: floatEllipse1 6s ease-in-out infinite reverse;
+    }
+
+    @keyframes floatEllipse1 {
+      0%, 100% { transform: translateY(0px) scale(1); }
+      50%       { transform: translateY(-24px) scale(1.03); }
+    }
+    @keyframes floatEllipse2 {
+      0%, 100% { transform: translateY(0px) translateX(0px); }
+      50%       { transform: translateY(-18px) translateX(10px); }
+    }
+    @keyframes floatEllipse3 {
+      0%, 100% { transform: translateY(0px); }
+      50%       { transform: translateY(16px); }
+    }
+    @keyframes floatEllipse4 {
+      0%, 100% { transform: rotate(0deg) scale(1); }
+      50%       { transform: rotate(12deg) scale(1.08); }
     }
 
     .hero-inner {
@@ -327,9 +426,9 @@
 
     .hero-badge {
       display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(249,115,22,0.15);
-      color: var(--orange-primary);
-      border: 1px solid rgba(249,115,22,0.3);
+      background: rgba(26,60,143,0.07);
+      color: var(--blue-primary);
+      border: 1px solid rgba(26,60,143,0.15);
       padding: 7px 16px; border-radius: var(--radius-full);
       font-size: 0.8rem; font-weight: 600;
       letter-spacing: 0.3px;
@@ -348,21 +447,21 @@
       font-family: 'Poppins', sans-serif;
       font-size: clamp(2.2rem, 4.5vw, 3.4rem);
       font-weight: 800; line-height: 1.15;
-      color: var(--white); margin-bottom: 24px;
+      color: var(--text-dark); margin-bottom: 24px;
     }
     .hero-title .highlight {
-      color: var(--orange-primary);
+      color: var(--blue-primary);
       position: relative;
     }
     .hero-title .highlight::after {
       content: '';
       position: absolute; bottom: 2px; left: 0; right: 0;
       height: 3px; background: var(--orange-primary);
-      border-radius: 2px; opacity: 0.4;
+      border-radius: 2px; opacity: 0.5;
     }
 
     .hero-subtitle {
-      font-size: 1.05rem; color: rgba(255,255,255,0.78);
+      font-size: 1.05rem; color: var(--gray-600);
       line-height: 1.7; margin-bottom: 40px;
       max-width: 520px;
     }
@@ -379,11 +478,11 @@
     .hero-stat-number {
       font-family: 'Poppins', sans-serif;
       font-size: 1.7rem; font-weight: 800;
-      color: var(--white); line-height: 1;
+      color: var(--blue-primary); line-height: 1;
     }
     .hero-stat-number span { color: var(--orange-primary); }
     .hero-stat-label {
-      font-size: 0.78rem; color: rgba(255,255,255,0.55);
+      font-size: 0.78rem; color: var(--gray-600);
       font-weight: 500; margin-top: 4px;
     }
 
@@ -399,38 +498,39 @@
     }
 
     .hero-card {
-      background: rgba(255,255,255,0.07);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255,255,255,0.12);
+      background: #ffffff;
+      box-shadow: 0 4px 24px rgba(26,60,143,0.08);
+      border: 1px solid rgba(26,60,143,0.08);
       border-radius: var(--radius-lg);
       padding: 24px 20px;
       transition: var(--transition);
     }
     .hero-card:hover {
-      background: rgba(255,255,255,0.12);
+      background: #f8faff;
       transform: translateY(-4px);
+      box-shadow: 0 8px 32px rgba(26,60,143,0.14);
     }
     .hero-card-icon {
       width: 44px; height: 44px;
-      background: rgba(249,115,22,0.18);
+      background: rgba(249,115,22,0.12);
       border-radius: var(--radius-sm);
       display: flex; align-items: center; justify-content: center;
       font-size: 1.3rem; margin-bottom: 12px;
     }
-    .hero-card-icon.blue { background: rgba(37,99,235,0.2); }
-    .hero-card-icon.green { background: rgba(16,185,129,0.18); }
-    .hero-card-icon.purple { background: rgba(139,92,246,0.18); }
+    .hero-card-icon.blue { background: rgba(37,99,235,0.1); }
+    .hero-card-icon.green { background: rgba(16,185,129,0.1); }
+    .hero-card-icon.purple { background: rgba(139,92,246,0.1); }
     .hero-card-title {
       font-size: 0.85rem; font-weight: 700;
-      color: var(--white); line-height: 1.3; margin-bottom: 4px;
+      color: var(--text-dark); line-height: 1.3; margin-bottom: 4px;
     }
     .hero-card-desc {
-      font-size: 0.72rem; color: rgba(255,255,255,0.55);
+      font-size: 0.72rem; color: var(--gray-600);
     }
 
     .hero-cta-banner {
-      background: rgba(249,115,22,0.12);
-      border: 1px solid rgba(249,115,22,0.25);
+      background: linear-gradient(135deg, rgba(26,60,143,0.06) 0%, rgba(249,115,22,0.06) 100%);
+      border: 1px solid rgba(26,60,143,0.1);
       border-radius: var(--radius-lg);
       padding: 20px 24px;
       display: flex; align-items: center; justify-content: space-between;
@@ -438,11 +538,11 @@
     }
     .hero-cta-banner-text {
       font-size: 0.9rem; font-weight: 600;
-      color: var(--white);
+      color: var(--text-dark);
     }
     .hero-cta-banner-text small {
       display: block; font-size: 0.72rem;
-      color: rgba(255,255,255,0.55); font-weight: 400;
+      color: var(--gray-600); font-weight: 400;
     }
     .btn-banner {
       background: var(--orange-primary); color: var(--white);
@@ -1170,14 +1270,117 @@
       .hero-title { font-size: 1.9rem; }
       .about-brand-badge { right: -8px; bottom: -8px; }
     }
+
+    /* =============================================
+       BOTTOM NAV (onglets mobiles)
+    ============================================= */
+    .bottom-nav {
+      display: none; /* Masqué sur desktop */
+      position: fixed; bottom: 0; left: 0; right: 0;
+      z-index: 1001;
+      background: #ffffff;
+      border-top: 1px solid rgba(26,60,143,0.1);
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+      padding: 0;
+    }
+    .bottom-nav-inner {
+      display: flex; align-items: stretch;
+      height: 64px;
+    }
+    .bottom-nav-item {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 3px; text-decoration: none;
+      color: var(--gray-400);
+      font-size: 0.6rem; font-weight: 600;
+      letter-spacing: 0.3px;
+      padding: 8px 4px;
+      transition: var(--transition);
+      border: none; background: none; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .bottom-nav-item i {
+      font-size: 1.2rem;
+      transition: var(--transition);
+    }
+    .bottom-nav-item.active {
+      color: var(--blue-primary);
+    }
+    .bottom-nav-item.active i {
+      transform: scale(1.15);
+    }
+    .bottom-nav-item.active .bnav-label {
+      color: var(--blue-primary);
+    }
+    /* Ajustement taille pour 6 éléments */
+    .bottom-nav-item i { font-size: 1.1rem; }
+    .bottom-nav-item { font-size: 0.55rem; padding: 6px 2px; }
+    .bottom-nav-center {
+      flex: 0 0 68px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 2px;
+      position: relative;
+    }
+    .bottom-nav-center-btn {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, var(--blue-primary), var(--blue-secondary));
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; color: var(--white);
+      box-shadow: 0 4px 16px rgba(26,60,143,0.4);
+      margin-top: -20px;
+      text-decoration: none;
+      transition: var(--transition);
+      border: 3px solid #fff;
+    }
+    .bottom-nav-center-btn:hover { transform: scale(1.08); }
+    .bottom-nav-center-label {
+      font-size: 0.58rem; color: var(--blue-primary); font-weight: 700;
+      letter-spacing: 0.3px; margin-top: 2px;
+    }
+    .bnav-label { transition: var(--transition); }
+
+    /* Sur mobile : afficher bottom-nav + padding body */
+    @media (max-width: 768px) {
+      .bottom-nav { display: block; }
+      body { padding-bottom: 64px; }
+      .wa-float { bottom: 80px; right: 18px; }
+      .wa-float-btn { width: 48px; height: 48px; font-size: 1.3rem; }
+    }
+
+    /* Sections masquées (mode onglets sur mobile) */
+    @media (max-width: 768px) {
+      .tab-section {
+        display: none;
+        animation: sectionFadeIn 0.35s ease;
+      }
+      .tab-section.tab-active {
+        display: block;
+      }
+      /* Accueil = toujours la section par défaut */
+      #hero.tab-section { display: block; }
+    }
+    @keyframes sectionFadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 <body>
 
-  <!-- ========= LOADER ========= -->
+  <!-- ========= LOADER TikTok ========= -->
   <div id="loader">
-    <div class="loader-brand">You<span>Dis</span></div>
-    <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
+    <div class="loader-orbit">
+      <div class="loader-orbit-track"></div>
+      <div class="loader-dot-blue"></div>
+      <div class="loader-dot-orange"></div>
+      <div class="loader-logo-text">
+        You<span>Dis</span>
+        <span class="loader-logo-sub">Digital</span>
+      </div>
+    </div>
+    <div class="loader-tagline">Chargement en cours...</div>
   </div>
 
   <!-- ========= PROGRESS BAR ========= -->
@@ -1220,14 +1423,20 @@
   </div>
 
   <!-- ========= HERO SECTION ========= -->
-  <section id="hero">
+  <section id="hero" class="tab-section tab-active">
+    <!-- Ellipses décoratives flottantes -->
+    <div class="hero-ellipse hero-ellipse-1"></div>
+    <div class="hero-ellipse hero-ellipse-2"></div>
+    <div class="hero-ellipse hero-ellipse-3"></div>
+    <div class="hero-ellipse hero-ellipse-4"></div>
+    <div class="hero-ellipse hero-ellipse-5"></div>
     <div class="container">
       <div class="hero-inner">
         <!-- Left: Content -->
         <div class="hero-content fade-up">
           <div class="hero-badge">
             <div class="dot"></div>
-            🇧🇫 Ouagadougou, Burkina Faso
+            🚀 YouDis — Youga Digital Services
           </div>
 
           <h1 class="hero-title">
@@ -1237,7 +1446,7 @@
           </h1>
 
           <p class="hero-subtitle">
-            Services digitaux sur mesure, formations IA & TikTok, et une plateforme e-learning <strong style="color:rgba(255,255,255,0.92)">100% gratuite</strong>. Tout pour accélérer votre succès au Burkina Faso et en Afrique.
+            Services digitaux sur mesure, formations IA & TikTok, et une plateforme e-learning <strong style="color:var(--blue-primary)">100% gratuite</strong>. Tout pour accélérer votre succès au Burkina Faso et en Afrique.
           </p>
 
           <div class="hero-ctas">
@@ -1316,7 +1525,7 @@
   </div>
 
   <!-- ========= SERVICES SECTION ========= -->
-  <section id="services">
+  <section id="services" class="tab-section">
     <div class="container">
       <div class="section-header">
         <div class="section-badge fade-up"><i class="fas fa-rocket"></i> Nos Services</div>
@@ -1495,7 +1704,7 @@
   </section>
 
   <!-- ========= FORMATIONS SECTION ========= -->
-  <section id="formations">
+  <section id="formations" class="tab-section">
     <div class="container">
       <div class="section-header">
         <div class="section-badge fade-up"><i class="fas fa-graduation-cap"></i> Formations</div>
@@ -1715,7 +1924,7 @@
   </section>
 
   <!-- ========= E-LEARNING SECTION ========= -->
-  <section id="app-effort">
+  <section id="app-effort" class="tab-section">
     <div class="container">
       <div class="elearning-inner">
         <!-- Left: Content -->
@@ -1780,7 +1989,7 @@
   </section>
 
   <!-- ========= WHY US SECTION ========= -->
-  <section id="why-us">
+  <section id="why-us" class="tab-section">
     <div class="container">
       <div class="section-header">
         <div class="section-badge fade-up"><i class="fas fa-star"></i> Pourquoi nous choisir</div>
@@ -1818,7 +2027,7 @@
   </section>
 
   <!-- ========= ABOUT / TEAM SECTION ========= -->
-  <section id="a-propos">
+  <section id="a-propos" class="tab-section">
     <div class="container">
       <div class="section-header">
         <div class="section-badge fade-up"><i class="fas fa-user-circle"></i> À propos</div>
@@ -1876,7 +2085,7 @@
   </section>
 
   <!-- ========= TESTIMONIALS SECTION ========= -->
-  <section id="testimonials">
+  <section id="testimonials" class="tab-section tab-about-extra">
     <div class="container">
       <div class="section-header">
         <div class="section-badge fade-up"><i class="fas fa-star"></i> Témoignages</div>
@@ -1925,7 +2134,7 @@
   </section>
 
   <!-- ========= CONTACT SECTION ========= -->
-  <section id="contact">
+  <section id="contact" class="tab-section">
     <div class="container">
       <div class="section-header">
         <div class="section-badge fade-up"><i class="fas fa-envelope"></i> Contact</div>
@@ -1947,11 +2156,11 @@
                 <div class="contact-channel-value">+226 72 66 21 61</div>
               </div>
             </a>
-            <a href="https://wa.me/22651461745?text=Bonjour%2C%20je%20vous%20contacte%20depuis%20le%20site%20YouDis." target="_blank" class="contact-channel">
+            <a href="https://wa.me/22666025511?text=Bonjour%2C%20je%20vous%20contacte%20depuis%20le%20site%20YouDis." target="_blank" class="contact-channel">
               <div class="contact-channel-icon channel-wa"><i class="fab fa-whatsapp"></i></div>
               <div>
                 <div class="contact-channel-label">WhatsApp Secondaire</div>
-                <div class="contact-channel-value">+226 51 46 17 45</div>
+                <div class="contact-channel-value">+226 66 02 55 11</div>
               </div>
             </a>
           </div>
@@ -2013,6 +2222,44 @@
     </div>
   </section>
 
+  <!-- ========= BOTTOM NAV (onglets mobiles) ========= -->
+  <nav class="bottom-nav" id="bottomNav" aria-label="Navigation principale">
+    <div class="bottom-nav-inner">
+      <!-- Accueil -->
+      <button class="bottom-nav-item active" data-tab="hero" onclick="switchTab('hero',this)" aria-label="Accueil">
+        <i class="fas fa-home"></i>
+        <span class="bnav-label">Accueil</span>
+      </button>
+      <!-- Services -->
+      <button class="bottom-nav-item" data-tab="services" onclick="switchTab('services',this)" aria-label="Services">
+        <i class="fas fa-briefcase"></i>
+        <span class="bnav-label">Services</span>
+      </button>
+      <!-- E-learning (bouton central) -->
+      <div class="bottom-nav-center">
+        <a href="https://ef-fort-bf.pages.dev" target="_blank" class="bottom-nav-center-btn" title="E-learning gratuit EF-FORT.BF">
+          <i class="fas fa-graduation-cap"></i>
+        </a>
+        <span class="bottom-nav-center-label">E-learning</span>
+      </div>
+      <!-- Formations -->
+      <button class="bottom-nav-item" data-tab="formations" onclick="switchTab('formations',this)" aria-label="Formations">
+        <i class="fas fa-book-open"></i>
+        <span class="bnav-label">Formations</span>
+      </button>
+      <!-- À propos -->
+      <button class="bottom-nav-item" data-tab="a-propos" onclick="switchTab('a-propos',this)" aria-label="À propos">
+        <i class="fas fa-user-circle"></i>
+        <span class="bnav-label">À propos</span>
+      </button>
+      <!-- Contact -->
+      <button class="bottom-nav-item" data-tab="contact" onclick="switchTab('contact',this)" aria-label="Contact">
+        <i class="fas fa-paper-plane"></i>
+        <span class="bnav-label">Contact</span>
+      </button>
+    </div>
+  </nav>
+
   <!-- ========= FOOTER ========= -->
   <footer>
     <div class="container">
@@ -2060,7 +2307,7 @@
           <div class="footer-col-title">Contact</div>
           <ul class="footer-links">
             <li><a href="https://wa.me/22672662161" target="_blank">+226 72 66 21 61</a></li>
-            <li><a href="https://wa.me/22651461745" target="_blank">+226 51 46 17 45</a></li>
+            <li><a href="https://wa.me/22666025511" target="_blank">+226 66 02 55 11</a></li>
             <li><a href="#a-propos">À propos de Marc</a></li>
             <li><a href="https://ef-fort-bf.pages.dev" target="_blank">EF-FORT.BF (gratuit)</a></li>
           </ul>
@@ -2073,7 +2320,9 @@
       </div>
 
       <div class="footer-bottom">
-        <div class="footer-bottom-text">© 2025 YouDis — Youga Digital Services. Tous droits réservés.</div>
+        <div class="footer-bottom-text">© 2025 YouDis — Youga Digital Services. Tous droits réservés. &nbsp;|
+          <i class="fas fa-map-marker-alt" style="color:var(--orange-primary);"></i> Ouagadougou, Burkina Faso
+        </div>
         <div class="footer-bottom-links">
           <a href="#">Mentions légales</a>
           <a href="#">Confidentialité</a>
@@ -2098,8 +2347,62 @@
       setTimeout(() => {
         const loader = document.getElementById('loader');
         if (loader) { loader.classList.add('hidden'); }
-      }, 1600);
+      }, 2000);
     });
+
+    // === NAVIGATION PAR ONGLETS (mobile) ===
+    function switchTab(tabId, btnEl) {
+      // Vérifier si on est en mode mobile (bottom-nav visible)
+      if (window.innerWidth > 768) return;
+
+      // Récupérer toutes les sections tab-section
+      const sections = document.querySelectorAll('.tab-section');
+      sections.forEach(s => s.classList.remove('tab-active'));
+
+      // Activer la section cible
+      const target = document.getElementById(tabId);
+      if (target) {
+        target.classList.add('tab-active');
+        // Sections bonus liées à certains onglets
+        if (tabId === 'a-propos') {
+          const why = document.getElementById('why-us');
+          const testi = document.getElementById('testimonials');
+          if (why) why.classList.add('tab-active');
+          if (testi) testi.classList.add('tab-active');
+        }
+        if (tabId === 'hero') {
+          // Pas de section supplémentaire pour accueil
+        }
+        // Scroll en haut
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      // Mettre à jour les boutons nav
+      document.querySelectorAll('.bottom-nav-item').forEach(btn => btn.classList.remove('active'));
+      if (btnEl) btnEl.classList.add('active');
+    }
+
+    // Onglet À propos disponible depuis le menu burger (mobile)
+    function goToAbout() {
+      if (window.innerWidth <= 768) {
+        const aboutBtn = document.querySelector('[data-tab="a-propos"]');
+        // Simuler le clic sur l'onglet contact (le plus proche)
+        switchTab('a-propos', null);
+        document.querySelectorAll('.bottom-nav-item').forEach(btn => {
+          btn.classList.remove('active');
+        });
+      }
+    }
+
+    // Sur desktop, s'assurer que toutes les sections sont visibles
+    function handleResize() {
+      if (window.innerWidth > 768) {
+        document.querySelectorAll('.tab-section').forEach(s => {
+          s.style.display = '';
+        });
+      }
+    }
+    window.addEventListener('resize', handleResize);
 
     // === PROGRESS BAR ===
     window.addEventListener('scroll', () => {
