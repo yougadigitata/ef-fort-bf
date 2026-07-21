@@ -1764,6 +1764,326 @@
       z-index: 2000;
       transition: width 0.1s linear;
     }
+
+    /* ============================================
+       NOUVEAUX SERVICES SECTION
+    ============================================ */
+    .nouveaux-services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* La 5e carte prend toute la largeur en bas */
+    .nouv-service-card--wide {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 1fr 1.4fr;
+      align-items: center;
+    }
+
+    .nouv-service-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(37,99,235,0.08);
+      overflow: hidden;
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .nouv-service-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-md);
+      border-color: rgba(37,99,235,0.15);
+    }
+
+    /* Image wrapper */
+    .nouv-service-img-wrap {
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 4/3;
+    }
+
+    .nouv-service-card--wide .nouv-service-img-wrap {
+      aspect-ratio: auto;
+      height: 100%;
+      min-height: 320px;
+    }
+
+    .nouv-service-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      transition: transform 0.5s ease;
+    }
+
+    .nouv-service-card:hover .nouv-service-img-wrap img {
+      transform: scale(1.05);
+    }
+
+    /* Badge sur l'image */
+    .nouv-service-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      font-size: 0.72rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      backdrop-filter: blur(8px);
+    }
+
+    .badge-blue { background: rgba(37,99,235,0.85); color: #fff; }
+    .badge-blue-dark { background: rgba(26,60,143,0.88); color: #fff; }
+    .badge-tiktok { background: rgba(0,0,0,0.82); color: #fff; }
+    .badge-red { background: rgba(239,68,68,0.88); color: #fff; }
+    .badge-purple { background: rgba(139,92,246,0.88); color: #fff; }
+
+    /* Body de la carte */
+    .nouv-service-body {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .nouv-service-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 8px;
+      line-height: 1.35;
+    }
+
+    .nouv-service-desc {
+      font-size: 0.85rem;
+      color: var(--gray-dark);
+      line-height: 1.6;
+      margin-bottom: 16px;
+      flex: 1;
+    }
+
+    /* Sous-éléments */
+    .nouv-service-sub-items {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .sub-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.82rem;
+      color: var(--gray-dark);
+      font-weight: 500;
+    }
+
+    .sub-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      flex-shrink: 0;
+    }
+
+    /* Durée formation */
+    .nouv-service-duration {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+      padding: 14px;
+      background: var(--white-soft);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--gray-light);
+    }
+
+    .duration-circle {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue-primary), var(--blue-secondary));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: var(--shadow-blue);
+    }
+
+    .duration-num {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .duration-label {
+      font-size: 0.55rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.8);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .nouv-service-duration p {
+      font-size: 0.8rem;
+      color: var(--gray-dark);
+      line-height: 1.5;
+    }
+
+    /* Statistiques UGC */
+    .ugc-stats-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .ugc-stat {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 120px;
+      padding: 10px 12px;
+      background: var(--white-soft);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--gray-light);
+    }
+
+    .ugc-stat-circle {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .ugc-circle-blue { background: linear-gradient(135deg, var(--blue-primary), var(--blue-secondary)); }
+    .ugc-circle-orange { background: linear-gradient(135deg, var(--orange-secondary), var(--orange-primary)); }
+    .ugc-circle-green { background: linear-gradient(135deg, #059669, #10b981); }
+
+    .ugc-stat-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .ugc-stat-info strong {
+      font-size: 0.78rem;
+      color: var(--text-dark);
+      font-weight: 700;
+    }
+
+    .ugc-stat-growth {
+      font-size: 0.72rem;
+      color: #10b981;
+      font-weight: 700;
+    }
+
+    /* Boutons CTA */
+    .nouv-cta-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: var(--radius-full);
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: var(--transition);
+      margin-top: auto;
+    }
+
+    .btn-blue {
+      background: linear-gradient(135deg, var(--blue-primary), var(--blue-secondary));
+      color: #fff;
+      box-shadow: var(--shadow-blue);
+    }
+
+    .btn-blue:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 35px rgba(37,99,235,0.35);
+    }
+
+    .btn-gradient {
+      background: linear-gradient(135deg, #000, #1a1a2e);
+      color: #fff;
+    }
+
+    .btn-gradient:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    }
+
+    .btn-red {
+      background: linear-gradient(135deg, #dc2626, #ef4444);
+      color: #fff;
+      box-shadow: 0 8px 25px rgba(239,68,68,0.3);
+    }
+
+    .btn-red:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 35px rgba(239,68,68,0.4);
+    }
+
+    .btn-purple {
+      background: linear-gradient(135deg, #6d28d9, #8b5cf6);
+      color: #fff;
+      box-shadow: 0 8px 25px rgba(139,92,246,0.3);
+    }
+
+    .btn-purple:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 35px rgba(139,92,246,0.4);
+    }
+
+    /* ---- Responsive nouveaux services ---- */
+    @media (max-width: 1024px) {
+      .nouveaux-services-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .nouv-service-card--wide {
+        grid-column: 1 / -1;
+        grid-template-columns: 1fr 1.3fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .nouveaux-services-grid {
+        grid-template-columns: 1fr;
+      }
+      .nouv-service-card--wide {
+        grid-column: 1 / -1;
+        grid-template-columns: 1fr;
+      }
+      .nouv-service-card--wide .nouv-service-img-wrap {
+        min-height: auto;
+        aspect-ratio: 4/3;
+      }
+      .ugc-stats-row {
+        flex-direction: column;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1790,6 +2110,7 @@
 
       <ul class="nav-links">
         <li><a href="#services">Services</a></li>
+        <li><a href="#nouveaux-services">Solutions+</a></li>
         <li><a href="#formations">Formations</a></li>
         <li><a href="#app-effort">App EF-FORT.BF</a></li>
         <li><a href="#a-propos">À propos</a></li>
@@ -1807,6 +2128,7 @@
   <!-- Mobile Menu -->
   <div class="mobile-menu" id="mobileMenu">
     <a href="#services" onclick="closeMenu()">Services</a>
+    <a href="#nouveaux-services" onclick="closeMenu()">Solutions+</a>
     <a href="#formations" onclick="closeMenu()">Formations</a>
     <a href="#app-effort" onclick="closeMenu()">App EF-FORT.BF</a>
     <a href="#a-propos" onclick="closeMenu()">À propos</a>
@@ -2007,6 +2329,133 @@
       <div class="youdis-banner-wrap" data-animate>
         <img src="assets/images/youdis-services-list.jpg" alt="YouDis – Nos Services : Formations, Services digitaux, IA, Création de contenu, Cybersécurité" class="youdis-banner-img" />
       </div>
+    </div>
+  </section>
+
+  <!-- ======= NOUVEAUX SERVICES SECTION ======= -->
+  <section id="nouveaux-services" style="padding:80px 0;background:var(--white);position:relative;overflow:hidden;">
+    <!-- Décorations cercles -->
+    <div style="position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(249,115,22,0.04) 0%,transparent 70%);top:-150px;left:-150px;pointer-events:none;"></div>
+    <div style="position:absolute;width:300px;height:300px;border-radius:50%;border:2px solid rgba(37,99,235,0.06);bottom:60px;right:60px;pointer-events:none;animation:rotate-slow 30s linear infinite;"></div>
+    <div class="section-container">
+      <div class="section-header centered" data-animate>
+        <div class="section-tag" style="background:linear-gradient(135deg,rgba(249,115,22,0.12),rgba(37,99,235,0.12));border-color:rgba(249,115,22,0.3);color:var(--orange-primary);"><i class="fas fa-rocket"></i> Solutions Complémentaires</div>
+        <h2 class="section-title">Formations &amp; <span class="accent">Solutions Digitales</span></h2>
+        <div class="divider" style="margin:16px auto 24px;"></div>
+        <p class="section-desc">Des formations immersives et des solutions clés en main pour propulser votre présence digitale, monétiser vos comptes et maîtriser l'intelligence artificielle.</p>
+      </div>
+
+      <!-- Grille des 5 nouveaux services -->
+      <div class="nouveaux-services-grid">
+
+        <!-- Service 1 : Création & développement de solutions digitales -->
+        <article class="nouv-service-card" data-animate data-animate-delay="1">
+          <div class="nouv-service-img-wrap">
+            <img src="assets/images/service-digital-solutions.webp" alt="Création de solutions digitales sur mesure – YouDis" loading="lazy" />
+            <div class="nouv-service-badge badge-blue"><i class="fas fa-code"></i> Dev Digital</div>
+          </div>
+          <div class="nouv-service-body">
+            <h3 class="nouv-service-title">Création de solutions digitales sur mesure</h3>
+            <p class="nouv-service-desc">Des applications, sites web et logiciels pour automatiser, connecter et valoriser votre activité digitale.</p>
+            <div class="nouv-service-sub-items">
+              <div class="sub-item"><div class="sub-icon icon-blue"><i class="fas fa-desktop"></i></div><span>Logiciels sur mesure</span></div>
+              <div class="sub-item"><div class="sub-icon icon-orange"><i class="fas fa-mobile-alt"></i></div><span>Applications mobiles/web</span></div>
+              <div class="sub-item"><div class="sub-icon icon-teal"><i class="fas fa-globe"></i></div><span>Sites web professionnels</span></div>
+            </div>
+            <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20souhaite%20un%20devis%20pour%20une%20solution%20digitale." class="nouv-cta-btn btn-blue" target="_blank" rel="noopener">
+              <i class="fab fa-whatsapp"></i> Demander un devis
+            </a>
+          </div>
+        </article>
+
+        <!-- Service 2 : Formation vidéos IA réalistes -->
+        <article class="nouv-service-card" data-animate data-animate-delay="2">
+          <div class="nouv-service-img-wrap">
+            <img src="assets/images/formation-videos-ia.webp" alt="Formation Création de Vidéos IA Réalistes – YouDis" loading="lazy" />
+            <div class="nouv-service-badge badge-blue-dark"><i class="fas fa-video"></i> Formation IA</div>
+          </div>
+          <div class="nouv-service-body">
+            <h3 class="nouv-service-title">Création de vidéos IA réalistes</h3>
+            <p class="nouv-service-desc">Apprenez à produire des vidéos ultra-réalistes avec l'intelligence artificielle et générez des revenus en ligne.</p>
+            <div class="nouv-service-duration">
+              <div class="duration-circle"><span class="duration-num">2H</span><span class="duration-label">Formation</span></div>
+              <p>Maîtrisez les outils IA en seulement 2 heures. Formation express et pratique.</p>
+            </div>
+            <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20m%27inscrire%20%C3%A0%20la%20formation%20Vid%C3%A9os%20IA." class="nouv-cta-btn btn-blue" target="_blank" rel="noopener">
+              <i class="fab fa-whatsapp"></i> Je m'inscris
+            </a>
+          </div>
+        </article>
+
+        <!-- Service 3 : Contenu TikTok avec 3 outils IA -->
+        <article class="nouv-service-card" data-animate data-animate-delay="3">
+          <div class="nouv-service-img-wrap">
+            <img src="assets/images/contenu-tiktok-ia.webp" alt="Création de contenu TikTok avec 3 outils IA – YouDis" loading="lazy" />
+            <div class="nouv-service-badge badge-tiktok"><i class="fab fa-tiktok"></i> TikTok IA</div>
+          </div>
+          <div class="nouv-service-body">
+            <h3 class="nouv-service-title">Création de contenu TikTok avec l'IA</h3>
+            <p class="nouv-service-desc">Utilisez 3 outils IA puissants pour créer du contenu viral sur TikTok et monétiser efficacement votre compte.</p>
+            <div class="nouv-service-sub-items">
+              <div class="sub-item"><div class="sub-icon" style="background:rgba(0,0,0,0.06);color:#000;"><i class="fab fa-tiktok"></i></div><span>3 Outils IA inclus</span></div>
+              <div class="sub-item"><div class="sub-icon icon-orange"><i class="fas fa-coins"></i></div><span>Monétisation compte</span></div>
+            </div>
+            <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20m%27inscrire%20%C3%A0%20la%20formation%20TikTok%20IA." class="nouv-cta-btn btn-gradient" target="_blank" rel="noopener">
+              <i class="fab fa-whatsapp"></i> Je m'inscris
+            </a>
+          </div>
+        </article>
+
+        <!-- Service 4 : Monétisation de comptes TikTok -->
+        <article class="nouv-service-card" data-animate data-animate-delay="1">
+          <div class="nouv-service-img-wrap">
+            <img src="assets/images/monetisation-tiktok.webp" alt="Monétisation de comptes TikTok – YouDis" loading="lazy" />
+            <div class="nouv-service-badge badge-red"><i class="fas fa-dollar-sign"></i> Monétisation</div>
+          </div>
+          <div class="nouv-service-body">
+            <h3 class="nouv-service-title">Monétisation de comptes TikTok</h3>
+            <p class="nouv-service-desc">Nous monétisons vos comptes TikTok existants pour générer des revenus passifs de manière continue et professionnelle.</p>
+            <div class="nouv-service-sub-items">
+              <div class="sub-item"><div class="sub-icon icon-red"><i class="fas fa-chart-line"></i></div><span>Revenus passifs</span></div>
+              <div class="sub-item"><div class="sub-icon icon-orange"><i class="fas fa-users"></i></div><span>Gestion de compte</span></div>
+            </div>
+            <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20en%20savoir%20plus%20sur%20la%20mon%C3%A9tisation%20TikTok." class="nouv-cta-btn btn-red" target="_blank" rel="noopener">
+              <i class="fab fa-whatsapp"></i> En savoir plus
+            </a>
+          </div>
+        </article>
+
+        <!-- Service 5 : Formation influenceuses UGC avec l'IA -->
+        <article class="nouv-service-card nouv-service-card--wide" data-animate data-animate-delay="2">
+          <div class="nouv-service-img-wrap">
+            <img src="assets/images/influenceuses-ugc-ia.webp" alt="Création d'Influenceuses UGC avec l'IA – YouDis" loading="lazy" />
+            <div class="nouv-service-badge badge-purple"><i class="fas fa-magic"></i> UGC &amp; IA</div>
+          </div>
+          <div class="nouv-service-body">
+            <h3 class="nouv-service-title">Création d'Influenceuses UGC avec l'IA</h3>
+            <p class="nouv-service-desc">Créez des influenceuses virtuelles avec l'IA pour faire de la publicité impactante sur les réseaux sociaux.</p>
+            <!-- Statistiques -->
+            <div class="ugc-stats-row">
+              <div class="ugc-stat">
+                <div class="ugc-stat-circle ugc-circle-blue"><span>2,5M</span></div>
+                <div class="ugc-stat-info"><strong>Vues</strong><span class="ugc-stat-growth">+120%</span></div>
+              </div>
+              <div class="ugc-stat">
+                <div class="ugc-stat-circle ugc-circle-orange"><span>850K</span></div>
+                <div class="ugc-stat-info"><strong>Engagements</strong><span class="ugc-stat-growth">+95%</span></div>
+              </div>
+              <div class="ugc-stat">
+                <div class="ugc-stat-circle ugc-circle-green"><span>320K</span></div>
+                <div class="ugc-stat-info"><strong>Conversions</strong><span class="ugc-stat-growth">+150%</span></div>
+              </div>
+            </div>
+            <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20m%27inscrire%20%C3%A0%20la%20formation%20Influenceuses%20UGC." class="nouv-cta-btn btn-purple" target="_blank" rel="noopener">
+              <i class="fab fa-whatsapp"></i> Je m'inscris
+            </a>
+          </div>
+        </article>
+
+      </div><!-- fin .nouveaux-services-grid -->
     </div>
   </section>
 
