@@ -1227,6 +1227,8 @@
       .services-grid { grid-template-columns: repeat(2, 1fr); }
       .why-grid { grid-template-columns: repeat(2, 1fr); }
       .footer-inner { grid-template-columns: 1fr 1fr; gap: 36px; }
+      .recovery-steps { grid-template-columns: repeat(2, 1fr); }
+      .recovery-steps::before { display: none; }
     }
 
     @media (max-width: 900px) {
@@ -1242,6 +1244,9 @@
       .formation-card.wide { flex-direction: column; grid-column: span 1; }
       .formation-card.wide .formation-card-img-wrap { flex: none; }
       .testimonials-grid { grid-template-columns: 1fr 1fr; }
+      .recovery-hero { grid-template-columns: 1fr; gap: 40px; }
+      .recovery-premium { grid-template-columns: 1fr; }
+      .recovery-premium-cta { align-items: flex-start; }
     }
 
     @media (max-width: 768px) {
@@ -1269,7 +1274,507 @@
       .elearning-features { grid-template-columns: 1fr; }
       .hero-title { font-size: 1.9rem; }
       .about-brand-badge { right: -8px; bottom: -8px; }
+      .recovery-premium { padding: 28px 22px; }
+      .recovery-steps { grid-template-columns: 1fr 1fr; }
+      .modal-box { padding: 28px 22px; }
     }
+
+    /* =============================================
+       GOOGLE RECOVERY SECTION
+    ============================================= */
+    #google-recovery {
+      padding: 100px 0;
+      background: linear-gradient(180deg, var(--white) 0%, #f0f4ff 50%, var(--white) 100%);
+      position: relative; overflow: hidden;
+    }
+    #google-recovery::before {
+      content: '';
+      position: absolute; top: -80px; left: -80px;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(37,99,235,0.05) 0%, transparent 70%);
+      border-radius: 50%; pointer-events: none;
+    }
+    #google-recovery::after {
+      content: '';
+      position: absolute; bottom: -60px; right: -60px;
+      width: 320px; height: 320px;
+      background: radial-gradient(circle, rgba(249,115,22,0.06) 0%, transparent 70%);
+      border-radius: 50%; pointer-events: none;
+    }
+
+    /* Recovery Hero Banner */
+    .recovery-hero {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 60px; align-items: center;
+      margin-bottom: 70px;
+    }
+    .recovery-badge-new {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(37,99,235,0.08);
+      color: var(--blue-secondary);
+      border: 1px solid rgba(37,99,235,0.2);
+      padding: 6px 16px; border-radius: var(--radius-full);
+      font-size: 0.78rem; font-weight: 700;
+      letter-spacing: 0.5px; text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .recovery-hero-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: clamp(1.9rem, 3.5vw, 2.8rem);
+      font-weight: 800; line-height: 1.15;
+      color: var(--text-dark); margin-bottom: 20px;
+    }
+    .recovery-hero-title .rec-highlight {
+      color: var(--blue-secondary);
+    }
+    .recovery-hero-subtitle {
+      font-size: 1rem; color: var(--gray-600);
+      line-height: 1.75; margin-bottom: 32px; max-width: 540px;
+    }
+    .recovery-cta-group {
+      display: flex; flex-wrap: wrap; gap: 14px; align-items: center;
+    }
+    .btn-recovery-main {
+      display: inline-flex; align-items: center; gap: 9px;
+      background: linear-gradient(135deg, var(--blue-secondary), var(--blue-primary));
+      color: var(--white); padding: 15px 32px;
+      border-radius: var(--radius-full); font-weight: 700;
+      font-size: 0.97rem; cursor: pointer; border: none;
+      box-shadow: 0 8px 30px rgba(37,99,235,0.3);
+      transition: var(--transition); white-space: nowrap;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-recovery-main:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 40px rgba(37,99,235,0.4);
+    }
+    .recovery-trust-note {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 0.78rem; color: var(--gray-400);
+    }
+    .recovery-trust-note i { color: #10b981; }
+
+    /* Recovery Visual (right) */
+    .recovery-visual {
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .recovery-visual-card {
+      background: var(--white);
+      border: 1px solid rgba(37,99,235,0.1);
+      border-radius: var(--radius-lg);
+      padding: 20px 22px;
+      display: flex; align-items: center; gap: 16px;
+      box-shadow: 0 4px 20px rgba(37,99,235,0.06);
+      transition: var(--transition);
+    }
+    .recovery-visual-card:hover {
+      transform: translateX(6px);
+      box-shadow: 0 8px 28px rgba(37,99,235,0.12);
+    }
+    .recovery-visual-icon {
+      width: 50px; height: 50px; border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; flex-shrink: 0;
+    }
+    .rvi-blue { background: rgba(37,99,235,0.1); }
+    .rvi-green { background: rgba(16,185,129,0.1); }
+    .rvi-orange { background: rgba(249,115,22,0.1); }
+    .rvi-purple { background: rgba(139,92,246,0.1); }
+    .recovery-visual-text strong {
+      display: block; font-size: 0.88rem; font-weight: 700;
+      color: var(--text-dark); margin-bottom: 3px;
+    }
+    .recovery-visual-text span {
+      font-size: 0.76rem; color: var(--gray-400);
+    }
+
+    /* Recovery Steps (How it works) */
+    .recovery-how-title {
+      text-align: center;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.5rem; font-weight: 800;
+      color: var(--text-dark); margin-bottom: 40px;
+    }
+    .recovery-steps {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 20px; margin-bottom: 70px; position: relative;
+    }
+    .recovery-steps::before {
+      content: '';
+      position: absolute; top: 35px; left: 10%; right: 10%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--blue-secondary), var(--orange-primary));
+      z-index: 0;
+    }
+    .recovery-step {
+      text-align: center; position: relative; z-index: 1;
+    }
+    .recovery-step-num {
+      width: 70px; height: 70px;
+      background: linear-gradient(135deg, var(--blue-secondary), var(--blue-primary));
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; margin: 0 auto 16px;
+      box-shadow: 0 6px 20px rgba(37,99,235,0.25);
+      border: 4px solid var(--white);
+    }
+    .recovery-step-title {
+      font-weight: 700; font-size: 0.88rem;
+      color: var(--text-dark); margin-bottom: 8px;
+    }
+    .recovery-step-desc {
+      font-size: 0.78rem; color: var(--gray-600); line-height: 1.6;
+    }
+
+    /* FAQ Accordion */
+    .recovery-faq { margin-bottom: 60px; }
+    .recovery-faq-title {
+      text-align: center;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.5rem; font-weight: 800;
+      color: var(--text-dark); margin-bottom: 32px;
+    }
+    .faq-item {
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      margin-bottom: 10px;
+      overflow: hidden; transition: var(--transition);
+    }
+    .faq-item:hover { border-color: rgba(37,99,235,0.25); }
+    .faq-question {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 22px; cursor: pointer;
+      background: var(--white); transition: var(--transition);
+      gap: 12px;
+    }
+    .faq-question:hover { background: var(--gray-100); }
+    .faq-question-text {
+      font-size: 0.9rem; font-weight: 600;
+      color: var(--text-dark); display: flex; align-items: center; gap: 10px;
+    }
+    .faq-question-text i { color: var(--blue-secondary); flex-shrink: 0; }
+    .faq-chevron {
+      color: var(--gray-400); font-size: 0.85rem;
+      transition: transform 0.3s ease; flex-shrink: 0;
+    }
+    .faq-item.open .faq-chevron { transform: rotate(180deg); }
+    .faq-answer {
+      display: none; padding: 0 22px 18px;
+      background: var(--white-soft);
+    }
+    .faq-item.open .faq-answer { display: block; }
+    .faq-answer p {
+      font-size: 0.85rem; color: var(--gray-600); line-height: 1.75;
+    }
+    .faq-answer ul {
+      margin: 8px 0 0 18px;
+    }
+    .faq-answer ul li {
+      font-size: 0.83rem; color: var(--gray-600); line-height: 1.7;
+    }
+
+    /* Premium Escalation Card */
+    .recovery-premium {
+      background: linear-gradient(135deg, var(--blue-deep) 0%, var(--blue-primary) 100%);
+      border-radius: var(--radius-xl);
+      padding: 48px 52px;
+      display: grid; grid-template-columns: 1fr auto;
+      gap: 40px; align-items: center;
+      position: relative; overflow: hidden;
+    }
+    .recovery-premium::before {
+      content: '';
+      position: absolute; top: -60px; right: -60px;
+      width: 250px; height: 250px;
+      background: radial-gradient(circle, rgba(249,115,22,0.15) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .recovery-premium-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.5rem; font-weight: 800;
+      color: var(--white); margin-bottom: 10px; line-height: 1.3;
+    }
+    .recovery-premium-desc {
+      font-size: 0.92rem; color: rgba(255,255,255,0.7);
+      line-height: 1.7; margin-bottom: 20px;
+    }
+    .recovery-premium-features {
+      display: flex; flex-wrap: wrap; gap: 10px;
+    }
+    .recovery-pf-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.85);
+      padding: 5px 14px; border-radius: var(--radius-full);
+      font-size: 0.76rem; font-weight: 600;
+    }
+    .recovery-pf-tag i { color: var(--orange-primary); }
+    .recovery-premium-cta {
+      display: flex; flex-direction: column; gap: 12px;
+      align-items: flex-end; flex-shrink: 0;
+    }
+    .btn-premium {
+      display: inline-flex; align-items: center; gap: 9px;
+      background: var(--orange-primary); color: var(--white);
+      padding: 15px 28px; border-radius: var(--radius-full);
+      font-weight: 700; font-size: 0.95rem;
+      cursor: pointer; border: none;
+      box-shadow: 0 8px 24px rgba(249,115,22,0.4);
+      transition: var(--transition); white-space: nowrap;
+      font-family: 'Inter', sans-serif;
+      text-decoration: none;
+    }
+    .btn-premium:hover {
+      background: var(--orange-dark); transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(249,115,22,0.5);
+    }
+    .recovery-premium-note {
+      font-size: 0.72rem; color: rgba(255,255,255,0.45);
+      text-align: center;
+    }
+
+    /* RGPD Notice */
+    .recovery-rgpd {
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(16,185,129,0.06);
+      border: 1px solid rgba(16,185,129,0.2);
+      border-radius: var(--radius-md);
+      padding: 16px 22px; margin-top: 32px;
+    }
+    .recovery-rgpd i { color: #10b981; font-size: 1.1rem; flex-shrink: 0; }
+    .recovery-rgpd p { font-size: 0.8rem; color: var(--gray-600); line-height: 1.6; }
+    .recovery-rgpd strong { color: var(--text-dark); }
+
+    /* =============================================
+       MODAL DIAGNOSTIC
+    ============================================= */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(15,23,42,0.65);
+      backdrop-filter: blur(6px);
+      z-index: 9000; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal-box {
+      background: var(--white); border-radius: var(--radius-xl);
+      padding: 40px 44px; max-width: 640px; width: 100%;
+      max-height: 90vh; overflow-y: auto;
+      position: relative;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.2);
+      animation: modalFadeIn 0.35s cubic-bezier(0.4,0,0.2,1);
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: translateY(20px) scale(0.96); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .modal-close {
+      position: absolute; top: 18px; right: 20px;
+      background: var(--gray-100); border: none; cursor: pointer;
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--gray-600); font-size: 1rem;
+      transition: var(--transition);
+    }
+    .modal-close:hover { background: var(--gray-200); color: var(--text-dark); }
+
+    /* Progress bar dans modal */
+    .modal-progress-bar {
+      height: 6px; background: var(--gray-200);
+      border-radius: 3px; margin-bottom: 32px; overflow: hidden;
+    }
+    .modal-progress-fill {
+      height: 100%; border-radius: 3px;
+      background: linear-gradient(90deg, var(--blue-secondary), var(--orange-primary));
+      transition: width 0.4s ease;
+    }
+    .modal-step-counter {
+      font-size: 0.75rem; color: var(--gray-400); font-weight: 600;
+      margin-bottom: 8px; letter-spacing: 0.3px;
+    }
+    .modal-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.25rem; font-weight: 800;
+      color: var(--text-dark); margin-bottom: 6px; line-height: 1.3;
+    }
+    .modal-subtitle {
+      font-size: 0.88rem; color: var(--gray-600);
+      line-height: 1.65; margin-bottom: 28px;
+    }
+    .modal-input {
+      width: 100%; padding: 13px 18px;
+      border: 2px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem; color: var(--text-dark);
+      outline: none; transition: var(--transition);
+      background: var(--white-soft);
+      margin-bottom: 22px;
+    }
+    .modal-input:focus {
+      border-color: var(--blue-secondary);
+      box-shadow: 0 0 0 4px rgba(37,99,235,0.1);
+      background: var(--white);
+    }
+
+    /* Radio options */
+    .modal-options {
+      display: flex; flex-direction: column; gap: 10px;
+      margin-bottom: 24px;
+    }
+    .modal-option {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 18px;
+      border: 2px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      cursor: pointer; transition: var(--transition);
+      background: var(--white-soft);
+    }
+    .modal-option:hover {
+      border-color: var(--blue-secondary);
+      background: rgba(37,99,235,0.03);
+    }
+    .modal-option.selected {
+      border-color: var(--blue-secondary);
+      background: rgba(37,99,235,0.06);
+    }
+    .modal-option input[type="radio"] { display: none; }
+    .modal-option-icon {
+      width: 38px; height: 38px; border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; flex-shrink: 0;
+      background: rgba(37,99,235,0.08);
+    }
+    .modal-option-text strong {
+      display: block; font-size: 0.88rem; font-weight: 700;
+      color: var(--text-dark);
+    }
+    .modal-option-text span {
+      font-size: 0.75rem; color: var(--gray-400);
+    }
+
+    /* Modal navigation */
+    .modal-nav {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-top: 10px; gap: 12px;
+    }
+    .btn-modal-back {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: var(--gray-100); color: var(--gray-600);
+      padding: 11px 20px; border-radius: var(--radius-full);
+      font-weight: 600; font-size: 0.88rem; cursor: pointer;
+      border: none; transition: var(--transition);
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-modal-back:hover { background: var(--gray-200); }
+    .btn-modal-next {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: var(--blue-secondary); color: var(--white);
+      padding: 12px 26px; border-radius: var(--radius-full);
+      font-weight: 700; font-size: 0.9rem; cursor: pointer;
+      border: none; transition: var(--transition);
+      font-family: 'Inter', sans-serif;
+      box-shadow: 0 4px 16px rgba(37,99,235,0.25);
+    }
+    .btn-modal-next:hover {
+      background: var(--blue-primary); transform: translateY(-1px);
+    }
+    .btn-modal-next:disabled {
+      opacity: 0.5; cursor: not-allowed; transform: none;
+    }
+
+    /* Plan d'action */
+    .recovery-plan {
+      background: rgba(37,99,235,0.04);
+      border: 1px solid rgba(37,99,235,0.15);
+      border-radius: var(--radius-lg); padding: 24px;
+      margin-bottom: 24px;
+    }
+    .recovery-plan h4 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1rem; font-weight: 800;
+      color: var(--text-dark); margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .recovery-plan-step {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(37,99,235,0.1);
+    }
+    .recovery-plan-step:last-child { border-bottom: none; }
+    .plan-step-num {
+      width: 28px; height: 28px;
+      background: var(--blue-secondary); color: var(--white);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 800; flex-shrink: 0;
+    }
+    .plan-step-content strong {
+      display: block; font-size: 0.86rem; font-weight: 700;
+      color: var(--text-dark); margin-bottom: 3px;
+    }
+    .plan-step-content p {
+      font-size: 0.8rem; color: var(--gray-600); line-height: 1.6;
+    }
+    .plan-step-content a {
+      color: var(--blue-secondary); font-weight: 600;
+      text-decoration: none; font-size: 0.8rem;
+    }
+    .plan-step-content a:hover { text-decoration: underline; }
+
+    /* Score badge */
+    .recovery-score {
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 4px;
+      background: var(--white);
+      border: 2px solid transparent;
+      border-radius: var(--radius-lg);
+      padding: 18px 24px; margin-bottom: 20px;
+      text-align: center;
+    }
+    .recovery-score.high { border-color: #10b981; background: rgba(16,185,129,0.05); }
+    .recovery-score.medium { border-color: var(--orange-primary); background: rgba(249,115,22,0.05); }
+    .recovery-score.low { border-color: #ef4444; background: rgba(239,68,68,0.05); }
+    .recovery-score-label {
+      font-size: 0.78rem; font-weight: 600; color: var(--gray-400);
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .recovery-score-value {
+      font-family: 'Poppins', sans-serif;
+      font-size: 2rem; font-weight: 900; line-height: 1;
+    }
+    .recovery-score.high .recovery-score-value { color: #10b981; }
+    .recovery-score.medium .recovery-score-value { color: var(--orange-primary); }
+    .recovery-score.low .recovery-score-value { color: #ef4444; }
+    .recovery-score-desc { font-size: 0.82rem; color: var(--gray-600); }
+
+    /* Modal Formulaire Premium */
+    .modal-form-group { margin-bottom: 16px; }
+    .modal-form-group label {
+      display: block; font-size: 0.82rem; font-weight: 600;
+      color: var(--gray-800); margin-bottom: 6px;
+    }
+    .modal-form-group input,
+    .modal-form-group textarea {
+      width: 100%; padding: 11px 14px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.87rem; color: var(--text-dark);
+      background: var(--white); transition: var(--transition);
+      outline: none;
+    }
+    .modal-form-group input:focus,
+    .modal-form-group textarea:focus {
+      border-color: var(--blue-secondary);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+    .modal-form-group textarea { resize: vertical; min-height: 90px; }
+    .modal-rgpd-note {
+      font-size: 0.73rem; color: var(--gray-400);
+      display: flex; align-items: flex-start; gap: 6px;
+      margin-bottom: 16px; line-height: 1.5;
+    }
+    .modal-rgpd-note i { color: #10b981; margin-top: 2px; flex-shrink: 0; }
 
     /* =============================================
        BOTTOM NAV (onglets mobiles)
@@ -1401,6 +1906,7 @@
         <li><a href="#services">Services</a></li>
         <li><a href="#formations">Formations</a></li>
         <li><a href="#app-effort">E-Learning</a></li>
+        <li><a href="#google-recovery" style="color:var(--blue-secondary);font-weight:600;">🔐 Récupération Google</a></li>
         <li><a href="#a-propos">À propos</a></li>
         <li><a href="#contact">Contact</a></li>
         <li><a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20un%20devis%20YouDis." target="_blank" class="nav-cta-btn">💬 Demander un devis</a></li>
@@ -1417,6 +1923,7 @@
     <a href="#services" onclick="closeMenu()">📦 Services</a>
     <a href="#formations" onclick="closeMenu()">🎓 Formations</a>
     <a href="#app-effort" onclick="closeMenu()">📱 E-Learning gratuit</a>
+    <a href="#google-recovery" onclick="closeMenu()" style="color:var(--blue-secondary);font-weight:700;">🔐 Récupération Google</a>
     <a href="#a-propos" onclick="closeMenu()">👤 À propos</a>
     <a href="#contact" onclick="closeMenu()">✉️ Contact</a>
     <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20un%20devis." target="_blank" class="mobile-cta" onclick="closeMenu()">💬 Demander un devis</a>
@@ -2026,6 +2533,556 @@
     </div>
   </section>
 
+  <!-- ========= GOOGLE RECOVERY SECTION ========= -->
+  <section id="google-recovery" class="tab-section">
+    <div class="container">
+
+      <!-- Hero Banner -->
+      <div class="recovery-hero">
+        <!-- Left: Content -->
+        <div class="fade-up">
+          <div class="recovery-badge-new">
+            <i class="fas fa-lock-open"></i> Nouveau service YouDis
+          </div>
+          <h2 class="recovery-hero-title">
+            🔐 Vous avez perdu l'accès<br>
+            à votre <span class="rec-highlight">compte Google</span> ?
+          </h2>
+          <p class="recovery-hero-subtitle">
+            Ne paniquez pas. Notre assistant vous guide <strong>pas à pas</strong> pour maximiser vos chances de récupération — en toute légalité et transparence. Aucun mot de passe stocké, 100% conforme RGPD.
+          </p>
+          <div class="recovery-cta-group">
+            <button class="btn-recovery-main" onclick="openRecoveryModal()">
+              <i class="fas fa-stethoscope"></i> Commencer le diagnostic gratuit
+            </button>
+            <div class="recovery-trust-note">
+              <i class="fas fa-shield-check"></i> 100% gratuit · Aucun stockage de données
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Visual Cards -->
+        <div class="recovery-visual fade-up fade-up-delay-2">
+          <div class="recovery-visual-card">
+            <div class="recovery-visual-icon rvi-blue">🔍</div>
+            <div class="recovery-visual-text">
+              <strong>Diagnostic personnalisé</strong>
+              <span>5–8 questions pour évaluer vos options</span>
+            </div>
+          </div>
+          <div class="recovery-visual-card">
+            <div class="recovery-visual-icon rvi-green">📋</div>
+            <div class="recovery-visual-text">
+              <strong>Plan d'action sur mesure</strong>
+              <span>Étapes claires selon votre situation</span>
+            </div>
+          </div>
+          <div class="recovery-visual-card">
+            <div class="recovery-visual-icon rvi-orange">🔗</div>
+            <div class="recovery-visual-text">
+              <strong>Liens officiels Google</strong>
+              <span>Accès direct aux pages de récupération</span>
+            </div>
+          </div>
+          <div class="recovery-visual-card">
+            <div class="recovery-visual-icon rvi-purple">👨‍💼</div>
+            <div class="recovery-visual-text">
+              <strong>Accompagnement humain</strong>
+              <span>Option premium si l'assistant ne suffit pas</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- How it works -->
+      <div class="fade-up">
+        <h3 class="recovery-how-title">⚙️ Comment ça fonctionne ?</h3>
+        <div class="recovery-steps">
+          <div class="recovery-step">
+            <div class="recovery-step-num">🔎</div>
+            <div class="recovery-step-title">Diagnostic</div>
+            <div class="recovery-step-desc">Répondez à nos questions pour identifier ce dont vous vous souvenez encore</div>
+          </div>
+          <div class="recovery-step">
+            <div class="recovery-step-num">📊</div>
+            <div class="recovery-step-title">Analyse</div>
+            <div class="recovery-step-desc">Notre système évalue vos chances de récupération et identifie les meilleures options</div>
+          </div>
+          <div class="recovery-step">
+            <div class="recovery-step-num">🗺️</div>
+            <div class="recovery-step-title">Plan d'action</div>
+            <div class="recovery-step-desc">Vous recevez un guide personnalisé avec les étapes à suivre dans le bon ordre</div>
+          </div>
+          <div class="recovery-step">
+            <div class="recovery-step-num">✅</div>
+            <div class="recovery-step-title">Récupération</div>
+            <div class="recovery-step-desc">Suivez les étapes et récupérez votre compte, ou contactez un conseiller si besoin</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FAQ -->
+      <div class="recovery-faq fade-up">
+        <h3 class="recovery-faq-title">❓ Questions fréquentes</h3>
+
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-question">
+            <div class="faq-question-text"><i class="fas fa-key"></i> Que faire si je ne me souviens plus de mon ancien mot de passe ?</div>
+            <i class="fas fa-chevron-down faq-chevron"></i>
+          </div>
+          <div class="faq-answer">
+            <p>Pas de panique ! Google ne demande pas forcément votre mot de passe actuel. Voici les alternatives :</p>
+            <ul>
+              <li>Utilisez votre <strong>numéro de téléphone de récupération</strong> pour recevoir un code SMS</li>
+              <li>Utilisez votre <strong>adresse email de secours</strong> pour recevoir un lien de récupération</li>
+              <li>Si vous avez un <strong>appareil de confiance</strong> avec une session ouverte, Google peut vous identifier</li>
+              <li>Essayez de taper des <strong>anciens mots de passe</strong> que vous avez déjà utilisés — Google les accepte parfois</li>
+              <li>Consultez votre <strong>gestionnaire de mots de passe</strong> (Chrome, Bitwarden, 1Password, etc.)</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-question">
+            <div class="faq-question-text"><i class="fas fa-calendar-alt"></i> Comment retrouver la date de création de mon compte ?</div>
+            <i class="fas fa-chevron-down faq-chevron"></i>
+          </div>
+          <div class="faq-answer">
+            <p>Google peut vous demander la date approximative de création de votre compte. Voici comment la retrouver :</p>
+            <ul>
+              <li>Cherchez l'<strong>email de bienvenue Google</strong> dans votre ancienne boîte mail (objet : "Bienvenue sur Gmail")</li>
+              <li>Consultez vos <strong>anciens appareils</strong> — la date d'activation Google y est souvent enregistrée</li>
+              <li>Regardez vos <strong>réseaux sociaux</strong> liés à ce Google (Facebook, Instagram) pour trouver une date d'inscription cohérente</li>
+              <li>Essayez une <strong>plage large</strong> (ex: "début 2018") si vous n'êtes pas précis — Google accepte les approximations</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-question">
+            <div class="faq-question-text"><i class="fas fa-mobile-alt"></i> Puis-je récupérer mon compte sans téléphone de récupération ?</div>
+            <i class="fas fa-chevron-down faq-chevron"></i>
+          </div>
+          <div class="faq-answer">
+            <p>Oui, c'est possible mais plus difficile. Google propose d'autres méthodes de vérification :</p>
+            <ul>
+              <li><strong>Email de secours</strong> : si vous en avez configuré un, c'est la méthode la plus facile</li>
+              <li><strong>Appareil de confiance</strong> : un téléphone ou ordinateur où vous étiez déjà connecté peut servir à valider votre identité</li>
+              <li><strong>Formulaire de vérification d'identité</strong> : Google propose un questionnaire approfondi (mots de passe précédents, contacts, date de création)</li>
+              <li><strong>Application Google</strong> : si vous êtes connecté sur un autre appareil, vous pouvez approuver la connexion via une notification</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-question">
+            <div class="faq-question-text"><i class="fas fa-times-circle"></i> Google a refusé ma demande de récupération, que faire ?</div>
+            <i class="fas fa-chevron-down faq-chevron"></i>
+          </div>
+          <div class="faq-answer">
+            <p>Un refus n'est pas définitif. Voici les étapes à suivre :</p>
+            <ul>
+              <li><strong>Attendez quelques jours</strong> et réessayez — les chances augmentent avec le temps et la cohérence des réponses</li>
+              <li><strong>Changez d'appareil</strong> : essayez depuis un appareil différent (téléphone, PC, tablette) — Google considère l'historique de chaque appareil</li>
+              <li><strong>Utilisez un réseau familier</strong> : connectez-vous depuis un WiFi que vous utilisez habituellement (maison, bureau)</li>
+              <li><strong>Variez vos réponses</strong> : si vous n'étiez pas certain de certaines dates, essayez des variantes plausibles</li>
+              <li><strong>Option premium</strong> : si tout échoue, notre conseiller peut vous accompagner dans une démarche plus approfondie</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-question">
+            <div class="faq-question-text"><i class="fas fa-shield-alt"></i> Mes données sont-elles en sécurité avec votre assistant ?</div>
+            <i class="fas fa-chevron-down faq-chevron"></i>
+          </div>
+          <div class="faq-answer">
+            <p>Absolument ! Notre assistant respecte strictement la confidentialité :</p>
+            <ul>
+              <li><strong>Aucun stockage</strong> : toutes vos réponses restent dans votre navigateur (JavaScript côté client uniquement)</li>
+              <li><strong>Aucun mot de passe demandé</strong> : nous ne vous demandons jamais votre mot de passe actuel ou ancien</li>
+              <li><strong>Aucune collecte de données sensibles</strong> : l'adresse Gmail saisie n'est pas transmise à nos serveurs</li>
+              <li><strong>Conformité RGPD</strong> : notre outil est 100% conforme aux réglementations européennes sur les données</li>
+              <li><strong>Liens officiels uniquement</strong> : nous vous redirigeons vers les pages officielles de Google pour toutes les actions</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Premium Escalation -->
+      <div class="recovery-premium fade-up">
+        <div>
+          <h3 class="recovery-premium-title">🤝 Toujours bloqué ? Un conseiller peut vous aider</h3>
+          <p class="recovery-premium-desc">
+            Si l'assistant automatique ne suffit pas, notre équipe peut vous accompagner personnellement dans votre démarche de récupération. Service premium, confidentiel et 100% légal.
+          </p>
+          <div class="recovery-premium-features">
+            <span class="recovery-pf-tag"><i class="fas fa-check"></i> Accompagnement personnalisé</span>
+            <span class="recovery-pf-tag"><i class="fas fa-check"></i> Analyse de votre situation</span>
+            <span class="recovery-pf-tag"><i class="fas fa-check"></i> Stratégie sur mesure</span>
+            <span class="recovery-pf-tag"><i class="fas fa-check"></i> Suivi jusqu'à la résolution</span>
+          </div>
+        </div>
+        <div class="recovery-premium-cta">
+          <button class="btn-premium" onclick="openPremiumModal()">
+            <i class="fab fa-whatsapp"></i> Demander de l'aide
+          </button>
+          <div class="recovery-premium-note">Accompagnement payant · Détails sur demande</div>
+        </div>
+      </div>
+
+      <!-- RGPD Notice -->
+      <div class="recovery-rgpd fade-up">
+        <i class="fas fa-shield-check"></i>
+        <p>
+          <strong>Conformité RGPD garantie :</strong> Cet assistant fonctionne entièrement dans votre navigateur. Aucun mot de passe, aucun code de récupération, aucune donnée personnelle sensible n'est stockée ou transmise à nos serveurs. Nous respectons votre vie privée et les conditions d'utilisation de Google.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========= MODAL DIAGNOSTIC GOOGLE RECOVERY ========= -->
+  <div class="modal-overlay" id="recoveryModal" onclick="closeModalOutside(event)">
+    <div class="modal-box" id="recoveryModalBox">
+      <button class="modal-close" onclick="closeRecoveryModal()" title="Fermer">
+        <i class="fas fa-times"></i>
+      </button>
+
+      <!-- Step 0 : Saisie Gmail -->
+      <div id="modal-step-0" class="modal-step">
+        <div class="modal-step-counter">Étape 1 / 8</div>
+        <div class="modal-progress-bar"><div class="modal-progress-fill" style="width:12%"></div></div>
+        <div class="modal-title">🔍 Commençons le diagnostic</div>
+        <div class="modal-subtitle">Saisissez l'adresse Gmail du compte auquel vous n'avez plus accès. Cette information reste uniquement dans votre navigateur.</div>
+        <input type="email" class="modal-input" id="recovery-gmail" placeholder="exemple@gmail.com" oninput="checkGmailInput()">
+        <div class="modal-nav">
+          <div></div>
+          <button class="btn-modal-next" id="btn-step0-next" onclick="goToStep(1)" disabled>
+            Continuer <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 1 : Téléphone récupération -->
+      <div id="modal-step-1" class="modal-step" style="display:none">
+        <div class="modal-step-counter">Étape 2 / 8</div>
+        <div class="modal-progress-bar"><div class="modal-progress-fill" style="width:25%"></div></div>
+        <div class="modal-title">📱 Avez-vous un téléphone de récupération ?</div>
+        <div class="modal-subtitle">Un numéro de téléphone que vous aviez configuré sur ce compte Google et qui est toujours actif.</div>
+        <div class="modal-options">
+          <label class="modal-option" onclick="selectOption(this, 'phone', 'yes')">
+            <input type="radio" name="phone" value="yes">
+            <div class="modal-option-icon">✅</div>
+            <div class="modal-option-text">
+              <strong>Oui, j'ai ce numéro et il est toujours actif</strong>
+              <span>Je peux recevoir un SMS de vérification</span>
+            </div>
+          </label>
+          <label class="modal-option" onclick="selectOption(this, 'phone', 'maybe')">
+            <input type="radio" name="phone" value="maybe">
+            <div class="modal-option-icon">🤔</div>
+            <div class="modal-option-text">
+              <strong>Je ne suis pas sûr(e)</strong>
+              <span>J'ai peut-être changé de numéro depuis</span>
+            </div>
+          </label>
+          <label class="modal-option" onclick="selectOption(this, 'phone', 'no')">
+            <input type="radio" name="phone" value="no">
+            <div class="modal-option-icon">❌</div>
+            <div class="modal-option-text">
+              <strong>Non, pas de téléphone de récupération</strong>
+              <span>Je n'en avais pas configuré ou j'ai changé de numéro</span>
+            </div>
+          </label>
+        </div>
+        <div class="modal-nav">
+          <button class="btn-modal-back" onclick="goToStep(0)"><i class="fas fa-arrow-left"></i> Retour</button>
+          <button class="btn-modal-next" id="btn-step1-next" onclick="goToStep(2)" disabled>
+            Continuer <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2 : Email de secours -->
+      <div id="modal-step-2" class="modal-step" style="display:none">
+        <div class="modal-step-counter">Étape 3 / 8</div>
+        <div class="modal-progress-bar"><div class="modal-progress-fill" style="width:37%"></div></div>
+        <div class="modal-title">📧 Avez-vous une adresse email de secours ?</div>
+        <div class="modal-subtitle">Un email alternatif (Hotmail, Yahoo, autre Gmail...) que vous aviez renseigné comme adresse de récupération.</div>
+        <div class="modal-options">
+          <label class="modal-option" onclick="selectOption(this, 'email', 'yes')">
+            <input type="radio" name="email" value="yes">
+            <div class="modal-option-icon">✅</div>
+            <div class="modal-option-text">
+              <strong>Oui, j'ai accès à cet email de secours</strong>
+              <span>Je peux recevoir un lien de récupération</span>
+            </div>
+          </label>
+          <label class="modal-option" onclick="selectOption(this, 'email', 'maybe')">
+            <input type="radio" name="email" value="maybe">
+            <div class="modal-option-icon">🤔</div>
+            <div class="modal-option-text">
+              <strong>Peut-être, mais je n'y ai plus accès non plus</strong>
+              <span>J'ai perdu l'accès à cet email aussi</span>
+            </div>
+          </label>
+          <label class="modal-option" onclick="selectOption(this, 'email', 'no')">
+            <input type="radio" name="email" value="no">
+            <div class="modal-option-icon">❌</div>
+            <div class="modal-option-text">
+              <strong>Non, pas d'email de secours configuré</strong>
+              <span>Je n'en avais pas ajouté à l'époque</span>
+            </div>
+          </label>
+        </div>
+        <div class="modal-nav">
+          <button class="btn-modal-back" onclick="goToStep(1)"><i class="fas fa-arrow-left"></i> Retour</button>
+          <button class="btn-modal-next" id="btn-step2-next" onclick="goToStep(3)" disabled>
+            Continuer <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 3 : Ancien mot de passe -->
+      <div id="modal-step-3" class="modal-step" style="display:none">
+        <div class="modal-step-counter">Étape 4 / 8</div>
+        <div class="modal-progress-bar"><div class="modal-progress-fill" style="width:50%"></div></div>
+        <div class="modal-title">🔑 Vous souvenez-vous d'un ancien mot de passe ?</div>
+        <div class="modal-subtitle">Pas le mot de passe actuel — mais un que vous avez déjà utilisé pour ce compte Google. Google accepte parfois les anciens mots de passe.</div>
+        <div class="modal-options">
+          <label class="modal-option" onclick="selectOption(this, 'password', 'yes')">
+            <input type="radio" name="password" value="yes">
+            <div class="modal-option-icon">✅</div>
+            <div class="modal-option-text">
+              <strong>Oui, je me souviens d'un ou plusieurs anciens mots de passe</strong>
+              <span>Je peux les tester lors de la récupération</span>
+            </div>
+          </label>
+          <label class="modal-option" onclick="selectOption(this, 'password', 'vague')">
+            <input type="radio" name="password" value="vague">
+            <div class="modal-option-icon">🤔</div>
+            <div class="modal-option-text">
+              <strong>Vaguement, je me souviens d'éléments</strong>
+              <span>Peut-être le début ou la structure du mot de passe</span>
+            </div>
+          </label>
+          <label class="modal-option" onclick="selectOption(this, 'password', 'no')">
+            <input type="radio" name="password" value="no">
+            <div class="modal-option-icon">❌</div>
+            <div class="modal-option-text">
+              <strong>Non, aucun souvenir de mot de passe</strong>
+              <span>Je ne me rappelle d'aucun mot de passe utilisé</span>
+            </div>
+          </label>
+        </div>
+        <div class="modal-nav">
+          <button class="btn-modal-back" onclick="goToStep(2)"><i class="fas fa-arrow-left"></i> Retour</button>
+          <button class="btn-modal-next" id="btn-step3-next" onclick="goToStep(4)" disabled>
+            Continuer <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 4 : Dernière connexion -->
+      <div id="modal-step-4" class="modal-step" style="display:none">
+        <div class="modal-step-counter">Étape 5 / 8</div>
+        <div class="modal-progress-bar"><div class="modal-progress-fill" style="width:62%"></div></div>
+        <div class="modal-title">⏰ Quand avez-vous utilisé ce compte pour la dernière fois ?</div>
+        <div class="modal-subtitle">Google tient compte de l'ancienneté depuis votre dernière connexion pour évaluer votre identité.</div>
+        <div class="modal-options">
+          <label class="modal-option" onclick="selectOption(this, 'lastuse', 'recent')">
+            <input type="radio" name="lastuse" value="recent">
+            <div class="modal-option-icon">🟢</div>
+            <div class="modal-option-text">
+              <strong>Il y a moins de 3 mois</strong>
+              <span>Récemment actif sur ce compte</span>
+            </div>
+          </label>
+          <label class="modal-option" onclick="selectOption(this, 'lastuse', 'medium')">
+            <input type="radio" name="lastuse" value="medium">
+            <div class="modal-option-icon">🟡</div>
+            <div class="modal-option-text">
+              <strong>Entre 3 mois et 1 an</strong>
+              <span>Quelques mois d'inactivité</span>
+            </div>
+          </label>
+          <label class="modal-option" onclick="selectOption(this, 'lastuse', 'old')">
+            <input type="radio" name="lastuse" value="old">
+            <div class="modal-option-icon">🔴</div>
+            <div class="modal-option-text">
+              <strong>Il y a plus d'un an</strong>
+              <span>Compte peu actif ou en veille prolongée</span>
+            </div>
+          </label>
+        </div>
+        <div class="modal-nav">
+          <button class="btn-modal-back" onclick="goToStep(3)"><i class="fas fa-arrow-left"></i> Retour</button>
+          <button class="btn-modal-next" id="btn-step4-next" onclick="goToStep(5)" disabled>
+            Continuer <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 5 : Session ouverte -->
+      <div id="modal-step-5" class="modal-step" style="display:none">
+        <div class="modal-step-counter">Étape 6 / 8</div>
+        <div class="modal-progress-bar"><div class="modal-progress-fill" style="width:75%"></div></div>
+        <div class="modal-title">📲 Avez-vous encore une session ouverte quelque part ?</div>
+        <div class="modal-subtitle">Un téléphone, tablette ou ordinateur où vous êtes toujours connecté à ce compte Google (même si vous ne vous en souvenez plus).</div>
+        <div class="modal-options">
+          <label class="modal-option" onclick="selectOption(this, 'session', 'yes')">
+            <input type="radio" name="session" value="yes">
+            <div class="modal-option-icon">✅</div>
+            <div class="modal-option-text">
+              <strong>Oui, je pense avoir un appareil encore connecté</strong>
+              <span>Mon téléphone, PC ou tablette est peut-être encore connecté</span>
+            </div>
+          </label>
+          <label class="modal-option" onclick="selectOption(this, 'session', 'no')">
+            <input type="radio" name="session" value="no">
+            <div class="modal-option-icon">❌</div>
+            <div class="modal-option-text">
+              <strong>Non, plus aucune session active</strong>
+              <span>J'ai changé d'appareils ou tout a été déconnecté</span>
+            </div>
+          </label>
+        </div>
+        <div class="modal-nav">
+          <button class="btn-modal-back" onclick="goToStep(4)"><i class="fas fa-arrow-left"></i> Retour</button>
+          <button class="btn-modal-next" id="btn-step5-next" onclick="goToStep(6)" disabled>
+            Continuer <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 6 : Date création -->
+      <div id="modal-step-6" class="modal-step" style="display:none">
+        <div class="modal-step-counter">Étape 7 / 8</div>
+        <div class="modal-progress-bar"><div class="modal-progress-fill" style="width:87%"></div></div>
+        <div class="modal-title">📅 Connaissez-vous approximativement la date de création ?</div>
+        <div class="modal-subtitle">Google peut demander l'année ou le mois de création de votre compte. Une approximation est suffisante.</div>
+        <div class="modal-options">
+          <label class="modal-option" onclick="selectOption(this, 'creation', 'yes')">
+            <input type="radio" name="creation" value="yes">
+            <div class="modal-option-icon">✅</div>
+            <div class="modal-option-text">
+              <strong>Oui, je me souviens approximativement</strong>
+              <span>Je connais au moins l'année ou la période</span>
+            </div>
+          </label>
+          <label class="modal-option" onclick="selectOption(this, 'creation', 'no')">
+            <input type="radio" name="creation" value="no">
+            <div class="modal-option-icon">❌</div>
+            <div class="modal-option-text">
+              <strong>Non, aucune idée de la date</strong>
+              <span>Je ne me rappelle plus quand j'ai créé ce compte</span>
+            </div>
+          </label>
+        </div>
+        <div class="modal-nav">
+          <button class="btn-modal-back" onclick="goToStep(5)"><i class="fas fa-arrow-left"></i> Retour</button>
+          <button class="btn-modal-next" id="btn-step6-next" onclick="computeAndShowPlan()" disabled>
+            Voir mon plan d'action <i class="fas fa-rocket"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 7 : RÉSULTATS & PLAN D'ACTION -->
+      <div id="modal-step-7" class="modal-step" style="display:none">
+        <div class="modal-progress-bar"><div class="modal-progress-fill" style="width:100%"></div></div>
+        <div class="modal-title" id="plan-title">🎯 Votre plan de récupération personnalisé</div>
+        <div class="modal-subtitle" id="plan-subtitle">Voici les étapes recommandées selon votre situation :</div>
+
+        <!-- Score -->
+        <div id="recovery-score-box" class="recovery-score medium">
+          <div class="recovery-score-label">Chances estimées</div>
+          <div class="recovery-score-value" id="score-value">65%</div>
+          <div class="recovery-score-desc" id="score-desc">Possibilités moyennes — plusieurs options disponibles</div>
+        </div>
+
+        <!-- Plan d'action -->
+        <div class="recovery-plan" id="recovery-plan-content">
+          <!-- Généré par JS -->
+        </div>
+
+        <div style="display:flex; flex-wrap:wrap; gap:10px;">
+          <a href="https://accounts.google.com/signin/recovery" target="_blank" class="btn-recovery-main" style="font-size:0.88rem; padding:12px 22px;">
+            <i class="fas fa-external-link-alt"></i> Aller sur la page Google
+          </a>
+          <button class="btn-modal-back" onclick="openPremiumModal()">
+            <i class="fas fa-headset"></i> Aide humaine
+          </button>
+        </div>
+
+        <div style="margin-top:16px; padding:12px 16px; background:rgba(249,115,22,0.06); border:1px solid rgba(249,115,22,0.2); border-radius:var(--radius-md);">
+          <p style="font-size:0.76rem; color:var(--gray-600);">
+            <i class="fas fa-info-circle" style="color:var(--orange-primary);"></i>
+            <strong> Important :</strong> Cet assistant vous guide vers les procédures officielles de Google. Nous ne récupérons pas les comptes directement — tout passe par les pages officielles de Google pour garantir votre sécurité.
+          </p>
+        </div>
+
+        <div style="margin-top:12px;">
+          <button class="btn-modal-back" onclick="goToStep(0)">
+            <i class="fas fa-redo"></i> Refaire le diagnostic
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========= MODAL FORMULAIRE PREMIUM (Escalade humaine) ========= -->
+  <div class="modal-overlay" id="premiumModal" onclick="closePremiumOutside(event)">
+    <div class="modal-box" id="premiumModalBox">
+      <button class="modal-close" onclick="closePremiumModal()" title="Fermer">
+        <i class="fas fa-times"></i>
+      </button>
+      <div id="premium-form-view">
+        <div style="text-align:center; margin-bottom:24px;">
+          <div style="font-size:2.5rem; margin-bottom:10px;">👨‍💼</div>
+          <div class="modal-title">Demande d'accompagnement humain</div>
+          <div class="modal-subtitle">Un conseiller YouDis analysera votre situation et vous guidera personnellement. Service payant — devis sur demande.</div>
+        </div>
+        <div class="modal-form-group">
+          <label for="premium-nom">Votre nom complet *</label>
+          <input type="text" id="premium-nom" placeholder="Ex: Kofi Mensah" required>
+        </div>
+        <div class="modal-form-group">
+          <label for="premium-email">Votre email de contact *</label>
+          <input type="email" id="premium-email" placeholder="votre@email.com" required>
+        </div>
+        <div class="modal-form-group">
+          <label for="premium-tel">Téléphone / WhatsApp *</label>
+          <input type="tel" id="premium-tel" placeholder="+226 XX XX XX XX" required>
+        </div>
+        <div class="modal-form-group">
+          <label for="premium-gmail">Adresse Gmail concernée</label>
+          <input type="text" id="premium-gmail" placeholder="compte@gmail.com">
+        </div>
+        <div class="modal-form-group">
+          <label for="premium-message">Décrivez brièvement votre situation *</label>
+          <textarea id="premium-message" placeholder="Ex: J'ai perdu l'accès à mon compte il y a 2 semaines, je n'ai plus accès à mon téléphone de récupération et l'email de secours est aussi inaccessible..." required></textarea>
+        </div>
+        <div class="modal-rgpd-note">
+          <i class="fas fa-shield-check"></i>
+          <span>Vos données sont utilisées uniquement pour vous contacter. Aucun mot de passe ne vous sera demandé. Accompagnement légal uniquement via les procédures officielles Google.</span>
+        </div>
+        <button class="btn-premium" style="width:100%; justify-content:center;" onclick="sendPremiumRequest()">
+          <i class="fab fa-whatsapp"></i> Envoyer ma demande via WhatsApp
+        </button>
+      </div>
+      <div id="premium-success-view" style="display:none; text-align:center; padding:20px 0;">
+        <div style="font-size:3rem; margin-bottom:16px;">✅</div>
+        <div class="modal-title">Demande envoyée !</div>
+        <div class="modal-subtitle">Votre demande a été transmise à Marc. Il vous contactera dans les meilleurs délais via WhatsApp.</div>
+        <button class="btn-modal-back" onclick="closePremiumModal()" style="margin-top:20px;">
+          <i class="fas fa-check"></i> Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- ========= ABOUT / TEAM SECTION ========= -->
   <section id="a-propos" class="tab-section">
     <div class="container">
@@ -2206,6 +3263,7 @@
                 <option value="Formation: Créateur de contenu">Formation: Créateur de contenu</option>
                 <option value="Formation: E-Commerce Afrique">Formation: E-Commerce Afrique</option>
                 <option value="Application EF-FORT.BF gratuite">Application EF-FORT.BF gratuite</option>
+                <option value="Service: Récupération compte Google (premium)">🔐 Récupération compte Google (premium)</option>
                 <option value="Autre demande">Autre demande</option>
               </select>
             </div>
@@ -2286,6 +3344,7 @@
             <li><a href="#services">Stratégie digitale</a></li>
             <li><a href="#services">Cybersécurité</a></li>
             <li><a href="#services">Coaching digital</a></li>
+            <li><a href="#google-recovery" style="color:var(--orange-primary);font-weight:700;">🔐 Récupération Google</a></li>
           </ul>
         </div>
 
@@ -2375,6 +3434,12 @@
         }
         // Scroll en haut
         window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      // Sections bonus liées à services (inclure google-recovery)
+      if (tabId === 'services') {
+        const recovery = document.getElementById('google-recovery');
+        if (recovery) recovery.classList.add('tab-active');
       }
 
       // Mettre à jour les boutons nav
@@ -2485,6 +3550,227 @@
           window.scrollTo({ top: target.offsetTop - 74, behavior: 'smooth' });
         }
       });
+    });
+
+    // =========================================================
+    //  GOOGLE RECOVERY – Logique complète (côté client uniquement)
+    // =========================================================
+
+    // Réponses stockées dans la session (jamais envoyées à un serveur)
+    const recoveryAnswers = {
+      gmail: '',
+      phone: '',
+      email: '',
+      password: '',
+      lastuse: '',
+      session: '',
+      creation: ''
+    };
+
+    // --- Ouvrir / Fermer le modal principal ---
+    function openRecoveryModal() {
+      document.getElementById('recoveryModal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+      goToStep(0);
+    }
+    function closeRecoveryModal() {
+      document.getElementById('recoveryModal').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    function closeModalOutside(e) {
+      if (e.target === document.getElementById('recoveryModal')) closeRecoveryModal();
+    }
+
+    // --- Ouvrir / Fermer le modal premium ---
+    function openPremiumModal() {
+      closeRecoveryModal();
+      document.getElementById('premiumModal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+      document.getElementById('premium-form-view').style.display = 'block';
+      document.getElementById('premium-success-view').style.display = 'none';
+      // Pré-remplir le champ gmail si renseigné
+      if (recoveryAnswers.gmail) {
+        document.getElementById('premium-gmail').value = recoveryAnswers.gmail;
+      }
+    }
+    function closePremiumModal() {
+      document.getElementById('premiumModal').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    function closePremiumOutside(e) {
+      if (e.target === document.getElementById('premiumModal')) closePremiumModal();
+    }
+
+    // --- Navigation entre les étapes ---
+    function goToStep(n) {
+      document.querySelectorAll('.modal-step').forEach(s => s.style.display = 'none');
+      const step = document.getElementById('modal-step-' + n);
+      if (step) step.style.display = 'block';
+    }
+
+    // --- Vérification du champ Gmail ---
+    function checkGmailInput() {
+      const val = document.getElementById('recovery-gmail').value.trim();
+      recoveryAnswers.gmail = val;
+      const btn = document.getElementById('btn-step0-next');
+      if (btn) btn.disabled = !(val.length > 3);
+    }
+
+    // --- Sélection d'une option radio ---
+    function selectOption(labelEl, fieldName, value) {
+      // Retirer la sélection des autres options dans le même groupe
+      labelEl.closest('.modal-options').querySelectorAll('.modal-option').forEach(o => {
+        o.classList.remove('selected');
+      });
+      labelEl.classList.add('selected');
+      recoveryAnswers[fieldName] = value;
+      // Activer le bouton suivant de l'étape courante
+      const stepMap = { phone: 1, email: 2, password: 3, lastuse: 4, session: 5, creation: 6 };
+      const stepNum = stepMap[fieldName];
+      if (stepNum !== undefined) {
+        const btn = document.getElementById('btn-step' + stepNum + '-next');
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    // --- Calcul du score et affichage du plan ---
+    function computeAndShowPlan() {
+      let score = 0;
+      const steps = [];
+
+      // Calcul du score
+      if (recoveryAnswers.phone === 'yes') score += 35;
+      else if (recoveryAnswers.phone === 'maybe') score += 10;
+
+      if (recoveryAnswers.email === 'yes') score += 25;
+      else if (recoveryAnswers.email === 'maybe') score += 5;
+
+      if (recoveryAnswers.password === 'yes') score += 20;
+      else if (recoveryAnswers.password === 'vague') score += 8;
+
+      if (recoveryAnswers.lastuse === 'recent') score += 10;
+      else if (recoveryAnswers.lastuse === 'medium') score += 5;
+
+      if (recoveryAnswers.session === 'yes') score += 5;
+      if (recoveryAnswers.creation === 'yes') score += 5;
+
+      // Affichage du score
+      const scoreBox = document.getElementById('recovery-score-box');
+      const scoreVal = document.getElementById('score-value');
+      const scoreDesc = document.getElementById('score-desc');
+      scoreVal.textContent = score + '%';
+      scoreBox.className = 'recovery-score';
+      if (score >= 60) {
+        scoreBox.classList.add('high');
+        scoreDesc.textContent = 'Bonnes chances de récupération — suivez les étapes ci-dessous';
+      } else if (score >= 30) {
+        scoreBox.classList.add('medium');
+        scoreDesc.textContent = 'Possibilités moyennes — plusieurs options à tenter';
+      } else {
+        scoreBox.classList.add('low');
+        scoreDesc.textContent = 'Récupération difficile — un accompagnement humain peut aider';
+      }
+
+      // Génération du plan d'action personnalisé
+      const planSteps = [];
+
+      if (recoveryAnswers.phone === 'yes') {
+        planSteps.push({
+          icon: '📱',
+          title: 'Via votre numéro de téléphone (priorité n°1)',
+          desc: 'C\'est votre meilleure option. Allez sur <a href="https://accounts.google.com/signin/recovery" target="_blank">accounts.google.com/signin/recovery</a>, entrez votre adresse Gmail, puis choisissez "Envoyer un code SMS". Entrez le code reçu.',
+        });
+      }
+
+      if (recoveryAnswers.email === 'yes') {
+        planSteps.push({
+          icon: '📧',
+          title: 'Via votre adresse email de secours',
+          desc: 'Sur la page de récupération Google, choisissez "Obtenir un e-mail de récupération". Vérifiez votre email de secours et cliquez sur le lien envoyé par Google.',
+        });
+      }
+
+      if (recoveryAnswers.session === 'yes') {
+        planSteps.push({
+          icon: '📲',
+          title: 'Via un appareil de confiance déjà connecté',
+          desc: 'Cherchez un téléphone ou PC où vous étiez encore connecté. Allez dans les <strong>Paramètres Google > Sécurité > Sessions actives</strong>. Vous pourrez approuver la nouvelle connexion depuis cet appareil.',
+        });
+      }
+
+      if (recoveryAnswers.password === 'yes' || recoveryAnswers.password === 'vague') {
+        planSteps.push({
+          icon: '🔑',
+          title: 'Tester vos anciens mots de passe',
+          desc: 'Lors de la récupération, Google vous demande parfois un "ancien mot de passe". Essayez tous ceux dont vous vous souvenez. Consultez aussi votre <strong>gestionnaire de mots de passe</strong> (Chrome, Bitwarden, etc.).',
+        });
+      }
+
+      planSteps.push({
+        icon: '📋',
+        title: 'Formulaire de vérification d\'identité Google',
+        desc: 'Si aucune autre option ne fonctionne, utilisez le <a href="https://accounts.google.com/signin/recovery" target="_blank">formulaire de récupération officiel</a>. Répondez honnêtement aux questions sur la date de création, les contacts, les services utilisés.',
+      });
+
+      if (recoveryAnswers.lastuse !== 'recent') {
+        planSteps.push({
+          icon: '💡',
+          title: 'Astuce : Essayez depuis un réseau familier',
+          desc: 'Connectez-vous à la page de récupération depuis votre réseau WiFi habituel (maison ou bureau) — Google reconnaît les appareils et réseaux habituels pour valider votre identité.',
+        });
+      }
+
+      // Rendu HTML du plan
+      let planHTML = '<h4>🗺️ Votre plan d\'action personnalisé</h4>';
+      planSteps.forEach((step, i) => {
+        planHTML += `
+          <div class="recovery-plan-step">
+            <div class="plan-step-num">${i + 1}</div>
+            <div class="plan-step-content">
+              <strong>${step.icon} ${step.title}</strong>
+              <p>${step.desc}</p>
+            </div>
+          </div>`;
+      });
+      document.getElementById('recovery-plan-content').innerHTML = planHTML;
+
+      goToStep(7);
+    }
+
+    // --- Envoi de la demande premium via WhatsApp ---
+    function sendPremiumRequest() {
+      const nom = document.getElementById('premium-nom').value.trim();
+      const email = document.getElementById('premium-email').value.trim();
+      const tel = document.getElementById('premium-tel').value.trim();
+      const gmail = document.getElementById('premium-gmail').value.trim();
+      const message = document.getElementById('premium-message').value.trim();
+
+      if (!nom || !email || !tel || !message) {
+        alert('Veuillez remplir tous les champs obligatoires (*)');
+        return;
+      }
+
+      const text = `🔐 *Demande d'accompagnement récupération Google*\n\n*Nom :* ${nom}\n*Email :* ${email}\n*Téléphone :* ${tel}\n${gmail ? '*Gmail concerné :* ' + gmail + '\n' : ''}\n*Situation :*\n${message}\n\n_(Envoyé depuis YouDis – Assistant Récupération Google)_`;
+      const url = 'https://wa.me/22672662161?text=' + encodeURIComponent(text);
+      window.open(url, '_blank');
+
+      document.getElementById('premium-form-view').style.display = 'none';
+      document.getElementById('premium-success-view').style.display = 'block';
+    }
+
+    // --- FAQ Accordion ---
+    function toggleFaq(item) {
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    }
+
+    // Fermeture modals avec touche Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeRecoveryModal();
+        closePremiumModal();
+      }
     });
   </script>
 </body>
