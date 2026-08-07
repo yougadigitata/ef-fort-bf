@@ -632,6 +632,37 @@
       background: rgba(37,99,235,0.1); color: var(--blue-secondary);
       border: 1px solid rgba(37,99,235,0.2);
     }
+    /* Badge formation payante – vert émeraude */
+    .badge-formation-payante {
+      background: rgba(16,185,129,0.12); color: #059669;
+      border: 1px solid rgba(16,185,129,0.25);
+    }
+    /* Wrapper image pour les nouvelles cartes avec badge positionné en absolu */
+    .service-card-img-wrap {
+      position: relative; margin-bottom: 20px;
+    }
+    .service-card-img-wrap .service-card-img {
+      margin-bottom: 0;
+    }
+    .service-card-img-wrap .service-card-badge {
+      position: absolute; top: 10px; right: 10px;
+      margin-bottom: 0;
+      backdrop-filter: blur(6px);
+      background: rgba(255,255,255,0.92);
+    }
+    /* Accent visuel nouvelles cartes – barre haut verte */
+    .service-card-new::before {
+      background: linear-gradient(90deg, #10b981, #059669) !important;
+      opacity: 1 !important;
+    }
+    /* Animation d'entrée pour les nouvelles cartes */
+    .service-card-new {
+      border-color: rgba(16,185,129,0.2);
+    }
+    .service-card-new:hover {
+      border-color: rgba(16,185,129,0.4);
+      box-shadow: 0 20px 60px rgba(16,185,129,0.14);
+    }
     .service-card-title {
       font-family: 'Poppins', sans-serif;
       font-size: 1.05rem; font-weight: 700;
@@ -2195,6 +2226,54 @@
             <span class="service-tag">Formation</span>
           </div>
           <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20du%20coaching%20digital." target="_blank" class="service-card-cta">Démarrer le coaching <i class="fas fa-arrow-right"></i></a>
+        </div>
+
+        <!-- Service 10 – Téléphone & Revenus -->
+        <div class="service-card fade-up service-card-new">
+          <div class="service-card-img-wrap">
+            <img src="assets/images/service-telephone-revenu.webp" alt="Transformez votre téléphone en source de revenus" class="service-card-img" loading="lazy">
+            <div class="service-card-badge badge-formation-payante"><i class="fas fa-graduation-cap"></i> Formation payante</div>
+          </div>
+          <div class="service-card-title">Transformez votre téléphone en source de revenus</div>
+          <p class="service-card-desc">Développez des compétences utiles, boostez vos activités et créez de nouvelles opportunités financières grâce à votre smartphone.</p>
+          <div class="service-card-tags">
+            <span class="service-tag">Revenus passifs</span>
+            <span class="service-tag">Compétences digitales</span>
+            <span class="service-tag">Coaching</span>
+          </div>
+          <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20en%20savoir%20plus%20sur%20la%20formation%20t%C3%A9l%C3%A9phone%20%26%20revenus." target="_blank" class="service-card-cta">Je veux en savoir plus <i class="fas fa-arrow-right"></i></a>
+        </div>
+
+        <!-- Service 11 – Community Management -->
+        <div class="service-card fade-up fade-up-delay-1 service-card-new">
+          <div class="service-card-img-wrap">
+            <img src="assets/images/service-community-management.webp" alt="Community Management – Gestion des réseaux sociaux" class="service-card-img" loading="lazy">
+            <div class="service-card-badge badge-payant"><i class="fas fa-star"></i> Service payant</div>
+          </div>
+          <div class="service-card-title">Community Management – Gestion de vos réseaux sociaux</div>
+          <p class="service-card-desc">Nous gérons vos pages Facebook et TikTok, développons votre notoriété et créons des publicités ciblées pour multiplier votre audience.</p>
+          <div class="service-card-tags">
+            <span class="service-tag">Facebook</span>
+            <span class="service-tag">TikTok</span>
+            <span class="service-tag">Publicités ciblées</span>
+          </div>
+          <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20un%20devis%20pour%20le%20Community%20Management." target="_blank" class="service-card-cta">Demander un devis <i class="fas fa-arrow-right"></i></a>
+        </div>
+
+        <!-- Service 12 – Formation Création de Contenu -->
+        <div class="service-card fade-up fade-up-delay-2 service-card-new">
+          <div class="service-card-img-wrap">
+            <img src="assets/images/service-creation-contenu.webp" alt="Formation en création de contenu impactant" class="service-card-img" loading="lazy">
+            <div class="service-card-badge badge-formation-payante"><i class="fas fa-graduation-cap"></i> Formation payante</div>
+          </div>
+          <div class="service-card-title">Formation en création de contenu impactant</div>
+          <p class="service-card-desc">Apprenez à captiver votre audience, maîtrisez les outils de montage vidéo et développez votre impact sur les réseaux sociaux.</p>
+          <div class="service-card-tags">
+            <span class="service-tag">Création vidéo</span>
+            <span class="service-tag">Montage</span>
+            <span class="service-tag">Audience</span>
+          </div>
+          <a href="https://wa.me/22672662161?text=Bonjour%2C%20je%20veux%20m%27inscrire%20%C3%A0%20la%20formation%20cr%C3%A9ation%20de%20contenu." target="_blank" class="service-card-cta">Je m'inscris <i class="fas fa-arrow-right"></i></a>
         </div>
 
         <!-- CTA Card -->
